@@ -1,35 +1,47 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// src/App.jsx
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 
-function App() {
-  const [count, setCount] = useState(0)
+// Componentes Globales
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import Login from "./components/Login";
+import ProtectedRoute from "./components/ProtectedRoute";
 
+// Páginas
+import Home from "./pages/Home";
+import Noticias from "./pages/Noticias";
+import NoticiaDetalle from "./pages/NoticiaDetalle";
+import QuienesSomos from "./pages/QuienesSomos"; // <-- NUEVA PÁGINA
+import AdminPanel from "./pages/AdminPanel";
+
+function PublicLayout() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <div className="flex-grow">
+        <Outlet />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+      <Footer />
+    </div>
+  );
 }
 
-export default App
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/quienes-somos" element={<QuienesSomos />} /> {/* <-- NUEVA RUTA */}
+          <Route path="/noticias" element={<Noticias />} />
+          <Route path="/noticias/:id" element={<NoticiaDetalle />} />
+        </Route>
+
+        <Route path="/login" element={<Login />} />
+        <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;
