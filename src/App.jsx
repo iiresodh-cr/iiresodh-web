@@ -11,8 +11,9 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Noticias from "./pages/Noticias";
 import NoticiaDetalle from "./pages/NoticiaDetalle";
-import QuienesSomos from "./pages/QuienesSomos"; // <-- NUEVA PÁGINA
+import QuienesSomos from "./pages/QuienesSomos"; 
 import AdminPanel from "./pages/AdminPanel";
+import NotFound from "./pages/NotFound"; // <-- IMPORTACIÓN DE LA NUEVA PÁGINA
 
 function PublicLayout() {
   return (
@@ -32,9 +33,12 @@ function App() {
       <Routes>
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
-          <Route path="/quienes-somos" element={<QuienesSomos />} /> {/* <-- NUEVA RUTA */}
+          <Route path="/quienes-somos" element={<QuienesSomos />} />
           <Route path="/noticias" element={<Noticias />} />
           <Route path="/noticias/:id" element={<NoticiaDetalle />} />
+          
+          {/* RUTA 404: Debe ir siempre al final de las rutas públicas */}
+          <Route path="*" element={<NotFound />} />
         </Route>
 
         <Route path="/login" element={<Login />} />
