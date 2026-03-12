@@ -5,7 +5,6 @@ export default function QuienesSomos() {
   return (
     <div className="bg-white min-h-screen flex flex-col">
       
-      {/* Header unificado */}
       <div className="bg-white text-[#1D3557] py-12 px-6 text-center relative z-20 border-b border-gray-200">
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3 uppercase">¿Quiénes Somos?</h1>
         <p className="text-lg text-[#457B9D] max-w-3xl mx-auto font-medium">
@@ -15,41 +14,26 @@ export default function QuienesSomos() {
       </div>
 
       <div className="relative overflow-hidden flex-grow border-b border-gray-200">
-        {/* Capa de Marca de Agua */}
         <div 
-          className="absolute inset-0 pointer-events-none z-0"
-          style={{
-            backgroundImage: `url(${isotipo})`,
-            backgroundRepeat: 'repeat',
-            backgroundSize: '500px', 
-            backgroundPosition: 'top center',
-            opacity: 0.04, 
-            filter: 'invert(1)', 
-          }}
+          className="bg-watermark"
+          style={{ backgroundImage: `url(${isotipo})` }}
         ></div>
 
-        {/* Sección de Historia - Ahora con tipografía 100% UNIFORME */}
         <section className="relative z-10 px-8 pt-6 pb-12 md:pb-16">
           <div className="max-w-6xl mx-auto">
             <div className="bg-white/70 backdrop-blur-sm p-8 md:p-12 rounded-2xl shadow-sm text-lg text-gray-700 leading-loose text-justify space-y-6">
-              
-              {/* CORRECCIÓN AQUÍ: Eliminamos text-xl/2xl y font-medium para igualar al resto */}
               <p>
                 El IIRESODH es una asociación sin fines de lucro, con su sede principal en Costa Rica y oficinas en otros países como Canadá, Colombia, Guatemala, Honduras, México, con el objetivo de fomentar el cumplimiento de los estándares internacionales de derechos humanos mediante un enfoque de participación ciudadana, gubernamental y corporativa, de la cual nazcan proyectos y sinergias conjuntas entre todas las partes relevantes.
               </p>
-              
               <p>
                 Para ello, IIRESODH realiza labores de capacitación, litigio estratégico y empoderamiento de la sociedad civil con fondos privados y de la cooperación internacional. El Instituto participa frecuentemente en los diferentes espacios de trabajos y audiencias de los sistemas de protección de derechos humanos, siendo una voz activa en la defensa de la democracia y los derechos humanos.
               </p>
-              
               <p>
                 El Instituto cuenta con acuerdos de cooperación con el CCPR-Centre, ONG ubicada en Ginebra, Suiza, que se encarga de dar seguimiento a las recomendaciones emitidas por el Comité de Derechos Humanos de la ONU. Asimismo, IIRESODH ha firmado acuerdos con la Comisión Interamericana de Derechos Humanos, la Universidad Nacional de La Plata (Argentina) y el Instituto Universitario de Yucatán (México). Todos sus funcionarios y funcionarias cuentan con amplia experiencia en el sistema interamericano y en el sistema universal de Naciones Unidas, habiendo sido miembros de dichos organismos, o bien, habiéndose desempeñado como pasantes y asistentes legales.
               </p>
-              
               <p>
                 Desde el año 2013, IIRESODH ha capacitado a más de 1500 personas en América Latina y Europa en temas de litigio estratégico internacionales ante foros regionales y universales, incluyendo visitas a los principales órganos del sistema interamericano y de la ONU, así como ofreciendo oportunidades de realimentación con personas funcionarias de dichos órganos. En marzo de 2021, IIRESODH abrió las puertas de un instituto de altos estudios universitarios (U-IIRESODH) en Villahermosa, Tabasco, México, para ofrecer un valor agregado a aquellas personas que deseen optar por el grado académico de maestría.
               </p>
-              
               <p>
                 Con el fin de afianzar el vínculo natural entre el IIRESODH y la sociedad civil, desde el año 2019 se han implementado proyectos de cooperación internacional orientados a la incidencia y al litigio estratégico internacional colaborando en el fortalecimiento de capacidades de diferentes organizaciones de Nicaragua, Venezuela, Costa Rica y Colombia, para lo cual se recibió el apoyo de donantes internacionales como la embajada de Reino Unido en Costa Rica, la Embajada de Suiza para Costa Rica, El Salvador, Nicaragua y Costa Rica, y el Programa de Naciones Unidas para el Desarrollo.
               </p>
@@ -57,7 +41,6 @@ export default function QuienesSomos() {
           </div>
         </section>
 
-        {/* Misión y Visión */}
         <section className="relative z-10 px-8 py-10">
           <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10">
             <div className="bg-white/90 backdrop-blur-sm p-10 rounded-2xl shadow-xl border-t-4 border-[#B92F32]">
@@ -81,7 +64,6 @@ export default function QuienesSomos() {
           </div>
         </section>
 
-        {/* Principios Rectores */}
         <section className="relative z-10 px-8 py-20">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-extrabold text-[#1D3557] text-center mb-12 uppercase tracking-widest bg-white/60 backdrop-blur-sm py-4 rounded-xl shadow-sm inline-block px-8 mx-auto flex w-fit">
@@ -106,7 +88,6 @@ export default function QuienesSomos() {
         </section>
       </div> 
 
-      {/* Organigrama */}
       <section className="bg-[#1D3557] text-white py-20 px-6 relative z-20">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-8 uppercase tracking-widest text-white">

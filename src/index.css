@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 @theme {
-  /* Aquí inyectamos la paleta de colores de IIRESODH */
+  /* Paleta de colores oficial IIRESODH */
   --color-main-blue: #1D3557;
   --color-light-blue: #457B9D;
   --color-pale-blue: #A8DADC;
@@ -10,11 +10,55 @@
   --color-bright-red: #E63946;
   --color-basic-beige: #F1FAEE;
   
-  /* Configuramos Work Sans como la tipografía principal */
+  /* Tipografía institucional */
   --font-sans: "Work Sans", sans-serif;
 }
 
-/* Ajuste para que el fondo por defecto sea el beige clarito */
+/* Fondo global inmaculado */
 body {
   background-color: #ffffff; 
+}
+
+@layer utilities {
+  /* Marca de agua profesional y reutilizable */
+  .bg-watermark {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-repeat: repeat;
+    background-size: 500px;
+    background-position: top center;
+    opacity: 0.04;
+    filter: invert(1);
+  }
+
+  /* Estilización uniforme de Swiper */
+  .swiper-custom-navigation {
+    --swiper-navigation-color: #B92F32;
+    --swiper-pagination-color: #B92F32;
+    --swiper-navigation-size: 24px;
+  }
+
+  .swiper-button-next::after,
+  .swiper-button-prev::after {
+    font-weight: 900 !important;
+    -webkit-text-stroke: 2px #B92F32;
+  }
+
+  /* Contenedor de noticias: respeta párrafos y justifica texto */
+  .noticia-content {
+    white-space: pre-line;
+    text-align: justify;
+  }
+
+  /* Imágenes insertadas dentro del contenido de la noticia */
+  .noticia-content img {
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
 }

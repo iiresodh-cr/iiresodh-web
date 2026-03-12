@@ -64,31 +64,15 @@ export default function NoticiaDetalle() {
 
   return (
     <div className="bg-white min-h-screen flex flex-col">
-      <style>{`
-        .swiper-button-next::after,
-        .swiper-button-prev::after {
-          font-weight: 900 !important;
-          -webkit-text-stroke: 2px #B92F32;
-        }
-      `}</style>
-
       <div className="relative overflow-hidden flex-grow pb-20">
+        {/* Capa de Marca de Agua con utilidad global */}
         <div 
-          className="absolute inset-0 pointer-events-none z-0"
-          style={{
-            backgroundImage: `url(${isotipo})`,
-            backgroundRepeat: 'repeat',
-            backgroundSize: '500px', 
-            backgroundPosition: 'top center',
-            opacity: 0.04, 
-            filter: 'invert(1)', 
-          }}
+          className="bg-watermark"
+          style={{ backgroundImage: `url(${isotipo})` }}
         ></div>
 
-        {/* AQUÍ ESTÁ LA CORRECCIÓN DEL ANCHO: Padding por fuera, Max-width por dentro. Igual que el Inicio */}
         <section className="relative z-10 px-8 pt-6">
           <div className="max-w-6xl mx-auto">
-            
             <div className="bg-white/85 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-gray-100">
               
               <div className="p-8 md:p-12 border-b border-gray-100 text-center">
@@ -108,12 +92,7 @@ export default function NoticiaDetalle() {
                     navigation
                     pagination={{ clickable: true }}
                     autoplay={{ delay: 4000 }}
-                    className="w-full h-full absolute inset-0"
-                    style={{
-                      '--swiper-navigation-color': '#B92F32',
-                      '--swiper-pagination-color': '#B92F32',
-                      '--swiper-navigation-size': '24px',
-                    }}
+                    className="w-full h-full absolute inset-0 swiper-custom-navigation"
                   >
                     {todasLasImagenes.map((url, index) => (
                       <SwiperSlide key={index} className="flex items-center justify-center bg-white w-full h-full">
@@ -124,15 +103,9 @@ export default function NoticiaDetalle() {
                 </div>
               )}
 
-              {/* AQUÍ ESTÁ LA CORRECCIÓN DE LA LETRA: Obligamos a usar los mismos valores globales */}
               <div className="p-8 md:p-12 md:px-16">
                 <div 
-                  className="prose max-w-none text-lg text-gray-700 leading-loose text-justify 
-                             prose-p:text-lg prose-p:text-gray-700 prose-p:font-normal prose-p:leading-loose
-                             prose-headings:text-[#1D3557] prose-headings:font-extrabold 
-                             prose-a:text-[#B92F32] hover:prose-a:text-[#1D3557] prose-a:font-bold
-                             prose-strong:text-[#1D3557] prose-strong:font-bold
-                             [&_img]:mx-auto [&_img]:rounded-lg [&_img]:shadow-md [&_img]:my-8"
+                  className="noticia-content text-lg text-gray-700 leading-loose"
                   dangerouslySetInnerHTML={{ __html: contenidoNoticia }}
                 ></div>
               </div>
