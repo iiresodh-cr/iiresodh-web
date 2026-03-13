@@ -8,7 +8,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { httpsCallable } from "firebase/functions";
 
 // Importamos el logo oficial recortado en formato PNG
-import logoColor from "../assets/Logo_Oficiale_200w-trim.png";
+import logoColor from "../assets/Logo_Oficial_200w-trim.png";
 
 export default function AdminPanel() {
   const navigate = useNavigate(); 
@@ -87,10 +87,7 @@ export default function AdminPanel() {
     };
   }, [contenido]);
 
-  /**
-   * INVOCACIÓN A GEMINI VÍA CLOUD FUNCTIONS
-   * Sustituye la lógica de "primeras 15 palabras" por una petición real al backend.
-   */
+  // Función para autogenerar resumen utilizando Google Gemini vía Cloud Functions
   const handleAutoResumen = async () => {
     if (!contenido || contenido.trim().length < 20) {
       setMensaje("Escribe el contenido de la noticia antes de generar un resumen.");
@@ -102,7 +99,6 @@ export default function AdminPanel() {
     setMensaje("Consultando a Gemini...");
     
     try {
-      // Llamada segura a la Cloud Function configurada
       const generarResumen = httpsCallable(functions, 'generarResumenGemini');
       const resultado = await generarResumen({ contenido });
       
@@ -114,13 +110,14 @@ export default function AdminPanel() {
       }
     } catch (error) {
       console.error("Error al generar resumen:", error);
-      setMensaje("Error de conexión con la IA. Verifica el despliegue de la función.");
+      setMensaje("Error al conectar con Gemini. Verifica el despliegue de la función.");
     } finally {
       setGenerandoResumen(false);
       setTimeout(() => setMensaje(""), 3000);
     }
   };
 
+  // Lógica para cargar los datos en el formulario para editar
   const handleEditarNoticia = (noticia) => {
     setEditandoId(noticia.id);
     setTitulo(noticia.titulo);
@@ -197,6 +194,7 @@ export default function AdminPanel() {
     else if (direccion === 1 && index < nuevas.length - 1) [nuevas[index], nuevas[index + 1]] = [nuevas[index + 1], nuevas[index]];
     setImagenesCarrusel(nuevas);
   };
+
   const eliminarImagenNueva = (index) => {
     const nuevas = [...imagenesCarrusel];
     nuevas.splice(index, 1);
@@ -209,6 +207,7 @@ export default function AdminPanel() {
     else if (direccion === 1 && index < existentes.length - 1) [existentes[index], existentes[index + 1]] = [existentes[index + 1], existentes[index]];
     setCarruselExistente(existentes);
   };
+
   const eliminarImagenExistente = (index) => {
     const existentes = [...carruselExistente];
     existentes.splice(index, 1);
@@ -223,7 +222,7 @@ export default function AdminPanel() {
     }
 
     setLoading(true);
-    setMensaje(editandoId ? "Actualizando noticia..." : "Publicando...");
+    setMensaje(editandoId ? "Actualizando noticia..." : "Publicando noticia...");
 
     try {
       let imagenPrincipalUrlFinal = imagenPrincipalAnterior;
@@ -301,7 +300,7 @@ export default function AdminPanel() {
       <main className="p-8">
         <div className={`max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md mb-8 border-l-4 ${editandoId ? 'border-main-red' : 'border-main-blue'}`}>
           <h1 className="text-3xl font-extrabold text-main-blue">Panel Administrativo</h1>
-          <p className="text-light-blue">{editandoId ? "Modo Edición" : "Gestión y Publicación de Noticias"}</p>
+          <p className="text-light-blue">{editandoId ? "Modo Edición: Actualizando registro existente" : "Gestión y Publicación de Noticias IIRESODH"}</p>
         </div>
 
         <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md mb-12 border-t-4 border-gray-100">
@@ -309,6 +308,11 @@ export default function AdminPanel() {
             <h2 className={`text-2xl font-bold ${editandoId ? 'text-main-red' : 'text-main-blue'}`}>
               {editandoId ? "Editar Noticia" : "Crear Nueva Noticia"}
             </h2>
+            {editandoId && (
+              <button onClick={cancelarEdicion} className="text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-1 px-3 rounded transition-colors">
+                Cancelar Edición
+              </button>
+            )}
           </div>
           
           {mensaje && (
@@ -325,7 +329,7 @@ export default function AdminPanel() {
               </div>
 
               <div className="md:col-span-2 bg-basic-beige p-4 rounded border border-pale-blue">
-                <label className="block text-main-blue font-bold mb-1">Fecha de Publicación (Opcional)</label>
+                <label className="block text-main-blue font-bold mb-1">Fecha y Hora de Publicación (Opcional)</label>
                 <input type="datetime-local" value={fechaPersonalizada} onChange={(e) => setFechaPersonalizada(e.target.value)} className="w-full md:w-1/2 border border-gray-300 p-3 rounded bg-white" />
               </div>
             </div>
@@ -333,29 +337,20 @@ export default function AdminPanel() {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <label className="block text-main-blue font-bold">Resumen para Portada</label>
-                <button 
-                  type="button" 
-                  onClick={handleAutoResumen} 
-                  disabled={generandoResumen}
-                  className="text-xs bg-main-blue text-white hover:bg-light-blue font-bold py-2 px-4 rounded-full transition-colors disabled:opacity-50 flex items-center gap-2"
-                >
+                <button type="button" onClick={handleAutoResumen} disabled={generandoResumen} className="text-xs bg-main-blue text-white hover:bg-light-blue font-bold py-2 px-4 rounded-full transition-colors disabled:opacity-50 flex items-center gap-2">
                   {generandoResumen ? "Generando..." : "✨ Generar con IA"}
                 </button>
               </div>
-              <textarea required maxLength="250" value={resumen} onChange={(e) => setResumen(e.target.value)} className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-light-blue" rows="2" placeholder="Un resumen breve..."></textarea>
+              <textarea required maxLength="250" value={resumen} onChange={(e) => setResumen(e.target.value)} className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-light-blue" rows="2" />
             </div>
 
             <div>
               <label className="block text-main-blue font-bold mb-2">Contenido Completo</label>
-              <textarea required value={contenido} onChange={(e) => setContenido(e.target.value)} className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-light-blue" rows="12"></textarea>
+              <textarea required value={contenido} onChange={(e) => setContenido(e.target.value)} className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-light-blue" rows="12" />
               
               <div className="mt-4 bg-gray-50 p-5 rounded border border-gray-200 shadow-inner">
                 <label className="block text-xs font-bold text-gray-500 uppercase mb-3">Simulación en Portada Principal</label>
-                <div 
-                  ref={contenidoPreviewRef}
-                  className="text-gray-600 text-lg font-light leading-relaxed noticia-content max-h-80 overflow-hidden bg-white p-5 rounded"
-                  dangerouslySetInnerHTML={{ __html: contenido || "Escribe para previsualizar..." }}
-                />
+                <div ref={contenidoPreviewRef} className="text-gray-600 text-lg font-light leading-relaxed noticia-content max-h-80 overflow-hidden bg-white p-5 rounded" dangerouslySetInnerHTML={{ __html: contenido || "Escribe para previsualizar..." }} />
                 <div className="mt-4">
                   {showReadMoreWarning ? (
                     <p className="text-main-red font-bold text-sm">⚠️ El texto superó el límite. Se mostrará botón de "Leer más".</p>
@@ -382,7 +377,7 @@ export default function AdminPanel() {
                 <div className="grid grid-cols-1 gap-3">
                   {carruselExistente.map((url, index) => (
                     <div key={`old-${index}`} className="flex items-center justify-between bg-white p-3 rounded border border-gray-200">
-                      <img src={url} className="h-20 w-auto rounded" alt="Carrusel" />
+                      <img src={url} className="h-20 w-auto rounded" alt="Existente" />
                       <div className="flex gap-2">
                         <button type="button" onClick={() => moverImagenExistente(index, -1)} disabled={index === 0} className="px-3 py-1 bg-main-blue text-white rounded">↑</button>
                         <button type="button" onClick={() => moverImagenExistente(index, 1)} disabled={index === carruselExistente.length - 1} className="px-3 py-1 bg-main-blue text-white rounded">↓</button>
@@ -392,7 +387,7 @@ export default function AdminPanel() {
                   ))}
                   {imagenesCarrusel.map((file, index) => (
                     <div key={`new-${index}`} className="flex items-center justify-between bg-green-50 p-3 rounded border border-green-200">
-                      <img src={URL.createObjectURL(file)} className="h-20 w-auto rounded" alt="Nuevo" />
+                      <img src={URL.createObjectURL(file)} className="h-20 w-auto rounded" alt="Nueva" />
                       <div className="flex gap-2">
                         <button type="button" onClick={() => moverImagenNueva(index, -1)} disabled={index === 0} className="px-3 py-1 bg-main-blue text-white rounded">↑</button>
                         <button type="button" onClick={() => moverImagenNueva(index, 1)} disabled={index === imagenesCarrusel.length - 1} className="px-3 py-1 bg-main-blue text-white rounded">↓</button>
@@ -404,10 +399,42 @@ export default function AdminPanel() {
               </div>
             </div>
 
-            <button type="submit" disabled={loading} className="w-full bg-main-blue hover:bg-light-blue text-white font-bold py-4 rounded shadow-lg disabled:opacity-50">
+            <button type="submit" disabled={loading} className="w-full bg-main-blue hover:bg-light-blue text-white font-bold py-4 rounded shadow-lg disabled:opacity-50 text-lg uppercase tracking-wider transition-all">
               {loading ? "Procesando..." : (editandoId ? "Actualizar Noticia" : "Publicar Noticia")}
             </button>
           </form>
+        </div>
+
+        {/* SECCIÓN DE GESTIÓN DE NOTICIAS PUBLICADAS (RESTAURADA) */}
+        <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md border-t-4 border-main-blue">
+          <h2 className="text-2xl font-bold text-main-blue mb-6 border-b pb-2">Gestionar Noticias Publicadas</h2>
+          {listaNoticias.length === 0 ? (
+            <p className="text-light-blue">No hay noticias registradas.</p>
+          ) : (
+            <div className="space-y-4">
+              {listaNoticias.map((noticia) => (
+                <div key={noticia.id} className="flex flex-col sm:flex-row sm:items-center justify-between bg-gray-50 p-4 rounded border border-gray-200 gap-4 hover:bg-white transition-colors">
+                  <div className="flex items-center gap-4">
+                    <img src={noticia.imagenPrincipalUrl} alt="Mini" className="w-16 h-16 object-cover rounded shadow-sm border border-gray-300" />
+                    <div>
+                      <h3 className="font-bold text-main-blue line-clamp-1">{noticia.titulo}</h3>
+                      <p className="text-xs text-gray-500">
+                        {noticia.fechaPublicacion ? new Date(noticia.fechaPublicacion.toDate()).toLocaleString() : "Sin fecha"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => handleEditarNoticia(noticia)} className="bg-transparent border-2 border-main-blue text-main-blue hover:bg-main-blue hover:text-white px-4 py-2 rounded font-bold transition-all text-sm">
+                      Editar
+                    </button>
+                    <button onClick={() => handleBorrarNoticia(noticia.id, noticia.titulo)} className="bg-transparent border-2 border-bright-red text-bright-red hover:bg-bright-red hover:text-white px-4 py-2 rounded font-bold transition-all text-sm">
+                      Borrar
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </div>
