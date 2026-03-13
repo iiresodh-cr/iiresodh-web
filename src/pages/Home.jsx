@@ -1,5 +1,5 @@
 // src/pages/Home.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { Link } from "react-router-dom";
@@ -13,6 +13,8 @@ import 'swiper/css/pagination';
 export default function Home() {
   const [noticia, setNoticia] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const contentRef = useRef(null);
 
   useEffect(() => {
     const fetchUltimaNoticia = async () => {
@@ -33,9 +35,33 @@ export default function Home() {
     fetchUltimaNoticia();
   }, []);
 
+  // Efecto para comprobar si el texto de la noticia se desborda (overflow)
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (contentRef.current) {
+        const { scrollHeight, clientHeight } = contentRef.current;
+        // Agregamos un pequeño margen de 2px para evitar falsos positivos por redondeo del navegador
+        setIsOverflowing(scrollHeight > clientHeight + 2);
+      }
+    };
+
+    checkOverflow();
+    // Ejecutamos nuevamente tras un breve tiempo para asegurar que las fuentes/imágenes hayan cargado
+    const timeoutId = setTimeout(checkOverflow, 150);
+    window.addEventListener('resize', checkOverflow);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', checkOverflow);
+    };
+  }, [noticia]);
+
   if (loading) {
     return <div className="min-h-screen bg-white flex items-center justify-center text-main-blue font-bold text-xl">Cargando IIRESODH...</div>;
   }
+
+  // Preparamos el contenido por si algunos campos vienen vacíos (compatibilidad)
+  const contenidoNoticia = noticia ? (noticia.contenido || noticia.contenidoHTML || noticia.cuerpo || `<p>${noticia.resumen}</p>` || "") : "";
 
   return (
     <div className="bg-white flex flex-col min-h-screen">
@@ -76,10 +102,21 @@ export default function Home() {
                 <div className="w-full md:w-3/5 p-8 md:p-12 flex flex-col justify-center bg-white/95">
                   <span className="text-xs font-extrabold text-bright-red uppercase tracking-widest mb-3">Última Noticia</span>
                   <h2 className="text-3xl md:text-4xl font-extrabold text-main-blue mb-6 leading-tight">{noticia.titulo}</h2>
-                  <p className="text-gray-600 mb-8 text-lg font-light leading-relaxed">{noticia.resumen}</p>
-                  <Link to={`/noticias/${noticia.id}`} className="inline-block bg-main-blue hover:bg-light-blue text-white font-bold py-3 px-8 rounded-full transition-colors self-start shadow-md">
-                    Leer noticia completa
-                  </Link>
+                  
+                  <div 
+                    ref={contentRef}
+                    className="text-gray-600 mb-6 text-lg font-light leading-relaxed noticia-content max-h-80 overflow-hidden"
+                    dangerouslySetInnerHTML={{ __html: contenidoNoticia }}
+                  />
+                  
+                  {isOverflowing && (
+                    <Link 
+                      to={`/noticias/${noticia.id}`} 
+                      className="text-main-red font-bold hover:text-main-blue transition-colors mt-auto flex items-center gap-2 self-start uppercase tracking-wide text-sm"
+                    >
+                      Leer noticia completa <span className="text-xl">&rarr;</span>
+                    </Link>
+                  )}
                 </div>
               </div>
             )}

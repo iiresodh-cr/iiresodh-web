@@ -1,5 +1,5 @@
 // src/pages/AdminPanel.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { signOut } from "firebase/auth";
 import { auth, db, storage } from "../firebase/config";
@@ -27,6 +27,10 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [listaNoticias, setListaNoticias] = useState([]);
+
+  // Referencia y estado para la simulación de límite de texto
+  const contenidoPreviewRef = useRef(null);
+  const [showReadMoreWarning, setShowReadMoreWarning] = useState(false);
 
   const handleLogout = () => {
     navigate("/"); 
@@ -61,11 +65,30 @@ export default function AdminPanel() {
     };
   }, [mainImagePreviewUrl]);
 
+  // Efecto dinámico para revisar si el texto sobrepasa el límite del inicio
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (contenidoPreviewRef.current) {
+        const { scrollHeight, clientHeight } = contenidoPreviewRef.current;
+        setShowReadMoreWarning(scrollHeight > clientHeight + 2);
+      }
+    };
+    
+    checkOverflow();
+    const timeoutId = setTimeout(checkOverflow, 50);
+    window.addEventListener('resize', checkOverflow);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', checkOverflow);
+    };
+  }, [contenido]);
+
   const handleEditarNoticia = (noticia) => {
     setEditandoId(noticia.id);
     setTitulo(noticia.titulo);
     setResumen(noticia.resumen);
-    setContenido(noticia.contenido);
+    setContenido(noticia.contenido || noticia.contenidoHTML || noticia.cuerpo || "");
 
     if (noticia.fechaPublicacion) {
       const date = noticia.fechaPublicacion.toDate();
@@ -281,13 +304,37 @@ export default function AdminPanel() {
             </div>
 
             <div>
-              <label className="block text-main-blue font-bold mb-2">Resumen (Para la portada)</label>
+              <label className="block text-main-blue font-bold mb-2">Resumen (Para la portada de noticias)</label>
               <textarea required maxLength="200" value={resumen} onChange={(e) => setResumen(e.target.value)} className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-light-blue" rows="2" placeholder="Texto corto..."></textarea>
             </div>
 
             <div>
               <label className="block text-main-blue font-bold mb-2">Contenido Completo</label>
               <textarea required value={contenido} onChange={(e) => setContenido(e.target.value)} className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-light-blue" rows="12" placeholder="Todo el desarrollo..."></textarea>
+              
+              <div className="mt-4 bg-gray-50 p-5 rounded border border-gray-200 shadow-inner">
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-3">Simulación del espacio en Portada Principal (Aproximado)</label>
+                
+                <div 
+                  ref={contenidoPreviewRef}
+                  className="text-gray-600 text-lg font-light leading-relaxed noticia-content max-h-80 overflow-hidden border border-dashed border-pale-blue bg-white p-5 rounded"
+                  dangerouslySetInnerHTML={{ __html: contenido || "<span class='text-gray-400 italic'>Escribe el contenido arriba para ver cómo encaja en la portada...</span>" }}
+                />
+                
+                <div className="mt-4">
+                  {showReadMoreWarning ? (
+                    <p className="text-main-red font-bold text-sm flex items-center gap-2">
+                      <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"></path></svg>
+                      <span>⚠️ El texto superó el límite visible. En la portada aparecerá cortado con el botón <strong>"Leer noticia completa &rarr;"</strong>.</span>
+                    </p>
+                  ) : (
+                    <p className="text-green-600 font-bold text-sm flex items-center gap-2">
+                      <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                      <span>✓ El texto cabe perfectamente. No será necesario el botón de <strong>"Leer noticia completa"</strong> en la portada.</span>
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-6 bg-basic-beige p-6 rounded border-2 border-pale-blue">
