@@ -13,13 +13,13 @@ import Noticias from "./pages/Noticias";
 import NoticiaDetalle from "./pages/NoticiaDetalle";
 import QuienesSomos from "./pages/QuienesSomos"; 
 import AdminPanel from "./pages/AdminPanel";
-import NotFound from "./pages/NotFound"; // <-- IMPORTACIÓN DE LA NUEVA PÁGINA
+import NotFound from "./pages/NotFound"; 
 
 function PublicLayout() {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      <div className="flex-grow">
+      <div className="grow">
         <Outlet />
       </div>
       <Footer />
@@ -37,7 +37,6 @@ function App() {
           <Route path="/noticias" element={<Noticias />} />
           <Route path="/noticias/:id" element={<NoticiaDetalle />} />
           
-          {/* RUTA 404: Debe ir siempre al final de las rutas públicas */}
           <Route path="*" element={<NotFound />} />
         </Route>
 

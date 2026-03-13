@@ -29,44 +29,44 @@ export default function Noticias() {
   }, []);
 
   if (loading) {
-    return <div className="min-h-screen bg-white flex items-center justify-center text-[#1D3557] font-bold text-xl">Cargando Noticias...</div>;
+    return <div className="min-h-screen bg-white flex items-center justify-center text-main-blue font-bold text-xl">Cargando Noticias...</div>;
   }
 
   return (
     <div className="bg-white min-h-screen flex flex-col">
-      <div className="bg-white text-[#1D3557] py-8 md:py-10 px-6 text-center relative z-20 border-b border-gray-200">
+      <div className="bg-white text-main-blue py-8 md:py-10 px-6 text-center relative z-20 border-b border-gray-200">
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3 uppercase">Noticias y Actualidad</h1>
-        <p className="text-lg text-[#457B9D] max-w-3xl mx-auto font-medium">
+        <p className="text-lg text-light-blue max-w-3xl mx-auto font-medium">
           Mantente informado sobre nuestras últimas acciones y proyectos.
         </p>
-        <div className="w-20 h-1 bg-[#B92F32] mx-auto mt-6 rounded-full"></div>
+        <div className="w-20 h-1 bg-main-red mx-auto mt-6 rounded-full"></div>
       </div>
 
-      <div className="relative overflow-hidden flex-grow">
+      <div className="relative overflow-hidden grow">
         <div className="bg-watermark"></div>
 
         <div className="relative z-10 max-w-7xl mx-auto py-12 px-6">
           {noticias.length === 0 ? (
-            <div className="text-center text-[#457B9D] text-xl py-20 bg-white/80 backdrop-blur-sm rounded-xl">
+            <div className="text-center text-light-blue text-xl py-20 bg-white/80 backdrop-blur-sm rounded-xl">
               No hay noticias publicadas en este momento.
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {noticias.map((noticia) => (
                 <div key={noticia.id} className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden flex flex-col border border-gray-100 hover:shadow-xl transition-shadow">
-                  <div className="aspect-[4/5] w-full overflow-hidden bg-white border-b border-gray-100">
+                  <div className="aspect-4/5 w-full overflow-hidden bg-white border-b border-gray-100">
                     <img 
                       src={noticia.imagenPrincipalUrl} 
                       alt={noticia.titulo} 
                       className="w-full h-full object-contain p-2" 
                     />
                   </div>
-                  <div className="p-6 flex flex-col flex-grow">
-                    <h2 className="text-xl font-bold text-[#1D3557] mb-3 line-clamp-2">{noticia.titulo}</h2>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-3 flex-grow">{noticia.resumen}</p>
+                  <div className="p-6 flex flex-col grow">
+                    <h2 className="text-xl font-bold text-main-blue mb-3 line-clamp-2">{noticia.titulo}</h2>
+                    <p className="text-gray-600 text-sm mb-4 line-clamp-3 grow">{noticia.resumen}</p>
                     <Link 
                       to={`/noticias/${noticia.id}`} 
-                      className="text-[#B92F32] font-bold hover:text-[#1D3557] transition-colors mt-auto flex items-center gap-1"
+                      className="text-main-red font-bold hover:text-main-blue transition-colors mt-auto flex items-center gap-1"
                     >
                       Leer noticia completa <span>&rarr;</span>
                     </Link>

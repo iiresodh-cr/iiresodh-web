@@ -34,10 +34,10 @@ export default function NoticiaDetalle() {
   }, [id]);
 
   if (loading) {
-    return <div className="min-h-screen bg-white flex items-center justify-center text-[#1D3557] font-bold text-xl">Cargando Noticia...</div>;
+    return <div className="min-h-screen bg-white flex items-center justify-center text-main-blue font-bold text-xl">Cargando Noticia...</div>;
   }
   if (!noticia) {
-    return <div className="min-h-screen bg-white flex items-center justify-center text-red-500 font-bold text-xl">Noticia no encontrada</div>;
+    return <div className="min-h-screen bg-white flex items-center justify-center text-bright-red font-bold text-xl">Noticia no encontrada</div>;
   }
 
   const todasLasImagenes = noticia.imagenPrincipalUrl ? [noticia.imagenPrincipalUrl] : [];
@@ -62,7 +62,7 @@ export default function NoticiaDetalle() {
 
   return (
     <div className="bg-white min-h-screen flex flex-col">
-      <div className="relative overflow-hidden flex-grow pb-20">
+      <div className="relative overflow-hidden grow pb-20">
         
         <div className="bg-watermark"></div>
 
@@ -72,17 +72,17 @@ export default function NoticiaDetalle() {
             <div className="bg-white/85 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-gray-100">
               
               <div className="p-8 md:p-12 border-b border-gray-100 text-center">
-                <span className="text-sm font-extrabold text-[#E63946] uppercase tracking-widest mb-4 block">
+                <span className="text-sm font-extrabold text-bright-red uppercase tracking-widest mb-4 block">
                   PUBLICADO EL: {fechaFormateada}
                 </span>
-                <h1 className="text-3xl md:text-5xl font-extrabold text-[#1D3557] leading-tight mb-6">
+                <h1 className="text-3xl md:text-5xl font-extrabold text-main-blue leading-tight mb-6">
                   {noticia.titulo}
                 </h1>
-                <div className="w-20 h-1 bg-[#B92F32] mx-auto rounded-full"></div>
+                <div className="w-20 h-1 bg-main-red mx-auto rounded-full"></div>
               </div>
 
               {todasLasImagenes.length > 0 && (
-                <div className="w-full bg-white border-b border-gray-100 relative aspect-[4/5] md:aspect-auto md:h-[600px]">
+                <div className="w-full bg-white border-b border-gray-100 relative aspect-4/5 md:aspect-auto md:h-150">
                   <Swiper
                     modules={[Navigation, Pagination, Autoplay]}
                     navigation
@@ -101,7 +101,7 @@ export default function NoticiaDetalle() {
 
               <div className="p-8 md:p-12 md:px-16">
                 <div 
-                  className="noticia-content text-lg text-gray-700 leading-loose prose-a:text-[#B92F32] hover:prose-a:text-[#1D3557] prose-a:font-bold prose-strong:text-[#1D3557] prose-strong:font-bold"
+                  className="noticia-content text-lg text-gray-700 leading-loose prose-a:text-main-red hover:prose-a:text-main-blue prose-a:font-bold prose-strong:text-main-blue prose-strong:font-bold"
                   dangerouslySetInnerHTML={{ __html: contenidoNoticia }}
                 ></div>
               </div>

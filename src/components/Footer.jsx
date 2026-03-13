@@ -1,40 +1,36 @@
 // src/components/Footer.jsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import logoBlanco from "../assets/logo.png"; // Asegúrate de que este sea tu logo blanco
+import logoBlanco from "../assets/logo.png";
 
 export default function Footer() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <>
-      <footer className="bg-[#457B9D] text-white flex flex-col relative z-40">
-        {/* Sección principal del Footer */}
+      <footer className="bg-light-blue text-white flex flex-col relative z-40">
         <div className="max-w-6xl mx-auto w-full px-8 py-12 md:py-16 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
           
-          {/* Izquierda: Contacto rápido */}
           <div className="space-y-4">
             <h3 className="text-2xl font-extrabold uppercase tracking-widest mb-2">Contáctanos</h3>
             <p className="text-lg">
-              Email: <a href="mailto:contacto@iiresodh.org" className="font-bold hover:text-[#1D3557] transition-colors">contacto@iiresodh.org</a>
+              Email: <a href="mailto:contacto@iiresodh.org" className="font-bold hover:text-main-blue transition-colors">contacto@iiresodh.org</a>
             </p>
             <p className="font-light text-sm max-w-sm mt-4 opacity-90 leading-relaxed">
               Construyendo una cultura donde el respeto a los derechos humanos es el pilar del desarrollo directo de empresas e instituciones.
             </p>
           </div>
 
-          {/* Derecha: Logo Grande */}
           <div className="flex md:justify-end justify-start">
             <img 
               src={logoBlanco} 
               alt="Logo IIRESODH Blanco" 
-              className="w-full max-w-[400px] object-contain opacity-95"
+              className="w-full max-w-100 object-contain opacity-95"
             />
           </div>
         </div>
 
-        {/* Franja Inferior Oscura: Legal */}
-        <div className="bg-[#1D3557] py-5 px-4 text-center text-xs md:text-sm text-gray-300 font-light">
+        <div className="bg-main-blue py-5 px-4 text-center text-xs md:text-sm text-gray-300 font-light">
           <p className="max-w-6xl mx-auto flex flex-col md:flex-row justify-center items-center gap-2 md:gap-3">
             <span className="font-bold text-white tracking-wide">IIRESODH© 2026 is licensed under CC BY-NC-ND 4.0</span> 
             <span className="hidden md:inline">—</span>
@@ -52,21 +48,18 @@ export default function Footer() {
         </div>
       </footer>
 
-      {/* MODAL SUGEF (AHORA MÁS PEQUEÑO Y COMPACTO) */}
       {isModalOpen && (
         <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm transition-opacity"
           onClick={() => setIsModalOpen(false)}
         >
-          {/* Contenedor principal reducido a max-w-xl */}
           <div 
-            className="bg-white rounded-xl shadow-2xl max-w-xl w-full p-6 md:p-8 relative border-t-8 border-[#B92F32] animate-fade-in-up"
+            className="bg-white rounded-xl shadow-2xl max-w-xl w-full p-6 md:p-8 relative border-t-8 border-main-red animate-fade-in-up"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Botón X más pequeño */}
             <button 
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-[#B92F32] transition-colors"
+              className="absolute top-4 right-4 text-gray-400 hover:text-main-red transition-colors"
               aria-label="Cerrar aviso"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -75,20 +68,18 @@ export default function Footer() {
             </button>
 
             <div className="pr-2">
-              <h3 className="text-xl md:text-2xl font-extrabold text-[#1D3557] mb-4 uppercase tracking-wider border-b-2 border-[#A8DADC] pb-2 inline-block">
+              <h3 className="text-xl md:text-2xl font-extrabold text-main-blue mb-4 uppercase tracking-wider border-b-2 border-pale-blue pb-2 inline-block">
                 Aviso SUGEF
               </h3>
-              {/* Texto reducido a text-sm en móviles y text-base en computadoras */}
               <p className="text-gray-700 text-sm md:text-base leading-relaxed text-justify font-medium italic">
                 "Se advierte al público que la Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos es supervisada solamente en materia de prevención de legitimación de capitales, financiamiento al terrorismo y financiamiento de la proliferación de armas de destrucción masiva, y además se encuentra sujeta a disposiciones vinculantes de la Unidad de Inteligencia Financiera de Instituto Costarricense sobre Drogas. Por lo tanto, la Sugef no supervisa en materia financiera a la Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos, ni los negocios que ofrece, ni su seguridad, estabilidad o solvencia".
               </p>
             </div>
 
-            {/* Botón de Entendido más proporcionado al nuevo tamaño */}
             <div className="mt-8 flex justify-end">
               <button 
                 onClick={() => setIsModalOpen(false)}
-                className="bg-[#1D3557] hover:bg-[#457B9D] text-white font-bold py-2 px-6 rounded-lg shadow-md transition-colors text-sm md:text-base"
+                className="bg-main-blue hover:bg-light-blue text-white font-bold py-2 px-6 rounded-lg shadow-md transition-colors text-sm md:text-base"
               >
                 Entendido
               </button>

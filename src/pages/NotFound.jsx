@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 export default function NotFound() {
   return (
     <div className="bg-white min-h-screen flex flex-col">
-      <div className="relative overflow-hidden flex-grow flex items-center justify-center py-20">
+      <div className="relative overflow-hidden grow flex items-center justify-center py-20">
         
         <div className="bg-watermark"></div>
 
@@ -12,10 +12,10 @@ export default function NotFound() {
           <div className="max-w-6xl mx-auto flex justify-center">
             
             <div className="bg-white/85 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100 p-12 md:p-20 text-center max-w-2xl w-full">
-              <h1 className="text-8xl md:text-9xl font-black text-[#B92F32] mb-4 animate-bounce-slow">
+              <h1 className="text-8xl md:text-9xl font-black text-main-red mb-4 animate-bounce-slow">
                 404
               </h1>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-[#1D3557] mb-6 uppercase tracking-tight">
+              <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-6 uppercase tracking-tight">
                 Página no encontrada
               </h2>
               <p className="text-lg text-gray-600 mb-10 leading-relaxed">
@@ -25,7 +25,7 @@ export default function NotFound() {
               
               <Link 
                 to="/" 
-                className="inline-block bg-[#1D3557] hover:bg-[#457B9D] text-white font-bold py-4 px-10 rounded-full transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                className="inline-block bg-main-blue hover:bg-light-blue text-white font-bold py-4 px-10 rounded-full transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
               >
                 Volver al Inicio
               </Link>

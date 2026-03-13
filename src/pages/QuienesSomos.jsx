@@ -2,15 +2,15 @@
 export default function QuienesSomos() {
   return (
     <div className="bg-white min-h-screen flex flex-col">
-      <div className="bg-white text-[#1D3557] py-12 px-6 text-center relative z-20 border-b border-gray-200">
+      <div className="bg-white text-main-blue py-12 px-6 text-center relative z-20 border-b border-gray-200">
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3 uppercase">¿Quiénes Somos?</h1>
-        <p className="text-lg text-[#457B9D] max-w-3xl mx-auto font-medium">
+        <p className="text-lg text-light-blue max-w-3xl mx-auto font-medium">
           Defendiendo la democracia y los derechos humanos desde Costa Rica para el mundo.
         </p>
-        <div className="w-20 h-1 bg-[#B92F32] mx-auto mt-6 rounded-full"></div>
+        <div className="w-20 h-1 bg-main-red mx-auto mt-6 rounded-full"></div>
       </div>
 
-      <div className="relative overflow-hidden flex-grow border-b border-gray-200">
+      <div className="relative overflow-hidden grow border-b border-gray-200">
         <div className="bg-watermark"></div>
 
         <section className="relative z-10 px-8 pt-6 pb-12 md:pb-16">
@@ -37,18 +37,18 @@ export default function QuienesSomos() {
 
         <section className="relative z-10 px-8 py-10">
           <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10">
-            <div className="bg-white/90 backdrop-blur-sm p-10 rounded-2xl shadow-xl border-t-4 border-[#B92F32]">
-              <h2 className="text-3xl font-extrabold text-[#1D3557] mb-6 uppercase tracking-wider flex items-center gap-3">
-                <span className="bg-[#B92F32] text-white w-10 h-10 flex items-center justify-center rounded-full text-xl shadow-inner">M</span>
+            <div className="bg-white/90 backdrop-blur-sm p-10 rounded-2xl shadow-xl border-t-4 border-main-red">
+              <h2 className="text-3xl font-extrabold text-main-blue mb-6 uppercase tracking-wider flex items-center gap-3">
+                <span className="bg-main-red text-white w-10 h-10 flex items-center justify-center rounded-full text-xl shadow-inner">M</span>
                 Misión
               </h2>
               <p className="text-gray-700 text-lg leading-relaxed text-justify">
                 Promover el respeto y cumplimiento de los estándares internacionales en derechos humanos a través del litigio estratégico, proyectos de capacitación así como brindar un acompañamiento interdisciplinario tanto al sector público como privado para desarrollar iniciativas de capacitación en materia de responsabilidad social con enfoque en derechos humanos que permitan la defensa y reivindicación de los derechos de diversos actores sociales que históricamente han visto vulnerados sus derechos humanos.
               </p>
             </div>
-            <div className="bg-white/90 backdrop-blur-sm p-10 rounded-2xl shadow-xl border-t-4 border-[#457B9D]">
-              <h2 className="text-3xl font-extrabold text-[#1D3557] mb-6 uppercase tracking-wider flex items-center gap-3">
-                <span className="bg-[#457B9D] text-white w-10 h-10 flex items-center justify-center rounded-full text-xl shadow-inner">V</span>
+            <div className="bg-white/90 backdrop-blur-sm p-10 rounded-2xl shadow-xl border-t-4 border-light-blue">
+              <h2 className="text-3xl font-extrabold text-main-blue mb-6 uppercase tracking-wider flex items-center gap-3">
+                <span className="bg-light-blue text-white w-10 h-10 flex items-center justify-center rounded-full text-xl shadow-inner">V</span>
                 Visión
               </h2>
               <p className="text-gray-700 text-lg leading-relaxed text-justify">
@@ -60,7 +60,7 @@ export default function QuienesSomos() {
 
         <section className="relative z-10 px-8 py-20">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-[#1D3557] text-center mb-12 uppercase tracking-widest bg-white/60 backdrop-blur-sm py-4 rounded-xl shadow-sm inline-block px-8 mx-auto flex w-fit">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-main-blue text-center mb-12 uppercase tracking-widest bg-white/60 backdrop-blur-sm py-4 px-8 rounded-xl shadow-sm mx-auto flex w-fit">
               Principios Rectores
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -72,9 +72,9 @@ export default function QuienesSomos() {
                 "Ética y transparencia laboral.",
                 "Inclusión social."
               ].map((principio, index) => (
-                <div key={index} className="flex items-center gap-4 bg-white/80 backdrop-blur-sm p-6 rounded-lg border border-[#A8DADC] shadow-sm hover:shadow-md transition-shadow">
-                  <div className="text-[#B92F32] font-black text-3xl opacity-50">0{index + 1}</div>
-                  <p className="text-[#1D3557] font-bold text-lg">{principio}</p>
+                <div key={index} className="flex items-center gap-4 bg-white/80 backdrop-blur-sm p-6 rounded-lg border border-pale-blue shadow-sm hover:shadow-md transition-shadow">
+                  <div className="text-main-red font-black text-3xl opacity-50">0{index + 1}</div>
+                  <p className="text-main-blue font-bold text-lg">{principio}</p>
                 </div>
               ))}
             </div>
@@ -82,7 +82,7 @@ export default function QuienesSomos() {
         </section>
       </div> 
 
-      <section className="bg-[#1D3557] text-white py-20 px-6 relative z-20">
+      <section className="bg-main-blue text-white py-20 px-6 relative z-20">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-8 uppercase tracking-widest text-white">
             Organigrama y Estructura
@@ -100,45 +100,45 @@ export default function QuienesSomos() {
           </div>
 
           <div className="bg-white p-8 md:p-12 rounded-xl shadow-2xl overflow-x-auto">
-            <div className="min-w-[700px] flex flex-col items-center">
-              <div className="bg-[#B92F32] text-white font-bold py-3 px-10 rounded-lg shadow-md border-b-4 border-red-900 z-10 relative">
+            <div className="min-w-175 flex flex-col items-center">
+              <div className="bg-main-red text-white font-bold py-3 px-10 rounded-lg shadow-md border-b-4 border-red-900 z-10 relative">
                 PRESIDENCIA
               </div>
-              <div className="w-1 h-8 bg-[#457B9D]"></div>
-              <div className="w-3/4 h-1 bg-[#457B9D]"></div>
+              <div className="w-1 h-8 bg-light-blue"></div>
+              <div className="w-3/4 h-1 bg-light-blue"></div>
               <div className="flex justify-between w-3/4 mt-0">
-                <div className="w-1 h-8 bg-[#457B9D]"></div>
-                <div className="w-1 h-8 bg-[#457B9D]"></div>
-                <div className="w-1 h-8 bg-[#457B9D]"></div>
+                <div className="w-1 h-8 bg-light-blue"></div>
+                <div className="w-1 h-8 bg-light-blue"></div>
+                <div className="w-1 h-8 bg-light-blue"></div>
               </div>
               <div className="flex justify-between w-full mt-0 gap-4">
                 <div className="flex-1 flex flex-col items-center">
-                  <div className="bg-[#1D3557] text-white font-bold py-2 px-4 rounded shadow text-center w-full text-sm">
+                  <div className="bg-main-blue text-white font-bold py-2 px-4 rounded shadow text-center w-full text-sm">
                     Unidades Funcionales
                   </div>
                   <div className="w-1 h-6 bg-gray-300"></div>
-                  <div className="bg-gray-100 text-[#1D3557] border border-gray-300 py-2 px-4 rounded text-center w-full text-xs font-semibold">
+                  <div className="bg-gray-100 text-main-blue border border-gray-300 py-2 px-4 rounded text-center w-full text-xs font-semibold">
                     Coordinadores / Colaboradores
                   </div>
                 </div>
                 <div className="flex-1 flex flex-col items-center">
-                  <div className="bg-[#1D3557] text-white font-bold py-2 px-4 rounded shadow text-center w-full text-sm">
+                  <div className="bg-main-blue text-white font-bold py-2 px-4 rounded shadow text-center w-full text-sm">
                     Oficinas Territoriales
                   </div>
                   <div className="w-1 h-6 bg-gray-300"></div>
-                  <div className="bg-gray-100 text-[#1D3557] border border-gray-300 py-2 px-4 rounded text-center w-full text-xs font-semibold">
+                  <div className="bg-gray-100 text-main-blue border border-gray-300 py-2 px-4 rounded text-center w-full text-xs font-semibold">
                     Coordinadores / Colaboradores
                   </div>
                 </div>
                 <div className="flex-1 flex flex-col items-center">
-                  <div className="bg-[#457B9D] text-white font-bold py-2 px-4 rounded shadow text-center w-full text-sm">
+                  <div className="bg-light-blue text-white font-bold py-2 px-4 rounded shadow text-center w-full text-sm">
                     Proyectos Transversales
                   </div>
                 </div>
               </div>
               <div className="mt-12 flex items-center gap-4 border-2 border-dashed border-gray-400 p-4 rounded-lg bg-gray-50 relative w-full justify-center">
                 <span className="text-gray-500 font-bold text-sm absolute top-2 left-4">Institución Vinculada:</span>
-                <div className="bg-[#A8DADC] text-[#1D3557] font-bold py-3 px-8 rounded shadow mt-4">
+                <div className="bg-pale-blue text-main-blue font-bold py-3 px-8 rounded shadow mt-4">
                   U-IIRESODH (Altos Estudios Universitarios)
                 </div>
               </div>
