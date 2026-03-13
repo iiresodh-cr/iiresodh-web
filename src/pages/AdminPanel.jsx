@@ -2,11 +2,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { signOut } from "firebase/auth";
-import { auth, db, storage } from "../firebase/config";
+import { auth, db, storage, functions } from "../firebase/config";
 import { collection, addDoc, updateDoc, serverTimestamp, doc, deleteDoc, getDocs, query, orderBy, Timestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { httpsCallable } from "firebase/functions";
 
-// Importamos el logo a color porque el header es blanco
+// Importamos el logo oficial recortado en formato PNG
 import logoColor from "../assets/Logo_Oficiale_200w-trim.png";
 
 export default function AdminPanel() {
@@ -26,6 +27,7 @@ export default function AdminPanel() {
   const [carruselExistente, setCarruselExistente] = useState([]); 
 
   const [loading, setLoading] = useState(false);
+  const [generandoResumen, setGenerandoResumen] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [listaNoticias, setListaNoticias] = useState([]);
 
@@ -85,14 +87,34 @@ export default function AdminPanel() {
     };
   }, [contenido]);
 
-  // Función para autogenerar resumen de 15 palabras
-  const handleAutoResumen = () => {
-    if (!contenido) return;
-    // Limpiamos etiquetas HTML básicas y saltos de línea
-    const textoLimpio = contenido.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
-    const palabras = textoLimpio.split(" ");
-    const nuevoResumen = palabras.slice(0, 15).join(" ") + (palabras.length > 15 ? "..." : "");
-    setResumen(nuevoResumen);
+  // Función para autogenerar resumen conectándose al Backend (Cloud Functions)
+  const handleAutoResumen = async () => {
+    if (!contenido || contenido.trim().length < 10) {
+      setMensaje("Debes escribir un poco más de contenido en la noticia para generar un resumen.");
+      setTimeout(() => setMensaje(""), 3000);
+      return;
+    }
+
+    setGenerandoResumen(true);
+    
+    try {
+      // Llamamos a la Cloud Function de manera segura (incluye auth token automáticamente)
+      const generarResumenGemini = httpsCallable(functions, 'generarResumenGemini');
+      const resultado = await generarResumenGemini({ contenido });
+      
+      if (resultado.data && resultado.data.resumen) {
+        setResumen(resultado.data.resumen);
+        setMensaje("¡Resumen generado con Inteligencia Artificial!");
+      } else {
+        throw new Error("Respuesta inválida del servidor");
+      }
+    } catch (error) {
+      console.error("Error al contactar a la Cloud Function:", error);
+      setMensaje("Hubo un error al generar el resumen. Verifica la consola.");
+    } finally {
+      setGenerandoResumen(false);
+      setTimeout(() => setMensaje(""), 4000);
+    }
   };
 
   const handleEditarNoticia = (noticia) => {
@@ -157,7 +179,6 @@ export default function AdminPanel() {
     }
   };
 
-  // Ajustado para permitir múltiples imágenes
   const handleAgregarImagenes = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
@@ -318,12 +339,24 @@ export default function AdminPanel() {
             <div>
               <div className="flex justify-between items-end mb-2">
                 <label className="block text-main-blue font-bold">Resumen (Para la portada de noticias)</label>
+                
                 <button 
                   type="button" 
                   onClick={handleAutoResumen} 
-                  className="text-xs bg-pale-blue text-main-blue hover:bg-light-blue hover:text-white font-bold py-1 px-3 rounded transition-colors shadow-sm"
+                  disabled={generandoResumen}
+                  className="flex items-center gap-2 text-xs bg-main-blue text-white hover:bg-light-blue font-bold py-2 px-4 rounded-full transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Generar automáticamente
+                  {generandoResumen ? (
+                    <>
+                      <svg className="animate-spin h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Generando IA...
+                    </>
+                  ) : (
+                    <>✨ Generar con IA</>
+                  )}
                 </button>
               </div>
               <textarea required maxLength="200" value={resumen} onChange={(e) => setResumen(e.target.value)} className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-light-blue" rows="2" placeholder="Texto corto..."></textarea>
@@ -364,7 +397,6 @@ export default function AdminPanel() {
                   Imagen Principal {editandoId ? "(Sube una nueva solo si quieres reemplazarla)" : "(Obligatoria)"}
                 </label>
                 
-                {/* Input oculto pero accesible para HTML5 validation mediante sr-only */}
                 <input type="file" accept="image/*" required={!editandoId && !imagenPrincipalAnterior} onChange={handleSeleccionPrincipal} className="sr-only" id="input-principal" />
                 
                 <label htmlFor="input-principal" className="inline-block bg-main-blue hover:bg-light-blue text-white font-bold py-2 px-6 rounded cursor-pointer transition-colors shadow-md mb-4">
@@ -385,7 +417,6 @@ export default function AdminPanel() {
                 <label className="block text-main-blue font-bold mb-2 text-lg">Imágenes Carrusel (Opcional)</label>
                 <p className="text-sm text-light-blue mb-4">Agrega imágenes adicionales para la galería de la noticia. Se mostrarán en el orden de abajo.</p>
                 
-                {/* Agregado atributo 'multiple' y vinculado a un label botón */}
                 <input type="file" accept="image/*" multiple onChange={handleAgregarImagenes} className="sr-only" id="input-carrusel" />
                 <label htmlFor="input-carrusel" className="inline-block bg-light-blue hover:bg-main-blue text-white font-bold py-2 px-6 rounded cursor-pointer transition-colors shadow-md mb-2">
                   + Agregar Imágenes (Puedes seleccionar varias)
