@@ -1,17 +1,12 @@
 // src/pages/NotFound.jsx
 import { Link } from "react-router-dom";
-import isotipo from "../assets/isotipo-blanco.png";
 
 export default function NotFound() {
   return (
     <div className="bg-white min-h-screen flex flex-col">
       <div className="relative overflow-hidden flex-grow flex items-center justify-center py-20">
         
-        {/* Capa de Marca de Agua con utilidad global */}
-        <div 
-          className="bg-watermark"
-          style={{ backgroundImage: `url(${isotipo})` }}
-        ></div>
+        <div className="bg-watermark"></div>
 
         <section className="relative z-10 px-8 w-full">
           <div className="max-w-6xl mx-auto flex justify-center">

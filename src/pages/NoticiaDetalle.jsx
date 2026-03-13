@@ -4,8 +4,6 @@ import { useParams } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
 
-import isotipo from "../assets/isotipo-blanco.png";
-
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
@@ -65,14 +63,12 @@ export default function NoticiaDetalle() {
   return (
     <div className="bg-white min-h-screen flex flex-col">
       <div className="relative overflow-hidden flex-grow pb-20">
-        {/* Capa de Marca de Agua con utilidad global */}
-        <div 
-          className="bg-watermark"
-          style={{ backgroundImage: `url(${isotipo})` }}
-        ></div>
+        
+        <div className="bg-watermark"></div>
 
         <section className="relative z-10 px-8 pt-6">
           <div className="max-w-6xl mx-auto">
+            
             <div className="bg-white/85 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-gray-100">
               
               <div className="p-8 md:p-12 border-b border-gray-100 text-center">
@@ -105,7 +101,7 @@ export default function NoticiaDetalle() {
 
               <div className="p-8 md:p-12 md:px-16">
                 <div 
-                  className="noticia-content text-lg text-gray-700 leading-loose"
+                  className="noticia-content text-lg text-gray-700 leading-loose prose-a:text-[#B92F32] hover:prose-a:text-[#1D3557] prose-a:font-bold prose-strong:text-[#1D3557] prose-strong:font-bold"
                   dangerouslySetInnerHTML={{ __html: contenidoNoticia }}
                 ></div>
               </div>

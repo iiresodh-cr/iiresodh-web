@@ -1,10 +1,7 @@
 // src/pages/QuienesSomos.jsx
-import isotipo from "../assets/isotipo-blanco.png";
-
 export default function QuienesSomos() {
   return (
     <div className="bg-white min-h-screen flex flex-col">
-      
       <div className="bg-white text-[#1D3557] py-12 px-6 text-center relative z-20 border-b border-gray-200">
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3 uppercase">¿Quiénes Somos?</h1>
         <p className="text-lg text-[#457B9D] max-w-3xl mx-auto font-medium">
@@ -14,10 +11,7 @@ export default function QuienesSomos() {
       </div>
 
       <div className="relative overflow-hidden flex-grow border-b border-gray-200">
-        <div 
-          className="bg-watermark"
-          style={{ backgroundImage: `url(${isotipo})` }}
-        ></div>
+        <div className="bg-watermark"></div>
 
         <section className="relative z-10 px-8 pt-6 pb-12 md:pb-16">
           <div className="max-w-6xl mx-auto">

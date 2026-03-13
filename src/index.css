@@ -20,12 +20,13 @@ body {
 }
 
 @layer utilities {
-  /* Marca de agua profesional y reutilizable */
+  /* Marca de agua profesional (llamando al asset directamente desde CSS) */
   .bg-watermark {
     position: absolute;
     inset: 0;
     pointer-events: none;
     z-index: 0;
+    background-image: url('./assets/isotipo-blanco.png');
     background-repeat: repeat;
     background-size: 500px;
     background-position: top center;
@@ -33,13 +34,14 @@ body {
     filter: invert(1);
   }
 
-  /* Estilización uniforme de Swiper */
+  /* Estilización uniforme de Swiper (Carrusel) */
   .swiper-custom-navigation {
     --swiper-navigation-color: #B92F32;
     --swiper-pagination-color: #B92F32;
     --swiper-navigation-size: 24px;
   }
 
+  /* Modificación directa a las flechas nativas de Swiper */
   .swiper-button-next::after,
   .swiper-button-prev::after {
     font-weight: 900 !important;
@@ -66,9 +68,9 @@ body {
   .animate-bounce-slow {
     animation: bounce 3s infinite;
   }
+}
 
-  @keyframes bounce {
-    0%, 100% { transform: translateY(-5%); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
-    50% { transform: translateY(0); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
-  }
+@keyframes bounce {
+  0%, 100% { transform: translateY(-5%); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+  50% { transform: translateY(0); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
 }
