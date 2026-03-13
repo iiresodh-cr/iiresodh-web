@@ -1,7 +1,7 @@
 // src/components/Navbar.jsx
 import { Link, useLocation } from "react-router-dom";
-// Importamos el nuevo logo recortado (trim) y en formato JPG
-import logo from "../assets/Logo_Oficiale_200w-trim.jpg"; 
+// Importamos el nuevo logo recortado (trim)
+import logo from "../assets/Logo_Oficiale_200w-trim.png"; 
 
 export default function Navbar() {
   const location = useLocation();
