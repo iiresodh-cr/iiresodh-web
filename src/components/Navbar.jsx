@@ -73,6 +73,7 @@ export default function Navbar() {
               <div className="absolute left-0 top-full w-56 bg-white text-main-blue shadow-xl rounded-b opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border-t-4 border-main-red">
                 <ul className="py-2">
                   <li className="px-4 py-2 hover:bg-gray-50"><Link to="/" className="block w-full">Litigio Estratégico</Link></li>
+                  <li className="px-4 py-2 hover:bg-gray-50"><Link to="/" className="block w-full">Colombia</Link></li>
                   <li className="px-4 py-2 hover:bg-gray-50"><Link to="/" className="block w-full">Cooperación Internacional</Link></li>
                 </ul>
               </div>
