@@ -3,11 +3,11 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { signOut } from "firebase/auth";
 import { auth, db, storage, functions } from "../firebase/config";
-import { collection, addDoc, updateDoc, serverTimestamp, doc, deleteDoc, getDocs, query, orderBy, Timestamp } from "firebase/firestore";
+// IMPORTANTE: Agregamos 'limit' y 'startAfter' para la paginación
+import { collection, addDoc, updateDoc, serverTimestamp, doc, deleteDoc, getDocs, query, orderBy, Timestamp, limit, startAfter } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { httpsCallable } from "firebase/functions";
 
-// IMPORTACIÓN CORREGIDA: Nombre exacto según tu sistema de archivos
 import logoColor from "../assets/Logo_Oficiale_200w-trim.png";
 
 export default function AdminPanel() {
@@ -31,7 +31,12 @@ export default function AdminPanel() {
   const [mensaje, setMensaje] = useState("");
   const [listaNoticias, setListaNoticias] = useState([]);
 
-  // Referencia para la simulación de límite de texto en portada
+  // Estados para la paginación
+  const [ultimoDoc, setUltimoDoc] = useState(null);
+  const [hayMas, setHayMas] = useState(true);
+  const [cargandoMas, setCargandoMas] = useState(false);
+  const NOTICIAS_POR_PAGINA = 10;
+
   const contenidoPreviewRef = useRef(null);
   const [showReadMoreWarning, setShowReadMoreWarning] = useState(false);
 
@@ -42,17 +47,62 @@ export default function AdminPanel() {
     }, 100);
   };
 
+  // Carga inicial (solo 10 noticias)
   const cargarNoticias = async () => {
     try {
-      const q = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"));
+      const q = query(
+        collection(db, "noticias"), 
+        orderBy("fechaPublicacion", "desc"), 
+        limit(NOTICIAS_POR_PAGINA)
+      );
       const querySnapshot = await getDocs(q);
       const noticiasData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
       setListaNoticias(noticiasData);
+
+      // Guardamos el último documento para saber de dónde partir en la siguiente página
+      if (querySnapshot.docs.length > 0) {
+        setUltimoDoc(querySnapshot.docs[querySnapshot.docs.length - 1]);
+        setHayMas(querySnapshot.docs.length === NOTICIAS_POR_PAGINA);
+      } else {
+        setHayMas(false);
+      }
     } catch (error) {
       console.error("Error al cargar noticias:", error);
+    }
+  };
+
+  // Función para cargar la siguiente página de noticias
+  const cargarMasNoticias = async () => {
+    if (!ultimoDoc) return;
+    setCargandoMas(true);
+    try {
+      const q = query(
+        collection(db, "noticias"), 
+        orderBy("fechaPublicacion", "desc"), 
+        startAfter(ultimoDoc),
+        limit(NOTICIAS_POR_PAGINA)
+      );
+      const querySnapshot = await getDocs(q);
+      const noticiasData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      setListaNoticias(prev => [...prev, ...noticiasData]);
+      
+      if (querySnapshot.docs.length > 0) {
+        setUltimoDoc(querySnapshot.docs[querySnapshot.docs.length - 1]);
+        setHayMas(querySnapshot.docs.length === NOTICIAS_POR_PAGINA);
+      } else {
+        setHayMas(false);
+      }
+    } catch (error) {
+      console.error("Error al cargar más noticias:", error);
+    } finally {
+      setCargandoMas(false);
     }
   };
 
@@ -68,7 +118,6 @@ export default function AdminPanel() {
     };
   }, [mainImagePreviewUrl]);
 
-  // Efecto para revisar si el texto cabe en el display de la home
   useEffect(() => {
     const checkOverflow = () => {
       if (contenidoPreviewRef.current) {
@@ -79,7 +128,6 @@ export default function AdminPanel() {
     checkOverflow();
   }, [contenido]);
 
-  // Invocación segura a PIDA (Gemini vía Cloud Functions) para el resumen
   const handleAutoResumen = async () => {
     if (!contenido || contenido.trim().length < 20) {
       setMensaje("Escribe el contenido de la noticia antes de generar un resumen.");
@@ -109,7 +157,6 @@ export default function AdminPanel() {
     }
   };
 
-  // Carga de datos para edición
   const handleEditarNoticia = (noticia) => {
     setEditandoId(noticia.id);
     setTitulo(noticia.titulo);
@@ -146,7 +193,7 @@ export default function AdminPanel() {
     if (window.confirm(`¿Eliminar permanentemente "${titulo}"?`)) {
       try {
         await deleteDoc(doc(db, "noticias", id));
-        cargarNoticias();
+        cargarNoticias(); // Refresca y vuelve a la página 1
       } catch (error) {
         console.error("Error al borrar:", error);
       }
@@ -221,7 +268,7 @@ export default function AdminPanel() {
       }
 
       cancelarEdicion();
-      cargarNoticias();
+      cargarNoticias(); // Refresca y vuelve a la página 1
     } catch (err) {
       console.error(err);
       setMensaje("Error en el proceso.");
@@ -342,6 +389,19 @@ export default function AdminPanel() {
               </div>
             ))}
           </div>
+          
+          {/* BOTÓN DE CARGAR MÁS NOTICIAS */}
+          {hayMas && (
+            <div className="mt-8 flex justify-center">
+              <button 
+                onClick={cargarMasNoticias} 
+                disabled={cargandoMas}
+                className="bg-pale-blue text-main-blue hover:bg-light-blue hover:text-white px-8 py-3 rounded-full font-bold transition-colors disabled:opacity-50 shadow-sm"
+              >
+                {cargandoMas ? "Cargando..." : "Cargar más noticias ↓"}
+              </button>
+            </div>
+          )}
         </div>
       </main>
     </div>
