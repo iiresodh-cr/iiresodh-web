@@ -6,7 +6,8 @@ import { auth, db, storage } from "../firebase/config";
 import { collection, addDoc, updateDoc, serverTimestamp, doc, deleteDoc, getDocs, query, orderBy, Timestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-import logo from "../assets/logo.png";
+// Importamos el logo a color porque el header es blanco
+import logoColor from "../assets/Logo_Oficiale_200w-trim.png";
 
 export default function AdminPanel() {
   const navigate = useNavigate(); 
@@ -84,6 +85,16 @@ export default function AdminPanel() {
     };
   }, [contenido]);
 
+  // Función para autogenerar resumen de 15 palabras
+  const handleAutoResumen = () => {
+    if (!contenido) return;
+    // Limpiamos etiquetas HTML básicas y saltos de línea
+    const textoLimpio = contenido.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
+    const palabras = textoLimpio.split(" ");
+    const nuevoResumen = palabras.slice(0, 15).join(" ") + (palabras.length > 15 ? "..." : "");
+    setResumen(nuevoResumen);
+  };
+
   const handleEditarNoticia = (noticia) => {
     setEditandoId(noticia.id);
     setTitulo(noticia.titulo);
@@ -146,10 +157,11 @@ export default function AdminPanel() {
     }
   };
 
-  const handleAgregarImagen = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImagenesCarrusel([...imagenesCarrusel, file]);
+  // Ajustado para permitir múltiples imágenes
+  const handleAgregarImagenes = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      setImagenesCarrusel((prev) => [...prev, ...files]);
       e.target.value = ""; 
     }
   };
@@ -257,9 +269,9 @@ export default function AdminPanel() {
 
   return (
     <div className="min-h-screen bg-basic-beige">
-      <header className="bg-main-blue p-5 shadow-md flex justify-between items-center px-8">
-        <img src={logo} alt="Logo IIRESODH" className="h-12.5 md:h-15 w-auto max-w-82.5" />
-        <button onClick={handleLogout} className="bg-bright-red hover:bg-main-red text-white px-5 py-2 rounded font-bold transition-colors shadow-sm">
+      <header className="bg-white p-5 shadow-sm border-b border-gray-200 flex justify-between items-center px-8">
+        <img src={logoColor} alt="Logo IIRESODH" className="h-12 md:h-14 w-auto object-contain" />
+        <button onClick={handleLogout} className="bg-main-red hover:bg-bright-red text-white px-6 py-2 rounded-full font-bold transition-colors shadow-sm">
           Cerrar Sesión
         </button>
       </header>
@@ -304,7 +316,16 @@ export default function AdminPanel() {
             </div>
 
             <div>
-              <label className="block text-main-blue font-bold mb-2">Resumen (Para la portada de noticias)</label>
+              <div className="flex justify-between items-end mb-2">
+                <label className="block text-main-blue font-bold">Resumen (Para la portada de noticias)</label>
+                <button 
+                  type="button" 
+                  onClick={handleAutoResumen} 
+                  className="text-xs bg-pale-blue text-main-blue hover:bg-light-blue hover:text-white font-bold py-1 px-3 rounded transition-colors shadow-sm"
+                >
+                  Generar automáticamente
+                </button>
+              </div>
               <textarea required maxLength="200" value={resumen} onChange={(e) => setResumen(e.target.value)} className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-light-blue" rows="2" placeholder="Texto corto..."></textarea>
             </div>
 
@@ -342,11 +363,17 @@ export default function AdminPanel() {
                 <label className="block text-main-blue font-bold mb-2 text-lg">
                   Imagen Principal {editandoId ? "(Sube una nueva solo si quieres reemplazarla)" : "(Obligatoria)"}
                 </label>
-                <input type="file" accept="image/*" required={!editandoId && !imagenPrincipalAnterior} onChange={handleSeleccionPrincipal} className="w-full text-sm mb-4" />
+                
+                {/* Input oculto pero accesible para HTML5 validation mediante sr-only */}
+                <input type="file" accept="image/*" required={!editandoId && !imagenPrincipalAnterior} onChange={handleSeleccionPrincipal} className="sr-only" id="input-principal" />
+                
+                <label htmlFor="input-principal" className="inline-block bg-main-blue hover:bg-light-blue text-white font-bold py-2 px-6 rounded cursor-pointer transition-colors shadow-md mb-4">
+                  Seleccionar Imagen Principal
+                </label>
                 
                 {mainImagePreviewUrl && (
-                  <div className="inline-block relative border border-gray-300 rounded-lg overflow-hidden shadow-md bg-white">
-                    <img src={mainImagePreviewUrl} alt="Vista previa principal" className="max-h-80 w-auto object-contain" />
+                  <div className="block relative border border-gray-300 rounded-lg overflow-hidden shadow-md bg-white max-w-sm">
+                    <img src={mainImagePreviewUrl} alt="Vista previa principal" className="max-h-80 w-auto object-contain mx-auto" />
                     <div className="bg-main-blue text-white p-2 text-xs truncate text-center">
                       {imagenPrincipal ? imagenPrincipal.name : "Imagen Actual"}
                     </div>
@@ -358,9 +385,10 @@ export default function AdminPanel() {
                 <label className="block text-main-blue font-bold mb-2 text-lg">Imágenes Carrusel (Opcional)</label>
                 <p className="text-sm text-light-blue mb-4">Agrega imágenes adicionales para la galería de la noticia. Se mostrarán en el orden de abajo.</p>
                 
-                <input type="file" accept="image/*" onChange={handleAgregarImagen} className="hidden" id="input-carrusel" />
+                {/* Agregado atributo 'multiple' y vinculado a un label botón */}
+                <input type="file" accept="image/*" multiple onChange={handleAgregarImagenes} className="sr-only" id="input-carrusel" />
                 <label htmlFor="input-carrusel" className="inline-block bg-light-blue hover:bg-main-blue text-white font-bold py-2 px-6 rounded cursor-pointer transition-colors shadow-md mb-2">
-                  + Agregar Nueva Imagen
+                  + Agregar Imágenes (Puedes seleccionar varias)
                 </label>
                 
                 {carruselExistente.length > 0 && (
@@ -373,9 +401,9 @@ export default function AdminPanel() {
                           <span className="text-sm text-gray-500 font-medium">Imagen Existente</span>
                         </div>
                         <div className="flex gap-2">
-                          <button type="button" onClick={() => moverImagenExistente(index, -1)} disabled={index === 0} className="px-4 py-3 bg-gray-200 hover:bg-gray-300 rounded text-sm disabled:opacity-30 font-extrabold">↑</button>
-                          <button type="button" onClick={() => moverImagenExistente(index, 1)} disabled={index === carruselExistente.length - 1} className="px-4 py-3 bg-gray-200 hover:bg-gray-300 rounded text-sm disabled:opacity-30 font-extrabold">↓</button>
-                          <button type="button" onClick={() => eliminarImagenExistente(index)} className="px-4 py-3 bg-bright-red hover:bg-main-red text-white rounded text-sm ml-2 font-extrabold">X</button>
+                          <button type="button" onClick={() => moverImagenExistente(index, -1)} disabled={index === 0} className="px-4 py-3 bg-main-blue hover:bg-light-blue text-white rounded text-sm disabled:opacity-30 font-extrabold shadow-sm">↑</button>
+                          <button type="button" onClick={() => moverImagenExistente(index, 1)} disabled={index === carruselExistente.length - 1} className="px-4 py-3 bg-main-blue hover:bg-light-blue text-white rounded text-sm disabled:opacity-30 font-extrabold shadow-sm">↓</button>
+                          <button type="button" onClick={() => eliminarImagenExistente(index)} className="px-4 py-3 bg-bright-red hover:bg-main-red text-white rounded text-sm ml-2 font-extrabold shadow-sm">X</button>
                         </div>
                       </div>
                     ))}
@@ -392,9 +420,9 @@ export default function AdminPanel() {
                           <span className="text-sm text-gray-700 font-bold line-clamp-2">{file.name}</span>
                         </div>
                         <div className="flex gap-2">
-                          <button type="button" onClick={() => moverImagenNueva(index, -1)} disabled={index === 0} className="px-4 py-3 bg-gray-200 hover:bg-gray-300 rounded text-sm disabled:opacity-30 font-extrabold">↑</button>
-                          <button type="button" onClick={() => moverImagenNueva(index, 1)} disabled={index === imagenesCarrusel.length - 1} className="px-4 py-3 bg-gray-200 hover:bg-gray-300 rounded text-sm disabled:opacity-30 font-extrabold">↓</button>
-                          <button type="button" onClick={() => eliminarImagenNueva(index)} className="px-4 py-3 bg-bright-red hover:bg-main-red text-white rounded text-sm ml-2 font-extrabold">X</button>
+                          <button type="button" onClick={() => moverImagenNueva(index, -1)} disabled={index === 0} className="px-4 py-3 bg-main-blue hover:bg-light-blue text-white rounded text-sm disabled:opacity-30 font-extrabold shadow-sm">↑</button>
+                          <button type="button" onClick={() => moverImagenNueva(index, 1)} disabled={index === imagenesCarrusel.length - 1} className="px-4 py-3 bg-main-blue hover:bg-light-blue text-white rounded text-sm disabled:opacity-30 font-extrabold shadow-sm">↓</button>
+                          <button type="button" onClick={() => eliminarImagenNueva(index)} className="px-4 py-3 bg-bright-red hover:bg-main-red text-white rounded text-sm ml-2 font-extrabold shadow-sm">X</button>
                         </div>
                       </div>
                     ))}
