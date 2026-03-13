@@ -7,7 +7,7 @@ import { collection, addDoc, updateDoc, serverTimestamp, doc, deleteDoc, getDocs
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { httpsCallable } from "firebase/functions";
 
-// CORRECCIÓN PROFESIONAL: Nombre exacto según el sistema de archivos
+// IMPORTACIÓN CORREGIDA: Nombre exacto según tu sistema de archivos
 import logoColor from "../assets/Logo_Oficiale_200w-trim.png";
 
 export default function AdminPanel() {
@@ -31,7 +31,7 @@ export default function AdminPanel() {
   const [mensaje, setMensaje] = useState("");
   const [listaNoticias, setListaNoticias] = useState([]);
 
-  // Referencia para simulación de desbordamiento de texto
+  // Referencia para la simulación de límite de texto en portada
   const contenidoPreviewRef = useRef(null);
   const [showReadMoreWarning, setShowReadMoreWarning] = useState(false);
 
@@ -68,7 +68,7 @@ export default function AdminPanel() {
     };
   }, [mainImagePreviewUrl]);
 
-  // Efecto dinámico para revisar límite de texto en portada
+  // Efecto para revisar si el texto cabe en el display de la home
   useEffect(() => {
     const checkOverflow = () => {
       if (contenidoPreviewRef.current) {
@@ -79,7 +79,7 @@ export default function AdminPanel() {
     checkOverflow();
   }, [contenido]);
 
-  // Invocación a Gemini vía Cloud Functions
+  // Invocación segura a PIDA (Gemini vía Cloud Functions) para el resumen
   const handleAutoResumen = async () => {
     if (!contenido || contenido.trim().length < 20) {
       setMensaje("Escribe el contenido de la noticia antes de generar un resumen.");
@@ -88,7 +88,7 @@ export default function AdminPanel() {
     }
 
     setGenerandoResumen(true);
-    setMensaje("Consultando a Gemini...");
+    setMensaje("Consultando a PIDA...");
     
     try {
       const generarResumen = httpsCallable(functions, 'generarResumenGemini');
@@ -96,19 +96,20 @@ export default function AdminPanel() {
       
       if (resultado.data && resultado.data.resumen) {
         setResumen(resultado.data.resumen);
-        setMensaje("✨ Resumen inteligente generado.");
+        setMensaje("✨ Resumen inteligente generado por PIDA.");
       } else {
         throw new Error("Respuesta de IA no válida.");
       }
     } catch (error) {
       console.error("Error:", error);
-      setMensaje("Error al conectar con Gemini.");
+      setMensaje("Error al conectar con PIDA.");
     } finally {
       setGenerandoResumen(false);
       setTimeout(() => setMensaje(""), 3000);
     }
   };
 
+  // Carga de datos para edición
   const handleEditarNoticia = (noticia) => {
     setEditandoId(noticia.id);
     setTitulo(noticia.titulo);
@@ -135,6 +136,8 @@ export default function AdminPanel() {
     setContenido("");
     setFechaPersonalizada("");
     setMainImagePreviewUrl(null);
+    setImagenPrincipal(null);
+    setImagenPrincipalAnterior(null);
     setCarruselExistente([]);
     setImagenesCarrusel([]);
   };
@@ -160,7 +163,10 @@ export default function AdminPanel() {
 
   const handleAgregarImagenes = (e) => {
     const files = Array.from(e.target.files);
-    setImagenesCarrusel((prev) => [...prev, ...files]);
+    if (files.length > 0) {
+      setImagenesCarrusel((prev) => [...prev, ...files]);
+      e.target.value = ""; 
+    }
   };
 
   const moverImagenNueva = (index, direccion) => {
@@ -180,6 +186,8 @@ export default function AdminPanel() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setMensaje(editandoId ? "Actualizando noticia..." : "Publicando noticia...");
+
     try {
       let finalPrincipalUrl = imagenPrincipalAnterior;
       if (imagenPrincipal) {
@@ -187,12 +195,15 @@ export default function AdminPanel() {
         await uploadBytes(refImg, imagenPrincipal);
         finalPrincipalUrl = await getDownloadURL(refImg);
       }
+
       const nuevasUrls = [];
       for (const file of imagenesCarrusel) {
         const refCar = ref(storage, `noticias/carrusel/${Date.now()}_${file.name}`);
         await uploadBytes(refCar, file);
-        nuevasUrls.push(await getDownloadURL(refCar));
+        const url = await getDownloadURL(refCar);
+        nuevasUrls.push(url);
       }
+      
       const datos = {
         titulo, resumen, contenido,
         imagenPrincipalUrl: finalPrincipalUrl,
@@ -200,15 +211,20 @@ export default function AdminPanel() {
         fechaPublicacion: fechaPersonalizada ? Timestamp.fromDate(new Date(fechaPersonalizada)) : serverTimestamp(),
         activa: true
       };
-      if (editandoId) await updateDoc(doc(db, "noticias", editandoId), datos);
-      else await addDoc(collection(db, "noticias"), datos);
-      
+
+      if (editandoId) {
+        await updateDoc(doc(db, "noticias", editandoId), datos);
+        setMensaje("¡Noticia actualizada!");
+      } else {
+        await addDoc(collection(db, "noticias"), datos);
+        setMensaje("¡Noticia publicada!");
+      }
+
       cancelarEdicion();
       cargarNoticias();
-      setMensaje("Proceso completado con éxito.");
     } catch (err) {
       console.error(err);
-      setMensaje("Error al procesar la noticia.");
+      setMensaje("Error en el proceso.");
     } finally {
       setLoading(false);
       setTimeout(() => setMensaje(""), 3000);
@@ -219,7 +235,7 @@ export default function AdminPanel() {
     <div className="min-h-screen bg-basic-beige">
       <header className="bg-white p-5 shadow-sm border-b border-gray-200 flex justify-between items-center px-8">
         <img src={logoColor} alt="Logo IIRESODH" className="h-12 md:h-14 w-auto object-contain" />
-        <button onClick={handleLogout} className="bg-main-red hover:bg-bright-red text-white px-6 py-2 rounded-full font-bold shadow-sm">
+        <button onClick={handleLogout} className="bg-main-red hover:bg-bright-red text-white px-6 py-2 rounded-full font-bold shadow-sm transition-colors">
           Cerrar Sesión
         </button>
       </header>
@@ -235,58 +251,68 @@ export default function AdminPanel() {
             <h2 className={`text-2xl font-bold ${editandoId ? 'text-main-red' : 'text-main-blue'}`}>
               {editandoId ? "Editar Noticia" : "Crear Nueva Noticia"}
             </h2>
-            {editandoId && <button onClick={cancelarEdicion} className="text-sm bg-gray-200 px-3 py-1 rounded font-bold">Cancelar Edición</button>}
+            {editandoId && <button onClick={cancelarEdicion} className="text-sm bg-gray-200 px-3 py-1 rounded font-bold hover:bg-gray-300 transition-colors">Cancelar Edición</button>}
           </div>
           
-          {mensaje && <div className={`p-4 rounded mb-6 font-bold ${mensaje.includes("éxito") ? "bg-green-100 text-green-700" : "bg-blue-100 text-main-blue"}`}>{mensaje}</div>}
+          {mensaje && <div className={`p-4 rounded mb-6 font-bold ${mensaje.includes("¡") || mensaje.includes("PIDA") ? "bg-green-100 text-green-700" : "bg-blue-100 text-main-blue"}`}>{mensaje}</div>}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <input type="text" required value={titulo} onChange={(e) => setTitulo(e.target.value)} className="w-full border p-3 rounded" placeholder="Título de la noticia" />
-            <input type="datetime-local" value={fechaPersonalizada} onChange={(e) => setFechaPersonalizada(e.target.value)} className="w-full md:w-1/2 border p-3 rounded" />
-            
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="font-bold text-main-blue">Resumen</label>
-                <button type="button" onClick={handleAutoResumen} disabled={generandoResumen} className="text-xs bg-main-blue text-white px-4 py-2 rounded-full font-bold">
-                  {generandoResumen ? "Generando..." : "✨ Generar con IA"}
-                </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <label className="block text-main-blue font-bold mb-2">Título de la Noticia</label>
+                <input type="text" required value={titulo} onChange={(e) => setTitulo(e.target.value)} className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-light-blue" />
               </div>
-              <textarea required value={resumen} onChange={(e) => setResumen(e.target.value)} className="w-full border p-3 rounded" rows="2" />
+              <div className="md:col-span-2 bg-basic-beige p-4 rounded border border-pale-blue">
+                <label className="block text-main-blue font-bold mb-1">Fecha de Publicación (Opcional)</label>
+                <input type="datetime-local" value={fechaPersonalizada} onChange={(e) => setFechaPersonalizada(e.target.value)} className="w-full md:w-1/2 border border-gray-300 p-3 rounded bg-white" />
+              </div>
             </div>
 
-            <textarea required value={contenido} onChange={(e) => setContenido(e.target.value)} className="w-full border p-3 rounded" rows="12" placeholder="Contenido completo..." />
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="font-bold text-main-blue">Resumen para Portada</label>
+                <button type="button" onClick={handleAutoResumen} disabled={generandoResumen} className="text-xs bg-main-blue text-white hover:bg-light-blue font-bold py-2 px-4 rounded-full disabled:opacity-50 transition-colors">
+                  {generandoResumen ? "Consultando a PIDA..." : "✨ Generar con PIDA"}
+                </button>
+              </div>
+              <textarea required maxLength="250" value={resumen} onChange={(e) => setResumen(e.target.value)} className="w-full border border-gray-300 p-3 rounded" rows="2" />
+            </div>
 
-            <div className="mt-4 bg-gray-50 p-5 rounded border border-gray-200 shadow-inner">
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-3">Simulación en Portada</label>
-              <div ref={contenidoPreviewRef} className="text-gray-600 text-lg font-light leading-relaxed noticia-content max-h-80 overflow-hidden bg-white p-5 rounded" dangerouslySetInnerHTML={{ __html: contenido || "Escribe para previsualizar..." }} />
-              <div className="mt-4">{showReadMoreWarning ? <p className="text-main-red font-bold text-sm">⚠️ Texto excedido.</p> : <p className="text-green-600 font-bold text-sm">✓ Texto encaja.</p>}</div>
+            <div>
+              <label className="block text-main-blue font-bold mb-2">Contenido Completo</label>
+              <textarea required value={contenido} onChange={(e) => setContenido(e.target.value)} className="w-full border border-gray-300 p-3 rounded" rows="12" />
+              <div className="mt-4 bg-gray-50 p-5 rounded border border-gray-200 shadow-inner">
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-3">Simulación en Portada</label>
+                <div ref={contenidoPreviewRef} className="text-gray-600 text-lg font-light leading-relaxed noticia-content max-h-80 overflow-hidden bg-white p-5 rounded" dangerouslySetInnerHTML={{ __html: contenido || "Vista previa..." }} />
+                <div className="mt-4">{showReadMoreWarning ? <p className="text-main-red font-bold text-sm">⚠️ El texto superó el límite visible.</p> : <p className="text-green-600 font-bold text-sm">✓ El texto cabe perfectamente.</p>}</div>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-6 bg-basic-beige p-6 rounded border-2 border-pale-blue">
-              <input type="file" accept="image/*" onChange={handleSeleccionPrincipal} className="sr-only" id="input-p" />
-              <label htmlFor="input-p" className="bg-main-blue text-white px-6 py-2 rounded font-bold cursor-pointer inline-block">Seleccionar Imagen Principal</label>
+              <input type="file" accept="image/*" required={!editandoId && !imagenPrincipalAnterior} onChange={handleSeleccionPrincipal} className="sr-only" id="input-p" />
+              <label htmlFor="input-p" className="bg-main-blue text-white px-6 py-2 rounded font-bold cursor-pointer inline-block shadow-md">Seleccionar Imagen Principal</label>
               {mainImagePreviewUrl && <img src={mainImagePreviewUrl} alt="Preview" className="max-h-60 rounded shadow-md mx-auto block" />}
 
               <input type="file" accept="image/*" multiple onChange={handleAgregarImagenes} className="sr-only" id="input-c" />
-              <label htmlFor="input-c" className="bg-light-blue text-white px-6 py-2 rounded font-bold cursor-pointer inline-block mt-4">+ Cargar Carrusel (Múltiple)</label>
+              <label htmlFor="input-c" className="bg-light-blue text-white px-6 py-2 rounded font-bold cursor-pointer inline-block mt-4 shadow-md">+ Cargar Carrusel (Múltiple)</label>
               
               <div className="grid gap-3">
                 {carruselExistente.map((url, i) => (
-                  <div key={i} className="flex items-center justify-between bg-white p-2 rounded border">
-                    <img src={url} className="h-16 rounded" />
+                  <div key={`old-${i}`} className="flex items-center justify-between bg-white p-3 rounded border">
+                    <img src={url} className="h-20 rounded" alt="Existente" />
                     <div className="flex gap-2">
-                      <button type="button" onClick={() => moverImagenExistente(i, -1)} className="px-3 py-1 bg-main-blue text-white rounded">↑</button>
-                      <button type="button" onClick={() => moverImagenExistente(i, 1)} className="px-3 py-1 bg-main-blue text-white rounded">↓</button>
+                      <button type="button" onClick={() => moverImagenExistente(i, -1)} disabled={i === 0} className="px-3 py-1 bg-main-blue text-white rounded">↑</button>
+                      <button type="button" onClick={() => moverImagenExistente(i, 1)} disabled={i === carruselExistente.length - 1} className="px-3 py-1 bg-main-blue text-white rounded">↓</button>
                       <button type="button" onClick={() => setCarruselExistente(prev => prev.filter((_, idx) => idx !== i))} className="px-3 py-1 bg-bright-red text-white rounded">X</button>
                     </div>
                   </div>
                 ))}
                 {imagenesCarrusel.map((f, i) => (
-                  <div key={i} className="flex items-center justify-between bg-green-50 p-2 rounded border">
-                    <img src={URL.createObjectURL(f)} className="h-16 rounded" />
+                  <div key={`new-${i}`} className="flex items-center justify-between bg-green-50 p-3 rounded border border-green-200">
+                    <img src={URL.createObjectURL(f)} className="h-20 rounded" alt="Nueva" />
                     <div className="flex gap-2">
-                      <button type="button" onClick={() => moverImagenNueva(i, -1)} className="px-3 py-1 bg-main-blue text-white rounded">↑</button>
-                      <button type="button" onClick={() => moverImagenNueva(i, 1)} className="px-3 py-1 bg-main-blue text-white rounded">↓</button>
+                      <button type="button" onClick={() => moverImagenNueva(i, -1)} disabled={i === 0} className="px-3 py-1 bg-main-blue text-white rounded">↑</button>
+                      <button type="button" onClick={() => moverImagenNueva(i, 1)} disabled={i === imagenesCarrusel.length - 1} className="px-3 py-1 bg-main-blue text-white rounded">↓</button>
                       <button type="button" onClick={() => setImagenesCarrusel(prev => prev.filter((_, idx) => idx !== i))} className="px-3 py-1 bg-bright-red text-white rounded">X</button>
                     </div>
                   </div>
@@ -294,24 +320,24 @@ export default function AdminPanel() {
               </div>
             </div>
 
-            <button type="submit" disabled={loading} className="w-full bg-main-blue text-white font-bold py-4 rounded uppercase tracking-widest transition-all">
+            <button type="submit" disabled={loading} className="w-full bg-main-blue hover:bg-light-blue text-white font-bold py-4 rounded uppercase tracking-widest transition-all shadow-lg">
               {loading ? "Procesando..." : (editandoId ? "Actualizar" : "Publicar")}
             </button>
           </form>
         </div>
 
         <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md border-t-4 border-main-blue">
-          <h2 className="text-2xl font-bold text-main-blue mb-6 border-b pb-2">Gestión de Noticias</h2>
+          <h2 className="text-2xl font-bold text-main-blue mb-6 border-b pb-2">Gestionar Noticias Publicadas</h2>
           <div className="space-y-4">
             {listaNoticias.map((n) => (
-              <div key={n.id} className="flex items-center justify-between bg-gray-50 p-4 rounded border">
+              <div key={n.id} className="flex items-center justify-between bg-gray-50 p-4 rounded border hover:bg-white transition-colors">
                 <div className="flex items-center gap-4">
-                  <img src={n.imagenPrincipalUrl} className="w-12 h-12 object-cover rounded" />
+                  <img src={n.imagenPrincipalUrl} className="w-12 h-12 object-cover rounded shadow-sm" alt="Thumbnail" />
                   <h3 className="font-bold text-main-blue line-clamp-1">{n.titulo}</h3>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => handleEditarNoticia(n)} className="border-2 border-main-blue text-main-blue px-4 py-1 rounded font-bold text-sm">Editar</button>
-                  <button onClick={() => handleBorrarNoticia(n.id, n.titulo)} className="border-2 border-bright-red text-bright-red px-4 py-1 rounded font-bold text-sm">Borrar</button>
+                  <button onClick={() => handleEditarNoticia(n)} className="border-2 border-main-blue text-main-blue px-4 py-1 rounded font-bold text-sm hover:bg-main-blue hover:text-white transition-all">Editar</button>
+                  <button onClick={() => handleBorrarNoticia(n.id, n.titulo)} className="border-2 border-bright-red text-bright-red px-4 py-1 rounded font-bold text-sm hover:bg-bright-red hover:text-white transition-all">Borrar</button>
                 </div>
               </div>
             ))}
