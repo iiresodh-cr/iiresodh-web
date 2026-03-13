@@ -18,7 +18,7 @@ export default function Navbar() {
     if (searchTerm.trim()) {
       // Redirigimos a la página de resultados pasando el término por la URL
       navigate(`/buscar?q=${encodeURIComponent(searchTerm.trim())}`);
-      setSearchTerm(""); // Opcional: limpiar el input después de buscar
+      setSearchTerm("");
     }
   };
 
@@ -26,9 +26,10 @@ export default function Navbar() {
     <header className="w-full shadow-sm relative z-50">
       {/* FRANJA SUPERIOR: Logo, Buscador y Redes */}
       <div className="bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex flex-wrap md:flex-nowrap justify-between items-center gap-4 md:gap-8">
+        {/* CORRECCIÓN: Cambiamos py-4 por py-2 para hacer la franja más delgada */}
+        <div className="max-w-7xl mx-auto px-6 py-2 flex flex-wrap md:flex-nowrap justify-between items-center gap-4 md:gap-8">
           
-          {/* LOGO (Izquierda) */}
+          {/* LOGO (Izquierda) - Mantiene su tamaño original (h-16 md:h-20) */}
           <Link to="/" className="shrink-0 order-1">
             <img src={logo} alt="IIRESODH Logo" className="h-16 md:h-20 w-auto object-contain" />
           </Link>
