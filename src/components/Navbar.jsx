@@ -1,23 +1,62 @@
 // src/components/Navbar.jsx
-import { Link, useLocation } from "react-router-dom";
-// Importamos el nuevo logo recortado (trim)
+import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+// Importamos el logo oficial recortado
 import logo from "../assets/Logo_Oficiale_200w-trim.png"; 
 
 export default function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const isHome = location.pathname === "/";
+  
+  // Estado para manejar el texto del buscador
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Función que se ejecuta al enviar el formulario de búsqueda
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      // Redirigimos a la página de resultados pasando el término por la URL
+      navigate(`/buscar?q=${encodeURIComponent(searchTerm.trim())}`);
+      setSearchTerm(""); // Opcional: limpiar el input después de buscar
+    }
+  };
 
   return (
     <header className="w-full shadow-sm relative z-50">
-      {/* FRANJA SUPERIOR: Logo y Redes */}
+      {/* FRANJA SUPERIOR: Logo, Buscador y Redes */}
       <div className="bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <Link to="/" className="shrink-0">
-            {/* Ajustamos la altura para un logo sin márgenes blancos, manteniendo coherencia */}
+        <div className="max-w-7xl mx-auto px-6 py-4 flex flex-wrap md:flex-nowrap justify-between items-center gap-4 md:gap-8">
+          
+          {/* LOGO (Izquierda) */}
+          <Link to="/" className="shrink-0 order-1">
             <img src={logo} alt="IIRESODH Logo" className="h-16 md:h-20 w-auto object-contain" />
           </Link>
-          {/* Cambiamos text-main-blue por text-light-blue para las redes sociales */}
-          <div className="flex items-center gap-4 md:gap-6 text-light-blue">
+
+          {/* BARRA DE BÚSQUEDA (Centro) */}
+          <div className="w-full md:flex-1 max-w-md mx-auto order-3 md:order-2 mt-2 md:mt-0">
+            <form onSubmit={handleSearch} className="relative group">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Buscar noticias, áreas, información..."
+                className="w-full bg-gray-50 border border-gray-200 text-main-blue text-sm rounded-full pl-5 pr-12 py-2.5 focus:outline-none focus:ring-2 focus:ring-light-blue focus:border-transparent transition-all shadow-inner"
+              />
+              <button
+                type="submit"
+                className="absolute right-1.5 top-1 bottom-1 bg-light-blue hover:bg-main-blue text-white w-8 rounded-full flex items-center justify-center transition-colors shadow-sm"
+                aria-label="Buscar"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+              </button>
+            </form>
+          </div>
+
+          {/* REDES SOCIALES (Derecha) */}
+          <div className="flex items-center gap-4 md:gap-6 text-light-blue shrink-0 order-2 md:order-3">
             <a href="https://www.facebook.com/iiresodhcostarica" target="_blank" rel="noreferrer" className="hover:text-main-red transition-colors">
               <svg className="w-6 h-6 md:w-7 md:h-7" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" /></svg>
             </a>
@@ -73,7 +112,6 @@ export default function Navbar() {
               <div className="absolute left-0 top-full w-56 bg-white text-main-blue shadow-xl rounded-b opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border-t-4 border-main-red">
                 <ul className="py-2">
                   <li className="px-4 py-2 hover:bg-gray-50"><Link to="/" className="block w-full">Litigio Estratégico</Link></li>
-                  <li className="px-4 py-2 hover:bg-gray-50"><Link to="/" className="block w-full">Colombia</Link></li>
                   <li className="px-4 py-2 hover:bg-gray-50"><Link to="/" className="block w-full">Cooperación Internacional</Link></li>
                 </ul>
               </div>

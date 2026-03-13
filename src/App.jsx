@@ -1,5 +1,6 @@
 // src/App.jsx
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import ResultadosBusqueda from "./pages/ResultadosBusqueda";
 
 // Componentes Globales
 import Navbar from "./components/Navbar";
@@ -36,6 +37,7 @@ function App() {
           <Route path="/quienes-somos" element={<QuienesSomos />} />
           <Route path="/noticias" element={<Noticias />} />
           <Route path="/noticias/:id" element={<NoticiaDetalle />} />
+          <Route path="/buscar" element={<ResultadosBusqueda />} />
           
           <Route path="*" element={<NotFound />} />
         </Route>
