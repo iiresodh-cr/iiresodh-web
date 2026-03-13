@@ -53,25 +53,34 @@ export default function Noticias() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {noticias.map((noticia) => (
-                <div key={noticia.id} className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden flex flex-col border border-gray-100 hover:shadow-xl transition-shadow">
+                <Link 
+                  key={noticia.id} 
+                  to={`/noticias/${noticia.id}`} 
+                  // Agregamos la clase "group" y una animación sutil para indicar que es cliqueable
+                  className="group bg-white/90 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden flex flex-col border border-gray-100 hover:shadow-xl transition-all hover:-translate-y-1"
+                >
                   <div className="aspect-4/5 w-full overflow-hidden bg-white border-b border-gray-100">
                     <img 
                       src={noticia.imagenPrincipalUrl} 
                       alt={noticia.titulo} 
-                      className="w-full h-full object-contain p-2" 
+                      // Zoom ligero a la imagen al hacer hover sobre cualquier parte de la tarjeta
+                      className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500" 
                     />
                   </div>
                   <div className="p-6 flex flex-col grow">
-                    <h2 className="text-xl font-bold text-main-blue mb-3 line-clamp-2">{noticia.titulo}</h2>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-3 grow">{noticia.resumen}</p>
-                    <Link 
-                      to={`/noticias/${noticia.id}`} 
-                      className="text-main-red font-bold hover:text-main-blue transition-colors mt-auto flex items-center gap-1"
-                    >
+                    {/* El título cambia de color al hacer hover sobre la tarjeta */}
+                    <h2 className="text-xl font-bold text-main-blue mb-3 line-clamp-2 group-hover:text-light-blue transition-colors">
+                      {noticia.titulo}
+                    </h2>
+                    <p className="text-gray-600 text-sm mb-4 line-clamp-3 grow">
+                      {noticia.resumen}
+                    </p>
+                    {/* El texto inferior se comporta como un botón y reacciona al hover global de la tarjeta */}
+                    <div className="text-main-red font-bold group-hover:text-main-blue transition-colors mt-auto flex items-center gap-1">
                       Leer noticia completa <span>&rarr;</span>
-                    </Link>
+                    </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
