@@ -8,6 +8,7 @@ export default function Navbar() {
 
   return (
     <header className="w-full shadow-sm relative z-50">
+      {/* FRANJA SUPERIOR: Logo y Redes (Intacta) */}
       <div className="bg-white">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link to="/" className="shrink-0">
@@ -30,49 +31,59 @@ export default function Navbar() {
         </div>
       </div>
 
-      <div className="bg-main-blue text-white sticky top-0 shadow-md">
+      {/* FRANJA INFERIOR: Menú de navegación (Modificada según requerimientos y referencia) */}
+      <div className="bg-white text-main-blue border-t border-gray-100 shadow-md sticky top-0">
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between min-h-15 flex-wrap md:flex-nowrap py-2 md:py-0">
+          
           <div className="w-full md:w-auto flex justify-center md:justify-start order-2 md:order-1 mt-2 md:mt-0">
             {!isHome ? (
-              <Link to="/" className="flex items-center gap-2 text-sm font-bold text-pale-blue hover:text-white transition-colors">
-                <span className="text-xl leading-none">&larr;</span> Volver a inicio
+              <Link to="/" className="flex items-center gap-2 text-sm font-medium tracking-wider uppercase hover:text-light-blue transition-colors">
+                <span className="text-lg leading-none">&larr;</span> VOLVER
               </Link>
-            ) : <span className="hidden md:block w-30"></span>}
+            ) : <span className="hidden md:block w-24"></span>}
           </div>
 
-          <nav className="w-full md:w-auto flex justify-center items-center gap-4 md:gap-8 text-sm font-semibold tracking-wide order-1 md:order-2">
+          <nav className="w-full md:w-auto flex justify-center items-center gap-6 md:gap-10 text-sm font-medium tracking-widest uppercase order-1 md:order-2">
             <div className="relative group cursor-pointer py-4">
-              <span className="flex items-center gap-1 hover:text-pale-blue transition-colors">
-                NOSOTROS <svg className="w-4 h-4 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              <span className="flex items-center gap-1.5 hover:text-light-blue transition-colors">
+                NOSOTROS 
+                <svg className="w-3.5 h-3.5 text-pale-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path>
+                </svg>
               </span>
               <div className="absolute left-0 top-full w-48 bg-white text-main-blue shadow-xl rounded-b opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border-t-4 border-main-red">
                 <ul className="py-2">
-                  <li className="px-4 py-2 hover:bg-gray-100"><Link to="/quienes-somos" className="block w-full">¿Quiénes somos?</Link></li>
-                  <li className="px-4 py-2 hover:bg-gray-100"><Link to="/equipo" className="block w-full">Equipo de Trabajo</Link></li>
-                  <li className="px-4 py-2 hover:bg-gray-100"><Link to="/informes" className="block w-full">Informes Anuales</Link></li>
+                  <li className="px-4 py-2 hover:bg-gray-50"><Link to="/quienes-somos" className="block w-full">¿Quiénes somos?</Link></li>
+                  <li className="px-4 py-2 hover:bg-gray-50"><Link to="/equipo" className="block w-full">Equipo de Trabajo</Link></li>
+                  <li className="px-4 py-2 hover:bg-gray-50"><Link to="/informes" className="block w-full">Informes Anuales</Link></li>
                 </ul>
               </div>
             </div>
 
             <div className="relative group cursor-pointer py-4">
-              <span className="flex items-center gap-1 hover:text-pale-blue transition-colors">
-                ÁREAS DE TRABAJO <svg className="w-4 h-4 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              <span className="flex items-center gap-1.5 hover:text-light-blue transition-colors">
+                ÁREAS DE TRABAJO 
+                <svg className="w-3.5 h-3.5 text-pale-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path>
+                </svg>
               </span>
               <div className="absolute left-0 top-full w-56 bg-white text-main-blue shadow-xl rounded-b opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border-t-4 border-main-red">
                 <ul className="py-2">
-                  <li className="px-4 py-2 hover:bg-gray-100"><Link to="/" className="block w-full">Litigio Estratégico</Link></li>
-                  <li className="px-4 py-2 hover:bg-gray-100"><Link to="/" className="block w-full">Cooperación Internacional</Link></li>
+                  <li className="px-4 py-2 hover:bg-gray-50"><Link to="/" className="block w-full">Litigio Estratégico</Link></li>
+                  <li className="px-4 py-2 hover:bg-gray-50"><Link to="/" className="block w-full">Cooperación Internacional</Link></li>
                 </ul>
               </div>
             </div>
-            <Link to="/noticias" className="hover:text-pale-blue py-4 transition-colors">NOTICIAS</Link>
+            
+            <Link to="/noticias" className="hover:text-light-blue py-4 transition-colors">NOTICIAS</Link>
           </nav>
 
           <div className="w-full md:w-auto flex justify-center md:justify-end order-3 mt-2 md:mt-0 pb-2 md:pb-0">
-            <Link to="/" className="bg-main-red hover:bg-bright-red text-white px-6 py-2 rounded font-extrabold uppercase text-sm tracking-wider shadow-md transition-colors">
+            <Link to="/" className="bg-main-red hover:bg-bright-red text-white px-8 py-2.5 rounded-full font-medium uppercase text-sm tracking-widest shadow-md transition-colors">
               DONACIONES
             </Link>
           </div>
+          
         </div>
       </div>
     </header>
