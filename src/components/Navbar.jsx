@@ -1,6 +1,7 @@
 // src/components/Navbar.jsx
 import { Link, useLocation } from "react-router-dom";
-import logo from "../assets/Logo_Oficial_200w.png"; 
+// Nota: Ajusta el nombre del archivo aquí si lo guardaste exactamente con espacios
+import logo from "../assets/Logo Oficiale_IIRESODH-200.png"; 
 
 export default function Navbar() {
   const location = useLocation();
@@ -12,7 +13,8 @@ export default function Navbar() {
       <div className="bg-white">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link to="/" className="shrink-0">
-            <img src={logo} alt="IIRESODH Logo" className="h-16 md:h-20 w-auto object-contain" />
+            {/* Se aumenta la altura significativamente para darle protagonismo al nuevo logo con texto */}
+            <img src={logo} alt="IIRESODH Logo" className="h-24 md:h-28 w-auto object-contain" />
           </Link>
           <div className="flex items-center gap-4 md:gap-6 text-main-blue">
             <a href="https://www.facebook.com/iiresodhcostarica" target="_blank" rel="noreferrer" className="hover:text-main-red transition-colors">
