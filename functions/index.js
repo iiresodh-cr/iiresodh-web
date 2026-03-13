@@ -3,11 +3,11 @@ const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// Declaramos el secreto de forma explícita (Método robusto para v2)
+// Declaramos el secreto de forma explícita
 const geminiApiKey = defineSecret("GEMINI_API_KEY");
 
 exports.generarResumenGemini = onCall({ 
-    secrets: [geminiApiKey], // Vinculamos el secreto a la función
+    secrets: [geminiApiKey], 
     region: "us-central1",
     cors: [
       /iiresodh-web\.web\.app$/, 
@@ -26,7 +26,6 @@ exports.generarResumenGemini = onCall({
   }
 
   try {
-    // Extraemos el valor del secreto en tiempo de ejecución
     const apiKey = geminiApiKey.value();
     
     if (!apiKey) {
@@ -34,7 +33,9 @@ exports.generarResumenGemini = onCall({
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    
+    // Aplicando el modelo actual solicitado
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `Actúa como un periodista experto. Genera un resumen atractivo de exactamente 15 a 20 palabras en texto plano del siguiente contenido: ${contenido}`;
 
