@@ -1,7 +1,7 @@
 // src/components/Navbar.jsx
 import { Link, useLocation } from "react-router-dom";
 // Nota: Ajusta el nombre del archivo aquí si lo guardaste exactamente con espacios
-import logo from "../assets/Logo Oficiale_IIRESODH-200.png"; 
+import logo from "../assets/Logo_Oficial_200w.png"; 
 
 export default function Navbar() {
   const location = useLocation();
