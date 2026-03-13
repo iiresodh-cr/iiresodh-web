@@ -4,14 +4,71 @@ import { useSearchParams, Link } from "react-router-dom";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../firebase/config";
 
-// Índice interno de páginas estáticas del sitio web
+// Índice interno de páginas estáticas del sitio web (ENRIQUECIDO Y CON DEEP LINKS)
 const PAGINAS_ESTATICAS = [
-  { id: 'p1', titulo: '¿Quiénes somos?', ruta: '/quienes-somos', descripcion: 'Conoce la historia, misión, visión y objetivos del IIRESODH.', palabrasClave: ['historia', 'mision', 'vision', 'nosotros', 'acerca', 'institucion'] },
-  { id: 'p2', titulo: 'Equipo de Trabajo', ruta: '/equipo', descripcion: 'Conoce a los profesionales y expertos que conforman nuestro equipo.', palabrasClave: ['equipo', 'profesionales', 'staff', 'directiva', 'miembros', 'personas'] },
-  { id: 'p3', titulo: 'Informes Anuales', ruta: '/informes', descripcion: 'Revisa nuestros informes de gestión y transparencia anual.', palabrasClave: ['informes', 'anuales', 'transparencia', 'documentos', 'gestion', 'resultados'] },
-  { id: 'p4', titulo: 'Litigio Estratégico', ruta: '/', descripcion: 'Nuestra área de trabajo enfocada en el litigio estratégico para la defensa de los derechos humanos.', palabrasClave: ['litigio', 'estrategico', 'derechos', 'humanos', 'legal', 'corte', 'area', 'trabajo'] },
-  { id: 'p5', titulo: 'Cooperación Internacional', ruta: '/', descripcion: 'Proyectos y alianzas de cooperación a nivel internacional.', palabrasClave: ['cooperacion', 'internacional', 'alianzas', 'proyectos', 'global', 'area', 'trabajo'] },
-  { id: 'p6', titulo: 'Donaciones', ruta: '/', descripcion: 'Apoya nuestra causa y contribuye a la defensa de los derechos humanos.', palabrasClave: ['donar', 'donaciones', 'apoyo', 'colaborar', 'aportar', 'ayuda'] }
+  { 
+    id: 'p1-general', 
+    titulo: '¿Quiénes somos? - Historia', 
+    ruta: '/quienes-somos', 
+    descripcion: 'Conoce la historia, trayectoria y participación ciudadana del IIRESODH.', 
+    palabrasClave: ['historia', 'nosotros', 'acerca', 'institucion', 'quienes', 'somos'] 
+  },
+  { 
+    id: 'p1-mision', 
+    titulo: 'Misión y Visión', 
+    ruta: '/quienes-somos#mision-vision', 
+    descripcion: 'Conoce nuestra misión y visión institucional.', 
+    palabrasClave: ['mision', 'vision', 'objetivos', 'proposito'] 
+  },
+  { 
+    id: 'p1-principios', 
+    titulo: 'Principios Rectores', 
+    ruta: '/quienes-somos#principios-rectores', 
+    descripcion: 'Descubre los valores y principios rectores que guían nuestro trabajo en la defensa de los derechos humanos.', 
+    palabrasClave: ['principios', 'rectores', 'principios rectores', 'valores', 'etica', 'moral', 'dignidad', 'equidad', 'inclusion'] 
+  },
+  { 
+    id: 'p1-organigrama', 
+    titulo: 'Organigrama y Estructura', 
+    ruta: '/quienes-somos#organigrama', 
+    descripcion: 'Estructura organizacional y territorial del IIRESODH.', 
+    palabrasClave: ['organigrama', 'estructura', 'presidencia', 'unidades', 'oficinas', 'territorial'] 
+  },
+  { 
+    id: 'p2', 
+    titulo: 'Equipo de Trabajo', 
+    ruta: '/equipo', 
+    descripcion: 'Conoce a los profesionales y expertos que conforman nuestro equipo.', 
+    palabrasClave: ['equipo', 'profesionales', 'staff', 'directiva', 'miembros', 'personas'] 
+  },
+  { 
+    id: 'p3', 
+    titulo: 'Informes Anuales', 
+    ruta: '/informes', 
+    descripcion: 'Revisa nuestros informes de gestión y transparencia anual.', 
+    palabrasClave: ['informes', 'anuales', 'transparencia', 'documentos', 'gestion', 'resultados'] 
+  },
+  { 
+    id: 'p4', 
+    titulo: 'Litigio Estratégico', 
+    ruta: '/', 
+    descripcion: 'Nuestra área de trabajo enfocada en el litigio estratégico para la defensa de los derechos humanos.', 
+    palabrasClave: ['litigio', 'estrategico', 'derechos', 'humanos', 'legal', 'corte', 'area', 'trabajo'] 
+  },
+  { 
+    id: 'p5', 
+    titulo: 'Cooperación Internacional', 
+    ruta: '/', 
+    descripcion: 'Proyectos y alianzas de cooperación a nivel internacional.', 
+    palabrasClave: ['cooperacion', 'internacional', 'alianzas', 'proyectos', 'global', 'area', 'trabajo'] 
+  },
+  { 
+    id: 'p6', 
+    titulo: 'Donaciones', 
+    ruta: '/', 
+    descripcion: 'Apoya nuestra causa y contribuye a la defensa de los derechos humanos.', 
+    palabrasClave: ['donar', 'donaciones', 'apoyo', 'colaborar', 'aportar', 'ayuda'] 
+  }
 ];
 
 // Función auxiliar para quitar acentos y facilitar la búsqueda

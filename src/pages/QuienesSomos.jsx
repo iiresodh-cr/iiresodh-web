@@ -1,5 +1,24 @@
 // src/pages/QuienesSomos.jsx
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+
 export default function QuienesSomos() {
+  const location = useLocation();
+
+  // Este efecto revisa si la URL trae un #hash y hace scroll suave hasta ahí
+  useEffect(() => {
+    if (location.hash) {
+      const elemento = document.getElementById(location.hash.substring(1));
+      if (elemento) {
+        setTimeout(() => {
+          elemento.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      }
+    } else {
+      window.scrollTo(0, 0); 
+    }
+  }, [location]);
+
   return (
     <div className="bg-white min-h-screen flex flex-col">
       <div className="bg-white text-main-blue py-12 px-6 text-center relative z-20 border-b border-gray-200">
@@ -35,7 +54,8 @@ export default function QuienesSomos() {
           </div>
         </section>
 
-        <section className="relative z-10 px-8 py-10">
+        {/* Añadido id="mision-vision" y scroll-mt-32 */}
+        <section id="mision-vision" className="relative z-10 px-8 py-10 scroll-mt-32">
           <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10">
             <div className="bg-white/90 backdrop-blur-sm p-10 rounded-2xl shadow-xl border-t-4 border-main-red">
               <h2 className="text-3xl font-extrabold text-main-blue mb-6 uppercase tracking-wider flex items-center gap-3">
@@ -58,7 +78,8 @@ export default function QuienesSomos() {
           </div>
         </section>
 
-        <section className="relative z-10 px-8 py-20">
+        {/* Añadido id="principios-rectores" y scroll-mt-32 */}
+        <section id="principios-rectores" className="relative z-10 px-8 py-20 scroll-mt-32">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-extrabold text-main-blue text-center mb-12 uppercase tracking-widest bg-white/60 backdrop-blur-sm py-4 px-8 rounded-xl shadow-sm mx-auto flex w-fit">
               Principios Rectores
@@ -82,7 +103,8 @@ export default function QuienesSomos() {
         </section>
       </div> 
 
-      <section className="bg-main-blue text-white py-20 px-6 relative z-20">
+      {/* Añadido id="organigrama" y scroll-mt-32 */}
+      <section id="organigrama" className="bg-main-blue text-white py-20 px-6 relative z-20 scroll-mt-32">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-8 uppercase tracking-widest text-white">
             Organigrama y Estructura
