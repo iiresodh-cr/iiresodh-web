@@ -1,6 +1,6 @@
 // src/components/Navbar.jsx
 import { Link, useLocation } from "react-router-dom";
-import logo from "../assets/logo-color.png"; 
+import logo from "../assets/Logo_Oficial_200w.png"; 
 
 export default function Navbar() {
   const location = useLocation();
@@ -8,11 +8,11 @@ export default function Navbar() {
 
   return (
     <header className="w-full shadow-sm relative z-50">
-      {/* FRANJA SUPERIOR: Logo y Redes (Intacta) */}
+      {/* FRANJA SUPERIOR: Logo y Redes */}
       <div className="bg-white">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link to="/" className="shrink-0">
-            <img src={logo} alt="IIRESODH Logo" className="h-12 md:h-16 w-auto object-contain" />
+            <img src={logo} alt="IIRESODH Logo" className="h-16 md:h-20 w-auto object-contain" />
           </Link>
           <div className="flex items-center gap-4 md:gap-6 text-main-blue">
             <a href="https://www.facebook.com/iiresodhcostarica" target="_blank" rel="noreferrer" className="hover:text-main-red transition-colors">
@@ -31,7 +31,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* FRANJA INFERIOR: Menú de navegación (Modificada según requerimientos y referencia) */}
+      {/* FRANJA INFERIOR: Menú de navegación */}
       <div className="bg-white text-main-blue border-t border-gray-100 shadow-md sticky top-0">
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between min-h-15 flex-wrap md:flex-nowrap py-2 md:py-0">
           
