@@ -173,7 +173,7 @@ export default function Home() {
         {/* Sección Oficinas con estructura corregida para alineación exacta */}
         <section className="relative py-20 px-8 z-10">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-extrabold text-main-red uppercase tracking-widest mb-12 text-center md:text-left">
+            <h2 className="text-3xl font-extrabold text-main-blue uppercase tracking-widest mb-12 text-center md:text-left">
               Nuestras Oficinas:
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
