@@ -165,57 +165,63 @@ export default function Home() {
           </div>
         </section>
 
-        <div className="max-w-6xl mx-auto border-t border-gray-200/60 relative z-10"></div>
+        {/* Separador con estructura corregida para mantener el mismo ancho */}
+        <div className="px-8 relative z-10">
+          <div className="max-w-6xl mx-auto border-t border-gray-200/60"></div>
+        </div>
 
-        <section className="relative py-20 px-8 max-w-6xl mx-auto z-10">
-          <h2 className="text-3xl font-extrabold text-main-red uppercase tracking-widest mb-12 text-center md:text-left">
-            Nuestras Oficinas:
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-            <div className="bg-white/70 backdrop-blur-sm p-6 rounded-xl shadow-sm border border-gray-100">
-              <h3 className="text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Costa Rica</h3>
-              <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
-                <p>Centro Corporativo San Rafael, nivel 3</p>
-                <p>San Rafael de Escazú, San José, Costa Rica</p>
-                <p>CP 10201</p>
-                <p className="pt-3 text-light-blue font-medium">Teléfono: +506 4703 5727</p>
+        {/* Sección Oficinas con estructura corregida para alineación exacta */}
+        <section className="relative py-20 px-8 z-10">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl font-extrabold text-main-red uppercase tracking-widest mb-12 text-center md:text-left">
+              Nuestras Oficinas:
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+              <div className="bg-white/70 backdrop-blur-sm p-6 rounded-xl shadow-sm border border-gray-100">
+                <h3 className="text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Costa Rica</h3>
+                <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
+                  <p>Centro Corporativo San Rafael, nivel 3</p>
+                  <p>San Rafael de Escazú, San José, Costa Rica</p>
+                  <p>CP 10201</p>
+                  <p className="pt-3 text-light-blue font-medium">Teléfono: +506 4703 5727</p>
+                </div>
               </div>
-            </div>
-            <div className="bg-white/70 backdrop-blur-sm p-6 rounded-xl shadow-sm border border-gray-100">
-              <h3 className="text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Colombia</h3>
-              <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
-                <p>Carrera. 11C No. 117-05. Oficina 5</p>
-                <p>Bogotá, Colombia</p>
-                <p className="pt-3 text-light-blue font-medium">Teléfono: Bogotá +7461964</p>
-                <p className="text-light-blue font-medium">Móvil: +57 301 4844324</p>
+              <div className="bg-white/70 backdrop-blur-sm p-6 rounded-xl shadow-sm border border-gray-100">
+                <h3 className="text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Colombia</h3>
+                <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
+                  <p>Carrera. 11C No. 117-05. Oficina 5</p>
+                  <p>Bogotá, Colombia</p>
+                  <p className="pt-3 text-light-blue font-medium">Teléfono: Bogotá +7461964</p>
+                  <p className="text-light-blue font-medium">Móvil: +57 301 4844324</p>
+                </div>
               </div>
-            </div>
-            <div className="bg-white/70 backdrop-blur-sm p-6 rounded-xl shadow-sm border border-gray-100">
-              <h3 className="text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">México</h3>
-              <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
-                <p>Atención virtual o presencial previa cita.</p>
-                <p className="pt-3 font-medium">
-                  Email: <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-red transition-colors">contacto@iiresodh.org</a>
-                </p>
+              <div className="bg-white/70 backdrop-blur-sm p-6 rounded-xl shadow-sm border border-gray-100">
+                <h3 className="text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">México</h3>
+                <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
+                  <p>Atención virtual o presencial previa cita.</p>
+                  <p className="pt-3 font-medium">
+                    Email: <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-red transition-colors">contacto@iiresodh.org</a>
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="bg-white/70 backdrop-blur-sm p-6 rounded-xl shadow-sm border border-gray-100">
-              <h3 className="text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Guatemala</h3>
-              <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
-                <p>Diagonal 6 12-42, Edificio Design Center</p>
-                <p>Oficina No. 506, Torre 1, Zona 10</p>
-                <p>Ciudad de Guatemala</p>
-                <p className="pt-3 text-light-blue font-medium">Teléfono: +502 5557 7466</p>
+              <div className="bg-white/70 backdrop-blur-sm p-6 rounded-xl shadow-sm border border-gray-100">
+                <h3 className="text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Guatemala</h3>
+                <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
+                  <p>Diagonal 6 12-42, Edificio Design Center</p>
+                  <p>Oficina No. 506, Torre 1, Zona 10</p>
+                  <p>Ciudad de Guatemala</p>
+                  <p className="pt-3 text-light-blue font-medium">Teléfono: +502 5557 7466</p>
+                </div>
               </div>
-            </div>
-            <div className="bg-white/70 backdrop-blur-sm p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2">
-              <h3 className="text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Canadá</h3>
-              <div className="text-gray-600 font-light space-y-3 text-sm md:text-base">
-                <p>Atención virtual o presencial previa cita en la ciudad de Lévis, Québec.</p>
-                <p>En Toronto, Ontario de manera vinculada con la firma de abogados Waldman & Associates.</p>
-                <p className="pt-1 font-medium">
-                  Email: <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-red transition-colors">contacto@iiresodh.org</a>
-                </p>
+              <div className="bg-white/70 backdrop-blur-sm p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2">
+                <h3 className="text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Canadá</h3>
+                <div className="text-gray-600 font-light space-y-3 text-sm md:text-base">
+                  <p>Atención virtual o presencial previa cita en la ciudad de Lévis, Québec.</p>
+                  <p>En Toronto, Ontario de manera vinculada con la firma de abogados Waldman & Associates.</p>
+                  <p className="pt-1 font-medium">
+                    Email: <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-red transition-colors">contacto@iiresodh.org</a>
+                  </p>
+                </div>
               </div>
             </div>
           </div>
