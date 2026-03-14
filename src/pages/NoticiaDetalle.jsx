@@ -11,14 +11,14 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
 export default function NoticiaDetalle() {
-  const { id } = useParams(); // 'id' ahora puede ser el slug o el ID real
+  const { id } = useParams(); // Puede ser el slug o el ID
   const [noticia, setNoticia] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchNoticia = async () => {
       try {
-        // 1. Intentamos buscar la noticia por su slug (URL amigable)
+        // 1. Buscamos primero por el Slug (URL Amigable)
         const q = query(collection(db, "noticias"), where("slug", "==", id), limit(1));
         const querySnapshot = await getDocs(q);
 
@@ -26,7 +26,7 @@ export default function NoticiaDetalle() {
           const docData = querySnapshot.docs[0];
           setNoticia({ id: docData.id, ...docData.data() });
         } else {
-          // 2. Si no la encuentra por slug, intentamos por ID directo (retrocompatibilidad)
+          // 2. Si no lo encuentra por slug, busca por ID normal (retrocompatibilidad)
           const docRef = doc(db, "noticias", id);
           const docSnap = await getDoc(docRef);
 

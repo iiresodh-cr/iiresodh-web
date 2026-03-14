@@ -9,16 +9,24 @@ import { httpsCallable } from "firebase/functions";
 
 import logoColor from "../assets/Logo_Oficiale_200w-trim.png";
 
-// Función profesional para generar un slug amigable a partir del título
+// Función profesional y a prueba de fallos para generar un slug amigable
 const generarSlug = (texto) => {
-  return texto
+  if (!texto) return `noticia-${Math.random().toString(36).substring(2, 6)}`;
+  
+  const baseSlug = texto
     .toString()
-    .normalize('NFD') // Separa los acentos de las letras
-    .replace(/[\u0300-\u036f]/g, '') // Elimina los acentos
+    .normalize('NFD') // Separa los acentos
+    .replace(/[\u0300-\u036f]/g, '') // Elimina acentos
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9 ]/g, '') // Elimina caracteres especiales
-    .replace(/\s+/g, '-'); // Reemplaza espacios por guiones
+    .replace(/[^a-z0-9\s-]/g, '') // Permite solo letras, números, espacios y guiones
+    .replace(/[\s_-]+/g, '-') // Reemplaza espacios y guiones repetidos por un solo guion
+    .replace(/^-+|-+$/g, ''); // Quita guiones al inicio o final
+  
+  // Generamos un código corto al azar de 4 letras/números para evitar URLs duplicadas
+  const randomCode = Math.random().toString(36).substring(2, 6);
+  
+  return baseSlug ? `${baseSlug}-${randomCode}` : `noticia-${randomCode}`;
 };
 
 export default function AdminPanel() {
@@ -58,7 +66,6 @@ export default function AdminPanel() {
     }, 100);
   };
 
-  // Función para extraer el nombre original de la imagen desde la URL de Firebase
   const extraerNombreDesdeUrl = (url) => {
     if (!url) return "";
     try {
@@ -426,7 +433,13 @@ export default function AdminPanel() {
               <div key={n.id} className="flex items-center justify-between bg-gray-50 p-4 rounded border hover:bg-white transition-colors">
                 <div className="flex items-center gap-4">
                   <img src={n.imagenPrincipalUrl} className="w-12 h-12 object-cover rounded shadow-sm" alt="Thumbnail" />
-                  <h3 className="font-bold text-main-blue line-clamp-1">{n.titulo}</h3>
+                  <div className="flex flex-col">
+                    <h3 className="font-bold text-main-blue line-clamp-1">{n.titulo}</h3>
+                    {/* INDICADOR VISUAL DEL SLUG */}
+                    <span className="text-xs text-light-blue font-medium mt-1">
+                      URL: /noticias/{n.slug || n.id}
+                    </span>
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => handleEditarNoticia(n)} className="border-2 border-main-blue text-main-blue px-4 py-1 rounded font-bold text-sm hover:bg-main-blue hover:text-white transition-all">Editar</button>
