@@ -16,6 +16,9 @@ export default function Home() {
   const [isOverflowing, setIsOverflowing] = useState(false);
   const contentRef = useRef(null);
 
+  // Estado para controlar el modal del video
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+
   useEffect(() => {
     const fetchUltimaNoticia = async () => {
       try {
@@ -123,9 +126,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* SECCIÓN ACTUALIZADA: Alineada a max-w-6xl con el botón creativo del video */}
+        {/* SECCIÓN ACTUALIZADA: Diseño limpio corporativo y apertura de Modal */}
         <section className="relative py-12 md:py-16 px-8 z-10">
-          <div className="max-w-6xl mx-auto bg-white/70 backdrop-blur-sm p-8 md:p-12 rounded-2xl shadow-sm border border-gray-100 flex flex-col lg:flex-row items-center gap-10">
+          <div className="max-w-6xl mx-auto bg-white/80 backdrop-blur-sm p-8 md:p-12 rounded-2xl shadow-sm border border-gray-200 flex flex-col lg:flex-row items-center gap-12">
             
             {/* Columna Izquierda: Texto */}
             <div className="lg:w-2/3 space-y-6 text-main-blue text-lg md:text-xl font-light leading-relaxed text-center lg:text-left">
@@ -140,26 +143,25 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Columna Derecha: Botón de Video Institucional */}
-            <div className="lg:w-1/3 flex flex-col items-center justify-center w-full border-t lg:border-t-0 lg:border-l border-gray-200/60 pt-10 lg:pt-0 lg:pl-10">
-              <div className="relative group w-full max-w-sm">
-                {/* CORRECCIÓN APLICADA AQUÍ: Se cambió bg-gradient-to-r por bg-linear-to-r */}
-                <div className="absolute -inset-1 bg-linear-to-r from-main-red to-light-blue rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
-                
-                <a href="https://storage.googleapis.com/iiresodh_10_anios/IIRESODH.mp4" target="_blank" rel="noreferrer" className="relative flex flex-col items-center justify-center bg-white border border-gray-100 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all transform group-hover:-translate-y-1 h-full cursor-pointer">
-                  
-                  <div className="bg-main-red group-hover:bg-bright-red text-white w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-5 shadow-inner transition-colors">
-                    <svg className="w-8 h-8 md:w-10 md:h-10 ml-1 md:ml-2" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                  </div>
-                  
-                  <span className="text-main-blue font-extrabold uppercase tracking-widest text-center text-base md:text-lg mb-1">
-                    Video Institucional
-                  </span>
-                  <span className="text-xs md:text-sm text-light-blue font-medium text-center">
-                    Conoce nuestra historia
-                  </span>
-                </a>
-              </div>
+            {/* Columna Derecha: Botón de Video Institucional - Diseño Sobrio y Elegante */}
+            <div className="lg:w-1/3 flex flex-col items-center justify-center w-full border-t lg:border-t-0 lg:border-l border-gray-200 pt-10 lg:pt-0 lg:pl-10">
+              <button 
+                onClick={() => setIsVideoModalOpen(true)}
+                className="group w-full max-w-sm flex flex-col items-center justify-center bg-white border border-gray-200 rounded-xl p-8 shadow-sm hover:shadow-lg hover:border-pale-blue transition-all duration-300 cursor-pointer"
+              >
+                <div className="w-16 h-16 flex items-center justify-center rounded-full bg-pale-blue/20 text-main-blue group-hover:bg-main-red group-hover:text-white transition-colors duration-300 mb-5">
+                  <svg className="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-main-blue font-extrabold text-lg uppercase tracking-widest text-center group-hover:text-main-red transition-colors">
+                  Ver Video
+                  <br />Institucional
+                </h3>
+                <p className="text-sm text-gray-500 font-medium text-center mt-3">
+                  Conoce nuestra historia y labor
+                </p>
+              </button>
             </div>
 
           </div>
@@ -221,6 +223,43 @@ export default function Home() {
           </div>
         </section>
       </div>
+
+      {/* MODAL DEL VIDEO INSTITUCIONAL */}
+      {isVideoModalOpen && (
+        <div 
+          className="fixed inset-0 z-100 flex items-center justify-center bg-black/85 px-4 backdrop-blur-sm transition-opacity"
+          onClick={() => setIsVideoModalOpen(false)} // Cierra al clicar afuera
+        >
+          <div 
+            className="w-full max-w-5xl relative animate-fade-in-up"
+            onClick={(e) => e.stopPropagation()} // Evita que se cierre al clicar el video en sí
+          >
+            {/* Botón de cerrar "X" */}
+            <button 
+              onClick={() => setIsVideoModalOpen(false)}
+              className="absolute -top-12 right-0 text-white hover:text-main-red transition-colors flex items-center gap-2 font-bold uppercase tracking-wider"
+              aria-label="Cerrar video"
+            >
+              Cerrar
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+
+            {/* Contenedor del video */}
+            <div className="w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-gray-800">
+              <video 
+                className="w-full h-full object-contain"
+                controls 
+                autoPlay 
+                src="https://storage.googleapis.com/iiresodh_10_anios/IIRESODH.mp4"
+              >
+                Tu navegador no soporta la reproducción de videos.
+              </video>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
