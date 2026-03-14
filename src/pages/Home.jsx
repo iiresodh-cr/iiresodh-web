@@ -170,7 +170,7 @@ export default function Home() {
                   onClick={() => setIsVideoModalOpen(true)}
                   className="bg-main-red hover:bg-bright-red text-white px-8 py-2.5 rounded-full font-medium uppercase text-sm tracking-widest shadow-md transition-colors w-full text-center cursor-pointer"
                 >
-                  Ver Video Institucional
+                  Video IIRESODH
                 </button>
               </div>
             </div>
