@@ -10,6 +10,9 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
+// Importamos el nuevo isotipo para la sección del video
+import isotipoColor from "../assets/Isotipo-color-512.png";
+
 export default function Home() {
   const [noticia, setNoticia] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -126,7 +129,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* SECCIÓN ACTUALIZADA: Diseño limpio corporativo y apertura de Modal */}
         <section className="relative py-12 md:py-16 px-8 z-10">
           <div className="max-w-6xl mx-auto bg-white/80 backdrop-blur-sm p-8 md:p-12 rounded-2xl shadow-sm border border-gray-200 flex flex-col lg:flex-row items-center gap-12">
             
@@ -143,25 +145,21 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Columna Derecha: Botón de Video Institucional - Diseño Sobrio y Elegante */}
+            {/* Columna Derecha: Isotipo y Botón */}
             <div className="lg:w-1/3 flex flex-col items-center justify-center w-full border-t lg:border-t-0 lg:border-l border-gray-200 pt-10 lg:pt-0 lg:pl-10">
-              <button 
-                onClick={() => setIsVideoModalOpen(true)}
-                className="group w-full max-w-sm flex flex-col items-center justify-center bg-white border border-gray-200 rounded-xl p-8 shadow-sm hover:shadow-lg hover:border-pale-blue transition-all duration-300 cursor-pointer"
-              >
-                <div className="w-16 h-16 flex items-center justify-center rounded-full bg-pale-blue/20 text-main-blue group-hover:bg-main-red group-hover:text-white transition-colors duration-300 mb-5">
-                  <svg className="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </div>
-                <h3 className="text-main-blue font-extrabold text-lg uppercase tracking-widest text-center group-hover:text-main-red transition-colors">
-                  Ver Video
-                  <br />Institucional
-                </h3>
-                <p className="text-sm text-gray-500 font-medium text-center mt-3">
-                  Conoce nuestra historia y labor
-                </p>
-              </button>
+              <div className="flex flex-col items-center justify-center gap-8">
+                <img 
+                  src={isotipoColor} 
+                  alt="Isotipo IIRESODH" 
+                  className="w-32 md:w-40 h-auto object-contain opacity-95 drop-shadow-sm" 
+                />
+                <button 
+                  onClick={() => setIsVideoModalOpen(true)}
+                  className="bg-main-blue hover:bg-light-blue text-white font-bold py-3 px-6 md:px-8 rounded-full uppercase tracking-widest shadow-md hover:shadow-lg transition-all duration-300 text-sm md:text-base w-full text-center cursor-pointer"
+                >
+                  Ver Video Institucional
+                </button>
+              </div>
             </div>
 
           </div>
@@ -237,7 +235,7 @@ export default function Home() {
             {/* Botón de cerrar "X" */}
             <button 
               onClick={() => setIsVideoModalOpen(false)}
-              className="absolute -top-12 right-0 text-white hover:text-main-red transition-colors flex items-center gap-2 font-bold uppercase tracking-wider"
+              className="absolute -top-12 right-0 text-white hover:text-main-red transition-colors flex items-center gap-2 font-bold uppercase tracking-wider cursor-pointer"
               aria-label="Cerrar video"
             >
               Cerrar
