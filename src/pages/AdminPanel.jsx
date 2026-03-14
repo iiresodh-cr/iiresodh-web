@@ -379,7 +379,7 @@ export default function AdminPanel() {
             </div>
 
             <div>
-              <label className="block text-main-blue font-bold mb-2 flex items-center">
+              <label className="flex items-center text-main-blue font-bold mb-2">
                 Contenido Completo 
                 {/* MENSAJE DE AYUDA ACTUALIZADO */}
                 <span className="text-xs font-normal text-light-blue ml-3 bg-blue-50 px-2 py-1 rounded">
