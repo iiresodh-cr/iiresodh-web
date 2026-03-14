@@ -143,8 +143,8 @@ export default function Home() {
             {/* Columna Derecha: Botón de Video Institucional */}
             <div className="lg:w-1/3 flex flex-col items-center justify-center w-full border-t lg:border-t-0 lg:border-l border-gray-200/60 pt-10 lg:pt-0 lg:pl-10">
               <div className="relative group w-full max-w-sm">
-                {/* Efecto de resplandor (glow) detrás del botón */}
-                <div className="absolute -inset-1 bg-gradient-to-r from-main-red to-light-blue rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
+                {/* CORRECCIÓN APLICADA AQUÍ: Se cambió bg-gradient-to-r por bg-linear-to-r */}
+                <div className="absolute -inset-1 bg-linear-to-r from-main-red to-light-blue rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
                 
                 <a href="https://storage.googleapis.com/iiresodh_10_anios/IIRESODH.mp4" target="_blank" rel="noreferrer" className="relative flex flex-col items-center justify-center bg-white border border-gray-100 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all transform group-hover:-translate-y-1 h-full cursor-pointer">
                   
