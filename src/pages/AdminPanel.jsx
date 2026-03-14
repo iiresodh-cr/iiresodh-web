@@ -29,6 +29,23 @@ const generarSlug = (texto) => {
   return baseSlug ? `${baseSlug}-${randomCode}` : `noticia-${randomCode}`;
 };
 
+// Función para detectar URLs en el texto y convertirlas en enlaces clickeables de forma segura
+const formatearTextoConLinks = (texto) => {
+  if (!texto) return "";
+  
+  // Separamos el texto por etiquetas HTML para no romper atributos si el texto ya traía HTML
+  const partes = texto.split(/(<[^>]+>)/g);
+  for (let i = 0; i < partes.length; i++) {
+    // Los índices pares son texto normal, los impares son etiquetas HTML
+    if (i % 2 === 0) {
+      partes[i] = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red hover:text-main-blue font-bold underline transition-colors">${url}</a>`;
+      });
+    }
+  }
+  return partes.join('');
+};
+
 export default function AdminPanel() {
   const navigate = useNavigate(); 
   
@@ -361,11 +378,16 @@ export default function AdminPanel() {
             </div>
 
             <div>
-              <label className="block text-main-blue font-bold mb-2">Contenido Completo</label>
+              <label className="block text-main-blue font-bold mb-2 flex items-center">
+                Contenido Completo 
+                <span className="text-xs font-normal text-light-blue ml-3 bg-blue-50 px-2 py-1 rounded">
+                  (Soporta Emojis 🚀 y Enlaces Web automáticos 🔗)
+                </span>
+              </label>
               <textarea required value={contenido} onChange={(e) => setContenido(e.target.value)} className="w-full border border-gray-300 p-3 rounded" rows="12" />
               <div className="mt-4 bg-gray-50 p-5 rounded border border-gray-200 shadow-inner">
                 <label className="block text-xs font-bold text-gray-500 uppercase mb-3">Simulación en Portada</label>
-                <div ref={contenidoPreviewRef} className="text-gray-600 text-lg font-light leading-relaxed noticia-content max-h-80 overflow-hidden bg-white p-5 rounded" dangerouslySetInnerHTML={{ __html: contenido || "Vista previa..." }} />
+                <div ref={contenidoPreviewRef} className="text-gray-600 text-lg font-light leading-relaxed noticia-content max-h-80 overflow-hidden bg-white p-5 rounded" dangerouslySetInnerHTML={{ __html: formatearTextoConLinks(contenido) || "Vista previa..." }} />
                 <div className="mt-4">{showReadMoreWarning ? <p className="text-main-red font-bold text-sm">⚠️ El texto superó el límite visible.</p> : <p className="text-green-600 font-bold text-sm">✓ El texto cabe perfectamente.</p>}</div>
               </div>
             </div>
@@ -435,7 +457,6 @@ export default function AdminPanel() {
                   <img src={n.imagenPrincipalUrl} className="w-12 h-12 object-cover rounded shadow-sm" alt="Thumbnail" />
                   <div className="flex flex-col">
                     <h3 className="font-bold text-main-blue line-clamp-1">{n.titulo}</h3>
-                    {/* INDICADOR VISUAL DEL SLUG */}
                     <span className="text-xs text-light-blue font-medium mt-1">
                       URL: /noticias/{n.slug || n.id}
                     </span>

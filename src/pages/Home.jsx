@@ -12,6 +12,20 @@ import 'swiper/css/pagination';
 
 import isotipoColor from "../assets/Isotipo-color-512.png";
 
+// Función para detectar URLs en el texto y convertirlas en enlaces clickeables de forma segura
+const formatearTextoConLinks = (texto) => {
+  if (!texto) return "";
+  const partes = texto.split(/(<[^>]+>)/g);
+  for (let i = 0; i < partes.length; i++) {
+    if (i % 2 === 0) {
+      partes[i] = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red hover:text-main-blue font-bold underline transition-colors pointer-events-auto">${url}</a>`;
+      });
+    }
+  }
+  return partes.join('');
+};
+
 export default function Home() {
   const [noticia, setNoticia] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -61,7 +75,8 @@ export default function Home() {
     return <div className="min-h-screen bg-white flex items-center justify-center text-main-blue font-bold text-xl">Cargando IIRESODH...</div>;
   }
 
-  const contenidoNoticia = noticia ? (noticia.contenido || noticia.contenidoHTML || noticia.cuerpo || `<p>${noticia.resumen}</p>` || "") : "";
+  const contenidoNoticiaRaw = noticia ? (noticia.contenido || noticia.contenidoHTML || noticia.cuerpo || `<p>${noticia.resumen}</p>` || "") : "";
+  const contenidoNoticia = formatearTextoConLinks(contenidoNoticiaRaw);
 
   return (
     <div className="bg-white flex flex-col min-h-screen">

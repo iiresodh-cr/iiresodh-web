@@ -10,15 +10,28 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
+// Función para detectar URLs en el texto y convertirlas en enlaces clickeables de forma segura
+const formatearTextoConLinks = (texto) => {
+  if (!texto) return "";
+  const partes = texto.split(/(<[^>]+>)/g);
+  for (let i = 0; i < partes.length; i++) {
+    if (i % 2 === 0) {
+      partes[i] = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red hover:text-main-blue font-bold underline transition-colors">${url}</a>`;
+      });
+    }
+  }
+  return partes.join('');
+};
+
 export default function NoticiaDetalle() {
-  const { id } = useParams(); // Puede ser el slug o el ID
+  const { id } = useParams(); 
   const [noticia, setNoticia] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchNoticia = async () => {
       try {
-        // 1. Buscamos primero por el Slug (URL Amigable)
         const q = query(collection(db, "noticias"), where("slug", "==", id), limit(1));
         const querySnapshot = await getDocs(q);
 
@@ -26,7 +39,6 @@ export default function NoticiaDetalle() {
           const docData = querySnapshot.docs[0];
           setNoticia({ id: docData.id, ...docData.data() });
         } else {
-          // 2. Si no lo encuentra por slug, busca por ID normal (retrocompatibilidad)
           const docRef = doc(db, "noticias", id);
           const docSnap = await getDoc(docRef);
 
@@ -55,7 +67,8 @@ export default function NoticiaDetalle() {
     todasLasImagenes.push(...noticia.imagenesCarruselUrls);
   }
 
-  const contenidoNoticia = noticia.contenido || noticia.contenidoHTML || noticia.cuerpo || "<p>No hay contenido disponible para esta noticia.</p>";
+  const contenidoNoticiaRaw = noticia.contenido || noticia.contenidoHTML || noticia.cuerpo || "<p>No hay contenido disponible para esta noticia.</p>";
+  const contenidoNoticia = formatearTextoConLinks(contenidoNoticiaRaw);
 
   let fechaFormateada = "Fecha no disponible";
   if (noticia.fechaPublicacion) {
