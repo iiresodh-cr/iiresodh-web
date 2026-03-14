@@ -1,7 +1,7 @@
 // src/pages/NoticiaDetalle.jsx
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, query, where, getDocs, limit } from "firebase/firestore";
 import { db } from "../firebase/config";
 
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -11,18 +11,28 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
 export default function NoticiaDetalle() {
-  const { id } = useParams();
+  const { id } = useParams(); // 'id' ahora puede ser el slug o el ID real
   const [noticia, setNoticia] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchNoticia = async () => {
       try {
-        const docRef = doc(db, "noticias", id);
-        const docSnap = await getDoc(docRef);
+        // 1. Intentamos buscar la noticia por su slug (URL amigable)
+        const q = query(collection(db, "noticias"), where("slug", "==", id), limit(1));
+        const querySnapshot = await getDocs(q);
 
-        if (docSnap.exists()) {
-          setNoticia({ id: docSnap.id, ...docSnap.data() });
+        if (!querySnapshot.empty) {
+          const docData = querySnapshot.docs[0];
+          setNoticia({ id: docData.id, ...docData.data() });
+        } else {
+          // 2. Si no la encuentra por slug, intentamos por ID directo (retrocompatibilidad)
+          const docRef = doc(db, "noticias", id);
+          const docSnap = await getDoc(docRef);
+
+          if (docSnap.exists()) {
+            setNoticia({ id: docSnap.id, ...docSnap.data() });
+          }
         }
       } catch (error) {
         console.error("Error al obtener la noticia:", error);

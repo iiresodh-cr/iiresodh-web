@@ -4,7 +4,6 @@ import { useSearchParams, Link } from "react-router-dom";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../firebase/config";
 
-// Índice interno de páginas estáticas del sitio web (ENRIQUECIDO Y CON DEEP LINKS)
 const PAGINAS_ESTATICAS = [
   { 
     id: 'p1-general', 
@@ -71,7 +70,6 @@ const PAGINAS_ESTATICAS = [
   }
 ];
 
-// Función auxiliar para quitar acentos y facilitar la búsqueda
 const normalizarTexto = (texto) => {
   return texto ? texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
 };
@@ -96,7 +94,6 @@ export default function ResultadosBusqueda() {
       setLoading(true);
       const terminoNormalizado = normalizarTexto(terminoBusqueda);
 
-      // 1. Buscar en páginas estáticas
       const paginasFiltradas = PAGINAS_ESTATICAS.filter(pagina => {
         const tituloMatch = normalizarTexto(pagina.titulo).includes(terminoNormalizado);
         const descMatch = normalizarTexto(pagina.descripcion).includes(terminoNormalizado);
@@ -105,7 +102,6 @@ export default function ResultadosBusqueda() {
       });
       setResultadosPaginas(paginasFiltradas);
 
-      // 2. Buscar en Noticias de Firestore
       try {
         const q = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"));
         const querySnapshot = await getDocs(q);
@@ -113,7 +109,6 @@ export default function ResultadosBusqueda() {
         const noticiasFiltradas = [];
         querySnapshot.forEach((doc) => {
           const data = doc.data();
-          // Normalizamos campos para buscar ignorando mayúsculas y acentos
           const tituloNorm = normalizarTexto(data.titulo);
           const resumenNorm = normalizarTexto(data.resumen);
           const contenidoNorm = normalizarTexto(data.contenido);
@@ -176,7 +171,6 @@ export default function ResultadosBusqueda() {
         ) : (
           <div className="space-y-10">
             
-            {/* SECCIÓN: PÁGINAS DEL SITIO */}
             {resultadosPaginas.length > 0 && (
               <section>
                 <h2 className="text-xl font-bold text-main-blue mb-4 flex items-center gap-2">
@@ -194,7 +188,6 @@ export default function ResultadosBusqueda() {
               </section>
             )}
 
-            {/* SECCIÓN: NOTICIAS */}
             {resultadosNoticias.length > 0 && (
               <section>
                 <h2 className="text-xl font-bold text-main-blue mb-4 flex items-center gap-2">
@@ -203,7 +196,7 @@ export default function ResultadosBusqueda() {
                 </h2>
                 <div className="grid gap-4">
                   {resultadosNoticias.map(noticia => (
-                    <Link key={noticia.id} to={`/noticias/${noticia.id}`} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex flex-col sm:flex-row gap-5 hover:shadow-md hover:border-pale-blue transition-all group">
+                    <Link key={noticia.id} to={`/noticias/${noticia.slug || noticia.id}`} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex flex-col sm:flex-row gap-5 hover:shadow-md hover:border-pale-blue transition-all group">
                       <div className="w-full sm:w-40 shrink-0 aspect-video sm:aspect-square bg-gray-50 rounded overflow-hidden flex items-center justify-center">
                         <img src={noticia.imagenPrincipalUrl} alt={noticia.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       </div>

@@ -9,6 +9,18 @@ import { httpsCallable } from "firebase/functions";
 
 import logoColor from "../assets/Logo_Oficiale_200w-trim.png";
 
+// Función profesional para generar un slug amigable a partir del título
+const generarSlug = (texto) => {
+  return texto
+    .toString()
+    .normalize('NFD') // Separa los acentos de las letras
+    .replace(/[\u0300-\u036f]/g, '') // Elimina los acentos
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9 ]/g, '') // Elimina caracteres especiales
+    .replace(/\s+/g, '-'); // Reemplaza espacios por guiones
+};
+
 export default function AdminPanel() {
   const navigate = useNavigate(); 
   
@@ -53,10 +65,9 @@ export default function AdminPanel() {
       const decodedUrl = decodeURIComponent(url);
       const urlParts = decodedUrl.split('?')[0].split('/');
       const fileNameWithTimestamp = urlParts[urlParts.length - 1];
-      // Las imágenes se guardan como: TIMESTAMP_nombreArchivo.ext
       const nameParts = fileNameWithTimestamp.split('_');
       if (nameParts.length > 1) {
-        return nameParts.slice(1).join('_'); // Reconstruye el nombre original ignorando el timestamp
+        return nameParts.slice(1).join('_');
       }
       return fileNameWithTimestamp;
     } catch (error) {
@@ -64,7 +75,6 @@ export default function AdminPanel() {
     }
   };
 
-  // Carga inicial (solo 10 noticias)
   const cargarNoticias = async () => {
     try {
       const q = query(
@@ -79,7 +89,6 @@ export default function AdminPanel() {
       }));
       setListaNoticias(noticiasData);
 
-      // Guardamos el último documento para saber de dónde partir en la siguiente página
       if (querySnapshot.docs.length > 0) {
         setUltimoDoc(querySnapshot.docs[querySnapshot.docs.length - 1]);
         setHayMas(querySnapshot.docs.length === NOTICIAS_POR_PAGINA);
@@ -91,7 +100,6 @@ export default function AdminPanel() {
     }
   };
 
-  // Función para cargar la siguiente página de noticias
   const cargarMasNoticias = async () => {
     if (!ultimoDoc) return;
     setCargandoMas(true);
@@ -210,7 +218,7 @@ export default function AdminPanel() {
     if (window.confirm(`¿Eliminar permanentemente "${titulo}"?`)) {
       try {
         await deleteDoc(doc(db, "noticias", id));
-        cargarNoticias(); // Refresca y vuelve a la página 1
+        cargarNoticias(); 
       } catch (error) {
         console.error("Error al borrar:", error);
       }
@@ -268,8 +276,11 @@ export default function AdminPanel() {
         nuevasUrls.push(url);
       }
       
+      const slugGenerado = generarSlug(titulo);
+
       const datos = {
         titulo, resumen, contenido,
+        slug: slugGenerado, // Guardamos la URL amigable
         imagenPrincipalUrl: finalPrincipalUrl,
         imagenesCarruselUrls: [...carruselExistente, ...nuevasUrls],
         fechaPublicacion: fechaPersonalizada ? Timestamp.fromDate(new Date(fechaPersonalizada)) : serverTimestamp(),
@@ -285,7 +296,7 @@ export default function AdminPanel() {
       }
 
       cancelarEdicion();
-      cargarNoticias(); // Refresca y vuelve a la página 1
+      cargarNoticias(); 
     } catch (err) {
       console.error(err);
       setMensaje("Error en el proceso.");
@@ -425,7 +436,6 @@ export default function AdminPanel() {
             ))}
           </div>
           
-          {/* BOTÓN DE CARGAR MÁS NOTICIAS */}
           {hayMas && (
             <div className="mt-8 flex justify-center">
               <button 

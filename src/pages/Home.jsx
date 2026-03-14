@@ -10,7 +10,6 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
-// Importamos el isotipo para la sección del video
 import isotipoColor from "../assets/Isotipo-color-512.png";
 
 export default function Home() {
@@ -19,7 +18,6 @@ export default function Home() {
   const [isOverflowing, setIsOverflowing] = useState(false);
   const contentRef = useRef(null);
 
-  // Estado para controlar el modal del video
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
   useEffect(() => {
@@ -41,18 +39,15 @@ export default function Home() {
     fetchUltimaNoticia();
   }, []);
 
-  // Efecto para comprobar si el texto de la noticia se desborda (overflow)
   useEffect(() => {
     const checkOverflow = () => {
       if (contentRef.current) {
         const { scrollHeight, clientHeight } = contentRef.current;
-        // Agregamos un pequeño margen de 2px para evitar falsos positivos por redondeo del navegador
         setIsOverflowing(scrollHeight > clientHeight + 2);
       }
     };
 
     checkOverflow();
-    // Ejecutamos nuevamente tras un breve tiempo para asegurar que las fuentes/imágenes hayan cargado
     const timeoutId = setTimeout(checkOverflow, 150);
     window.addEventListener('resize', checkOverflow);
     
@@ -66,7 +61,6 @@ export default function Home() {
     return <div className="min-h-screen bg-white flex items-center justify-center text-main-blue font-bold text-xl">Cargando IIRESODH...</div>;
   }
 
-  // Preparamos el contenido por si algunos campos vienen vacíos (compatibilidad)
   const contenidoNoticia = noticia ? (noticia.contenido || noticia.contenidoHTML || noticia.cuerpo || `<p>${noticia.resumen}</p>` || "") : "";
 
   return (
@@ -117,7 +111,7 @@ export default function Home() {
                   
                   {isOverflowing && (
                     <Link 
-                      to={`/noticias/${noticia.id}`} 
+                      to={`/noticias/${noticia.slug || noticia.id}`} 
                       className="text-main-red font-bold hover:text-main-blue transition-colors mt-auto flex items-center gap-2 self-start uppercase tracking-wide text-sm"
                     >
                       Leer noticia completa <span className="text-xl">&rarr;</span>
@@ -132,7 +126,6 @@ export default function Home() {
         <section className="relative py-12 md:py-16 px-8 z-10">
           <div className="max-w-6xl mx-auto bg-white/80 backdrop-blur-sm p-8 md:p-12 rounded-2xl shadow-sm border border-gray-200 flex flex-col lg:flex-row items-center gap-12">
             
-            {/* Columna Izquierda: Texto */}
             <div className="lg:w-2/3 space-y-6 text-main-blue text-lg md:text-xl font-light leading-relaxed text-center lg:text-left">
               <p className="italic">
                 El <strong className="font-extrabold text-light-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
@@ -145,7 +138,6 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Columna Derecha: Isotipo y Botón (Diseño Consistente y Profesional) */}
             <div className="lg:w-1/3 flex flex-col items-center justify-center w-full border-t lg:border-t-0 lg:border-l border-gray-200 pt-10 lg:pt-0 lg:pl-10">
               <div className="flex flex-col items-center justify-center gap-10 w-full max-w-[16rem]">
                 <img 
@@ -157,7 +149,7 @@ export default function Home() {
                   onClick={() => setIsVideoModalOpen(true)}
                   className="bg-main-red hover:bg-bright-red text-white px-8 py-2.5 rounded-full font-medium uppercase text-sm tracking-widest shadow-md transition-colors w-full text-center cursor-pointer"
                 >
-                  Video IIRESODH
+                  Ver Video Institucional
                 </button>
               </div>
             </div>
@@ -165,15 +157,13 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Separador con estructura corregida para mantener el mismo ancho */}
         <div className="px-8 relative z-10">
           <div className="max-w-6xl mx-auto border-t border-gray-200/60"></div>
         </div>
 
-        {/* Sección Oficinas con estructura corregida para alineación exacta */}
         <section className="relative py-20 px-8 z-10">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-extrabold text-main-blue uppercase tracking-widest mb-12 text-center md:text-left">
+            <h2 className="text-3xl font-extrabold text-main-red uppercase tracking-widest mb-12 text-center md:text-left">
               Nuestras Oficinas:
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
@@ -228,17 +218,15 @@ export default function Home() {
         </section>
       </div>
 
-      {/* MODAL DEL VIDEO INSTITUCIONAL */}
       {isVideoModalOpen && (
         <div 
           className="fixed inset-0 z-100 flex items-center justify-center bg-black/85 px-4 backdrop-blur-sm transition-opacity"
-          onClick={() => setIsVideoModalOpen(false)} // Cierra al clicar afuera
+          onClick={() => setIsVideoModalOpen(false)} 
         >
           <div 
             className="w-full max-w-5xl relative animate-fade-in-up"
-            onClick={(e) => e.stopPropagation()} // Evita que se cierre al clicar el video en sí
+            onClick={(e) => e.stopPropagation()} 
           >
-            {/* Botón de cerrar "X" */}
             <button 
               onClick={() => setIsVideoModalOpen(false)}
               className="absolute -top-12 right-0 text-white hover:text-main-red transition-colors flex items-center gap-2 font-bold uppercase tracking-wider cursor-pointer"
@@ -250,7 +238,6 @@ export default function Home() {
               </svg>
             </button>
 
-            {/* Contenedor del video */}
             <div className="w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-gray-800">
               <video 
                 className="w-full h-full object-contain"
