@@ -12,15 +12,20 @@ import 'swiper/css/pagination';
 
 import isotipoColor from "../assets/Isotipo-color-512.png";
 
-// Función para detectar URLs en el texto y convertirlas en enlaces clickeables de forma segura
-const formatearTextoConLinks = (texto) => {
+// NUEVA FUNCIÓN: Detecta URLs y también Hashtags (#)
+const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
   const partes = texto.split(/(<[^>]+>)/g);
   for (let i = 0; i < partes.length; i++) {
     if (i % 2 === 0) {
-      partes[i] = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
+      let procesado = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
         return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red hover:text-main-blue font-bold underline transition-colors pointer-events-auto">${url}</a>`;
       });
+      procesado = procesado.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
+        const termino = hashtag.substring(1); 
+        return `<a href="/buscar?q=${termino}" class="text-light-blue hover:text-main-red font-bold transition-colors pointer-events-auto">${hashtag}</a>`;
+      });
+      partes[i] = procesado;
     }
   }
   return partes.join('');
@@ -76,7 +81,8 @@ export default function Home() {
   }
 
   const contenidoNoticiaRaw = noticia ? (noticia.contenido || noticia.contenidoHTML || noticia.cuerpo || `<p>${noticia.resumen}</p>` || "") : "";
-  const contenidoNoticia = formatearTextoConLinks(contenidoNoticiaRaw);
+  // Aplicamos el nuevo formateador
+  const contenidoNoticia = formatearTextoConLinksYHashtags(contenidoNoticiaRaw);
 
   return (
     <div className="bg-white flex flex-col min-h-screen">

@@ -9,38 +9,40 @@ import { httpsCallable } from "firebase/functions";
 
 import logoColor from "../assets/Logo_Oficiale_200w-trim.png";
 
-// Función profesional y a prueba de fallos para generar un slug amigable
 const generarSlug = (texto) => {
   if (!texto) return `noticia-${Math.random().toString(36).substring(2, 6)}`;
   
   const baseSlug = texto
     .toString()
-    .normalize('NFD') // Separa los acentos
-    .replace(/[\u0300-\u036f]/g, '') // Elimina acentos
+    .normalize('NFD') 
+    .replace(/[\u0300-\u036f]/g, '') 
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s-]/g, '') // Permite solo letras, números, espacios y guiones
-    .replace(/[\s_-]+/g, '-') // Reemplaza espacios y guiones repetidos por un solo guion
-    .replace(/^-+|-+$/g, ''); // Quita guiones al inicio o final
+    .replace(/[^a-z0-9\s-]/g, '') 
+    .replace(/[\s_-]+/g, '-') 
+    .replace(/^-+|-+$/g, ''); 
   
-  // Generamos un código corto al azar de 4 letras/números para evitar URLs duplicadas
   const randomCode = Math.random().toString(36).substring(2, 6);
   
   return baseSlug ? `${baseSlug}-${randomCode}` : `noticia-${randomCode}`;
 };
 
-// Función para detectar URLs en el texto y convertirlas en enlaces clickeables de forma segura
-const formatearTextoConLinks = (texto) => {
+// NUEVA FUNCIÓN: Detecta URLs y también Hashtags (#)
+const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
-  
-  // Separamos el texto por etiquetas HTML para no romper atributos si el texto ya traía HTML
   const partes = texto.split(/(<[^>]+>)/g);
   for (let i = 0; i < partes.length; i++) {
-    // Los índices pares son texto normal, los impares son etiquetas HTML
     if (i % 2 === 0) {
-      partes[i] = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
-        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red hover:text-main-blue font-bold underline transition-colors">${url}</a>`;
+      // 1. Convertir URLs
+      let procesado = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red hover:text-main-blue font-bold underline transition-colors pointer-events-auto">${url}</a>`;
       });
+      // 2. Convertir Hashtags (#)
+      procesado = procesado.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
+        const termino = hashtag.substring(1); // Quita el '#' para la búsqueda
+        return `<a href="/buscar?q=${termino}" class="text-light-blue hover:text-main-red font-bold transition-colors pointer-events-auto">${hashtag}</a>`;
+      });
+      partes[i] = procesado;
     }
   }
   return partes.join('');
@@ -67,7 +69,6 @@ export default function AdminPanel() {
   const [mensaje, setMensaje] = useState("");
   const [listaNoticias, setListaNoticias] = useState([]);
 
-  // Estados para la paginación
   const [ultimoDoc, setUltimoDoc] = useState(null);
   const [hayMas, setHayMas] = useState(true);
   const [cargandoMas, setCargandoMas] = useState(false);
@@ -304,7 +305,7 @@ export default function AdminPanel() {
 
       const datos = {
         titulo, resumen, contenido,
-        slug: slugGenerado, // Guardamos la URL amigable
+        slug: slugGenerado, 
         imagenPrincipalUrl: finalPrincipalUrl,
         imagenesCarruselUrls: [...carruselExistente, ...nuevasUrls],
         fechaPublicacion: fechaPersonalizada ? Timestamp.fromDate(new Date(fechaPersonalizada)) : serverTimestamp(),
@@ -380,14 +381,15 @@ export default function AdminPanel() {
             <div>
               <label className="block text-main-blue font-bold mb-2 flex items-center">
                 Contenido Completo 
+                {/* MENSAJE DE AYUDA ACTUALIZADO */}
                 <span className="text-xs font-normal text-light-blue ml-3 bg-blue-50 px-2 py-1 rounded">
-                  (Soporta Emojis 🚀 y Enlaces Web automáticos 🔗)
+                  (Soporta Emojis 🚀, Enlaces 🔗 y Hashtags #)
                 </span>
               </label>
               <textarea required value={contenido} onChange={(e) => setContenido(e.target.value)} className="w-full border border-gray-300 p-3 rounded" rows="12" />
               <div className="mt-4 bg-gray-50 p-5 rounded border border-gray-200 shadow-inner">
                 <label className="block text-xs font-bold text-gray-500 uppercase mb-3">Simulación en Portada</label>
-                <div ref={contenidoPreviewRef} className="text-gray-600 text-lg font-light leading-relaxed noticia-content max-h-80 overflow-hidden bg-white p-5 rounded" dangerouslySetInnerHTML={{ __html: formatearTextoConLinks(contenido) || "Vista previa..." }} />
+                <div ref={contenidoPreviewRef} className="text-gray-600 text-lg font-light leading-relaxed noticia-content max-h-80 overflow-hidden bg-white p-5 rounded" dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(contenido) || "Vista previa..." }} />
                 <div className="mt-4">{showReadMoreWarning ? <p className="text-main-red font-bold text-sm">⚠️ El texto superó el límite visible.</p> : <p className="text-green-600 font-bold text-sm">✓ El texto cabe perfectamente.</p>}</div>
               </div>
             </div>
