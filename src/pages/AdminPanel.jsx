@@ -3,7 +3,6 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { signOut } from "firebase/auth";
 import { auth, db, storage, functions } from "../firebase/config";
-// IMPORTANTE: Agregamos 'limit' y 'startAfter' para la paginación
 import { collection, addDoc, updateDoc, serverTimestamp, doc, deleteDoc, getDocs, query, orderBy, Timestamp, limit, startAfter } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { httpsCallable } from "firebase/functions";
@@ -45,6 +44,24 @@ export default function AdminPanel() {
     setTimeout(() => {
       signOut(auth).catch((error) => console.error("Error al cerrar sesión:", error));
     }, 100);
+  };
+
+  // Función para extraer el nombre original de la imagen desde la URL de Firebase
+  const extraerNombreDesdeUrl = (url) => {
+    if (!url) return "";
+    try {
+      const decodedUrl = decodeURIComponent(url);
+      const urlParts = decodedUrl.split('?')[0].split('/');
+      const fileNameWithTimestamp = urlParts[urlParts.length - 1];
+      // Las imágenes se guardan como: TIMESTAMP_nombreArchivo.ext
+      const nameParts = fileNameWithTimestamp.split('_');
+      if (nameParts.length > 1) {
+        return nameParts.slice(1).join('_'); // Reconstruye el nombre original ignorando el timestamp
+      }
+      return fileNameWithTimestamp;
+    } catch (error) {
+      return "Imagen existente";
+    }
   };
 
   // Carga inicial (solo 10 noticias)
@@ -337,30 +354,48 @@ export default function AdminPanel() {
 
             <div className="grid grid-cols-1 gap-6 bg-basic-beige p-6 rounded border-2 border-pale-blue">
               <input type="file" accept="image/*" required={!editandoId && !imagenPrincipalAnterior} onChange={handleSeleccionPrincipal} className="sr-only" id="input-p" />
-              <label htmlFor="input-p" className="bg-main-blue text-white px-6 py-2 rounded font-bold cursor-pointer inline-block shadow-md">Seleccionar Imagen Principal</label>
-              {mainImagePreviewUrl && <img src={mainImagePreviewUrl} alt="Preview" className="max-h-60 rounded shadow-md mx-auto block" />}
+              <label htmlFor="input-p" className="bg-main-blue text-white px-6 py-2 rounded font-bold cursor-pointer inline-block shadow-md hover:bg-light-blue transition-colors">Seleccionar Imagen Principal</label>
+              
+              {mainImagePreviewUrl && (
+                <div className="mt-2 bg-white p-3 rounded border inline-block max-w-full">
+                  <img src={mainImagePreviewUrl} alt="Preview" className="max-h-60 rounded shadow-sm block object-contain mx-auto" />
+                  <p className="text-sm text-gray-600 font-medium text-center mt-3 truncate px-2" title={imagenPrincipal ? imagenPrincipal.name : extraerNombreDesdeUrl(mainImagePreviewUrl)}>
+                    {imagenPrincipal ? imagenPrincipal.name : extraerNombreDesdeUrl(mainImagePreviewUrl)}
+                  </p>
+                </div>
+              )}
 
               <input type="file" accept="image/*" multiple onChange={handleAgregarImagenes} className="sr-only" id="input-c" />
-              <label htmlFor="input-c" className="bg-light-blue text-white px-6 py-2 rounded font-bold cursor-pointer inline-block mt-4 shadow-md">+ Cargar Carrusel (Múltiple)</label>
+              <label htmlFor="input-c" className="bg-light-blue text-white px-6 py-2 rounded font-bold cursor-pointer inline-block mt-4 shadow-md hover:bg-main-blue transition-colors">+ Cargar Carrusel (Múltiple)</label>
               
               <div className="grid gap-3">
                 {carruselExistente.map((url, i) => (
-                  <div key={`old-${i}`} className="flex items-center justify-between bg-white p-3 rounded border">
-                    <img src={url} className="h-20 rounded" alt="Existente" />
-                    <div className="flex gap-2">
-                      <button type="button" onClick={() => moverImagenExistente(i, -1)} disabled={i === 0} className="px-3 py-1 bg-main-blue text-white rounded">↑</button>
-                      <button type="button" onClick={() => moverImagenExistente(i, 1)} disabled={i === carruselExistente.length - 1} className="px-3 py-1 bg-main-blue text-white rounded">↓</button>
-                      <button type="button" onClick={() => setCarruselExistente(prev => prev.filter((_, idx) => idx !== i))} className="px-3 py-1 bg-bright-red text-white rounded">X</button>
+                  <div key={`old-${i}`} className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-3 rounded border gap-4">
+                    <div className="flex items-center gap-4 overflow-hidden w-full sm:w-auto">
+                      <img src={url} className="h-20 w-24 object-cover rounded shadow-sm shrink-0" alt="Existente" />
+                      <span className="text-sm font-medium text-gray-600 truncate" title={extraerNombreDesdeUrl(url)}>
+                        {extraerNombreDesdeUrl(url)}
+                      </span>
+                    </div>
+                    <div className="flex gap-2 w-full sm:w-auto justify-end shrink-0">
+                      <button type="button" onClick={() => moverImagenExistente(i, -1)} disabled={i === 0} className="px-3 py-1 bg-main-blue hover:bg-light-blue transition-colors text-white rounded disabled:opacity-50">↑</button>
+                      <button type="button" onClick={() => moverImagenExistente(i, 1)} disabled={i === carruselExistente.length - 1} className="px-3 py-1 bg-main-blue hover:bg-light-blue transition-colors text-white rounded disabled:opacity-50">↓</button>
+                      <button type="button" onClick={() => setCarruselExistente(prev => prev.filter((_, idx) => idx !== i))} className="px-3 py-1 bg-bright-red hover:bg-red-700 transition-colors text-white rounded">X</button>
                     </div>
                   </div>
                 ))}
                 {imagenesCarrusel.map((f, i) => (
-                  <div key={`new-${i}`} className="flex items-center justify-between bg-green-50 p-3 rounded border border-green-200">
-                    <img src={URL.createObjectURL(f)} className="h-20 rounded" alt="Nueva" />
-                    <div className="flex gap-2">
-                      <button type="button" onClick={() => moverImagenNueva(i, -1)} disabled={i === 0} className="px-3 py-1 bg-main-blue text-white rounded">↑</button>
-                      <button type="button" onClick={() => moverImagenNueva(i, 1)} disabled={i === imagenesCarrusel.length - 1} className="px-3 py-1 bg-main-blue text-white rounded">↓</button>
-                      <button type="button" onClick={() => setImagenesCarrusel(prev => prev.filter((_, idx) => idx !== i))} className="px-3 py-1 bg-bright-red text-white rounded">X</button>
+                  <div key={`new-${i}`} className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-green-50 p-3 rounded border border-green-200 gap-4">
+                    <div className="flex items-center gap-4 overflow-hidden w-full sm:w-auto">
+                      <img src={URL.createObjectURL(f)} className="h-20 w-24 object-cover rounded shadow-sm shrink-0" alt="Nueva" />
+                      <span className="text-sm font-medium text-green-700 truncate" title={f.name}>
+                        {f.name} <span className="text-xs text-green-600 ml-1 font-bold">(Nueva)</span>
+                      </span>
+                    </div>
+                    <div className="flex gap-2 w-full sm:w-auto justify-end shrink-0">
+                      <button type="button" onClick={() => moverImagenNueva(i, -1)} disabled={i === 0} className="px-3 py-1 bg-main-blue hover:bg-light-blue transition-colors text-white rounded disabled:opacity-50">↑</button>
+                      <button type="button" onClick={() => moverImagenNueva(i, 1)} disabled={i === imagenesCarrusel.length - 1} className="px-3 py-1 bg-main-blue hover:bg-light-blue transition-colors text-white rounded disabled:opacity-50">↓</button>
+                      <button type="button" onClick={() => setImagenesCarrusel(prev => prev.filter((_, idx) => idx !== i))} className="px-3 py-1 bg-bright-red hover:bg-red-700 transition-colors text-white rounded">X</button>
                     </div>
                   </div>
                 ))}
