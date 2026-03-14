@@ -10,7 +10,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
-// Importamos el nuevo isotipo para la sección del video
+// Importamos el isotipo para la sección del video
 import isotipoColor from "../assets/Isotipo-color-512.png";
 
 export default function Home() {
@@ -145,17 +145,17 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Columna Derecha: Isotipo y Botón */}
+            {/* Columna Derecha: Isotipo y Botón (Diseño Consistente y Profesional) */}
             <div className="lg:w-1/3 flex flex-col items-center justify-center w-full border-t lg:border-t-0 lg:border-l border-gray-200 pt-10 lg:pt-0 lg:pl-10">
-              <div className="flex flex-col items-center justify-center gap-8">
+              <div className="flex flex-col items-center justify-center gap-10 w-full max-w-[16rem]">
                 <img 
                   src={isotipoColor} 
                   alt="Isotipo IIRESODH" 
-                  className="w-32 md:w-40 h-auto object-contain opacity-95 drop-shadow-sm" 
+                  className="w-48 md:w-56 h-auto object-contain opacity-95 drop-shadow-sm" 
                 />
                 <button 
                   onClick={() => setIsVideoModalOpen(true)}
-                  className="bg-main-blue hover:bg-light-blue text-white font-bold py-3 px-6 md:px-8 rounded-full uppercase tracking-widest shadow-md hover:shadow-lg transition-all duration-300 text-sm md:text-base w-full text-center cursor-pointer"
+                  className="bg-main-red hover:bg-bright-red text-white px-8 py-2.5 rounded-full font-medium uppercase text-sm tracking-widest shadow-md transition-colors w-full text-center cursor-pointer"
                 >
                   Ver Video Institucional
                 </button>
