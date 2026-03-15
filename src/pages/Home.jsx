@@ -39,7 +39,6 @@ export default function Home() {
   const [isOverflowing, setIsOverflowing] = useState(false);
   const contentRef = useRef(null);
 
-  // ESTADO REFATORIZADO: Ahora guarda la URL del video activo, o null si está cerrado
   const [activeVideo, setActiveVideo] = useState(null);
 
   useEffect(() => {
@@ -92,15 +91,15 @@ export default function Home() {
         
         <div className="bg-watermark"></div>
 
-        {/* SECCIÓN 1: ÚLTIMA NOTICIA */}
-        <section className="relative pt-6 pb-12 px-8 z-10">
+        {/* SECCIÓN 1: ÚLTIMA NOTICIA (Ancho completo en móvil) */}
+        <section className="relative pt-6 pb-12 px-0 md:px-8 z-10">
           <div className="max-w-6xl mx-auto">
             {!noticia ? (
-              <div className="text-center text-light-blue text-xl py-20 bg-white rounded-3xl shadow-2xl border border-gray-100">
+              <div className="text-center text-light-blue text-xl py-20 bg-white md:rounded-3xl shadow-2xl border-y md:border border-gray-100">
                 Aún no hay noticias publicadas.
               </div>
             ) : (
-              <div className="bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row border-t-8 border-main-red min-h-112.5 md:min-h-120">
+              <div className="bg-white md:rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row border-t-8 border-main-red min-h-112.5 md:min-h-120">
                 
                 <div className="w-full md:w-2/5 bg-white border-b md:border-b-0 md:border-r border-gray-100 relative shrink-0"> 
                   <div className="aspect-4/5 w-full relative">
@@ -123,13 +122,13 @@ export default function Home() {
                   </div>
                 </div>
                 
-                <div className="w-full md:w-3/5 p-8 md:p-12 flex flex-col justify-center bg-white">
+                <div className="w-full md:w-3/5 p-6 md:p-12 flex flex-col justify-center bg-white">
                   <span className="text-xs font-extrabold text-bright-red uppercase tracking-widest mb-3">Última Noticia</span>
-                  <h2 className="text-3xl md:text-4xl font-extrabold text-main-blue mb-6 leading-tight">{noticia.titulo}</h2>
+                  <h2 className="text-2xl md:text-4xl font-extrabold text-main-blue mb-6 leading-tight">{noticia.titulo}</h2>
                   
                   <div 
                     ref={contentRef}
-                    className="text-gray-600 mb-6 text-lg font-light leading-relaxed noticia-content max-h-80 overflow-hidden"
+                    className="text-gray-600 mb-6 text-base md:text-lg font-light leading-relaxed noticia-content max-h-80 overflow-hidden"
                     dangerouslySetInnerHTML={{ __html: contenidoNoticia }}
                   />
                   
@@ -147,11 +146,11 @@ export default function Home() {
           </div>
         </section>
 
-        {/* SECCIÓN 2: ACERCA DEL INSTITUTO */}
-        <section className="relative py-12 md:py-16 px-8 z-10">
-          <div className="max-w-6xl mx-auto bg-white p-8 md:p-12 rounded-3xl shadow-2xl border border-gray-100 flex flex-col lg:flex-row items-center gap-12">
+        {/* SECCIÓN 2: ACERCA DEL INSTITUTO (Ancho completo en móvil) */}
+        <section className="relative py-12 md:py-16 px-0 md:px-8 z-10">
+          <div className="max-w-6xl mx-auto bg-white p-8 md:p-12 md:rounded-3xl shadow-2xl border-y md:border border-gray-100 flex flex-col lg:flex-row items-center gap-12">
             
-            <div className="lg:w-2/3 space-y-6 text-main-blue text-lg md:text-xl font-light leading-relaxed text-center lg:text-left">
+            <div className="lg:w-2/3 space-y-6 text-main-blue text-base md:text-xl font-light leading-relaxed text-center lg:text-left">
               <p className="italic">
                 El <strong className="font-extrabold text-light-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
               </p>
@@ -182,19 +181,19 @@ export default function Home() {
           </div>
         </section>
 
-        <div className="px-8 relative z-10">
+        <div className="px-4 md:px-8 relative z-10">
           <div className="max-w-6xl mx-auto border-t border-gray-200/60"></div>
         </div>
 
-        {/* SECCIÓN 3: OFICINAS */}
-        <section className="relative py-20 px-8 z-10">
+        {/* SECCIÓN 3: OFICINAS (Márgenes mínimos en móvil) */}
+        <section className="relative py-16 md:py-20 px-4 md:px-8 z-10">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-extrabold text-main-red uppercase tracking-widest mb-12 text-center md:text-left">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-main-red uppercase tracking-widest mb-10 md:mb-12 text-center md:text-left">
               Nuestras Oficinas:
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-              <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
-                <h3 className="text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Costa Rica</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-12">
+              <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
+                <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Costa Rica</h3>
                 <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
                   <p>Centro Corporativo San Rafael, nivel 3</p>
                   <p>San Rafael de Escazú, San José, Costa Rica</p>
@@ -202,8 +201,8 @@ export default function Home() {
                   <p className="pt-3 text-light-blue font-medium">Teléfono: +506 4703 5727</p>
                 </div>
               </div>
-              <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
-                <h3 className="text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Colombia</h3>
+              <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
+                <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Colombia</h3>
                 <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
                   <p>Carrera. 11C No. 117-05. Oficina 5</p>
                   <p>Bogotá, Colombia</p>
@@ -211,8 +210,8 @@ export default function Home() {
                   <p className="text-light-blue font-medium">Móvil: +57 301 4844324</p>
                 </div>
               </div>
-              <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
-                <h3 className="text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">México</h3>
+              <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
+                <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">México</h3>
                 <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
                   <p>Atención virtual o presencial previa cita.</p>
                   <p className="pt-3 font-medium">
@@ -220,8 +219,8 @@ export default function Home() {
                   </p>
                 </div>
               </div>
-              <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
-                <h3 className="text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Guatemala</h3>
+              <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
+                <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Guatemala</h3>
                 <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
                   <p>Diagonal 6 12-42, Edificio Design Center</p>
                   <p>Oficina No. 506, Torre 1, Zona 10</p>
@@ -229,8 +228,8 @@ export default function Home() {
                   <p className="pt-3 text-light-blue font-medium">Teléfono: +502 5557 7466</p>
                 </div>
               </div>
-              <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow duration-300 lg:col-span-2">
-                <h3 className="text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Canadá</h3>
+              <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow duration-300 lg:col-span-2">
+                <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Canadá</h3>
                 <div className="text-gray-600 font-light space-y-3 text-sm md:text-base">
                   <p>Atención virtual o presencial previa cita en la ciudad de Lévis, Québec.</p>
                   <p>En Toronto, Ontario de manera vinculada con la firma de abogados Waldman & Associates.</p>
@@ -243,39 +242,38 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Separador */}
-        <div className="px-8 relative z-10">
+        <div className="px-4 md:px-8 relative z-10">
           <div className="max-w-6xl mx-auto border-t border-gray-200/60"></div>
         </div>
 
-        {/* SECCIÓN 4: PIDA */}
-        <section className="relative py-20 px-8 z-10">
-          <div className="max-w-6xl mx-auto bg-white rounded-3xl shadow-2xl border border-gray-100 p-8 md:p-12 lg:p-16 overflow-hidden">
+        {/* SECCIÓN 4: PIDA (Ancho completo en móvil) */}
+        <section className="relative py-12 md:py-20 px-0 md:px-8 z-10">
+          <div className="max-w-6xl mx-auto bg-white md:rounded-3xl shadow-2xl border-y md:border border-gray-100 p-8 md:p-12 lg:p-16 overflow-hidden">
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-12 items-center">
               
               {/* Mitad Izquierda */}
               <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
                 <img 
                   src={pidaLogo} 
                   alt="Logo PIDA" 
-                  className="w-64 md:w-80 lg:w-96 object-contain mb-8" 
+                  className="w-56 md:w-80 lg:w-96 object-contain mb-6 md:mb-8" 
                 />
-                <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-main-blue leading-tight mb-6">
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-main-blue leading-tight mb-4 md:mb-6">
                   Inteligencia Aumentada para la Defensa de los <br className="hidden lg:block" />
                   <span className="text-main-red">Derechos Humanos</span>
                 </h2>
-                <p className="text-lg text-gray-700 leading-loose">
+                <p className="text-base md:text-lg text-gray-700 leading-loose">
                   Los asistentes de Inteligencia Artificial genéricos son un océano de información, pero sin un ancla, pueden llevarte a la deriva con datos imprecisos.
                 </p>
               </div>
 
               {/* Mitad Derecha */}
-              <div className="flex flex-col items-center justify-center gap-8 relative mt-10 lg:mt-0">
+              <div className="flex flex-col items-center justify-center gap-8 relative mt-6 lg:mt-0">
                 <img 
                   src={pidaMascota} 
                   alt="Robot PIDA" 
-                  className="w-72 md:w-96 object-contain drop-shadow-2xl" 
+                  className="w-64 md:w-96 object-contain drop-shadow-2xl" 
                 />
                 
                 <a 
@@ -292,12 +290,12 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Explicación Inferior - Una sola columna unificada */}
-            <div className="mt-16 pt-12 border-t border-gray-100 max-w-4xl mx-auto">
-              <h3 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-6 text-center">
+            {/* Explicación Inferior */}
+            <div className="mt-12 md:mt-16 pt-10 md:pt-12 border-t border-gray-100 max-w-4xl mx-auto">
+              <h3 className="text-xl md:text-3xl font-extrabold text-main-blue mb-6 text-center">
                 ¿Cuál es la gran diferencia de PIDA?
               </h3>
-              <div className="space-y-6 text-lg text-gray-700 leading-loose text-justify md:text-center">
+              <div className="space-y-4 md:space-y-6 text-base md:text-lg text-gray-700 leading-loose text-justify md:text-center">
                 <p>
                   PIDA no improvisa buscando en el caos de internet. Su punto de partida es la biblioteca del <strong className="text-main-blue">IIRESODH</strong>, una institución referente con más de 30 años de experiencia en Litigio Estratégico Internacional.
                 </p>
