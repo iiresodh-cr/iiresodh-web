@@ -245,7 +245,7 @@ export default function Home() {
           <div className="max-w-6xl mx-auto border-t border-gray-200/60"></div>
         </div>
 
-        {/* SECCIÓN: PIDA - TODO DENTRO DE UNA GRAN TARJETA COHERENTE */}
+        {/* SECCIÓN: PIDA */}
         <section className="relative py-20 px-8 z-10">
           <div className="max-w-6xl mx-auto bg-white rounded-3xl shadow-2xl border border-gray-100 p-8 md:p-12 lg:p-16 overflow-hidden">
             
@@ -275,19 +275,21 @@ export default function Home() {
                   className="w-72 md:w-96 object-contain drop-shadow-2xl" 
                 />
                 
-                <button 
-                  onClick={() => setActiveVideo("https://storage.googleapis.com/img-pida/PIDA.mp4")}
+                <a 
+                  href="https://pida-ai.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="bg-main-red hover:bg-bright-red text-white px-8 py-3 rounded-full font-medium uppercase text-sm tracking-widest shadow-md transition-colors flex items-center gap-3 cursor-pointer"
                 >
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" />
+                  Ir a PIDA
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                   </svg>
-                  Ver PIDA en acción
-                </button>
+                </a>
               </div>
             </div>
 
-            {/* Explicación Inferior - Una sola columna unificada */}
+            {/* Explicación Inferior */}
             <div className="mt-16 pt-12 border-t border-gray-100 max-w-4xl mx-auto">
               <h3 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-6 text-center">
                 ¿Cuál es la gran diferencia de PIDA?
