@@ -92,7 +92,7 @@ export default function Home() {
         <div className="bg-watermark"></div>
 
         {/* SECCIÓN 1: ÚLTIMA NOTICIA (Ancho completo en móvil) */}
-        <section className="relative pt-6 pb-12 px-0 md:px-8 z-10">
+        <section className="relative pt-6 pb-10 px-0 md:px-8 z-10">
           <div className="max-w-6xl mx-auto">
             {!noticia ? (
               <div className="text-center text-light-blue text-xl py-20 bg-white md:rounded-3xl shadow-2xl border-y md:border border-gray-100">
@@ -146,8 +146,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* SECCIÓN 2: ACERCA DEL INSTITUTO (Ancho completo en móvil) */}
-        <section className="relative py-12 md:py-16 px-0 md:px-8 z-10">
+        {/* SECCIÓN 2: ACERCA DEL INSTITUTO (Padding ajustado y divisor eliminado) */}
+        <section className="relative pt-6 pb-10 md:pb-12 px-0 md:px-8 z-10">
           <div className="max-w-6xl mx-auto bg-white p-8 md:p-12 md:rounded-3xl shadow-2xl border-y md:border border-gray-100 flex flex-col lg:flex-row items-center gap-12">
             
             <div className="lg:w-2/3 space-y-6 text-main-blue text-base md:text-xl font-light leading-relaxed text-center lg:text-left">
@@ -181,12 +181,8 @@ export default function Home() {
           </div>
         </section>
 
-        <div className="px-4 md:px-8 relative z-10">
-          <div className="max-w-6xl mx-auto border-t border-gray-200/60"></div>
-        </div>
-
-        {/* SECCIÓN 3: OFICINAS (Márgenes mínimos en móvil) */}
-        <section className="relative py-16 md:py-20 px-4 md:px-8 z-10">
+        {/* SECCIÓN 3: OFICINAS (Padding ajustado) */}
+        <section className="relative py-10 md:py-12 px-4 md:px-8 z-10">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-extrabold text-main-red uppercase tracking-widest mb-10 md:mb-12 text-center md:text-left">
               Nuestras Oficinas:
@@ -242,12 +238,8 @@ export default function Home() {
           </div>
         </section>
 
-        <div className="px-4 md:px-8 relative z-10">
-          <div className="max-w-6xl mx-auto border-t border-gray-200/60"></div>
-        </div>
-
-        {/* SECCIÓN 4: PIDA (Ancho completo en móvil) */}
-        <section className="relative py-12 md:py-20 px-0 md:px-8 z-10">
+        {/* SECCIÓN 4: PIDA (Padding ajustado y divisor eliminado) */}
+        <section className="relative py-10 md:py-12 px-0 md:px-8 z-10">
           <div className="max-w-6xl mx-auto bg-white md:rounded-3xl shadow-2xl border-y md:border border-gray-100 p-8 md:p-12 lg:p-16 overflow-hidden">
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-12 items-center">
@@ -261,7 +253,6 @@ export default function Home() {
                 />
                 <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-main-blue leading-tight mb-4 md:mb-6">
                   Inteligencia Aumentada para la Defensa de los <br className="hidden lg:block" />
-                  {/* MODIFICACIÓN: bg-linear-to-r para Tailwind v4 */}
                   <span className="bg-linear-to-r from-main-blue to-main-red bg-clip-text text-transparent">Derechos Humanos</span>
                 </h2>
                 <p className="text-base md:text-lg text-gray-700 leading-loose">
