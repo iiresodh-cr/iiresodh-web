@@ -61,11 +61,11 @@ export default function Privacidad() {
                 <div className="space-y-8 text-lg text-gray-700 leading-loose animate-fade-in-up">
                   <div className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
                     <h2 className="text-3xl font-extrabold text-main-blue mb-2">Política de Privacidad de IIRESODH y sus Servicios</h2>
-                    <p className="text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 8 de junio de 2025</p>
+                    <p className="text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 14 de marzo de 2026</p>
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-red mb-4">1. Introducción y Alcance</h3>
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">1. Introducción y Alcance</h3>
                     <p>Bienvenido a la Política de Privacidad del Instituto Internacional de Responsabilidad Social y Derechos Humanos (en adelante, “IIRESODH”, “nosotros” o “nuestro”).</p>
                     <p>Esta política describe cómo recopilamos, utilizamos, protegemos y compartimos su información personal. Aplica a todos los visitantes y usuarios de:</p>
                     <ul className="list-disc pl-6 mt-4 space-y-2 font-medium">
@@ -76,12 +76,12 @@ export default function Privacidad() {
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-red mb-4">2. Responsable del Tratamiento de sus Datos</h3>
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">2. Responsable del Tratamiento de sus Datos</h3>
                     <p>El responsable del tratamiento de sus datos personales es el <strong>Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, con domicilio en Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica.</p>
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-red mb-4">3. ¿Qué Información Recopilamos?</h3>
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">3. ¿Qué Información Recopilamos?</h3>
                     <p>Recopilamos diferentes tipos de información según el servicio que utilice.</p>
                     
                     <h4 className="text-xl font-bold text-main-blue mt-6 mb-3">3.1. Información Aplicable a Todos Nuestros Sitios (Sitio Web General y PIDA-AI)</h4>
@@ -100,7 +100,7 @@ export default function Privacidad() {
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-red mb-4">4. ¿Para Qué Utilizamos su Información? (Fines y Base Legal)</h3>
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">4. ¿Para Qué Utilizamos su Información? (Fines y Base Legal)</h3>
                     <p>Utilizamos su información para fines específicos y siempre amparados en una base legal válida.</p>
                     
                     <h4 className="text-xl font-bold text-main-blue mt-6 mb-3">4.1. Para el Sitio Web General:</h4>
@@ -119,7 +119,7 @@ export default function Privacidad() {
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-red mb-4">5. ¿Con Quién Compartimos su Información?</h3>
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">5. ¿Con Quién Compartimos su Información?</h3>
                     <p>Su privacidad es fundamental. No vendemos ni alquilamos su información personal. Solo la compartimos en las siguientes circunstancias:</p>
                     <ul className="list-disc pl-6 mt-4 space-y-2">
                       <li><strong>Proveedores de Servicios:</strong> Con empresas que nos ayudan a operar, como proveedores de alojamiento web (hosting), servicios de análisis (ej. Google Analytics) y plataformas de comunicación.</li>
@@ -130,17 +130,17 @@ export default function Privacidad() {
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-red mb-4">6. Cookies y Tecnologías Similares</h3>
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">6. Cookies y Tecnologías Similares</h3>
                     <p>Utilizamos cookies (pequeños archivos de texto en su navegador) para el funcionamiento técnico de nuestros sitios, recordar sus preferencias y para fines de análisis. Usted puede controlar y deshabilitar el uso de cookies a través de la configuración de su navegador. Tenga en cuenta que si las deshabilita, algunas funciones de nuestros sitios podrían verse limitadas.</p>
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-red mb-4">7. Seguridad de su Información</h3>
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">7. Seguridad de su Información</h3>
                     <p>Tomamos medidas de seguridad técnicas y organizativas para proteger su información. Utilizamos tecnología de cifrado SSL (Secure Sockets Layer) para las transferencias de datos, firewalls para proteger nuestros servidores y realizamos copias de seguridad periódicas. Sin embargo, ningún sistema es 100% seguro. Hacemos nuestro mejor esfuerzo para proteger sus datos, pero no podemos garantizar una seguridad absoluta.</p>
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-red mb-4">8. ¿Por Cuánto Tiempo Conservamos sus Datos? (Retención)</h3>
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">8. ¿Por Cuánto Tiempo Conservamos sus Datos? (Retención)</h3>
                     <p>Conservamos su información personal solo durante el tiempo necesario para cumplir con los fines para los que fue recopilada, o según lo exijan las obligaciones legales.</p>
                     <ul className="list-disc pl-6 mt-4 space-y-2">
                       <li>Los datos de contacto del Sitio Web General se conservan mientras sea necesario para gestionar su consulta.</li>
@@ -150,7 +150,7 @@ export default function Privacidad() {
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-red mb-4">9. Sus Derechos sobre sus Datos Personales</h3>
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">9. Sus Derechos sobre sus Datos Personales</h3>
                     <p>Usted tiene derecho a:</p>
                     <ul className="list-disc pl-6 mt-4 space-y-2">
                       <li><strong>Acceder</strong> a la información personal que tenemos sobre usted.</li>
@@ -164,17 +164,17 @@ export default function Privacidad() {
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-red mb-4">10. Privacidad de Menores de Edad</h3>
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">10. Privacidad de Menores de Edad</h3>
                     <p>Nuestros servicios no están dirigidos a personas menores de 18 años. No recopilamos intencionadamente información de menores. Si detectamos que lo hemos hecho, tomaremos medidas para eliminar dicha información.</p>
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-red mb-4">11. Cambios a esta Política de Privacidad</h3>
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">11. Cambios a esta Política de Privacidad</h3>
                     <p>Podemos actualizar esta política periódicamente para reflejar cambios en nuestros servicios o en la legislación. Cuando lo hagamos, actualizaremos la fecha en la parte superior de esta página. Le recomendamos revisar esta política con regularidad.</p>
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-red mb-4">12. Contacto</h3>
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">12. Contacto</h3>
                     <p>Si tiene alguna pregunta sobre esta Política de Privacidad o sobre cómo tratamos sus datos, no dude en contactarnos:</p>
                     <div className="bg-gray-50 p-6 rounded-lg mt-4 border border-gray-200">
                       <p><strong>Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong></p>
@@ -190,7 +190,7 @@ export default function Privacidad() {
                 <div className="space-y-8 text-lg text-gray-700 leading-loose animate-fade-in-up">
                   <div className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
                     <h2 className="text-3xl font-extrabold text-main-blue mb-2">Aviso de Privacidad de IIRESODH y sus Servicios (MÉXICO)</h2>
-                    <p className="text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 8 de junio de 2025</p>
+                    <p className="text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 14 de marzo de 2026</p>
                   </div>
 
                   <div>
@@ -212,20 +212,20 @@ export default function Privacidad() {
                     <h3 className="text-2xl font-bold text-main-blue mb-4">3. Datos Personales que Tratamos</h3>
                     <p>Tratamos distintas categorías de datos personales según el servicio que utilice.</p>
                     
-                    <h4 className="text-xl font-bold text-main-red mt-6 mb-3">3.1. Datos Tratados en Todos Nuestros Sitios (Sitio Web General y PIDA-AI)</h4>
+                    <h4 className="text-xl font-bold text-main-blue mt-6 mb-3">3.1. Datos Tratados en Todos Nuestros Sitios (Sitio Web General y PIDA-AI)</h4>
                     <ul className="list-disc pl-6 space-y-2">
                       <li><strong>Datos de Identificación y Contacto:</strong> Nombre y correo electrónico que nos proporciona directamente a través de formularios.</li>
                       <li><strong>Datos de Uso y de Dispositivo:</strong> Dirección IP, tipo de navegador, sistema operativo y páginas visitadas, recopilados de forma automática.</li>
                     </ul>
 
-                    <h4 className="text-xl font-bold text-main-red mt-6 mb-3">3.2. Datos Específicos del Servicio PIDA-AI</h4>
+                    <h4 className="text-xl font-bold text-main-blue mt-6 mb-3">3.2. Datos Específicos del Servicio PIDA-AI</h4>
                     <ul className="list-disc pl-6 space-y-2">
                       <li><strong>Datos de Registro de Cuenta:</strong> Nombre, correo electrónico y contraseña (cifrada).</li>
                       <li><strong>Datos Patrimoniales y Financieros:</strong> A través de nuestros proveedores de pago externos, se recopila la información necesaria para procesar el pago de su suscripción. IIRESODH <strong>no almacena</strong> los datos completos de su tarjeta. Su tratamiento requiere su <strong>consentimiento expreso</strong>, el cual se otorga al momento de ingresar los datos en la pasarela de pago para completar la transacción.</li>
                       <li><strong>Contenido Generado por el Usuario:</strong> Las preguntas o “prompts” que usted ingresa en el Servicio PIDA-AI.</li>
                     </ul>
 
-                    <h4 className="text-xl font-bold text-main-red mt-6 mb-3">3.3. Datos Personales Sensibles</h4>
+                    <h4 className="text-xl font-bold text-main-blue mt-6 mb-3">3.3. Datos Personales Sensibles</h4>
                     <p>IIRESODH <strong>no solicita</strong> datos personales sensibles (como origen racial o étnico, estado de salud, creencias religiosas, opiniones políticas, preferencia sexual, etc.). Le rogamos <strong>no proporcionar</strong> este tipo de información a través de nuestros servicios.</p>
                   </div>
 
@@ -233,7 +233,7 @@ export default function Privacidad() {
                     <h3 className="text-2xl font-bold text-main-blue mb-4">4. Finalidades del Tratamiento de sus Datos</h3>
                     <p>Distinguimos entre finalidades primarias (necesarias para el servicio) y secundarias (accesorias).</p>
                     
-                    <h4 className="text-xl font-bold text-main-red mt-6 mb-3">4.1. Finalidades Primarias (necesarias):</h4>
+                    <h4 className="text-xl font-bold text-main-blue mt-6 mb-3">4.1. Finalidades Primarias (necesarias):</h4>
                     <p className="font-bold mt-2">En ambos sitios:</p>
                     <ul className="list-disc pl-6 space-y-2">
                       <li>Gestionar y responder a sus solicitudes de información.</li>
@@ -247,7 +247,7 @@ export default function Privacidad() {
                       <li>Enviarle comunicaciones transaccionales sobre su cuenta o el servicio.</li>
                     </ul>
 
-                    <h4 className="text-xl font-bold text-main-red mt-6 mb-3">4.2. Finalidades Secundarias (accesorias):</h4>
+                    <h4 className="text-xl font-bold text-main-blue mt-6 mb-3">4.2. Finalidades Secundarias (accesorias):</h4>
                     <ul className="list-disc pl-6 space-y-2">
                       <li>Analizar el uso de nuestros sitios para mejorar la experiencia del usuario.</li>
                       <li>De forma <strong>agregada y anonimizada</strong>, utilizar el contenido generado en PIDA-AI para mejorar la precisión y seguridad de nuestros modelos de IA.</li>
