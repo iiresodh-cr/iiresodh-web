@@ -258,7 +258,7 @@ export default function Home() {
                   alt="Logo PIDA" 
                   className="w-64 md:w-80 lg:w-96 object-contain mb-8" 
                 />
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-main-blue leading-tight mb-6">
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-main-blue leading-tight mb-6">
                   Inteligencia Aumentada para la Defensa de los <br className="hidden lg:block" />
                   <span className="text-main-red">Derechos Humanos</span>
                 </h2>
@@ -287,12 +287,12 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Explicación Inferior Integrada dentro de la misma tarjeta */}
-            <div className="mt-16 pt-12 border-t border-gray-100">
-              <h3 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-6 text-center md:text-left">
+            {/* Explicación Inferior - Una sola columna unificada */}
+            <div className="mt-16 pt-12 border-t border-gray-100 max-w-4xl mx-auto">
+              <h3 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-6 text-center">
                 ¿Cuál es la gran diferencia de PIDA?
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-lg text-gray-700 leading-loose">
+              <div className="space-y-6 text-lg text-gray-700 leading-loose text-justify md:text-center">
                 <p>
                   PIDA no improvisa buscando en el caos de internet. Su punto de partida es la biblioteca del <strong className="text-main-blue">IIRESODH</strong>, una institución referente con más de 30 años de experiencia en Litigio Estratégico Internacional.
                 </p>
@@ -307,7 +307,7 @@ export default function Home() {
 
       </div>
 
-      {/* Modal de Video Global (Reutilizable para ambos botones) */}
+      {/* Modal de Video Global */}
       {activeVideo && (
         <div 
           className="fixed inset-0 z-100 flex items-center justify-center bg-black/85 px-4 backdrop-blur-sm transition-opacity"
