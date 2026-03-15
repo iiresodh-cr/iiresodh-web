@@ -167,7 +167,7 @@ export default function Navbar() {
                   md:border-t-4 md:border-main-red w-full bg-gray-50 border-l-4 border-main-red md:border-l-0
                 `}>
                   <ul className="py-2 flex flex-col">
-                    <li><Link to="/" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 md:hover:bg-gray-50 transition-colors">Litigio Estratégico</Link></li>
+                    <li><Link to="/litigio-estrategico" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 md:hover:bg-gray-50 transition-colors">Litigio Estratégico</Link></li>
                     <li><Link to="/" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 md:hover:bg-gray-50 transition-colors">Cooperación Internacional</Link></li>
                   </ul>
                 </div>

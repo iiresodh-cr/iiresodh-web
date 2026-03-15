@@ -9,7 +9,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 // Páginas
 import Home from "./pages/Home";
-import QuienesSomos from "./pages/QuienesSomos"; 
+import QuienesSomos from "./pages/QuienesSomos";
+import LitigioEstrategico from "./pages/LitigioEstrategico";
 import Noticias from "./pages/Noticias";
 import NoticiaDetalle from "./pages/NoticiaDetalle";
 import ResultadosBusqueda from "./pages/ResultadosBusqueda";

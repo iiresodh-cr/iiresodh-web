@@ -261,7 +261,8 @@ export default function Home() {
                 />
                 <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-main-blue leading-tight mb-4 md:mb-6">
                   Inteligencia Aumentada para la Defensa de los <br className="hidden lg:block" />
-                  <span className="bg-gradient-to-r from-main-blue to-main-red bg-clip-text text-transparent">Derechos Humanos</span>
+                  {/* MODIFICACIÓN: bg-linear-to-r para Tailwind v4 */}
+                  <span className="bg-linear-to-r from-main-blue to-main-red bg-clip-text text-transparent">Derechos Humanos</span>
                 </h2>
                 <p className="text-base md:text-lg text-gray-700 leading-loose">
                   Los asistentes de Inteligencia Artificial genéricos son un océano de información, pero sin un ancla, pueden llevarte a la deriva con datos imprecisos.
