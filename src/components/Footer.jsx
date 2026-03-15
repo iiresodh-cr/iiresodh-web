@@ -9,7 +9,8 @@ export default function Footer() {
   return (
     <>
       <footer className="bg-light-blue text-white flex flex-col relative z-40">
-        <div className="max-w-6xl mx-auto w-full px-8 py-12 md:py-16 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+        {/* Aquí redujimos py-12 md:py-16 a py-8 md:py-10 para una franja más compacta */}
+        <div className="max-w-6xl mx-auto w-full px-8 py-8 md:py-10 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
           
           <div className="space-y-4">
             <h3 className="text-2xl font-extrabold uppercase tracking-widest mb-2">Contáctanos</h3>
