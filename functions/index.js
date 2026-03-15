@@ -5,7 +5,7 @@ const { defineSecret } = require("firebase-functions/params");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const admin = require("firebase-admin");
 
-// Inicializamos Firebase Admin para poder leer Firestore desde el servidor
+// Inicializamos Firebase Admin
 if (!admin.apps.length) {
   admin.initializeApp();
 }
@@ -13,7 +13,7 @@ if (!admin.apps.length) {
 const geminiApiKey = defineSecret("GEMINI_API_KEY");
 
 // ============================================================================
-// 1. FUNCIÓN DE INTELIGENCIA ARTIFICIAL (GEMINI) - Intacta y Segura
+// 1. FUNCIÓN DE INTELIGENCIA ARTIFICIAL (GEMINI)
 // ============================================================================
 exports.generarResumenGemini = onCall({ 
   secrets: [geminiApiKey], 
@@ -44,7 +44,6 @@ exports.generarResumenGemini = onCall({
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    // PROMPT BLINDADO: Instrucciones negativas estrictas
     const prompt = `Actúa como un periodista experto. Genera un resumen atractivo de entre 15 y 20 palabras basado en el siguiente contenido.
     
     REGLAS ESTRICTAS E INQUEBRANTABLES:
@@ -57,7 +56,6 @@ exports.generarResumenGemini = onCall({
 
     const result = await model.generateContent(prompt);
     
-    // Como medida de seguridad extra, limpiamos cualquier paréntesis residual que intente colarse al final
     let textoLimpio = result.response.text().trim();
     textoLimpio = textoLimpio.replace(/\s*\(\d+\s*palabras?\)$/i, '');
 
@@ -70,14 +68,12 @@ exports.generarResumenGemini = onCall({
 });
 
 // ============================================================================
-// 2. FUNCIÓN SSR PARA REDES SOCIALES (OPEN GRAPH META TAGS)
+// 2. FUNCIÓN SSR PARA REDES SOCIALES (FACEBOOK, LINKEDIN, X, WHATSAPP)
 // ============================================================================
 exports.noticiaMeta = onRequest({ region: "us-central1" }, async (req, res) => {
-  // Extraemos el slug o ID de la URL (Ejemplo: de /noticias/mi-gran-noticia saca "mi-gran-noticia")
   const pathSegments = req.path.split("/").filter(Boolean);
   const slugId = pathSegments[1];
 
-  // Si no hay slug en la URL, redirigimos limpiamente a la sección general de noticias
   if (!slugId) {
     return res.redirect(302, "/noticias");
   }
@@ -86,66 +82,69 @@ exports.noticiaMeta = onRequest({ region: "us-central1" }, async (req, res) => {
     const db = admin.firestore();
     let noticiaData = null;
 
-    // Buscamos primero por el campo "slug"
     const snapshot = await db.collection("noticias").where("slug", "==", slugId).limit(1).get();
     if (!snapshot.empty) {
       noticiaData = snapshot.docs[0].data();
     } else {
-      // Si no tiene slug, intentamos buscar por ID directo
       const docRef = await db.collection("noticias").doc(slugId).get();
       if (docRef.exists) {
         noticiaData = docRef.data();
       }
     }
 
-    // Si la noticia no existe o fue eliminada, redirigimos
     if (!noticiaData) {
       return res.redirect(302, "/noticias");
     }
 
-    // Preparamos los datos limpios para la tarjeta social
-    const titulo = noticiaData.titulo || "Noticia en IIRESODH";
-    // Extraemos las primeras 150 letras del resumen para la descripción
+    // Detectamos el dominio real (para que funcione en producción)
+    const host = req.headers['x-forwarded-host'] || req.hostname;
+    const appUrl = `https://${host}`;
+
+    // SANITIZACIÓN: Reemplazamos comillas dobles para que no rompan las etiquetas de Facebook
+    const titulo = (noticiaData.titulo || "Noticia en IIRESODH").replace(/"/g, '&quot;');
     let descripcion = "Lee la noticia completa en nuestro portal institucional.";
     if (noticiaData.resumen) {
       descripcion = noticiaData.resumen.substring(0, 150) + "...";
     }
+    descripcion = descripcion.replace(/"/g, '&quot;');
     
-    // La imagen principal de la noticia. Fallback: imagen genérica de la ONG
-    const imagen = noticiaData.imagenPrincipalUrl || `https://${req.hostname}/logo.png`; 
-    const urlCompleta = `https://${req.hostname}${req.originalUrl}`;
+    const imagen = noticiaData.imagenPrincipalUrl || `${appUrl}/logo.png`; 
+    const urlCompleta = `${appUrl}${req.originalUrl}`;
 
-    // Descargamos el index.html original estático que sirve Firebase Hosting
-    const appUrl = `https://${req.hostname}`;
+    // Descargamos el index.html original
     const response = await fetch(`${appUrl}/index.html`);
     let html = await response.text();
 
-    // Fabricamos el bloque de meta tags para Redes Sociales
+    // 🚨 EL TRUCO PARA FACEBOOK: ELIMINAR LOS META TAGS ORIGINALES 🚨
+    // Buscamos y borramos las etiquetas genéricas para que solo queden las de la noticia
+    html = html.replace(/<title>.*?<\/title>/gi, '');
+    html = html.replace(/<meta[^>]*property="og:[^>]*>/gi, '');
+    html = html.replace(/<meta[^>]*name="twitter:[^>]*>/gi, '');
+    html = html.replace(/<meta[^>]*name="description"[^>]*>/gi, '');
+
+    // Fabricamos las etiquetas exclusivas de la noticia
     const metaTags = `
       <title>${titulo} | IIRESODH</title>
+      <meta name="description" content="${descripcion}" />
       <meta property="og:title" content="${titulo}" />
       <meta property="og:description" content="${descripcion}" />
       <meta property="og:image" content="${imagen}" />
       <meta property="og:url" content="${urlCompleta}" />
       <meta property="og:type" content="article" />
-      
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content="${titulo}" />
       <meta name="twitter:description" content="${descripcion}" />
       <meta name="twitter:image" content="${imagen}" />
     </head>`;
 
-    // Inyectamos nuestro bloque de meta tags justo antes de cerrar el </head>
+    // Inyectamos todo limpio antes del cierre del head
     html = html.replace("</head>", metaTags);
 
-    // Servimos el HTML al bot de la red social.
-    // Cacheamos por 5 minutos para ahorrar consultas a la base de datos si se vuelve muy viral
     res.set("Cache-Control", "public, max-age=300, s-maxage=600");
     res.status(200).send(html);
 
   } catch (error) {
     console.error("Error crítico inyectando meta tags:", error);
-    // Si algo falla, redirigimos a la portada principal para que la web no se caiga
     res.redirect(302, "/");
   }
 });
