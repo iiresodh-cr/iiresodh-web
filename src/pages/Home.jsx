@@ -14,7 +14,7 @@ import isotipoColor from "../assets/Isotipo-color-512.png";
 import pidaLogo from "../assets/PIDA_logo-576.png";
 import pidaMascota from "../assets/PIDA-MASCOTA-576-trans.png";
 
-// Detecta URLs y también Hashtags  (#)
+// NUEVA FUNCIÓN: Detecta URLs y también Hashtags (#)
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
   const partes = texto.split(/(<[^>]+>)/g);
@@ -39,7 +39,8 @@ export default function Home() {
   const [isOverflowing, setIsOverflowing] = useState(false);
   const contentRef = useRef(null);
 
-  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  // ESTADO REFATORIZADO: Ahora guarda la URL del video activo, o null si está cerrado
+  const [activeVideo, setActiveVideo] = useState(null);
 
   useEffect(() => {
     const fetchUltimaNoticia = async () => {
@@ -83,7 +84,6 @@ export default function Home() {
   }
 
   const contenidoNoticiaRaw = noticia ? (noticia.contenido || noticia.contenidoHTML || noticia.cuerpo || `<p>${noticia.resumen}</p>` || "") : "";
-  // Aplicamos el nuevo formateador
   const contenidoNoticia = formatearTextoConLinksYHashtags(contenidoNoticiaRaw);
 
   return (
@@ -169,7 +169,7 @@ export default function Home() {
                   className="w-48 md:w-56 h-auto object-contain opacity-95 drop-shadow-sm" 
                 />
                 <button 
-                  onClick={() => setIsVideoModalOpen(true)}
+                  onClick={() => setActiveVideo("https://storage.googleapis.com/iiresodh_10_anios/IIRESODH.mp4")}
                   className="bg-main-red hover:bg-bright-red text-white px-8 py-2.5 rounded-full font-medium uppercase text-sm tracking-widest shadow-md transition-colors w-full text-center cursor-pointer"
                 >
                   Video IIRESODH
@@ -245,11 +245,10 @@ export default function Home() {
           <div className="max-w-6xl mx-auto border-t border-gray-200/60"></div>
         </div>
 
-        {/* NUEVA SECCIÓN: PIDA */}
+        {/* SECCIÓN: PIDA */}
         <section className="relative py-20 px-8 z-10 bg-basic-beige/30">
           <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             
-            {/* Columna de Contenido */}
             <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
               <img 
                 src={pidaLogo} 
@@ -260,21 +259,11 @@ export default function Home() {
                 Inteligencia Aumentada para la Defensa de los <br className="hidden lg:block" />
                 <span className="text-main-red">Derechos Humanos</span>
               </h2>
-              <p className="text-lg text-gray-700 leading-loose mb-8 max-w-xl">
+              <p className="text-lg text-gray-700 leading-loose">
                 Los asistentes de Inteligencia Artificial genéricos son un océano de información, pero sin un ancla, pueden llevarte a la deriva con datos imprecisos.
               </p>
-              
-              <div className="flex flex-wrap justify-center lg:justify-start gap-4">
-                <button className="bg-main-blue hover:bg-light-blue text-white px-8 py-3 rounded-full font-bold uppercase tracking-widest shadow-md transition-colors">
-                  Ver Planes
-                </button>
-                <button className="bg-white hover:bg-gray-50 text-main-blue border-2 border-main-blue px-8 py-3 rounded-full font-bold uppercase tracking-widest shadow-sm transition-colors">
-                  Login PIDA
-                </button>
-              </div>
             </div>
 
-            {/* Columna Visual / Mascota */}
             <div className="flex flex-col items-center justify-center gap-8 relative mt-10 lg:mt-0">
               <img 
                 src={pidaMascota} 
@@ -283,18 +272,17 @@ export default function Home() {
               />
               
               <button 
-                onClick={() => setIsVideoModalOpen(true)}
-                className="flex items-center gap-3 bg-white hover:bg-gray-50 text-main-blue px-6 py-3 rounded-full font-bold shadow-lg border border-gray-100 transition-colors cursor-pointer"
+                onClick={() => setActiveVideo("https://storage.googleapis.com/img-pida/PIDA.mp4")}
+                className="bg-main-red hover:bg-bright-red text-white px-8 py-2.5 rounded-full font-medium uppercase text-sm tracking-widest shadow-md transition-colors flex items-center gap-3 cursor-pointer"
               >
-                <div className="bg-main-blue text-white w-8 h-8 rounded-full flex items-center justify-center text-sm pl-1">
-                  ▶
-                </div>
-                <span className="uppercase tracking-widest text-sm">Ver PIDA en acción</span>
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+                Ver PIDA en acción
               </button>
             </div>
           </div>
 
-          {/* Bloque Extra: ¿Cuál es la gran diferencia de PIDA? */}
           <div className="mt-24 max-w-4xl mx-auto text-center bg-white/80 backdrop-blur-sm p-8 md:p-12 rounded-2xl shadow-sm border border-gray-100">
             <h3 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-6">
               ¿Cuál es la gran diferencia de PIDA?
@@ -310,18 +298,18 @@ export default function Home() {
 
       </div>
 
-      {/* Modal de Video Global */}
-      {isVideoModalOpen && (
+      {/* Modal de Video Global (Reutilizable para ambos botones) */}
+      {activeVideo && (
         <div 
           className="fixed inset-0 z-100 flex items-center justify-center bg-black/85 px-4 backdrop-blur-sm transition-opacity"
-          onClick={() => setIsVideoModalOpen(false)} 
+          onClick={() => setActiveVideo(null)} 
         >
           <div 
             className="w-full max-w-5xl relative animate-fade-in-up"
             onClick={(e) => e.stopPropagation()} 
           >
             <button 
-              onClick={() => setIsVideoModalOpen(false)}
+              onClick={() => setActiveVideo(null)}
               className="absolute -top-12 right-0 text-white hover:text-main-red transition-colors flex items-center gap-2 font-bold uppercase tracking-wider cursor-pointer"
               aria-label="Cerrar video"
             >
@@ -336,7 +324,7 @@ export default function Home() {
                 className="w-full h-full object-contain"
                 controls 
                 autoPlay 
-                src="https://storage.googleapis.com/iiresodh_10_anios/IIRESODH.mp4"
+                src={activeVideo}
               >
                 Tu navegador no soporta la reproducción de videos.
               </video>
