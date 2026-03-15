@@ -9,15 +9,15 @@ export default function Footer() {
   return (
     <>
       <footer className="bg-light-blue text-white flex flex-col relative z-40">
-        {/* Aquí redujimos py-12 md:py-16 a py-8 md:py-10 para una franja más compacta */}
-        <div className="max-w-6xl mx-auto w-full px-8 py-8 md:py-10 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+        {/* Padding vertical reducido significativamente a py-4 md:py-6 */}
+        <div className="max-w-6xl mx-auto w-full px-8 py-4 md:py-6 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 items-center">
           
-          <div className="space-y-4">
-            <h3 className="text-2xl font-extrabold uppercase tracking-widest mb-2">Contáctanos</h3>
-            <p className="text-lg">
+          <div className="space-y-3">
+            <h3 className="text-xl md:text-2xl font-extrabold uppercase tracking-widest mb-1">Contáctanos</h3>
+            <p className="text-base md:text-lg">
               Email: <a href="mailto:contacto@iiresodh.org" className="font-bold hover:text-main-blue transition-colors">contacto@iiresodh.org</a>
             </p>
-            <p className="font-light text-sm max-w-sm mt-4 opacity-90 leading-relaxed">
+            <p className="font-light text-xs md:text-sm max-w-sm mt-2 opacity-90 leading-relaxed">
               Construyendo una cultura donde el respeto a los derechos humanos es el pilar del desarrollo directo de empresas e instituciones.
             </p>
           </div>
@@ -26,16 +26,15 @@ export default function Footer() {
             <img 
               src={logoBlanco} 
               alt="Logo IIRESODH Blanco" 
-              className="w-full max-w-100 object-contain opacity-95"
+              className="w-full max-w-64 md:max-w-80 object-contain opacity-95"
             />
           </div>
         </div>
 
-        <div className="bg-main-blue py-5 px-4 text-center text-xs md:text-sm text-gray-300 font-light">
+        <div className="bg-main-blue py-4 px-4 text-center text-xs md:text-sm text-gray-300 font-light">
           <p className="max-w-6xl mx-auto flex flex-col md:flex-row justify-center items-center gap-2 md:gap-3">
             <span className="font-bold text-white tracking-wide">IIRESODH© 2026 is licensed under CC BY-NC-ND 4.0</span> 
             <span className="hidden md:inline">—</span>
-            {/* Un solo enlace limpio y corporativo */}
             <Link to="/privacidad" className="hover:text-white transition-colors">Privacidad y Términos</Link>
             <span className="hidden md:inline">—</span>
             <button 
