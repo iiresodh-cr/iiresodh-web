@@ -8,6 +8,10 @@
     ],
     "rewrites": [
       {
+        "source": "/noticias/**",
+        "function": "noticiaMeta"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
