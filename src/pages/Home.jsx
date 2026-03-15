@@ -14,7 +14,7 @@ import isotipoColor from "../assets/Isotipo-color-512.png";
 import pidaLogo from "../assets/PIDA_logo-576.png";
 import pidaMascota from "../assets/PIDA-MASCOTA-576-trans.jpg";
 
-// NUEVA FUNCIÓN: Detecta URLs y también Hashtags (#)
+// Detecta URLs y también Hashtags  (#)
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
   const partes = texto.split(/(<[^>]+>)/g);
