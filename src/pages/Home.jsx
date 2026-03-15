@@ -11,6 +11,8 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
 import isotipoColor from "../assets/Isotipo-color-512.png";
+import pidaLogo from "../assets/PIDA_logo-576.png";
+import pidaMascota from "../assets/PIDA-MASCOTA-576-trans.jpg";
 
 // NUEVA FUNCIÓN: Detecta URLs y también Hashtags (#)
 const formatearTextoConLinksYHashtags = (texto) => {
@@ -237,8 +239,78 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* Separador */}
+        <div className="px-8 relative z-10">
+          <div className="max-w-6xl mx-auto border-t border-gray-200/60"></div>
+        </div>
+
+        {/* NUEVA SECCIÓN: PIDA */}
+        <section className="relative py-20 px-8 z-10 bg-basic-beige/30">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            
+            {/* Columna de Contenido */}
+            <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
+              <img 
+                src={pidaLogo} 
+                alt="Logo PIDA" 
+                className="w-48 md:w-64 object-contain mb-8" 
+              />
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-main-blue leading-tight mb-6">
+                Inteligencia Aumentada para la Defensa de los <br className="hidden lg:block" />
+                <span className="text-main-red">Derechos Humanos</span>
+              </h2>
+              <p className="text-lg text-gray-700 leading-loose mb-8 max-w-xl">
+                Los asistentes de Inteligencia Artificial genéricos son un océano de información, pero sin un ancla, pueden llevarte a la deriva con datos imprecisos.
+              </p>
+              
+              <div className="flex flex-wrap justify-center lg:justify-start gap-4">
+                <button className="bg-main-blue hover:bg-light-blue text-white px-8 py-3 rounded-full font-bold uppercase tracking-widest shadow-md transition-colors">
+                  Ver Planes
+                </button>
+                <button className="bg-white hover:bg-gray-50 text-main-blue border-2 border-main-blue px-8 py-3 rounded-full font-bold uppercase tracking-widest shadow-sm transition-colors">
+                  Login PIDA
+                </button>
+              </div>
+            </div>
+
+            {/* Columna Visual / Mascota */}
+            <div className="flex flex-col items-center justify-center gap-8 relative mt-10 lg:mt-0">
+              <img 
+                src={pidaMascota} 
+                alt="Robot PIDA" 
+                className="w-64 md:w-80 lg:w-96 object-contain rounded-lg drop-shadow-2xl" 
+              />
+              
+              <button 
+                onClick={() => setIsVideoModalOpen(true)}
+                className="flex items-center gap-3 bg-white hover:bg-gray-50 text-main-blue px-6 py-3 rounded-full font-bold shadow-lg border border-gray-100 transition-colors cursor-pointer"
+              >
+                <div className="bg-main-blue text-white w-8 h-8 rounded-full flex items-center justify-center text-sm pl-1">
+                  ▶
+                </div>
+                <span className="uppercase tracking-widest text-sm">Ver PIDA en acción</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Bloque Extra: ¿Cuál es la gran diferencia de PIDA? */}
+          <div className="mt-24 max-w-4xl mx-auto text-center bg-white/80 backdrop-blur-sm p-8 md:p-12 rounded-2xl shadow-sm border border-gray-100">
+            <h3 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-6">
+              ¿Cuál es la gran diferencia de PIDA?
+            </h3>
+            <p className="text-lg text-gray-700 leading-loose mb-4">
+              PIDA no improvisa buscando en el caos de internet. Su punto de partida es la biblioteca del <strong className="text-main-blue">IIRESODH</strong>, una institución referente con más de 30 años de experiencia en Litigio Estratégico Internacional.
+            </p>
+            <p className="text-lg text-gray-700 leading-loose">
+              Primero, PIDA consulta este acervo validado por personas expertas en Derechos Humanos para obtener el fundamento correcto. Luego, usa la IA para construir tu respuesta. Así obtienes la velocidad de la tecnología, pero con la <strong className="text-main-red">autoridad y el rigor técnico</strong> que solo el IIRESODH puede garantizar.
+            </p>
+          </div>
+        </section>
+
       </div>
 
+      {/* Modal de Video Global */}
       {isVideoModalOpen && (
         <div 
           className="fixed inset-0 z-100 flex items-center justify-center bg-black/85 px-4 backdrop-blur-sm transition-opacity"
