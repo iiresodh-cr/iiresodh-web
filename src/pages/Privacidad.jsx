@@ -189,7 +189,7 @@ export default function Privacidad() {
               {activeTab === "mexico" && (
                 <div className="space-y-8 text-lg text-gray-700 leading-loose animate-fade-in-up">
                   <div className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
-                    <h2 className="text-3xl font-extrabold text-main-red mb-2">Aviso de Privacidad de IIRESODH y sus Servicios (MÉXICO)</h2>
+                    <h2 className="text-3xl font-extrabold text-main-blue mb-2">Aviso de Privacidad de IIRESODH y sus Servicios (MÉXICO)</h2>
                     <p className="text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 8 de junio de 2025</p>
                   </div>
 
