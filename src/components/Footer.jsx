@@ -34,20 +34,20 @@ export default function Footer() {
           <p className="max-w-6xl mx-auto flex flex-col md:flex-row justify-center items-center gap-2 md:gap-3">
             <span className="font-bold text-white tracking-wide">IIRESODH© 2026 is licensed under CC BY-NC-ND 4.0</span> 
             <span className="hidden md:inline">—</span>
-            <Link to="/privacidad" className="hover:text-white transition-colors">Aviso de Privacidad</Link>
-            <span className="hidden md:inline">—</span>
-            <Link to="/terminos" className="hover:text-white transition-colors">Términos y Condiciones</Link>
+            {/* Un solo enlace limpio y corporativo */}
+            <Link to="/privacidad" className="hover:text-white transition-colors">Privacidad y Términos</Link>
             <span className="hidden md:inline">—</span>
             <button 
               onClick={() => setIsModalOpen(true)} 
               className="hover:text-white transition-colors cursor-pointer"
             >
-              Aviso Sugef
+              Aviso SUGEF
             </button>
           </p>
         </div>
       </footer>
 
+      {/* Modal Aviso SUGEF */}
       {isModalOpen && (
         <div 
           className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm transition-opacity"
@@ -59,7 +59,7 @@ export default function Footer() {
           >
             <button 
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-main-red transition-colors"
+              className="absolute top-4 right-4 text-gray-400 hover:text-main-red transition-colors cursor-pointer"
               aria-label="Cerrar aviso"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,7 +71,7 @@ export default function Footer() {
               <h3 className="text-xl md:text-2xl font-extrabold text-main-blue mb-4 uppercase tracking-wider border-b-2 border-pale-blue pb-2 inline-block">
                 Aviso SUGEF
               </h3>
-              <p className="text-gray-700 text-sm md:text-base leading-relaxed text-justify font-medium italic">
+              <p className="text-gray-700 text-base md:text-lg font-light leading-relaxed text-justify">
                 "Se advierte al público que la Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos es supervisada solamente en materia de prevención de legitimación de capitales, financiamiento al terrorismo y financiamiento de la proliferación de armas de destrucción masiva, y además se encuentra sujeta a disposiciones vinculantes de la Unidad de Inteligencia Financiera de Instituto Costarricense sobre Drogas. Por lo tanto, la Sugef no supervisa en materia financiera a la Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos, ni los negocios que ofrece, ni su seguridad, estabilidad o solvencia".
               </p>
             </div>
@@ -79,7 +79,7 @@ export default function Footer() {
             <div className="mt-8 flex justify-end">
               <button 
                 onClick={() => setIsModalOpen(false)}
-                className="bg-main-blue hover:bg-light-blue text-white font-bold py-2 px-6 rounded-lg shadow-md transition-colors text-sm md:text-base"
+                className="bg-main-blue hover:bg-light-blue text-white font-bold py-2 px-6 rounded-lg shadow-md transition-colors text-sm md:text-base cursor-pointer"
               >
                 Entendido
               </button>

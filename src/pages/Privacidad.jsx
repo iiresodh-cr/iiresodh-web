@@ -1,15 +1,25 @@
 // src/pages/Privacidad.jsx
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 export default function Privacidad() {
-  // Estado puede ser: "general", "mexico" o "terminos"
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState("general");
 
-  // Hacer scroll al tope de la página al cargar o al cambiar de pestaña
+  // Leer el parámetro de la URL para abrir la pestaña correcta y hacer scroll
   useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const tab = searchParams.get("tab");
+    
+    if (tab === "general" || tab === "mexico" || tab === "terminos") {
+      setActiveTab(tab);
+    }
+    
     window.scrollTo(0, 0);
-  }, [activeTab]);
+  }, [location]);
+
+  // Constante para estandarizar la clase tipográfica institucional de los textos legales
+  const legalTextClass = "space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify animate-fade-in-up";
 
   return (
     <div className="bg-white flex flex-col min-h-screen">
@@ -34,7 +44,7 @@ export default function Privacidad() {
             <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 mb-8 px-6 md:px-0">
               <button
                 onClick={() => setActiveTab("general")}
-                className={`py-3 px-8 rounded-full font-bold uppercase tracking-widest text-sm transition-all shadow-md ${
+                className={`py-3 px-8 rounded-full font-bold uppercase tracking-widest text-sm transition-all shadow-md cursor-pointer ${
                   activeTab === "general"
                     ? "bg-main-blue text-white"
                     : "bg-white text-main-blue border border-gray-200 hover:bg-pale-blue hover:text-main-blue"
@@ -44,7 +54,7 @@ export default function Privacidad() {
               </button>
               <button
                 onClick={() => setActiveTab("mexico")}
-                className={`py-3 px-8 rounded-full font-bold uppercase tracking-widest text-sm transition-all shadow-md ${
+                className={`py-3 px-8 rounded-full font-bold uppercase tracking-widest text-sm transition-all shadow-md cursor-pointer ${
                   activeTab === "mexico"
                     ? "bg-main-red text-white"
                     : "bg-white text-main-red border border-gray-200 hover:bg-red-50 hover:border-main-red"
@@ -54,7 +64,7 @@ export default function Privacidad() {
               </button>
               <button
                 onClick={() => setActiveTab("terminos")}
-                className={`py-3 px-8 rounded-full font-bold uppercase tracking-widest text-sm transition-all shadow-md ${
+                className={`py-3 px-8 rounded-full font-bold uppercase tracking-widest text-sm transition-all shadow-md cursor-pointer ${
                   activeTab === "terminos"
                     ? "bg-main-blue text-white"
                     : "bg-white text-main-blue border border-gray-200 hover:bg-pale-blue hover:text-main-blue"
@@ -71,7 +81,7 @@ export default function Privacidad() {
                   CONTENIDO: POLÍTICA GENERAL
               ========================================= */}
               {activeTab === "general" && (
-                <div className="space-y-6 text-sm md:text-base text-gray-700 leading-relaxed text-justify animate-fade-in-up">
+                <div className={legalTextClass}>
                   <div className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
                     <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-2">Política de Privacidad de IIRESODH y PIDA-AI</h2>
                     <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 14 de marzo de 2026</p>
@@ -165,7 +175,7 @@ export default function Privacidad() {
 
                   <div>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">9. Contacto General</h3>
-                    <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm mt-4 text-left">
+                    <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm mt-4 text-left not-italic font-normal text-sm md:text-base">
                       <p className="font-bold text-main-blue mb-1">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</p>
                       <p className="mb-1"><strong>Correo electrónico:</strong> <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">contacto@iiresodh.org</a></p>
                       <p><strong>Dirección Costa Rica:</strong> Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica.</p>
@@ -179,7 +189,7 @@ export default function Privacidad() {
                   CONTENIDO: AVISO PARA MÉXICO
               ========================================= */}
               {activeTab === "mexico" && (
-                <div className="space-y-6 text-sm md:text-base text-gray-700 leading-relaxed text-justify animate-fade-in-up">
+                <div className={legalTextClass}>
                   <div className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
                     <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-2">Aviso de Privacidad (MÉXICO)</h2>
                     <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 14 de marzo de 2026</p>
@@ -259,7 +269,7 @@ export default function Privacidad() {
                   CONTENIDO: TÉRMINOS Y CONDICIONES
               ========================================= */}
               {activeTab === "terminos" && (
-                <div className="space-y-6 text-sm md:text-base text-gray-700 leading-relaxed text-justify animate-fade-in-up">
+                <div className={legalTextClass}>
                   <div className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
                     <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-2">Términos y Condiciones del Sitio Web</h2>
                     <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 14 de marzo de 2026</p>
@@ -301,7 +311,7 @@ export default function Privacidad() {
 
                   <div>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">6. Uso Responsable</h3>
-                    <p className="mb-3">Al visitar nuestro Sitio Web, usted se compromete a utilizarlo únicamente para los fines previstos y conforme a lo permitido por estos Términos, los contratos adicionales que tenga con nosotros, las leyes y regulaciones aplicables, así como las prácticas en línea generalmente aceptadas y las directrices del sector.</p>
+                    <p className="mb-3">Al visitar nuestro Sitio Web, usted se compromete a utilizarlo únicamente para los fines previstos y conforme a lo permitido por estos Términos, los contratos adicionales que tenga con nosotros, las leyes y regulaciones aplicables, así como las practices en línea generalmente aceptadas y las directrices del sector.</p>
                     <p className="font-bold text-main-red mb-2">Queda estrictamente prohibido:</p>
                     <ul className="list-disc pl-6 space-y-2">
                       <li>Usar nuestro Sitio Web o servicios para utilizar, publicar o distribuir cualquier material que contenga o esté vinculado a software malicioso (malware).</li>
@@ -354,7 +364,7 @@ export default function Privacidad() {
 
                   <div>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">13. Cumplimiento Legal y Restricciones Geográficas</h3>
-                    <p>Se prohíbe el acceso al Sitio Web desde territorios o países donde el contenido o la compra de productos o servicios vendidos en el Sitio Web sea ilegal. Usted no puede utilizar este Sitio Web en violación de las leyes y regulaciones de exportación de Costa Rica.</p>
+                    <p>Se prohíbe el acceso al Sitio Web desde territorios o países donde el contenido o la purchase de productos o servicios vendidos en el Sitio Web sea ilegal. Usted no puede utilizar este Sitio Web en violación de las leyes y regulaciones de exportación de Costa Rica.</p>
                   </div>
 
                   <div>
@@ -405,7 +415,7 @@ export default function Privacidad() {
                   <div>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">23. Información de Contacto</h3>
                     <p className="mb-4">Este Sitio Web es propiedad y está gestionado por el IIRESODH. Puede contactarnos en relación con estos Términos y Condiciones escribiéndonos a la siguiente dirección de correo electrónico o postal:</p>
-                    <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm mt-4 text-left">
+                    <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm mt-4 text-left not-italic font-normal text-sm md:text-base">
                       <p className="font-bold text-main-blue mb-1">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</p>
                       <p className="mb-1"><strong>Correo electrónico:</strong> <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">contacto@iiresodh.org</a></p>
                       <p><strong>Dirección postal:</strong> Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica.</p>
