@@ -1,6 +1,5 @@
 // src/App.jsx
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
-import ResultadosBusqueda from "./pages/ResultadosBusqueda";
 
 // Componentes Globales
 import Navbar from "./components/Navbar";
@@ -10,9 +9,11 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 // Páginas
 import Home from "./pages/Home";
+import QuienesSomos from "./pages/QuienesSomos"; 
 import Noticias from "./pages/Noticias";
 import NoticiaDetalle from "./pages/NoticiaDetalle";
-import QuienesSomos from "./pages/QuienesSomos"; 
+import ResultadosBusqueda from "./pages/ResultadosBusqueda";
+import Privacidad from "./pages/Privacidad";
 import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound"; 
 
@@ -38,6 +39,7 @@ function App() {
           <Route path="/noticias" element={<Noticias />} />
           <Route path="/noticias/:id" element={<NoticiaDetalle />} />
           <Route path="/buscar" element={<ResultadosBusqueda />} />
+          <Route path="/privacidad" element={<Privacidad />} />
           
           <Route path="*" element={<NotFound />} />
         </Route>
