@@ -1,6 +1,5 @@
 // src/pages/Privacidad.jsx
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 
 export default function Privacidad() {
   const [activeTab, setActiveTab] = useState("general");
@@ -53,133 +52,86 @@ export default function Privacidad() {
               </button>
             </div>
 
-            {/* Contenedor de la Política (Mismo estilo que el Home) */}
+            {/* Contenedor de la Política */}
             <div className="bg-white md:rounded-3xl shadow-2xl border-y md:border border-gray-100 p-8 md:p-12 lg:p-16">
               
               {/* CONTENIDO: POLÍTICA GENERAL */}
               {activeTab === "general" && (
                 <div className="space-y-10 text-lg text-gray-700 leading-loose animate-fade-in-up">
                   <div className="border-b border-gray-100 pb-8 mb-10 text-center md:text-left">
-                    <h2 className="text-3xl md:text-4xl font-extrabold text-main-blue mb-4">Política de Privacidad de IIRESODH y sus Servicios</h2>
+                    <h2 className="text-3xl md:text-4xl font-extrabold text-main-blue mb-4">Política de Privacidad de IIRESODH</h2>
                     <p className="text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 14 de marzo de 2026</p>
                   </div>
 
                   <div>
                     <h3 className="text-2xl font-bold text-main-blue mb-4">1. Introducción y Alcance</h3>
                     <p className="mb-4">Bienvenido a la Política de Privacidad del Instituto Internacional de Responsabilidad Social y Derechos Humanos (en adelante, “IIRESODH”, “nosotros” o “nuestro”).</p>
-                    <p className="mb-4">Esta política describe cómo recopilamos, utilizamos, protegemos y compartimos su información personal. Aplica a todos los visitantes y usuarios de:</p>
-                    <ul className="list-disc pl-8 mb-6 space-y-2 font-medium">
-                      <li>Nuestro sitio web institucional: <a href="https://iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">https://iiresodh.org</a> (en adelante, el “Sitio Web General”).</li>
-                      <li>Nuestro servicio de inteligencia artificial por suscripción: <a href="https://pida-ai.com" target="_blank" rel="noopener noreferrer" className="text-light-blue hover:text-main-blue transition-colors">https://pida-ai.com</a> (en adelante, el “Servicio PIDA-AI”).</li>
-                    </ul>
-                    <p>Al utilizar cualquiera de nuestros sitios o servicios, usted reconoce que ha leído y acepta las prácticas descritas en esta Política de Privacidad. Si no está de acuerdo con esta política, por favor, no utilice nuestros servicios.</p>
+                    <p className="mb-4">Esta política describe cómo recopilamos, utilizamos, protegemos y compartimos su información personal cuando visita nuestro sitio web institucional (<a href="https://iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">https://iiresodh.org</a>) y se comunica con nosotros.</p>
+                    <div className="bg-pale-blue/30 p-4 rounded-xl border border-pale-blue mt-6">
+                      <p className="text-sm font-medium text-main-blue">
+                        <strong>Nota sobre servicios externos:</strong> El servicio tecnológico asociado PIDA-AI (<a href="https://pida-ai.com" target="_blank" rel="noopener noreferrer" className="text-light-blue hover:text-main-blue transition-colors">https://pida-ai.com</a>) es gestionado por una entidad jurídica independiente y se rige estrictamente por su propia Política de Privacidad, disponible en su respectivo sitio web.
+                      </p>
+                    </div>
                   </div>
 
                   <div>
                     <h3 className="text-2xl font-bold text-main-blue mb-4">2. Responsable del Tratamiento de sus Datos</h3>
-                    <p>El responsable del tratamiento de sus datos personales es el <strong>Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, con domicilio en Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica.</p>
+                    <p>El responsable del tratamiento de sus datos personales es el <strong>Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, organización con domicilio en Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica.</p>
                   </div>
 
                   <div>
                     <h3 className="text-2xl font-bold text-main-blue mb-4">3. ¿Qué Información Recopilamos?</h3>
-                    <p>Recopilamos diferentes tipos de información según el servicio que utilice.</p>
-                    
-                    <h4 className="text-xl font-bold text-main-blue mt-8 mb-4">3.1. Información Aplicable a Todos Nuestros Sitios (Sitio Web General y PIDA-AI)</h4>
                     <ul className="list-disc pl-8 space-y-3">
-                      <li><strong>Información que usted nos proporciona directamente:</strong> Recopilamos datos personales cuando nos contacta a través de formularios, como su nombre, dirección de correo electrónico y el contenido de su mensaje.</li>
-                      <li><strong>Información recopilada automáticamente:</strong> Cuando navega por nuestros sitios, recopilamos cierta información de manera automática, como su dirección IP, tipo de navegador, sistema operativo, páginas visitadas y la fecha y hora de su visita. Esta información se utiliza para análisis, seguridad y mejora de nuestros servicios.</li>
-                    </ul>
-
-                    <h4 className="text-xl font-bold text-main-blue mt-8 mb-4">3.2. Información Específica del Servicio PIDA-AI</h4>
-                    <p className="mb-4">Además de la información anterior, si usted es usuario del Servicio PIDA-AI, recopilamos:</p>
-                    <ul className="list-disc pl-8 space-y-3">
-                      <li><strong>Información de Registro y Cuenta:</strong> Su nombre, dirección de correo electrónico y contraseña (cifrada) para crear y gestionar su cuenta.</li>
-                      <li><strong>Información de Pago:</strong> Para procesar su suscripción, utilizamos proveedores de pago externos y seguros (ej. Stripe, PayPal). Nosotros <strong>no almacenamos</strong> los datos completos de su tarjeta de crédito o débito. Solo recibimos una confirmación de pago, su nombre y datos de contacto.</li>
-                      <li><strong>Contenido de Entrada y Salida:</strong> Recopilamos las preguntas o “prompts” que usted ingresa en el Servicio PIDA-AI (“Contenido de Entrada”) y las respuestas que la IA genera (“Contenido de Salida”) para poder prestarle el servicio.</li>
+                      <li><strong>Información proporcionada directamente:</strong> Recopilamos datos personales cuando nos contacta, se inscribe en nuestras actividades o realiza una donación. Esto incluye su nombre, dirección de correo electrónico, país de residencia y el contenido de sus mensajes.</li>
+                      <li><strong>Información recopilada automáticamente:</strong> Al navegar por nuestro sitio, recopilamos información técnica estándar (dirección IP, tipo de navegador, páginas visitadas) con fines de análisis y seguridad para mejorar nuestros servicios institucionales.</li>
                     </ul>
                   </div>
 
                   <div>
                     <h3 className="text-2xl font-bold text-main-blue mb-4">4. ¿Para Qué Utilizamos su Información? (Fines y Base Legal)</h3>
-                    <p>Utilizamos su información para fines específicos y siempre amparados en una base legal válida.</p>
-                    
-                    <h4 className="text-xl font-bold text-main-blue mt-8 mb-4">4.1. Para el Sitio Web General:</h4>
                     <ul className="list-disc pl-8 space-y-3">
-                      <li><strong>Responder a sus consultas:</strong> Para dar seguimiento a las solicitudes que nos envía. (Base legal: Su consentimiento).</li>
-                      <li><strong>Mejorar nuestro sitio:</strong> Analizar cómo se utiliza nuestro sitio para optimizar la experiencia del usuario. (Base legal: Nuestro interés legítimo).</li>
-                      <li><strong>Seguridad:</strong> Proteger nuestro sitio contra fraudes y ataques informáticos. (Base legal: Nuestro interés legítimo).</li>
-                    </ul>
-
-                    <h4 className="text-xl font-bold text-main-blue mt-8 mb-4">4.2. Para el Servicio PIDA-AI:</h4>
-                    <ul className="list-disc pl-8 space-y-3">
-                      <li><strong>Proveer y gestionar el servicio:</strong> Crear su cuenta, procesar su suscripción y darle acceso a la plataforma. (Base legal: Necesidad contractual).</li>
-                      <li><strong>Comunicarnos con usted:</strong> Enviarle información importante sobre su cuenta, facturación o cambios en el servicio. (Base legal: Necesidad contractual).</li>
-                      <li><strong>Mejorar el Servicio PIDA-AI:</strong> Utilizamos el Contenido de Entrada y Salida de forma <strong>agregada y anonimizada</strong> para entrenar, mejorar la precisión y la seguridad de nuestros modelos de IA. Nunca utilizaremos sus datos personales o contenido específico para este fin sin antes disociarlos de su identidad. (Base legal: Nuestro interés legítimo).</li>
+                      <li><strong>Atención y Comunicación:</strong> Responder a sus consultas, solicitudes de información y gestionar inscripciones a nuestros programas. (Base legal: Consentimiento).</li>
+                      <li><strong>Difusión Institucional:</strong> Envío de boletines informativos o noticias sobre nuestras labores en defensa de los derechos humanos, siempre que usted haya aceptado recibirlos. (Base legal: Consentimiento).</li>
+                      <li><strong>Mantenimiento y Seguridad:</strong> Analizar el tráfico de nuestro sitio para optimizar la experiencia de usuario y prevenir fraudes informáticos. (Base legal: Interés legítimo).</li>
                     </ul>
                   </div>
 
                   <div>
                     <h3 className="text-2xl font-bold text-main-blue mb-4">5. ¿Con Quién Compartimos su Información?</h3>
-                    <p className="mb-4">Su privacidad es fundamental. No vendemos ni alquilamos su información personal. Solo la compartimos en las siguientes circunstancias:</p>
+                    <p className="mb-4">IIRESODH no vende, alquila ni comercializa su información personal bajo ninguna circunstancia. Solo la compartimos en casos estrictamente necesarios:</p>
                     <ul className="list-disc pl-8 space-y-3">
-                      <li><strong>Proveedores de Servicios:</strong> Con empresas que nos ayudan a operar, como proveedores de alojamiento web (hosting), servicios de análisis (ej. Google Analytics) y plataformas de comunicación.</li>
-                      <li><strong>Procesadores de Pago:</strong> Con nuestros socios de pago para gestionar de forma segura las transacciones de suscripción de PIDA-AI.</li>
-                      <li><strong>Obligación Legal:</strong> Si una autoridad competente o una ley nos exige divulgar información, lo haremos cumpliendo estrictamente con el procedimiento legal.</li>
-                      <li><strong>Consentimiento:</strong> Con terceros, si usted nos ha dado su consentimiento explícito para hacerlo.</li>
+                      <li><strong>Proveedores Tecnológicos:</strong> Empresas que nos brindan servicios de alojamiento web (hosting) o plataformas para el envío de boletines, quienes operan bajo estrictos acuerdos de confidencialidad.</li>
+                      <li><strong>Obligación Legal:</strong> Cuando una autoridad competente lo requiera en el marco de la ley y el debido proceso jurisdiccional.</li>
                     </ul>
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-blue mb-4">6. Cookies y Tecnologías Similares</h3>
-                    <p>Utilizamos cookies (pequeños archivos de texto en su navegador) para el funcionamiento técnico de nuestros sitios, recordar sus preferencias y para fines de análisis. Usted puede controlar y deshabilitar el uso de cookies a través de la configuración de su navegador. Tenga en cuenta que si las deshabilita, algunas funciones de nuestros sitios podrían verse limitadas.</p>
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">6. Seguridad de su Información</h3>
+                    <p>IIRESODH aplica medidas de seguridad técnicas y organizativas para proteger su información contra accesos no autorizados, pérdida o alteración. Nuestro sitio utiliza certificados SSL para cifrar la información durante la transmisión, protegiendo así su privacidad.</p>
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-blue mb-4">7. Seguridad de su Información</h3>
-                    <p>Tomamos medidas de seguridad técnicas y organizativas para proteger su información. Utilizamos tecnología de cifrado SSL (Secure Sockets Layer) para las transferencias de datos, firewalls para proteger nuestros servidores y realizamos copias de seguridad periódicas. Sin embargo, ningún sistema es 100% seguro. Hacemos nuestro mejor esfuerzo para proteger sus datos, pero no podemos garantizar una seguridad absoluta.</p>
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">7. Retención de Datos</h3>
+                    <p>Conservaremos sus datos personales únicamente durante el tiempo que sea necesario para cumplir con las finalidades descritas en esta política o para dar cumplimiento a obligaciones legales o fiscales vigentes aplicables a la institución.</p>
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-blue mb-4">8. ¿Por Cuánto Tiempo Conservamos sus Datos? (Retención)</h3>
-                    <p className="mb-4">Conservamos su información personal solo durante el tiempo necesario para cumplir con los fines para los que fue recopilada, o según lo exijan las obligaciones legales.</p>
-                    <ul className="list-disc pl-8 space-y-3">
-                      <li>Los datos de contacto del Sitio Web General se conservan mientras sea necesario para gestionar su consulta.</li>
-                      <li>Los datos de la cuenta de PIDA-AI se conservan mientras su suscripción esté activa y por un período razonable después para fines administrativos.</li>
-                      <li>El contenido anonimizado para la mejora del modelo puede conservarse por períodos más largos.</li>
-                    </ul>
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">8. Sus Derechos</h3>
+                    <p className="mb-4">Como usuario, usted tiene derecho a Acceder a sus datos, Rectificarlos si son incorrectos, solicitar su Supresión, u Oponerse a ciertos tratamientos (como darse de baja de nuestros boletines). Para ejercer sus derechos, por favor escríbanos a:</p>
+                    <p className="font-bold text-main-blue pl-8"><a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">contacto@iiresodh.org</a></p>
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-blue mb-4">9. Sus Derechos sobre sus Datos Personales</h3>
-                    <p className="mb-4">Usted tiene derecho a:</p>
-                    <ul className="list-disc pl-8 space-y-3">
-                      <li><strong>Acceder</strong> a la información personal que tenemos sobre usted.</li>
-                      <li><strong>Rectificar</strong> cualquier información que sea inexacta o incompleta.</li>
-                      <li><strong>Suprimir (eliminar)</strong> sus datos cuando ya no sean necesarios para los fines para los que fueron recogidos.</li>
-                      <li><strong>Oponerse</strong> al tratamiento de sus datos en determinadas circunstancias.</li>
-                      <li><strong>Limitar</strong> el tratamiento de sus datos.</li>
-                      <li><strong>Solicitar la portabilidad</strong> de sus datos a otro proveedor de servicios.</li>
-                    </ul>
-                    <p className="mt-6">Para ejercer cualquiera de estos derechos, puede contactarnos a través del correo electrónico: <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue font-bold transition-colors">contacto@iiresodh.org</a>.</p>
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">9. Modificaciones</h3>
+                    <p>IIRESODH se reserva el derecho de actualizar esta Política de Privacidad para reflejar cambios en nuestras prácticas institucionales o en la normativa aplicable. La fecha de la última revisión se publicará siempre en la parte superior de esta página.</p>
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-blue mb-4">10. Privacidad de Menores de Edad</h3>
-                    <p>Nuestros servicios no están dirigidos a personas menores de 18 años. No recopilamos intencionadamente información de menores. Si detectamos que lo hemos hecho, tomaremos medidas para eliminar dicha información.</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-2xl font-bold text-main-blue mb-4">11. Cambios a esta Política de Privacidad</h3>
-                    <p>Podemos actualizar esta política periódicamente para reflejar cambios en nuestros servicios o en la legislación. Cuando lo hagamos, actualizaremos la fecha en la parte superior de esta página. Le recomendamos revisar esta política con regularidad.</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-2xl font-bold text-main-blue mb-4">12. Contacto</h3>
-                    <p className="mb-4">Si tiene alguna pregunta sobre esta Política de Privacidad o sobre cómo tratamos sus datos, no dude en contactarnos:</p>
-                    <div className="bg-gray-50 p-8 rounded-2xl border border-gray-200 shadow-sm">
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">10. Contacto</h3>
+                    <div className="bg-gray-50 p-8 rounded-2xl border border-gray-200 shadow-sm mt-4">
                       <p className="font-bold text-main-blue mb-2">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</p>
                       <p className="mb-2"><strong>Correo electrónico:</strong> <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">contacto@iiresodh.org</a></p>
-                      <p><strong>Dirección:</strong> Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica.</p>
+                      <p><strong>Dirección Sede Central:</strong> Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica.</p>
                     </div>
                   </div>
                 </div>
@@ -189,118 +141,83 @@ export default function Privacidad() {
               {activeTab === "mexico" && (
                 <div className="space-y-10 text-lg text-gray-700 leading-loose animate-fade-in-up">
                   <div className="border-b border-gray-100 pb-8 mb-10 text-center md:text-left">
-                    <h2 className="text-3xl md:text-4xl font-extrabold text-main-blue mb-4">Aviso de Privacidad de IIRESODH y sus Servicios (MÉXICO)</h2>
+                    <h2 className="text-3xl md:text-4xl font-extrabold text-main-blue mb-4">Aviso de Privacidad (MÉXICO)</h2>
                     <p className="text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 14 de marzo de 2026</p>
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-blue mb-4">1. Introducción</h3>
-                    <p className="mb-4">Este es el Aviso de Privacidad del Instituto Internacional de Responsabilidad Social y Derechos Humanos (en adelante, “IIRESODH”). Este documento describe cómo tratamos los datos personales de los usuarios (en adelante, el “Titular” o “usted”) de:</p>
-                    <ul className="list-disc pl-8 mb-6 space-y-2 font-medium">
-                      <li>Nuestro sitio web institucional: <a href="https://iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">https://iiresodh.org</a> (en adelante, el “Sitio Web General”).</li>
-                      <li>Nuestro servicio de inteligencia artificial por suscripción: <a href="https://pida-ai.com" target="_blank" rel="noopener noreferrer" className="text-light-blue hover:text-main-blue transition-colors">https://pida-ai.com</a> (en adelante, el “Servicio PIDA-AI”).</li>
-                    </ul>
-                    <p>Al proporcionarnos sus datos personales y/o utilizar nuestros servicios, usted otorga su consentimiento para el tratamiento de sus datos conforme a este Aviso de Privacidad.</p>
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">1. Introducción y Marco Legal</h3>
+                    <p className="mb-4">En estricto cumplimiento a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP) aplicable en los Estados Unidos Mexicanos, se emite el presente Aviso de Privacidad para informar a los usuarios (en adelante, el “Titular”) sobre el tratamiento de sus datos en el sitio web institucional: <a href="https://iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">https://iiresodh.org</a>.</p>
+                    <div className="bg-pale-blue/30 p-4 rounded-xl border border-pale-blue mt-6">
+                      <p className="text-sm font-medium text-main-blue">
+                        <strong>Importante:</strong> Este Aviso no cubre el servicio tecnológico PIDA-AI, el cual cuenta con su propio Responsable jurídico y Aviso de Privacidad independiente en <a href="https://pida-ai.com" target="_blank" rel="noopener noreferrer" className="text-light-blue hover:text-main-blue transition-colors">https://pida-ai.com</a>.
+                      </p>
+                    </div>
                   </div>
 
                   <div>
                     <h3 className="text-2xl font-bold text-main-blue mb-4">2. Identidad y Domicilio del Responsable</h3>
-                    <p>IIRESODH, con domicilio en Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica, es el <strong>Responsable</strong> del tratamiento de sus datos personales.</p>
+                    <p>El <strong>Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH)</strong>, con domicilio en Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica, es el Responsable de recabar sus datos personales, del uso que se le dé a los mismos y de su protección.</p>
                   </div>
 
                   <div>
                     <h3 className="text-2xl font-bold text-main-blue mb-4">3. Datos Personales que Tratamos</h3>
-                    <p>Tratamos distintas categorías de datos personales según el servicio que utilice.</p>
-                    
-                    <h4 className="text-xl font-bold text-main-blue mt-8 mb-4">3.1. Datos Tratados en Todos Nuestros Sitios (Sitio Web General y PIDA-AI)</h4>
+                    <p className="mb-4">Para las finalidades señaladas en el presente aviso, podemos recabar los siguientes datos personales:</p>
                     <ul className="list-disc pl-8 space-y-3">
-                      <li><strong>Datos de Identificación y Contacto:</strong> Nombre y correo electrónico que nos proporciona directamente a través de formularios.</li>
-                      <li><strong>Datos de Uso y de Dispositivo:</strong> Dirección IP, tipo de navegador, sistema operativo y páginas visitadas, recopilados de forma automática.</li>
+                      <li><strong>Datos de Identificación y Contacto:</strong> Nombre completo, correo electrónico, institución a la que pertenece y país.</li>
+                      <li><strong>Datos de Navegación:</strong> Dirección IP, cookies y datos analíticos de uso del portal web.</li>
                     </ul>
-
-                    <h4 className="text-xl font-bold text-main-blue mt-8 mb-4">3.2. Datos Específicos del Servicio PIDA-AI</h4>
-                    <ul className="list-disc pl-8 space-y-3">
-                      <li><strong>Datos de Registro de Cuenta:</strong> Nombre, correo electrónico y contraseña (cifrada).</li>
-                      <li><strong>Datos Patrimoniales y Financieros:</strong> A través de nuestros proveedores de pago externos, se recopila la información necesaria para procesar el pago de su suscripción. IIRESODH <strong>no almacena</strong> los datos completos de su tarjeta. Su tratamiento requiere su <strong>consentimiento expreso</strong>, el cual se otorga al momento de ingresar los datos en la pasarela de pago para completar la transacción.</li>
-                      <li><strong>Contenido Generado por el Usuario:</strong> Las preguntas o “prompts” que usted ingresa en el Servicio PIDA-AI.</li>
-                    </ul>
-
-                    <h4 className="text-xl font-bold text-main-blue mt-8 mb-4">3.3. Datos Personales Sensibles</h4>
-                    <p>IIRESODH <strong>no solicita</strong> datos personales sensibles (como origen racial o étnico, estado de salud, creencias religiosas, opiniones políticas, preferencia sexual, etc.). Le rogamos <strong>no proporcionar</strong> este tipo de información a través de nuestros servicios.</p>
+                    <p className="mt-6 text-main-red font-bold">Datos Personales Sensibles:</p>
+                    <p>El IIRESODH <strong>no recaba ni trata</strong> datos personales sensibles para la operación de este portal. Le rogamos abstenerse de enviar información clasificada como sensible a través de nuestros formularios de contacto general.</p>
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-blue mb-4">4. Finalidades del Tratamiento de sus Datos</h3>
-                    <p>Distinguimos entre finalidades primarias (necesarias para el servicio) y secundarias (accesorias).</p>
-                    
-                    <h4 className="text-xl font-bold text-main-blue mt-8 mb-4">4.1. Finalidades Primarias (necesarias):</h4>
-                    <p className="font-bold mb-3 text-main-blue">En ambos sitios:</p>
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">4. Finalidades del Tratamiento</h3>
+                    <p className="font-bold mb-3 text-main-blue">Finalidades Primarias (necesarias para la relación jurídica):</p>
                     <ul className="list-disc pl-8 mb-6 space-y-3">
-                      <li>Gestionar y responder a sus solicitudes de información.</li>
-                      <li>Mantener la seguridad e integridad de nuestros sistemas.</li>
+                      <li>Proveer la información solicitada respecto a nuestras actividades y defensa de derechos humanos.</li>
+                      <li>Contactar al Titular en respuesta a sus mensajes, dudas o comentarios.</li>
+                      <li>Gestionar la inscripción a eventos, foros o programas académicos dictados por el IIRESODH.</li>
                     </ul>
-                    <p className="font-bold mb-3 text-main-blue">En el Servicio PIDA-AI:</p>
+
+                    <p className="font-bold mb-3 text-main-blue">Finalidades Secundarias:</p>
                     <ul className="list-disc pl-8 space-y-3">
-                      <li>Crear, verificar y administrar su cuenta de usuario.</li>
-                      <li>Procesar los pagos de su suscripción.</li>
-                      <li>Prestarle el servicio de IA solicitado, procesando su Contenido de Entrada para generar el Contenido de Salida.</li>
-                      <li>Enviarle comunicaciones transaccionales sobre su cuenta o el servicio.</li>
+                      <li>Envío de boletines informativos institucionales.</li>
+                      <li>Análisis estadístico del uso del sitio web para mejora continua.</li>
                     </ul>
-
-                    <h4 className="text-xl font-bold text-main-blue mt-8 mb-4">4.2. Finalidades Secundarias (accesorias):</h4>
-                    <ul className="list-disc pl-8 mb-6 space-y-3">
-                      <li>Analizar el uso de nuestros sitios para mejorar la experiencia del usuario.</li>
-                      <li>De forma <strong>agregada y anonimizada</strong>, utilizar el contenido generado en PIDA-AI para mejorar la precisión y seguridad de nuestros modelos de IA.</li>
-                    </ul>
-                    <p>Usted puede manifestar su negativa para el tratamiento de sus datos para estas finalidades secundarias enviando un correo a <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue font-bold transition-colors">contacto@iiresodh.org</a>.</p>
+                    <p className="mt-4">En caso de que no desee que sus datos personales sean tratados para las Finalidades Secundarias, usted puede manifestar su negativa enviando un correo a <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue font-bold transition-colors">contacto@iiresodh.org</a>.</p>
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-blue mb-4">5. Transferencia y/o Remisión de Datos Personales</h3>
-                    <ul className="list-disc pl-8 space-y-5">
-                      <li><strong>Remisiones (No requieren consentimiento):</strong> Compartimos sus datos con proveedores que actúan en nuestro nombre (encargados), como servicios de alojamiento web (hosting), análisis de datos (Google Analytics) y procesadores de pago (ej. Stripe, PayPal), quienes están obligados a mantener la confidencialidad y seguridad de la información.</li>
-                      <li><strong>Transferencias (Requieren consentimiento):</strong> IIRESODH <strong>no realiza transferencias</strong> de sus datos personales a terceros (otros responsables) sin su consentimiento expreso, salvo en los casos de excepción previstos en el artículo 37 de la LFPDPPP (ej. requerimiento de una autoridad competente).</li>
-                    </ul>
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">5. Transferencias y/o Remisiones de Datos Personales</h3>
+                    <p className="mb-4">Le informamos que sus datos personales no son compartidos, vendidos ni transferidos a terceros (otros responsables) dentro ni fuera del país, salvo en aquellos casos en que la Ley lo exija expresamente (artículo 37 de la LFPDPPP).</p>
+                    <p>El IIRESODH podrá realizar remisiones de datos a proveedores de servicios (ej. servidores web, gestores de correo) que fungen como Encargados y asumen las mismas obligaciones de confidencialidad y seguridad establecidas en este Aviso.</p>
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-blue mb-4">6. Medios para Ejercer sus Derechos ARCO y Revocar el Consentimiento</h3>
-                    <p className="mb-4">Usted, como Titular, tiene derecho a:</p>
-                    <ul className="list-disc pl-8 mb-6 space-y-3">
-                      <li><strong>Acceso:</strong> Conocer qué datos personales tenemos de usted, para qué los utilizamos y las condiciones del uso que les damos.</li>
-                      <li><strong>Rectificación:</strong> Solicitar la corrección de su información personal en caso de que esté desactualizada, sea inexacta o incompleta.</li>
-                      <li><strong>Cancelación:</strong> Solicitar que eliminemos su información de nuestros registros o bases de datos cuando considere que no está siendo utilizada adecuadamente. (Su solicitud dará lugar a un período de bloqueo y posterior supresión).</li>
-                      <li><strong>Oposición:</strong> Oponerse al uso de sus datos personales para fines específicos.</li>
-                    </ul>
-                    <p className="mb-4">Asimismo, usted puede <strong>revocar el consentimiento</strong> que nos haya otorgado y <strong>limitar el uso o divulgación</strong> de su información personal.</p>
-                    <p className="mb-4">Para ejercer cualquiera de estos derechos, deberá enviar una solicitud por escrito al correo electrónico <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue font-bold transition-colors">contacto@iiresodh.org</a>, la cual deberá contener:</p>
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">6. Derechos ARCO y Revocación del Consentimiento</h3>
+                    <p className="mb-4">Usted tiene derecho a conocer qué datos personales tenemos de usted (<strong>A</strong>cceso); solicitar la corrección de su información en caso de ser inexacta (<strong>R</strong>ectificación); que la eliminemos de nuestros registros (<strong>C</strong>ancelación); así como <strong>O</strong>ponerse al uso de sus datos para fines específicos.</p>
+                    <p className="mb-4">Para ejercer cualquiera de los derechos ARCO, o revocar su consentimiento, deberá presentar la solicitud respectiva a través de un correo electrónico dirigido a <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue font-bold transition-colors">contacto@iiresodh.org</a>, incluyendo:</p>
                     <ol className="list-decimal pl-8 mt-4 space-y-3 font-medium">
-                      <li>Su nombre completo.</li>
-                      <li>Un correo electrónico para comunicarle la respuesta.</li>
-                      <li>Una copia de un documento que acredite su identidad (ej. credencial de elector, pasaporte).</li>
-                      <li>La descripción clara y precisa de los datos respecto de los que busca ejercer alguno de los derechos y el derecho que desea ejercer.</li>
+                      <li>Su nombre y correo electrónico para recibir respuesta.</li>
+                      <li>Documento oficial que acredite su identidad.</li>
+                      <li>La descripción clara y precisa de los datos respecto de los cuales busca ejercer el derecho.</li>
                     </ol>
                   </div>
 
                   <div>
                     <h3 className="text-2xl font-bold text-main-blue mb-4">7. Uso de Cookies</h3>
-                    <p>Utilizamos cookies para el funcionamiento técnico y análisis de nuestros sitios. Usted puede deshabilitarlas desde la configuración de su navegador, aunque esto podría limitar su experiencia de usuario.</p>
+                    <p>Nuestro sitio web utiliza tecnologías como cookies para mejorar su experiencia, analizar el tráfico y adaptar el contenido. Usted puede configurar su navegador web para rechazar todas las cookies o para que le avise cuando se envíe una cookie.</p>
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-blue mb-4">8. Medidas de Seguridad</h3>
-                    <p>Implementamos medidas de seguridad físicas, técnicas y administrativas para proteger sus datos personales, incluyendo el uso de cifrado SSL, firewalls y políticas de acceso.</p>
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">8. Modificaciones al Aviso de Privacidad</h3>
+                    <p>El IIRESODH se reserva el derecho de efectuar en cualquier momento modificaciones o actualizaciones al presente aviso de privacidad. Cualquier cambio estará disponible y visible al público en esta misma página web institucional.</p>
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-main-blue mb-4">9. Cambios a este Aviso de Privacidad</h3>
-                    <p>Cualquier modificación a este Aviso de Privacidad le será notificada a través de una publicación en nuestros sitios web.</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-2xl font-bold text-main-blue mb-4">10. Contacto</h3>
-                    <p className="mb-4">Si tiene alguna pregunta sobre este Aviso de Privacidad, puede contactarnos en:</p>
-                    <div className="bg-gray-50 p-8 rounded-2xl border border-gray-200 shadow-sm">
+                    <h3 className="text-2xl font-bold text-main-blue mb-4">9. Contacto</h3>
+                    <div className="bg-gray-50 p-8 rounded-2xl border border-gray-200 shadow-sm mt-4">
                       <p className="font-bold text-main-blue mb-2">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</p>
                       <p className="mb-2"><strong>Correo electrónico:</strong> <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">contacto@iiresodh.org</a></p>
                       <p><strong>Domicilio:</strong> Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica.</p>
