@@ -12,7 +12,7 @@ import 'swiper/css/pagination';
 
 import isotipoColor from "../assets/Isotipo-color-512.png";
 import pidaLogo from "../assets/PIDA_logo-576.png";
-import pidaMascota from "../assets/PIDA-MASCOTA-576-trans.jpg";
+import pidaMascota from "../assets/PIDA-MASCOTA-576-trans.png";
 
 // Detecta URLs y también Hashtags  (#)
 const formatearTextoConLinksYHashtags = (texto) => {
