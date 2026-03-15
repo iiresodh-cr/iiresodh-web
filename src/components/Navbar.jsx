@@ -65,7 +65,7 @@ export default function Navbar() {
             
             {/* BOTÓN HAMBURGUESA (Solo visible en móviles) */}
             <button 
-              className="md:hidden p-2 text-main-blue hover:text-main-red transition-colors focus:outline-none"
+              className="md:hidden p-2 text-main-blue hover:text-main-red transition-colors focus:outline-none cursor-pointer"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Menú principal"
             >
@@ -91,7 +91,7 @@ export default function Navbar() {
               />
               <button
                 type="submit"
-                className="absolute right-1.5 top-1 bottom-1 bg-light-blue hover:bg-main-blue text-white w-8 rounded-full flex items-center justify-center transition-colors shadow-sm"
+                className="absolute right-1.5 top-1 bottom-1 bg-light-blue hover:bg-main-blue text-white w-8 rounded-full flex items-center justify-center transition-colors shadow-sm cursor-pointer"
                 aria-label="Buscar"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -123,9 +123,12 @@ export default function Navbar() {
             <nav className="w-full md:w-auto flex flex-col md:flex-row justify-center md:items-center gap-1 md:gap-10 text-sm font-medium tracking-widest uppercase order-1 md:order-2">
               
               {/* DROPDOWN NOSOTROS */}
-              <div className="relative group cursor-pointer w-full md:w-auto">
+              <div 
+                className="relative group cursor-pointer w-full md:w-auto"
+                onMouseLeave={() => setActiveDropdown(null)}
+              >
                 <button 
-                  className="flex items-center justify-between md:justify-center w-full gap-1.5 hover:text-light-blue transition-colors py-4 md:py-5 border-b border-gray-100 md:border-b-0"
+                  className="flex items-center justify-between md:justify-center w-full gap-1.5 hover:text-light-blue transition-colors py-4 md:py-5 border-b border-gray-100 md:border-b-0 cursor-pointer"
                   onClick={() => toggleDropdown('nosotros')}
                 >
                   NOSOTROS 
@@ -149,9 +152,12 @@ export default function Navbar() {
               </div>
 
               {/* DROPDOWN ÁREAS DE TRABAJO */}
-              <div className="relative group cursor-pointer w-full md:w-auto">
+              <div 
+                className="relative group cursor-pointer w-full md:w-auto"
+                onMouseLeave={() => setActiveDropdown(null)}
+              >
                 <button 
-                  className="flex items-center justify-between md:justify-center w-full gap-1.5 hover:text-light-blue transition-colors py-4 md:py-5 border-b border-gray-100 md:border-b-0"
+                  className="flex items-center justify-between md:justify-center w-full gap-1.5 hover:text-light-blue transition-colors py-4 md:py-5 border-b border-gray-100 md:border-b-0 cursor-pointer"
                   onClick={() => toggleDropdown('areas')}
                 >
                   ÁREAS DE TRABAJO 
