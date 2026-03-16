@@ -1,5 +1,7 @@
 // src/pages/LitigioEstrategico.jsx
 import { useEffect } from "react";
+// Importamos la imagen para la cabecera
+import cabeceraImg from "../assets/Litigio_Estratégico.png";
 
 export default function LitigioEstrategico() {
   // Hacer scroll al tope de la página al cargar
@@ -9,8 +11,18 @@ export default function LitigioEstrategico() {
 
   return (
     <div className="bg-white flex flex-col min-h-screen">
+      
+      {/* IMAGEN DE CABECERA (Banner) */}
+      <div className="w-full">
+        <img 
+          src={cabeceraImg} 
+          alt="Banner Litigio Estratégico" 
+          className="w-full h-48 md:h-80 lg:h-96 object-cover object-center shadow-sm"
+        />
+      </div>
+
       {/* Encabezado de la página */}
-      <div className="bg-white text-main-blue py-12 px-6 text-center relative z-20 border-b border-gray-200">
+      <div className="bg-white text-main-blue py-10 md:py-12 px-6 text-center relative z-20 border-b border-gray-200">
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3 uppercase">
           Litigio Estratégico
         </h1>
@@ -25,6 +37,7 @@ export default function LitigioEstrategico() {
         <div className="bg-watermark"></div>
 
         <section className="relative py-12 md:py-16 px-0 md:px-8 z-10">
+          {/* Ajustado a max-w-6xl o 7xl si prefieres que siga el ancho del Home */}
           <div className="max-w-5xl mx-auto bg-white md:rounded-3xl shadow-2xl border-y md:border border-gray-100 p-8 md:p-12 lg:p-16">
             
             {/* Contenido principal con tipografía light y justificada */}
