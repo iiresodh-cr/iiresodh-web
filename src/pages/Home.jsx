@@ -14,7 +14,7 @@ import isotipoColor from "../assets/Isotipo-color-512.png";
 import pidaLogo from "../assets/PIDA_logo-576.png";
 import pidaMascota from "../assets/PIDA-MASCOTA-576-trans.png";
 
-// NUEVA FUNCIÓN: Detecta URLs y también Hashtags (#)
+// FUNCIÓN: Detecta URLs y también Hashtags (#)
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
   const partes = texto.split(/(<[^>]+>)/g);
@@ -91,19 +91,17 @@ export default function Home() {
         
         <div className="bg-watermark"></div>
 
-        {/* SECCIÓN 1: ÚLTIMA NOTICIA (Ancho completo en móvil) */}
+        {/* SECCIÓN 1: ÚLTIMA NOTICIA */}
         <section className="relative pt-6 pb-10 px-0 md:px-8 z-10">
-          <div className="max-w-6xl mx-auto">
+          {/* CAMBIO: max-w-6xl -> max-w-7xl */}
+          <div className="max-w-7xl mx-auto">
             {!noticia ? (
               <div className="text-center text-light-blue text-xl py-20 bg-white border border-gray-200">
                 Aún no hay noticias publicadas.
               </div>
             ) : (
-              // MODIFICACIÓN: Se eliminaron las sombras (shadow-2xl), bordes redondeados (md:rounded-3xl),
-              // la franja roja superior (border-t-8 border-main-red) y todos los bordes (border-x, border-b, border-gray-200).
               <div className="bg-white overflow-hidden flex flex-col md:flex-row min-h-112.5 md:min-h-120">
                 
-                {/* MODIFICACIÓN: Se eliminó el borde derecho (border-r) y el color del borde (border-gray-200) */}
                 <div className="w-full md:w-2/5 bg-white border-b md:border-b-0 relative shrink-0"> 
                   <div className="aspect-4/5 w-full relative">
                     <Swiper
@@ -149,9 +147,10 @@ export default function Home() {
           </div>
         </section>
 
-        {/* SECCIÓN 2: ACERCA DEL INSTITUTO (Padding ajustado y divisor eliminado) */}
+        {/* SECCIÓN 2: ACERCA DEL INSTITUTO */}
         <section className="relative pt-6 pb-10 md:pb-12 px-0 md:px-8 z-10">
-          <div className="max-w-6xl mx-auto bg-white p-8 md:p-12 md:rounded-3xl shadow-2xl border-y md:border border-gray-100 flex flex-col lg:flex-row items-center gap-12">
+          {/* CAMBIO: max-w-6xl -> max-w-7xl */}
+          <div className="max-w-7xl mx-auto bg-white p-8 md:p-12 md:rounded-3xl shadow-2xl border-y md:border border-gray-100 flex flex-col lg:flex-row items-center gap-12">
             
             <div className="lg:w-2/3 space-y-6 text-main-blue text-base md:text-xl font-light leading-relaxed text-center lg:text-left">
               <p className="italic">
@@ -184,9 +183,10 @@ export default function Home() {
           </div>
         </section>
 
-        {/* SECCIÓN 3: OFICINAS (Padding ajustado) */}
+        {/* SECCIÓN 3: OFICINAS */}
         <section className="relative py-10 md:py-12 px-4 md:px-8 z-10">
-          <div className="max-w-6xl mx-auto">
+          {/* CAMBIO: max-w-6xl -> max-w-7xl */}
+          <div className="max-w-7xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-extrabold text-main-red uppercase tracking-widest mb-10 md:mb-12 text-center md:text-left">
               Nuestras Oficinas:
             </h2>
@@ -241,13 +241,13 @@ export default function Home() {
           </div>
         </section>
 
-        {/* SECCIÓN 4: PIDA (Padding ajustado y divisor eliminado) */}
+        {/* SECCIÓN 4: PIDA */}
         <section className="relative py-10 md:py-12 px-0 md:px-8 z-10">
-          <div className="max-w-6xl mx-auto bg-white md:rounded-3xl shadow-2xl border-y md:border border-gray-100 p-8 md:p-12 lg:p-16 overflow-hidden">
+          {/* CAMBIO: max-w-6xl -> max-w-7xl */}
+          <div className="max-w-7xl mx-auto bg-white md:rounded-3xl shadow-2xl border-y md:border border-gray-100 p-8 md:p-12 lg:p-16 overflow-hidden">
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-12 items-center">
               
-              {/* Mitad Izquierda */}
               <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
                 <img 
                   src={pidaLogo} 
@@ -263,7 +263,6 @@ export default function Home() {
                 </p>
               </div>
 
-              {/* Mitad Derecha */}
               <div className="flex flex-col items-center justify-center gap-8 relative mt-6 lg:mt-0">
                 <img 
                   src={pidaMascota} 
@@ -285,7 +284,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Explicación Inferior */}
             <div className="mt-12 md:mt-16 pt-10 md:pt-12 border-t border-gray-100 max-w-4xl mx-auto">
               <h3 className="text-xl md:text-3xl font-extrabold text-main-blue mb-6 text-center">
                 ¿Cuál es la gran diferencia de PIDA?
