@@ -95,13 +95,15 @@ export default function Home() {
         <section className="relative pt-6 pb-10 px-0 md:px-8 z-10">
           <div className="max-w-6xl mx-auto">
             {!noticia ? (
-              <div className="text-center text-light-blue text-xl py-20 bg-white md:rounded-3xl shadow-2xl border-y md:border border-gray-100">
+              <div className="text-center text-light-blue text-xl py-20 bg-white border border-gray-200">
                 Aún no hay noticias publicadas.
               </div>
             ) : (
-              <div className="bg-white md:rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row border-t-8 border-main-red min-h-112.5 md:min-h-120">
+              // MODIFICACIÓN: Se eliminaron las sombras (shadow-2xl) y bordes redondeados profundos (md:rounded-3xl).
+              // Ahora es un diseño plano (flat) con borde sutil.
+              <div className="bg-white overflow-hidden flex flex-col md:flex-row border-t-8 border-main-red border-x border-b border-gray-200 min-h-112.5 md:min-h-120">
                 
-                <div className="w-full md:w-2/5 bg-white border-b md:border-b-0 md:border-r border-gray-100 relative shrink-0"> 
+                <div className="w-full md:w-2/5 bg-white border-b md:border-b-0 md:border-r border-gray-200 relative shrink-0"> 
                   <div className="aspect-4/5 w-full relative">
                     <Swiper
                       modules={[Navigation, Pagination, Autoplay]}
