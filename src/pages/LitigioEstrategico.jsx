@@ -29,11 +29,8 @@ export default function LitigioEstrategico() {
               />
             </div>
 
-            {/* ENCABEZADO (Sin borde inferior) */}
-            <div className="bg-white text-main-blue py-10 md:py-12 px-6 text-center">
-              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3 uppercase">
-                Litigio Estratégico
-              </h1>
+            {/* ENCABEZADO (Sin título redundante, padding superior ajustado) */}
+            <div className="bg-white text-main-blue pt-6 pb-10 md:pt-8 md:pb-12 px-6 text-center">
               <p className="text-base md:text-lg text-light-blue max-w-3xl mx-auto font-medium">
                 Defensa activa y capacitación en los sistemas universales y regionales de protección.
               </p>
