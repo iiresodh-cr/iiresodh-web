@@ -99,11 +99,12 @@ export default function Home() {
                 Aún no hay noticias publicadas.
               </div>
             ) : (
-              // MODIFICACIÓN: Se eliminaron las sombras (shadow-2xl) y bordes redondeados profundos (md:rounded-3xl).
-              // Ahora es un diseño plano (flat) con borde sutil.
-              <div className="bg-white overflow-hidden flex flex-col md:flex-row border-t-8 border-main-red border-x border-b border-gray-200 min-h-112.5 md:min-h-120">
+              // MODIFICACIÓN: Se eliminaron las sombras (shadow-2xl), bordes redondeados (md:rounded-3xl),
+              // la franja roja superior (border-t-8 border-main-red) y todos los bordes (border-x, border-b, border-gray-200).
+              <div className="bg-white overflow-hidden flex flex-col md:flex-row min-h-112.5 md:min-h-120">
                 
-                <div className="w-full md:w-2/5 bg-white border-b md:border-b-0 md:border-r border-gray-200 relative shrink-0"> 
+                {/* MODIFICACIÓN: Se eliminó el borde derecho (border-r) y el color del borde (border-gray-200) */}
+                <div className="w-full md:w-2/5 bg-white border-b md:border-b-0 relative shrink-0"> 
                   <div className="aspect-4/5 w-full relative">
                     <Swiper
                       modules={[Navigation, Pagination, Autoplay]}
@@ -255,7 +256,7 @@ export default function Home() {
                 />
                 <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-main-blue leading-tight mb-4 md:mb-6">
                   Inteligencia Aumentada para la Defensa de los <br className="hidden lg:block" />
-                  <span className="bg-linear-to-r from-main-blue to-main-red bg-clip-text text-transparent">Derechos Humanos</span>
+                  <span className="bg-linear-to-r from-main-blue to-main-red bg-clip-text text-transparent inline-block">Derechos Humanos</span>
                 </h2>
                 <p className="text-base md:text-lg text-gray-700 leading-loose">
                   Los asistentes de Inteligencia Artificial genéricos son un océano de información, pero sin un ancla, pueden llevarte a la deriva con datos imprecisos.
