@@ -41,8 +41,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-stretch">
         
         {/* COLUMNA IZQUIERDA: LOGO */}
-        {/* Ocupa todo el alto disponible de las franjas derechas en Desktop */}
-        <div className="shrink-0 flex items-center justify-between px-6 py-4 md:pr-8 md:border-r border-gray-100 bg-white relative z-20">
+        <div className="shrink-0 flex items-center justify-between px-6 py-4 md:pr-8 bg-white relative z-20">
           <Link to="/" className="flex items-center">
             {/* Altura aumentada para que abarque visualmente las dos franjas */}
             <img src={logo} alt="IIRESODH Logo" className="h-16 md:h-28 lg:h-32 w-auto object-contain" />
@@ -65,10 +64,10 @@ export default function Navbar() {
         </div>
 
         {/* COLUMNA DERECHA: FRANJAS SUPERIOR E INFERIOR */}
-        <div className={`flex-col grow ${isMobileMenuOpen ? 'flex absolute top-full left-0 w-full bg-white shadow-xl border-t border-gray-100 z-10' : 'hidden md:flex'}`}>
+        <div className={`flex-col grow ${isMobileMenuOpen ? 'flex absolute top-full left-0 w-full bg-white shadow-xl z-10' : 'hidden md:flex'}`}>
           
           {/* FRANJA SUPERIOR: Buscador y Redes Sociales */}
-          <div className="bg-white px-6 py-4 border-b border-gray-100 flex flex-col md:flex-row justify-between md:justify-end items-center gap-6">
+          <div className="bg-white px-6 py-4 flex flex-col md:flex-row justify-between md:justify-end items-center gap-6">
             
             {/* BARRA DE BÚSQUEDA */}
             <div className="w-full md:w-auto md:flex-1 max-w-md md:mr-auto">
@@ -130,7 +129,7 @@ export default function Navbar() {
                 onMouseLeave={() => setActiveDropdown(null)}
               >
                 <button 
-                  className="flex items-center justify-between md:justify-center w-full gap-1.5 hover:text-light-blue transition-colors py-3 md:py-2 border-b border-gray-100 md:border-b-0 cursor-pointer"
+                  className="flex items-center justify-between md:justify-center w-full gap-1.5 hover:text-light-blue transition-colors py-3 md:py-2 cursor-pointer"
                   onClick={() => toggleDropdown('nosotros')}
                 >
                   NOSOTROS 
@@ -158,7 +157,7 @@ export default function Navbar() {
                 onMouseLeave={() => setActiveDropdown(null)}
               >
                 <button 
-                  className="flex items-center justify-between md:justify-center w-full gap-1.5 hover:text-light-blue transition-colors py-3 md:py-2 border-b border-gray-100 md:border-b-0 cursor-pointer"
+                  className="flex items-center justify-between md:justify-center w-full gap-1.5 hover:text-light-blue transition-colors py-3 md:py-2 cursor-pointer"
                   onClick={() => toggleDropdown('areas')}
                 >
                   ÁREAS DE TRABAJO 
@@ -179,7 +178,7 @@ export default function Navbar() {
                 </div>
               </div>
               
-              <Link to="/noticias" className="hover:text-light-blue py-3 md:py-2 transition-colors w-full md:w-auto block border-b border-gray-100 md:border-b-0">NOTICIAS</Link>
+              <Link to="/noticias" className="hover:text-light-blue py-3 md:py-2 transition-colors w-full md:w-auto block">NOTICIAS</Link>
             </nav>
 
             {/* BOTÓN DONACIONES */}
@@ -190,7 +189,7 @@ export default function Navbar() {
             </div>
             
             {/* REDES SOCIALES MÓVIL (Solo se ven si el menú está abierto) */}
-            <div className="flex md:hidden items-center justify-center gap-8 py-6 text-light-blue order-4 border-t border-gray-100">
+            <div className="flex md:hidden items-center justify-center gap-8 py-6 text-light-blue order-4">
               <a href="https://www.facebook.com/iiresodhcostarica" target="_blank" rel="noreferrer" className="hover:text-main-red transition-colors">
                 <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" /></svg>
               </a>
