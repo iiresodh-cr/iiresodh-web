@@ -1,7 +1,7 @@
 // src/pages/LitigioEstrategico.jsx
 import { useEffect } from "react";
 // Importamos la imagen para la cabecera
-import cabeceraImg from "../assets/Litigio_Estratégico.png";
+import cabeceraImg from "../assets/Litigio_Estrategico.png";
 
 export default function LitigioEstrategico() {
   // Hacer scroll al tope de la página al cargar
