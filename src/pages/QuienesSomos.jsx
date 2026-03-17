@@ -93,7 +93,7 @@ export default function QuienesSomos() {
                 </div>
               </div>
 
-              {/* SECCIÓN PRINCIPIOS RECTORES (Diseño Plano) */}
+              {/* SECCIÓN PRINCIPIOS RECTORES (Diseño Plano sin numeración) */}
               <div id="principios-rectores" className="pt-10 border-t border-gray-100 scroll-mt-32">
                 <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue text-center mb-10 uppercase tracking-widest">
                   Principios Rectores
@@ -108,7 +108,8 @@ export default function QuienesSomos() {
                     "Inclusión social."
                   ].map((principio, index) => (
                     <div key={index} className="flex items-center gap-4 bg-gray-50 p-6 rounded-xl">
-                      <div className="text-main-red font-black text-3xl opacity-50">0{index + 1}</div>
+                      {/* Punto rojo sutil en lugar de números */}
+                      <div className="w-2.5 h-2.5 rounded-full bg-main-red shrink-0"></div>
                       <p className="text-main-blue font-bold text-base md:text-lg">{principio}</p>
                     </div>
                   ))}
