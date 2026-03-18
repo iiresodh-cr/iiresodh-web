@@ -10,8 +10,6 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
-import isotipoColor from "../assets/Isotipo-color-512.png";
-
 // FUNCIÓN: Detecta URLs y también Hashtags (#)
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
@@ -87,16 +85,17 @@ export default function Home() {
         
         <div className="bg-watermark"></div>
 
-        {/* CONTENEDOR MAESTRO UNIFICADO: Controla todo el padding de la página y el ancho */}
-        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pt-8 md:pt-12">
+        {/* CONTENEDOR MAESTRO UNIFICADO: Controla todo el padding de la página y el ancho.
+            Se eliminaron los gaps y márgenes inferiores para asegurar un flujo continuo. */}
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pt-8 md:pt-12 flex flex-col">
           
           {/* BLOQUE 1: ÚLTIMA NOTICIA */}
           {!noticia ? (
-            <div className="text-center text-light-blue text-xl py-20 bg-white mb-12">
+            <div className="text-center text-light-blue text-xl py-20 bg-white">
               Aún no hay noticias publicadas.
             </div>
           ) : (
-            <div className="bg-white flex flex-col md:flex-row min-h-112.5 md:min-h-120 mb-16">
+            <div className="bg-white flex flex-col md:flex-row min-h-112.5 md:min-h-120">
               
               <div className="w-full md:w-2/5 bg-white relative shrink-0"> 
                 <div className="aspect-4/5 w-full relative">
@@ -119,8 +118,8 @@ export default function Home() {
                 </div>
               </div>
               
-              {/* Padding simétrico agregado (px-6 md:px-12) para que el texto no toque la derecha */}
-              <div className="w-full md:w-3/5 py-8 md:py-10 px-6 md:px-12 flex flex-col justify-center bg-white">
+              {/* Padding simétrico (px-0 md:px-12) arreglado para que el texto justificado no toque la derecha */}
+              <div className="w-full md:w-3/5 py-8 md:py-10 px-0 md:px-12 flex flex-col justify-center bg-white">
                 <span className="text-xs font-extrabold text-bright-red uppercase tracking-widest mb-3">Última Noticia</span>
                 <h2 className="text-2xl md:text-4xl font-extrabold text-main-blue mb-6 leading-tight">{noticia.titulo}</h2>
                 
@@ -142,9 +141,10 @@ export default function Home() {
             </div>
           )}
 
-          {/* BLOQUE 2: ACERCA DEL INSTITUTO (Con video incrustado) */}
-          <div className="bg-white flex flex-col lg:flex-row items-start gap-12 mb-16">
-            {/* Alineación justificada implementada */}
+          {/* BLOQUE 2: ACERCA DEL INSTITUTO (Texto justificado + Video grande alineado arriba) */}
+          <div className="bg-white flex flex-col lg:flex-row items-start gap-12 py-10 md:py-16">
+            
+            {/* Texto justificado rigurosamente */}
             <div className="lg:w-2/3 space-y-6 text-main-blue text-base md:text-xl font-light leading-relaxed text-justify">
               <p className="italic">
                 El <strong className="font-extrabold text-light-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
@@ -157,31 +157,23 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="lg:w-1/3 flex flex-col items-center justify-center w-full">
-              <div className="flex flex-col items-center justify-center gap-6 w-full max-w-md">
-                <img 
-                  src={isotipoColor} 
-                  alt="Isotipo IIRESODH" 
-                  className="w-32 md:w-40 h-auto object-contain opacity-95 drop-shadow-sm mb-2" 
-                />
-                
-                {/* VIDEO INCRUSTADO AQUÍ */}
-                <div className="w-full aspect-video bg-black rounded-xl overflow-hidden shadow-md border border-gray-100">
-                  <video 
-                    className="w-full h-full object-cover"
-                    controls 
-                    preload="metadata"
-                    src="https://storage.googleapis.com/iiresodh_10_anios/IIRESODH.mp4"
-                  >
-                    Tu navegador no soporta la reproducción de videos.
-                  </video>
-                </div>
+            {/* Video grande (max-w-xl), sin isotipo, alineado arriba (items-start en el contenedor flex) */}
+            <div className="lg:w-1/3 w-full">
+              <div className="w-full max-w-xl aspect-video bg-black rounded-xl overflow-hidden shadow-md border border-gray-100">
+                <video 
+                  className="w-full h-full object-cover"
+                  controls 
+                  preload="metadata"
+                  src="https://storage.googleapis.com/iiresodh_10_anios/IIRESODH.mp4"
+                >
+                  Tu navegador no soporta la reproducción de videos.
+                </video>
               </div>
             </div>
           </div>
 
           {/* BLOQUE 3: OFICINAS */}
-          <div className="bg-white">
+          <div className="bg-white py-10">
             <h2 className="text-2xl md:text-3xl font-extrabold text-main-red uppercase tracking-widest mb-10 text-center md:text-left">
               Nuestras Oficinas
             </h2>
