@@ -32,25 +32,26 @@ export default function QuienesSomos() {
           {/* Contenedor estandarizado a max-w-7xl (1280px) con DISEÑO PLANO */}
           <div className="max-w-7xl mx-auto bg-white overflow-hidden">
             
-            {/* IMAGEN DE CABECERA CON EL CORTE CURVO INFERIOR IZQUIERDO */}
-            <div className="w-full bg-white pr-4 md:pr-0">
+            {/* IMAGEN DE CABECERA CON EL CORTE CURVO SUPERIOR IZQUIERDO */}
+            {/* Se quitó el pr-4 para que la curva toque el borde si el contenedor no tiene padding */}
+            <div className="w-full bg-white">
               <img 
                 src={cabeceraImg} 
                 alt="Banner Quiénes Somos" 
-                // Aquí está la magia: rounded-bl con valores dinámicos para curvar solo esa esquina
-                className="w-full h-48 md:h-80 lg:h-96 object-cover object-center rounded-bl-[80px] md:rounded-bl-[120px] lg:rounded-bl-[160px]"
+                // MODIFICACIÓN AQUÍ: rounded-tl con valores dinámicos para curvar esa esquina progresivamente
+                className="w-full h-48 md:h-80 lg:h-96 object-cover object-center rounded-tl-[80px] md:rounded-tl-[120px] lg:rounded-tl-[160px]"
               />
             </div>
 
-            {/* ENCABEZADO */}
-            <div className="bg-white text-main-blue pt-8 pb-10 md:pt-12 md:pb-12 px-6 text-center">
+            {/* ENCABEZADO (Mismo diseño plano, padding ajustado) */}
+            <div className="bg-white text-main-blue pt-10 pb-10 md:pt-12 md:pb-12 px-6 text-center">
               <p className="text-base md:text-lg text-light-blue max-w-3xl mx-auto font-medium">
                 Defendiendo la democracia y los derechos humanos desde Costa Rica para el mundo.
               </p>
               <div className="w-20 h-1 bg-main-red mx-auto mt-6 rounded-full"></div>
             </div>
 
-            {/* CONTENIDO PRINCIPAL */}
+            {/* CONTENIDO PRINCIPAL (Mismo diseño plano) */}
             <div className="px-8 md:px-12 lg:px-16 pb-12 md:pb-16 animate-fade-in-up">
               
               {/* Párrafos centrados para lectura cómoda */}
@@ -72,7 +73,7 @@ export default function QuienesSomos() {
                 </p>
               </div>
 
-              {/* SECCIÓN MISIÓN Y VISIÓN */}
+              {/* SECCIÓN MISIÓN Y VISIÓN (Mismo diseño plano) */}
               <div id="mision-vision" className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 mb-16 scroll-mt-32">
                 <div className="bg-gray-50 border-l-4 border-main-red p-8 md:p-10 rounded-r-xl">
                   <h2 className="text-2xl font-extrabold text-main-blue mb-4 uppercase tracking-wider flex items-center gap-3">
@@ -94,7 +95,7 @@ export default function QuienesSomos() {
                 </div>
               </div>
 
-              {/* SECCIÓN PRINCIPIOS RECTORES */}
+              {/* SECCIÓN PRINCIPIOS RECTORES (Mismo diseño plano, bullets rojos) */}
               <div id="principios-rectores" className="pt-10 border-t border-gray-100 scroll-mt-32">
                 <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue text-center mb-10 uppercase tracking-widest">
                   Principios Rectores
@@ -109,7 +110,6 @@ export default function QuienesSomos() {
                     "Inclusión social."
                   ].map((principio, index) => (
                     <div key={index} className="flex items-center gap-4 bg-gray-50 p-6 rounded-xl">
-                      {/* Punto rojo sutil en lugar de números */}
                       <div className="w-2.5 h-2.5 rounded-full bg-main-red shrink-0"></div>
                       <p className="text-main-blue font-bold text-base md:text-lg">{principio}</p>
                     </div>
@@ -121,7 +121,7 @@ export default function QuienesSomos() {
           </div>
         </section>
 
-        {/* SECCIÓN ORGANIGRAMA */}
+        {/* SECCIÓN ORGANIGRAMA (Fondo azul de borde a borde) */}
         <section id="organigrama" className="bg-main-blue text-white py-16 md:py-20 px-6 relative z-20 scroll-mt-32 mt-8">
           <div className="max-w-5xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-8 uppercase tracking-widest text-white">
