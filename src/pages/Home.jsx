@@ -85,22 +85,23 @@ export default function Home() {
         
         <div className="bg-watermark"></div>
 
-        {/* CONTENEDOR MAESTRO UNIFICADO: Aplica un padding riguroso a ambos lados para todo el contenido */}
-        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pt-8 md:pt-12 flex flex-col">
+        {/* CONTENEDOR MAESTRO: Define el padding simétrico EXACTO para toda la página.
+            Usa flex-col con gap-16 para que fluya como un documento continuo sin cortes. */}
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pt-8 md:pt-12 flex flex-col gap-12 md:gap-16">
           
-          {/* ========================================================================= */}
+          {/* ========================================================== */}
           {/* BLOQUE 1: ÚLTIMA NOTICIA */}
-          {/* ========================================================================= */}
+          {/* ========================================================== */}
           {!noticia ? (
-            <div className="text-center text-light-blue text-xl py-20 bg-white mb-16">
+            <div className="text-center text-light-blue text-xl py-20">
               Aún no hay noticias publicadas.
             </div>
           ) : (
-            <div className="bg-white flex flex-col md:flex-row gap-8 md:gap-12 min-h-112.5 md:min-h-120 mb-16">
+            <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start">
               
-              {/* Columna Izquierda (Imagen) */}
-              <div className="w-full md:w-2/5 bg-white relative shrink-0"> 
-                <div className="aspect-4/5 w-full relative">
+              {/* Izquierda: Imagen de la noticia */}
+              <div className="w-full md:w-2/5 relative shrink-0"> 
+                <div className="aspect-4/5 w-full relative rounded-xl overflow-hidden shadow-sm">
                   <Swiper
                     modules={[Navigation, Pagination, Autoplay]}
                     navigation
@@ -120,8 +121,8 @@ export default function Home() {
                 </div>
               </div>
               
-              {/* Columna Derecha (Texto Justificado) */}
-              <div className="w-full md:w-3/5 flex flex-col justify-center bg-white py-4">
+              {/* Derecha: Texto (Alineado a la perfección sin paddings internos estorbando) */}
+              <div className="w-full md:w-3/5 flex flex-col justify-start pt-2 md:pt-0">
                 <span className="text-xs font-extrabold text-bright-red uppercase tracking-widest mb-3">Última Noticia</span>
                 <h2 className="text-2xl md:text-4xl font-extrabold text-main-blue mb-6 leading-tight">{noticia.titulo}</h2>
                 
@@ -143,27 +144,27 @@ export default function Home() {
             </div>
           )}
 
-          {/* ========================================================================= */}
-          {/* BLOQUE 2: ACERCA DEL INSTITUTO (Mismas columnas y tipografía que la noticia) */}
-          {/* ========================================================================= */}
-          <div className="bg-white flex flex-col md:flex-row items-start gap-8 md:gap-12 mb-16">
+          {/* ========================================================== */}
+          {/* BLOQUE 2: ACERCA DEL INSTITUTO */}
+          {/* ========================================================== */}
+          <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start">
             
-            {/* Columna Izquierda (Texto idéntico al de la noticia) */}
-            <div className="w-full md:w-3/5 space-y-6 text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify py-4">
-              <p>
-                El <strong>Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
+            {/* Izquierda: Texto justificado con negritas azules */}
+            <div className="w-full md:w-3/5 space-y-6 text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
+              <p className="italic">
+                El <strong className="font-extrabold text-main-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
               </p>
-              <p>
+              <p className="italic">
                 Desde su creación fue una entidad con claridad en sus objetivos para el fortalecimiento, promoción y protección de los derechos humanos, y con ello incidir en una cultura donde el respeto sea asumido por las empresas e instituciones públicas como una forma de desarrollo directo.
               </p>
-              <p>
+              <p className="italic">
                 Fomenta el mejoramiento social, económico, cultural, educativo, organizativo y productivo por medio de la promoción de la responsabilidad social empresarial y la promoción y protección de los derechos humanos.
               </p>
             </div>
 
-            {/* Columna Derecha (Video maximizado, pegado arriba) */}
+            {/* Derecha: Video (Maximizado y pegado arriba sin isotipo) */}
             <div className="w-full md:w-2/5 shrink-0">
-              <div className="w-full aspect-video bg-black rounded-xl overflow-hidden shadow-md border border-gray-100">
+              <div className="w-full aspect-video bg-black rounded-xl overflow-hidden shadow-md">
                 <video 
                   className="w-full h-full object-cover"
                   controls 
@@ -176,16 +177,16 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ========================================================================= */}
-          {/* BLOQUE 3: OFICINAS */}
-          {/* ========================================================================= */}
-          <div className="bg-white pt-8 pb-10 border-t border-gray-100">
-            <h2 className="text-2xl md:text-3xl font-extrabold text-main-red uppercase tracking-widest mb-10 text-center md:text-left">
+          {/* ========================================================== */}
+          {/* BLOQUE 3: OFICINAS (Color azul restaurado al título) */}
+          {/* ========================================================== */}
+          <div>
+            <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue uppercase tracking-widest mb-10 text-center md:text-left">
               Nuestras Oficinas
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-16">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-12">
               
-              <div className="bg-transparent">
+              <div>
                 <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Costa Rica</h3>
                 <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
                   <p>Centro Corporativo San Rafael, nivel 3</p>
@@ -195,7 +196,7 @@ export default function Home() {
                 </div>
               </div>
               
-              <div className="bg-transparent">
+              <div>
                 <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Colombia</h3>
                 <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
                   <p>Carrera. 11C No. 117-05. Oficina 5</p>
@@ -205,7 +206,7 @@ export default function Home() {
                 </div>
               </div>
               
-              <div className="bg-transparent">
+              <div>
                 <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">México</h3>
                 <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
                   <p>Atención virtual o presencial previa cita.</p>
@@ -215,7 +216,7 @@ export default function Home() {
                 </div>
               </div>
               
-              <div className="bg-transparent">
+              <div>
                 <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Guatemala</h3>
                 <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
                   <p>Diagonal 6 12-42, Edificio Design Center</p>
@@ -225,7 +226,7 @@ export default function Home() {
                 </div>
               </div>
               
-              <div className="bg-transparent lg:col-span-2">
+              <div className="lg:col-span-2">
                 <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Canadá</h3>
                 <div className="text-gray-600 font-light space-y-3 text-sm md:text-base">
                   <p>Atención virtual o presencial previa cita en la ciudad de Lévis, Québec.</p>
