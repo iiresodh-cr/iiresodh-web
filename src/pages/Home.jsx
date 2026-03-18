@@ -17,7 +17,7 @@ const formatearTextoConLinksYHashtags = (texto) => {
   for (let i = 0; i < partes.length; i++) {
     if (i % 2 === 0) {
       let procesado = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
-        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red hover:text-main-blue font-bold underline transition-colors pointer-events-auto">${url}</a>`;
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red hover:text-main-blue font-bold underline transition-colors pointer-events-auto break-all">${url}</a>`;
       });
       procesado = procesado.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
         const termino = hashtag.substring(1); 
@@ -85,9 +85,8 @@ export default function Home() {
         
         <div className="bg-watermark"></div>
 
-        {/* CONTENEDOR MAESTRO: Define el padding simétrico EXACTO para toda la página.
-            Usa flex-col con gap-16 para que fluya como un documento continuo sin cortes. */}
-        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pt-8 md:pt-12 flex flex-col gap-12 md:gap-16">
+        {/* CONTENEDOR MAESTRO UNIFICADO */}
+        <div className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-8 md:pt-12 pb-16 flex flex-col gap-12 md:gap-16">
           
           {/* ========================================================== */}
           {/* BLOQUE 1: ÚLTIMA NOTICIA */}
@@ -97,11 +96,12 @@ export default function Home() {
               Aún no hay noticias publicadas.
             </div>
           ) : (
-            <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start">
+            /* En móvil usa gap-8 para separar foto y texto verticalmente. En desktop gap-0 porque usa paddings. */
+            <div className="flex flex-col md:flex-row gap-8 md:gap-0 items-start min-h-[28rem] md:min-h-[30rem]">
               
-              {/* Izquierda: Imagen de la noticia */}
+              {/* Izquierda: Imagen */}
               <div className="w-full md:w-2/5 relative shrink-0"> 
-                <div className="aspect-4/5 w-full relative rounded-xl overflow-hidden shadow-sm">
+                <div className="aspect-[4/5] w-full relative rounded-xl overflow-hidden shadow-sm bg-gray-50">
                   <Swiper
                     modules={[Navigation, Pagination, Autoplay]}
                     navigation
@@ -109,11 +109,11 @@ export default function Home() {
                     autoplay={{ delay: 4000 }}
                     className="absolute inset-0 w-full h-full swiper-custom-navigation"
                   >
-                    <SwiperSlide className="flex items-center justify-center bg-white h-full w-full">
+                    <SwiperSlide className="flex items-center justify-center h-full w-full">
                       <img src={noticia.imagenPrincipalUrl} alt="Principal" className="w-full h-full object-contain" />
                     </SwiperSlide>
                     {noticia.imagenesCarruselUrls && noticia.imagenesCarruselUrls.map((url, index) => (
-                      <SwiperSlide key={index} className="flex items-center justify-center bg-white h-full w-full">
+                      <SwiperSlide key={index} className="flex items-center justify-center h-full w-full">
                         <img src={url} alt={`Carrusel ${index + 1}`} className="w-full h-full object-contain" />
                       </SwiperSlide>
                     ))}
@@ -121,14 +121,14 @@ export default function Home() {
                 </div>
               </div>
               
-              {/* Derecha: Texto (Alineado a la perfección sin paddings internos estorbando) */}
-              <div className="w-full md:w-3/5 flex flex-col justify-start pt-2 md:pt-0">
-                <span className="text-xs font-extrabold text-bright-red uppercase tracking-widest mb-3">Última Noticia</span>
-                <h2 className="text-2xl md:text-4xl font-extrabold text-main-blue mb-6 leading-tight">{noticia.titulo}</h2>
+              {/* Derecha: Texto (md:pl-12 asegura el margen en desktop. break-words previene desbordamiento en móvil) */}
+              <div className="w-full md:w-3/5 flex flex-col justify-start md:pl-12 overflow-hidden">
+                <span className="text-xs font-extrabold text-bright-red uppercase tracking-widest mb-3 block">Última Noticia</span>
+                <h2 className="text-2xl md:text-4xl font-extrabold text-main-blue mb-6 leading-tight break-words">{noticia.titulo}</h2>
                 
                 <div 
                   ref={contentRef}
-                  className="text-gray-600 mb-6 text-base md:text-lg font-light leading-relaxed noticia-content text-justify overflow-hidden"
+                  className="text-gray-600 mb-6 text-base md:text-lg font-light leading-relaxed noticia-content text-justify overflow-hidden break-words"
                   dangerouslySetInnerHTML={{ __html: contenidoNoticia }}
                 />
                 
@@ -147,22 +147,22 @@ export default function Home() {
           {/* ========================================================== */}
           {/* BLOQUE 2: ACERCA DEL INSTITUTO */}
           {/* ========================================================== */}
-          <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start">
+          <div className="flex flex-col md:flex-row gap-8 md:gap-0 items-start">
             
-            {/* Izquierda: Texto justificado con negritas azules */}
-            <div className="w-full md:w-3/5 space-y-6 text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
-              <p className="italic">
+            {/* Izquierda: Texto justificado (md:pr-12 lo separa del video en desktop) */}
+            <div className="w-full md:w-3/5 space-y-6 text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify md:pr-12">
+              <p>
                 El <strong className="font-extrabold text-main-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
               </p>
-              <p className="italic">
+              <p>
                 Desde su creación fue una entidad con claridad en sus objetivos para el fortalecimiento, promoción y protección de los derechos humanos, y con ello incidir en una cultura donde el respeto sea asumido por las empresas e instituciones públicas como una forma de desarrollo directo.
               </p>
-              <p className="italic">
+              <p>
                 Fomenta el mejoramiento social, económico, cultural, educativo, organizativo y productivo por medio de la promoción de la responsabilidad social empresarial y la promoción y protección de los derechos humanos.
               </p>
             </div>
 
-            {/* Derecha: Video (Maximizado y pegado arriba sin isotipo) */}
+            {/* Derecha: Video */}
             <div className="w-full md:w-2/5 shrink-0">
               <div className="w-full aspect-video bg-black rounded-xl overflow-hidden shadow-md">
                 <video 
@@ -178,10 +178,10 @@ export default function Home() {
           </div>
 
           {/* ========================================================== */}
-          {/* BLOQUE 3: OFICINAS (Color azul restaurado al título) */}
+          {/* BLOQUE 3: OFICINAS */}
           {/* ========================================================== */}
-          <div>
-            <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue uppercase tracking-widest mb-10 text-center md:text-left">
+          <div className="pt-8 border-t border-gray-100">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue uppercase tracking-widest mb-10 text-center md:text-left break-words">
               Nuestras Oficinas
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-12">
@@ -202,7 +202,7 @@ export default function Home() {
                   <p>Carrera. 11C No. 117-05. Oficina 5</p>
                   <p>Bogotá, Colombia</p>
                   <p className="pt-3 text-light-blue font-medium">Teléfono: Bogotá +7461964</p>
-                  <p className="text-light-blue font-medium">Móvil: +57 301 4844324</p>
+                  <p className="text-light-blue font-medium break-words">Móvil: +57 301 4844324</p>
                 </div>
               </div>
               
@@ -210,7 +210,7 @@ export default function Home() {
                 <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">México</h3>
                 <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
                   <p>Atención virtual o presencial previa cita.</p>
-                  <p className="pt-3 font-medium">
+                  <p className="pt-3 font-medium break-words">
                     Email: <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-red transition-colors">contacto@iiresodh.org</a>
                   </p>
                 </div>
@@ -231,7 +231,7 @@ export default function Home() {
                 <div className="text-gray-600 font-light space-y-3 text-sm md:text-base">
                   <p>Atención virtual o presencial previa cita en la ciudad de Lévis, Québec.</p>
                   <p>En Toronto, Ontario de manera vinculada con la firma de abogados Waldman & Associates.</p>
-                  <p className="pt-1 font-medium">
+                  <p className="pt-1 font-medium break-words">
                     Email: <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-red transition-colors">contacto@iiresodh.org</a>
                   </p>
                 </div>
