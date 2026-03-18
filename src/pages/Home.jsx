@@ -87,65 +87,65 @@ export default function Home() {
         
         <div className="bg-watermark"></div>
 
-        {/* CONTENEDOR MAESTRO: Un solo documento continuo, sin divisiones ni bordes */}
-        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 pt-8 md:pt-12 flex flex-col gap-16 md:gap-24">
+        {/* CONTENEDOR MAESTRO UNIFICADO: Controla todo el padding de la página y el ancho */}
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pt-8 md:pt-12">
           
           {/* BLOQUE 1: ÚLTIMA NOTICIA */}
-          <div>
-            {!noticia ? (
-              <div className="text-center text-light-blue text-xl py-20 bg-white">
-                Aún no hay noticias publicadas.
-              </div>
-            ) : (
-              <div className="bg-white flex flex-col md:flex-row min-h-112.5 md:min-h-120">
-                
-                <div className="w-full md:w-2/5 bg-white relative shrink-0"> 
-                  <div className="aspect-4/5 w-full relative">
-                    <Swiper
-                      modules={[Navigation, Pagination, Autoplay]}
-                      navigation
-                      pagination={{ clickable: true }}
-                      autoplay={{ delay: 4000 }}
-                      className="absolute inset-0 w-full h-full swiper-custom-navigation"
-                    >
-                      <SwiperSlide className="flex items-center justify-center bg-white h-full w-full">
-                        <img src={noticia.imagenPrincipalUrl} alt="Principal" className="w-full h-full object-contain" />
+          {!noticia ? (
+            <div className="text-center text-light-blue text-xl py-20 bg-white mb-12">
+              Aún no hay noticias publicadas.
+            </div>
+          ) : (
+            <div className="bg-white flex flex-col md:flex-row min-h-112.5 md:min-h-120 mb-16">
+              
+              <div className="w-full md:w-2/5 bg-white relative shrink-0"> 
+                <div className="aspect-4/5 w-full relative">
+                  <Swiper
+                    modules={[Navigation, Pagination, Autoplay]}
+                    navigation
+                    pagination={{ clickable: true }}
+                    autoplay={{ delay: 4000 }}
+                    className="absolute inset-0 w-full h-full swiper-custom-navigation"
+                  >
+                    <SwiperSlide className="flex items-center justify-center bg-white h-full w-full">
+                      <img src={noticia.imagenPrincipalUrl} alt="Principal" className="w-full h-full object-contain" />
+                    </SwiperSlide>
+                    {noticia.imagenesCarruselUrls && noticia.imagenesCarruselUrls.map((url, index) => (
+                      <SwiperSlide key={index} className="flex items-center justify-center bg-white h-full w-full">
+                        <img src={url} alt={`Carrusel ${index + 1}`} className="w-full h-full object-contain" />
                       </SwiperSlide>
-                      {noticia.imagenesCarruselUrls && noticia.imagenesCarruselUrls.map((url, index) => (
-                        <SwiperSlide key={index} className="flex items-center justify-center bg-white h-full w-full">
-                          <img src={url} alt={`Carrusel ${index + 1}`} className="w-full h-full object-contain" />
-                        </SwiperSlide>
-                      ))}
-                    </Swiper>
-                  </div>
-                </div>
-                
-                <div className="w-full md:w-3/5 py-8 md:py-12 md:pl-12 flex flex-col justify-center bg-white">
-                  <span className="text-xs font-extrabold text-bright-red uppercase tracking-widest mb-3">Última Noticia</span>
-                  <h2 className="text-2xl md:text-4xl font-extrabold text-main-blue mb-6 leading-tight">{noticia.titulo}</h2>
-                  
-                  <div 
-                    ref={contentRef}
-                    className="text-gray-600 mb-6 text-base md:text-lg font-light leading-relaxed noticia-content max-h-80 overflow-hidden"
-                    dangerouslySetInnerHTML={{ __html: contenidoNoticia }}
-                  />
-                  
-                  {isOverflowing && (
-                    <Link 
-                      to={`/noticias/${noticia.slug || noticia.id}`} 
-                      className="text-main-red font-bold hover:text-main-blue transition-colors mt-auto flex items-center gap-2 self-start uppercase tracking-wide text-sm"
-                    >
-                      Leer noticia completa <span className="text-xl">&rarr;</span>
-                    </Link>
-                  )}
+                    ))}
+                  </Swiper>
                 </div>
               </div>
-            )}
-          </div>
+              
+              {/* Padding simétrico agregado (px-6 md:px-12) para que el texto no toque la derecha */}
+              <div className="w-full md:w-3/5 py-8 md:py-10 px-6 md:px-12 flex flex-col justify-center bg-white">
+                <span className="text-xs font-extrabold text-bright-red uppercase tracking-widest mb-3">Última Noticia</span>
+                <h2 className="text-2xl md:text-4xl font-extrabold text-main-blue mb-6 leading-tight">{noticia.titulo}</h2>
+                
+                <div 
+                  ref={contentRef}
+                  className="text-gray-600 mb-6 text-base md:text-lg font-light leading-relaxed noticia-content max-h-80 overflow-hidden text-justify"
+                  dangerouslySetInnerHTML={{ __html: contenidoNoticia }}
+                />
+                
+                {isOverflowing && (
+                  <Link 
+                    to={`/noticias/${noticia.slug || noticia.id}`} 
+                    className="text-main-red font-bold hover:text-main-blue transition-colors mt-auto flex items-center gap-2 self-start uppercase tracking-wide text-sm"
+                  >
+                    Leer noticia completa <span className="text-xl">&rarr;</span>
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* BLOQUE 2: ACERCA DEL INSTITUTO (Con video incrustado) */}
-          <div className="bg-white flex flex-col lg:flex-row items-center gap-12">
-            <div className="lg:w-2/3 space-y-6 text-main-blue text-base md:text-xl font-light leading-relaxed text-center lg:text-left">
+          <div className="bg-white flex flex-col lg:flex-row items-start gap-12 mb-16">
+            {/* Alineación justificada implementada */}
+            <div className="lg:w-2/3 space-y-6 text-main-blue text-base md:text-xl font-light leading-relaxed text-justify">
               <p className="italic">
                 El <strong className="font-extrabold text-light-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
               </p>
@@ -157,7 +157,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="lg:w-1/3 flex flex-col items-center justify-center w-full pt-10 lg:pt-0 lg:pl-10">
+            <div className="lg:w-1/3 flex flex-col items-center justify-center w-full">
               <div className="flex flex-col items-center justify-center gap-6 w-full max-w-md">
                 <img 
                   src={isotipoColor} 
@@ -181,8 +181,8 @@ export default function Home() {
           </div>
 
           {/* BLOQUE 3: OFICINAS */}
-          <div>
-            <h2 className="text-2xl md:text-3xl font-extrabold text-main-red uppercase tracking-widest mb-10 md:mb-14 text-center md:text-left">
+          <div className="bg-white">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-main-red uppercase tracking-widest mb-10 text-center md:text-left">
               Nuestras Oficinas
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-16">
