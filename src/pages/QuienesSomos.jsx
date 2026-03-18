@@ -32,17 +32,18 @@ export default function QuienesSomos() {
           {/* Contenedor estandarizado a max-w-7xl (1280px) con DISEÑO PLANO */}
           <div className="max-w-7xl mx-auto bg-white overflow-hidden">
             
-            {/* IMAGEN DE CABECERA */}
-            <div className="w-full">
+            {/* IMAGEN DE CABECERA CON EL CORTE CURVO INFERIOR IZQUIERDO */}
+            <div className="w-full bg-white pr-4 md:pr-0">
               <img 
                 src={cabeceraImg} 
                 alt="Banner Quiénes Somos" 
-                className="w-full h-48 md:h-80 lg:h-96 object-cover object-center"
+                // Aquí está la magia: rounded-bl con valores dinámicos para curvar solo esa esquina
+                className="w-full h-48 md:h-80 lg:h-96 object-cover object-center rounded-bl-[80px] md:rounded-bl-[120px] lg:rounded-bl-[160px]"
               />
             </div>
 
-            {/* ENCABEZADO (Sin título redundante, texto centrado) */}
-            <div className="bg-white text-main-blue pt-6 pb-10 md:pt-8 md:pb-12 px-6 text-center">
+            {/* ENCABEZADO */}
+            <div className="bg-white text-main-blue pt-8 pb-10 md:pt-12 md:pb-12 px-6 text-center">
               <p className="text-base md:text-lg text-light-blue max-w-3xl mx-auto font-medium">
                 Defendiendo la democracia y los derechos humanos desde Costa Rica para el mundo.
               </p>
@@ -71,7 +72,7 @@ export default function QuienesSomos() {
                 </p>
               </div>
 
-              {/* SECCIÓN MISIÓN Y VISIÓN (Diseño Plano adaptado) */}
+              {/* SECCIÓN MISIÓN Y VISIÓN */}
               <div id="mision-vision" className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 mb-16 scroll-mt-32">
                 <div className="bg-gray-50 border-l-4 border-main-red p-8 md:p-10 rounded-r-xl">
                   <h2 className="text-2xl font-extrabold text-main-blue mb-4 uppercase tracking-wider flex items-center gap-3">
@@ -93,7 +94,7 @@ export default function QuienesSomos() {
                 </div>
               </div>
 
-              {/* SECCIÓN PRINCIPIOS RECTORES (Diseño Plano sin numeración) */}
+              {/* SECCIÓN PRINCIPIOS RECTORES */}
               <div id="principios-rectores" className="pt-10 border-t border-gray-100 scroll-mt-32">
                 <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue text-center mb-10 uppercase tracking-widest">
                   Principios Rectores
@@ -120,7 +121,7 @@ export default function QuienesSomos() {
           </div>
         </section>
 
-        {/* SECCIÓN ORGANIGRAMA (Mantenemos el fondo azul de borde a borde para romper la monotonía visual) */}
+        {/* SECCIÓN ORGANIGRAMA */}
         <section id="organigrama" className="bg-main-blue text-white py-16 md:py-20 px-6 relative z-20 scroll-mt-32 mt-8">
           <div className="max-w-5xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-8 uppercase tracking-widest text-white">
