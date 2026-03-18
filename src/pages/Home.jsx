@@ -85,18 +85,20 @@ export default function Home() {
         
         <div className="bg-watermark"></div>
 
-        {/* CONTENEDOR MAESTRO UNIFICADO: Controla todo el padding de la página y el ancho.
-            Se eliminaron los gaps y márgenes inferiores para asegurar un flujo continuo. */}
+        {/* CONTENEDOR MAESTRO UNIFICADO: Aplica un padding riguroso a ambos lados para todo el contenido */}
         <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pt-8 md:pt-12 flex flex-col">
           
+          {/* ========================================================================= */}
           {/* BLOQUE 1: ÚLTIMA NOTICIA */}
+          {/* ========================================================================= */}
           {!noticia ? (
-            <div className="text-center text-light-blue text-xl py-20 bg-white">
+            <div className="text-center text-light-blue text-xl py-20 bg-white mb-16">
               Aún no hay noticias publicadas.
             </div>
           ) : (
-            <div className="bg-white flex flex-col md:flex-row min-h-112.5 md:min-h-120">
+            <div className="bg-white flex flex-col md:flex-row gap-8 md:gap-12 min-h-112.5 md:min-h-120 mb-16">
               
+              {/* Columna Izquierda (Imagen) */}
               <div className="w-full md:w-2/5 bg-white relative shrink-0"> 
                 <div className="aspect-4/5 w-full relative">
                   <Swiper
@@ -118,14 +120,14 @@ export default function Home() {
                 </div>
               </div>
               
-              {/* Padding simétrico (px-0 md:px-12) arreglado para que el texto justificado no toque la derecha */}
-              <div className="w-full md:w-3/5 py-8 md:py-10 px-0 md:px-12 flex flex-col justify-center bg-white">
+              {/* Columna Derecha (Texto Justificado) */}
+              <div className="w-full md:w-3/5 flex flex-col justify-center bg-white py-4">
                 <span className="text-xs font-extrabold text-bright-red uppercase tracking-widest mb-3">Última Noticia</span>
                 <h2 className="text-2xl md:text-4xl font-extrabold text-main-blue mb-6 leading-tight">{noticia.titulo}</h2>
                 
                 <div 
                   ref={contentRef}
-                  className="text-gray-600 mb-6 text-base md:text-lg font-light leading-relaxed noticia-content max-h-80 overflow-hidden text-justify"
+                  className="text-gray-600 mb-6 text-base md:text-lg font-light leading-relaxed noticia-content text-justify overflow-hidden"
                   dangerouslySetInnerHTML={{ __html: contenidoNoticia }}
                 />
                 
@@ -141,25 +143,27 @@ export default function Home() {
             </div>
           )}
 
-          {/* BLOQUE 2: ACERCA DEL INSTITUTO (Texto justificado + Video grande alineado arriba) */}
-          <div className="bg-white flex flex-col lg:flex-row items-start gap-12 py-10 md:py-16">
+          {/* ========================================================================= */}
+          {/* BLOQUE 2: ACERCA DEL INSTITUTO (Mismas columnas y tipografía que la noticia) */}
+          {/* ========================================================================= */}
+          <div className="bg-white flex flex-col md:flex-row items-start gap-8 md:gap-12 mb-16">
             
-            {/* Texto justificado rigurosamente */}
-            <div className="lg:w-2/3 space-y-6 text-main-blue text-base md:text-xl font-light leading-relaxed text-justify">
-              <p className="italic">
-                El <strong className="font-extrabold text-light-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
+            {/* Columna Izquierda (Texto idéntico al de la noticia) */}
+            <div className="w-full md:w-3/5 space-y-6 text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify py-4">
+              <p>
+                El <strong>Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
               </p>
-              <p className="italic">
+              <p>
                 Desde su creación fue una entidad con claridad en sus objetivos para el fortalecimiento, promoción y protección de los derechos humanos, y con ello incidir en una cultura donde el respeto sea asumido por las empresas e instituciones públicas como una forma de desarrollo directo.
               </p>
-              <p className="italic">
+              <p>
                 Fomenta el mejoramiento social, económico, cultural, educativo, organizativo y productivo por medio de la promoción de la responsabilidad social empresarial y la promoción y protección de los derechos humanos.
               </p>
             </div>
 
-            {/* Video grande (max-w-xl), sin isotipo, alineado arriba (items-start en el contenedor flex) */}
-            <div className="lg:w-1/3 w-full">
-              <div className="w-full max-w-xl aspect-video bg-black rounded-xl overflow-hidden shadow-md border border-gray-100">
+            {/* Columna Derecha (Video maximizado, pegado arriba) */}
+            <div className="w-full md:w-2/5 shrink-0">
+              <div className="w-full aspect-video bg-black rounded-xl overflow-hidden shadow-md border border-gray-100">
                 <video 
                   className="w-full h-full object-cover"
                   controls 
@@ -172,8 +176,10 @@ export default function Home() {
             </div>
           </div>
 
+          {/* ========================================================================= */}
           {/* BLOQUE 3: OFICINAS */}
-          <div className="bg-white py-10">
+          {/* ========================================================================= */}
+          <div className="bg-white pt-8 pb-10 border-t border-gray-100">
             <h2 className="text-2xl md:text-3xl font-extrabold text-main-red uppercase tracking-widest mb-10 text-center md:text-left">
               Nuestras Oficinas
             </h2>
