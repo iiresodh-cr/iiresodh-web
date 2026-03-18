@@ -20,17 +20,18 @@ export default function LitigioEstrategico() {
           {/* Contenedor estandarizado a max-w-7xl (1280px) con DISEÑO PLANO (Sin sombras ni bordes) */}
           <div className="max-w-7xl mx-auto bg-white overflow-hidden">
             
-            {/* IMAGEN DE CABECERA */}
-            <div className="w-full">
+            {/* IMAGEN DE CABECERA CON EL CORTE CURVO SUPERIOR IZQUIERDO */}
+            <div className="w-full bg-white">
               <img 
                 src={cabeceraImg} 
                 alt="Banner Litigio Estratégico" 
-                className="w-full h-48 md:h-80 lg:h-96 object-cover object-center"
+                // MODIFICACIÓN AQUÍ: rounded-tl con valores dinámicos para curvar esa esquina progresivamente
+                className="w-full h-48 md:h-80 lg:h-96 object-cover object-center rounded-tl-[80px] md:rounded-tl-[120px] lg:rounded-tl-[160px]"
               />
             </div>
 
-            {/* ENCABEZADO (Sin título redundante, padding superior ajustado) */}
-            <div className="bg-white text-main-blue pt-6 pb-10 md:pt-8 md:pb-12 px-6 text-center">
+            {/* ENCABEZADO (Sin título redundante, padding superior ajustado, sin borde gris) */}
+            <div className="bg-white text-main-blue pt-10 pb-10 md:pt-8 md:pb-12 px-6 text-center">
               <p className="text-base md:text-lg text-light-blue max-w-3xl mx-auto font-medium">
                 Defensa activa y capacitación en los sistemas universales y regionales de protección.
               </p>
