@@ -91,18 +91,17 @@ export default function Home() {
         
         <div className="bg-watermark"></div>
 
-        {/* SECCIÓN 1: ÚLTIMA NOTICIA */}
+        {/* SECCIÓN 1: ÚLTIMA NOTICIA (Diseño Plano) */}
         <section className="relative pt-6 pb-10 px-0 md:px-8 z-10">
-          {/* CAMBIO: max-w-6xl -> max-w-7xl */}
           <div className="max-w-7xl mx-auto">
             {!noticia ? (
-              <div className="text-center text-light-blue text-xl py-20 bg-white border border-gray-200">
+              <div className="text-center text-light-blue text-xl py-20 bg-white">
                 Aún no hay noticias publicadas.
               </div>
             ) : (
               <div className="bg-white overflow-hidden flex flex-col md:flex-row min-h-112.5 md:min-h-120">
                 
-                <div className="w-full md:w-2/5 bg-white border-b md:border-b-0 relative shrink-0"> 
+                <div className="w-full md:w-2/5 bg-white relative shrink-0"> 
                   <div className="aspect-4/5 w-full relative">
                     <Swiper
                       modules={[Navigation, Pagination, Autoplay]}
@@ -147,10 +146,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* SECCIÓN 2: ACERCA DEL INSTITUTO */}
-        <section className="relative pt-6 pb-10 md:pb-12 px-0 md:px-8 z-10">
-          {/* CAMBIO: max-w-6xl -> max-w-7xl */}
-          <div className="max-w-7xl mx-auto bg-white p-8 md:p-12 md:rounded-3xl shadow-2xl border-y md:border border-gray-100 flex flex-col lg:flex-row items-center gap-12">
+        {/* SECCIÓN 2: ACERCA DEL INSTITUTO (Diseño Plano, sin tarjeta) */}
+        <section className="relative pt-6 pb-10 md:pb-12 px-6 md:px-8 z-10 border-t border-gray-100">
+          <div className="max-w-7xl mx-auto bg-white py-8 md:py-12 flex flex-col lg:flex-row items-center gap-12">
             
             <div className="lg:w-2/3 space-y-6 text-main-blue text-base md:text-xl font-light leading-relaxed text-center lg:text-left">
               <p className="italic">
@@ -183,15 +181,15 @@ export default function Home() {
           </div>
         </section>
 
-        {/* SECCIÓN 3: OFICINAS */}
-        <section className="relative py-10 md:py-12 px-4 md:px-8 z-10">
-          {/* CAMBIO: max-w-6xl -> max-w-7xl */}
+        {/* SECCIÓN 3: OFICINAS (Diseño Plano, sin tarjetas individuales) */}
+        <section className="relative py-10 md:py-16 px-6 md:px-8 z-10 border-t border-gray-100">
           <div className="max-w-7xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-extrabold text-main-red uppercase tracking-widest mb-10 md:mb-12 text-center md:text-left">
-              Nuestras Oficinas:
+            <h2 className="text-2xl md:text-3xl font-extrabold text-main-red uppercase tracking-widest mb-10 md:mb-14 text-center md:text-left">
+              Nuestras Oficinas
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-12">
-              <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-16">
+              
+              <div className="bg-transparent">
                 <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Costa Rica</h3>
                 <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
                   <p>Centro Corporativo San Rafael, nivel 3</p>
@@ -200,7 +198,8 @@ export default function Home() {
                   <p className="pt-3 text-light-blue font-medium">Teléfono: +506 4703 5727</p>
                 </div>
               </div>
-              <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
+              
+              <div className="bg-transparent">
                 <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Colombia</h3>
                 <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
                   <p>Carrera. 11C No. 117-05. Oficina 5</p>
@@ -209,7 +208,8 @@ export default function Home() {
                   <p className="text-light-blue font-medium">Móvil: +57 301 4844324</p>
                 </div>
               </div>
-              <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
+              
+              <div className="bg-transparent">
                 <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">México</h3>
                 <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
                   <p>Atención virtual o presencial previa cita.</p>
@@ -218,7 +218,8 @@ export default function Home() {
                   </p>
                 </div>
               </div>
-              <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
+              
+              <div className="bg-transparent">
                 <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Guatemala</h3>
                 <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
                   <p>Diagonal 6 12-42, Edificio Design Center</p>
@@ -227,7 +228,8 @@ export default function Home() {
                   <p className="pt-3 text-light-blue font-medium">Teléfono: +502 5557 7466</p>
                 </div>
               </div>
-              <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow duration-300 lg:col-span-2">
+              
+              <div className="bg-transparent lg:col-span-2">
                 <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Canadá</h3>
                 <div className="text-gray-600 font-light space-y-3 text-sm md:text-base">
                   <p>Atención virtual o presencial previa cita en la ciudad de Lévis, Québec.</p>
@@ -237,16 +239,16 @@ export default function Home() {
                   </p>
                 </div>
               </div>
+
             </div>
           </div>
         </section>
 
-        {/* SECCIÓN 4: PIDA */}
-        <section className="relative py-10 md:py-12 px-0 md:px-8 z-10">
-          {/* CAMBIO: max-w-6xl -> max-w-7xl */}
-          <div className="max-w-7xl mx-auto bg-white md:rounded-3xl shadow-2xl border-y md:border border-gray-100 p-8 md:p-12 lg:p-16 overflow-hidden">
+        {/* SECCIÓN 4: PIDA (Diseño Plano, sin tarjeta) */}
+        <section className="relative py-10 md:py-16 px-6 md:px-8 z-10 border-t border-gray-100">
+          <div className="max-w-7xl mx-auto bg-white overflow-hidden">
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-12 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 items-center">
               
               <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
                 <img 
