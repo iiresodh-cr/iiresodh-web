@@ -11,8 +11,6 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
 import isotipoColor from "../assets/Isotipo-color-512.png";
-import pidaLogo from "../assets/PIDA_logo-576.png";
-import pidaMascota from "../assets/PIDA-MASCOTA-576-trans.png";
 
 // FUNCIÓN: Detecta URLs y también Hashtags (#)
 const formatearTextoConLinksYHashtags = (texto) => {
@@ -38,8 +36,6 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const contentRef = useRef(null);
-
-  const [activeVideo, setActiveVideo] = useState(null);
 
   useEffect(() => {
     const fetchUltimaNoticia = async () => {
@@ -87,19 +83,21 @@ export default function Home() {
 
   return (
     <div className="bg-white flex flex-col min-h-screen">
-      <div className="relative overflow-hidden grow">
+      <div className="relative overflow-hidden grow pb-20">
         
         <div className="bg-watermark"></div>
 
-        {/* SECCIÓN 1: ÚLTIMA NOTICIA (Diseño Plano) */}
-        <section className="relative pt-6 pb-10 px-0 md:px-8 z-10">
-          <div className="max-w-7xl mx-auto">
+        {/* CONTENEDOR MAESTRO: Un solo documento continuo, sin divisiones ni bordes */}
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 pt-8 md:pt-12 flex flex-col gap-16 md:gap-24">
+          
+          {/* BLOQUE 1: ÚLTIMA NOTICIA */}
+          <div>
             {!noticia ? (
               <div className="text-center text-light-blue text-xl py-20 bg-white">
                 Aún no hay noticias publicadas.
               </div>
             ) : (
-              <div className="bg-white overflow-hidden flex flex-col md:flex-row min-h-112.5 md:min-h-120">
+              <div className="bg-white flex flex-col md:flex-row min-h-112.5 md:min-h-120">
                 
                 <div className="w-full md:w-2/5 bg-white relative shrink-0"> 
                   <div className="aspect-4/5 w-full relative">
@@ -122,7 +120,7 @@ export default function Home() {
                   </div>
                 </div>
                 
-                <div className="w-full md:w-3/5 p-6 md:p-12 flex flex-col justify-center bg-white">
+                <div className="w-full md:w-3/5 py-8 md:py-12 md:pl-12 flex flex-col justify-center bg-white">
                   <span className="text-xs font-extrabold text-bright-red uppercase tracking-widest mb-3">Última Noticia</span>
                   <h2 className="text-2xl md:text-4xl font-extrabold text-main-blue mb-6 leading-tight">{noticia.titulo}</h2>
                   
@@ -144,12 +142,9 @@ export default function Home() {
               </div>
             )}
           </div>
-        </section>
 
-        {/* SECCIÓN 2: ACERCA DEL INSTITUTO (Diseño Plano, sin tarjeta) */}
-        <section className="relative pt-6 pb-10 md:pb-12 px-6 md:px-8 z-10 border-t border-gray-100">
-          <div className="max-w-7xl mx-auto bg-white py-8 md:py-12 flex flex-col lg:flex-row items-center gap-12">
-            
+          {/* BLOQUE 2: ACERCA DEL INSTITUTO (Con video incrustado) */}
+          <div className="bg-white flex flex-col lg:flex-row items-center gap-12">
             <div className="lg:w-2/3 space-y-6 text-main-blue text-base md:text-xl font-light leading-relaxed text-center lg:text-left">
               <p className="italic">
                 El <strong className="font-extrabold text-light-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
@@ -162,28 +157,31 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="lg:w-1/3 flex flex-col items-center justify-center w-full border-t lg:border-t-0 lg:border-l border-gray-200 pt-10 lg:pt-0 lg:pl-10">
-              <div className="flex flex-col items-center justify-center gap-10 w-full max-w-[16rem]">
+            <div className="lg:w-1/3 flex flex-col items-center justify-center w-full pt-10 lg:pt-0 lg:pl-10">
+              <div className="flex flex-col items-center justify-center gap-6 w-full max-w-md">
                 <img 
                   src={isotipoColor} 
                   alt="Isotipo IIRESODH" 
-                  className="w-48 md:w-56 h-auto object-contain opacity-95 drop-shadow-sm" 
+                  className="w-32 md:w-40 h-auto object-contain opacity-95 drop-shadow-sm mb-2" 
                 />
-                <button 
-                  onClick={() => setActiveVideo("https://storage.googleapis.com/iiresodh_10_anios/IIRESODH.mp4")}
-                  className="bg-main-red hover:bg-bright-red text-white px-8 py-2.5 rounded-full font-medium uppercase text-sm tracking-widest shadow-md transition-colors w-full text-center cursor-pointer"
-                >
-                  Video IIRESODH
-                </button>
+                
+                {/* VIDEO INCRUSTADO AQUÍ */}
+                <div className="w-full aspect-video bg-black rounded-xl overflow-hidden shadow-md border border-gray-100">
+                  <video 
+                    className="w-full h-full object-cover"
+                    controls 
+                    preload="metadata"
+                    src="https://storage.googleapis.com/iiresodh_10_anios/IIRESODH.mp4"
+                  >
+                    Tu navegador no soporta la reproducción de videos.
+                  </video>
+                </div>
               </div>
             </div>
-
           </div>
-        </section>
 
-        {/* SECCIÓN 3: OFICINAS (Diseño Plano, sin tarjetas individuales) */}
-        <section className="relative py-10 md:py-16 px-6 md:px-8 z-10 border-t border-gray-100">
-          <div className="max-w-7xl mx-auto">
+          {/* BLOQUE 3: OFICINAS */}
+          <div>
             <h2 className="text-2xl md:text-3xl font-extrabold text-main-red uppercase tracking-widest mb-10 md:mb-14 text-center md:text-left">
               Nuestras Oficinas
             </h2>
@@ -242,103 +240,9 @@ export default function Home() {
 
             </div>
           </div>
-        </section>
 
-        {/* SECCIÓN 4: PIDA (Diseño Plano, sin tarjeta) */}
-        <section className="relative py-10 md:py-16 px-6 md:px-8 z-10 border-t border-gray-100">
-          <div className="max-w-7xl mx-auto bg-white overflow-hidden">
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 items-center">
-              
-              <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
-                <img 
-                  src={pidaLogo} 
-                  alt="Logo PIDA" 
-                  className="w-56 md:w-80 lg:w-96 object-contain mb-6 md:mb-8" 
-                />
-                <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-main-blue leading-tight mb-4 md:mb-6">
-                  Inteligencia Aumentada para la Defensa de los <br className="hidden lg:block" />
-                  <span className="bg-linear-to-r from-main-blue to-main-red bg-clip-text text-transparent inline-block">Derechos Humanos</span>
-                </h2>
-                <p className="text-base md:text-lg text-gray-700 leading-loose">
-                  Los asistentes de Inteligencia Artificial genéricos son un océano de información, pero sin un ancla, pueden llevarte a la deriva con datos imprecisos.
-                </p>
-              </div>
-
-              <div className="flex flex-col items-center justify-center gap-8 relative mt-6 lg:mt-0">
-                <img 
-                  src={pidaMascota} 
-                  alt="Robot PIDA" 
-                  className="w-64 md:w-96 object-contain drop-shadow-2xl" 
-                />
-                
-                <a 
-                  href="https://pida-ai.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-main-red hover:bg-bright-red text-white px-8 py-3 rounded-full font-medium uppercase text-sm tracking-widest shadow-md transition-colors flex items-center gap-3 cursor-pointer"
-                >
-                  Ir a PIDA
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                  </svg>
-                </a>
-              </div>
-            </div>
-
-            <div className="mt-12 md:mt-16 pt-10 md:pt-12 border-t border-gray-100 max-w-4xl mx-auto">
-              <h3 className="text-xl md:text-3xl font-extrabold text-main-blue mb-6 text-center">
-                ¿Cuál es la gran diferencia de PIDA?
-              </h3>
-              <div className="space-y-4 md:space-y-6 text-base md:text-lg text-gray-700 leading-loose text-justify md:text-center">
-                <p>
-                  PIDA no improvisa buscando en el caos de internet. Su punto de partida es la biblioteca del <strong className="text-main-blue">IIRESODH</strong>, una institución referente con más de 30 años de experiencia en Litigio Estratégico Internacional.
-                </p>
-                <p>
-                  Primero, PIDA consulta este acervo validado por personas expertas en Derechos Humanos para obtener el fundamento correcto. Luego, usa la IA para construir tu respuesta. Así obtienes la velocidad de la tecnología, pero con la <strong className="text-main-red">autoridad y el rigor técnico</strong> que solo el IIRESODH puede garantizar.
-                </p>
-              </div>
-            </div>
-
-          </div>
-        </section>
-
-      </div>
-
-      {/* Modal de Video Global */}
-      {activeVideo && (
-        <div 
-          className="fixed inset-0 z-100 flex items-center justify-center bg-black/85 px-4 backdrop-blur-sm transition-opacity"
-          onClick={() => setActiveVideo(null)} 
-        >
-          <div 
-            className="w-full max-w-5xl relative animate-fade-in-up"
-            onClick={(e) => e.stopPropagation()} 
-          >
-            <button 
-              onClick={() => setActiveVideo(null)}
-              className="absolute -top-12 right-0 text-white hover:text-main-red transition-colors flex items-center gap-2 font-bold uppercase tracking-wider cursor-pointer"
-              aria-label="Cerrar video"
-            >
-              Cerrar
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </button>
-
-            <div className="w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-gray-800">
-              <video 
-                className="w-full h-full object-contain"
-                controls 
-                autoPlay 
-                src={activeVideo}
-              >
-                Tu navegador no soporta la reproducción de videos.
-              </video>
-            </div>
-          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
