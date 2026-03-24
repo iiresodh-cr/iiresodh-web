@@ -17,6 +17,7 @@ import ResultadosBusqueda from "./pages/ResultadosBusqueda";
 import Privacidad from "./pages/Privacidad";
 import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound"; 
+import InformesAnuales from "./pages/InformesAnuales";
 
 // Nuevas Páginas
 import CooperacionInternacional from "./pages/CooperacionInternacional";
@@ -24,6 +25,7 @@ import Colombia from "./pages/Colombia";
 import CursosActivos from "./pages/CursosActivos";
 import CursosPasados from "./pages/CursosPasados";
 import LitigiosActivos from "./pages/LitigiosActivos";
+import Equipo from "./pages/Equipo";
 
 function PublicLayout() {
   return (
@@ -45,6 +47,8 @@ function App() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/quienes-somos" element={<QuienesSomos />} />
+          <Route path="/informes-anuales" element={<InformesAnuales />} />
+          <Route path="/equipo" element={<Equipo />} />
           <Route path="/litigio-estrategico" element={<LitigioEstrategico />} />
           <Route path="/cooperacion-internacional" element={<CooperacionInternacional />} />
           <Route path="/colombia" element={<Colombia />} />

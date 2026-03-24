@@ -1,7 +1,7 @@
-// src/pages/CursosPasados.jsx
+// src/pages/InformesAnuales.jsx
 import { useEffect } from "react";
 
-export default function CursosPasados() {
+export default function InformesAnuales() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   return (
@@ -10,10 +10,10 @@ export default function CursosPasados() {
       {/* ENCABEZADO: Franja Azul Sólida Institucional */}
       <div className="bg-main-blue text-white py-14 px-6 text-center relative z-20">
         <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter mb-3 uppercase">
-          Cursos Pasados
+          Informes Anuales
         </h1>
         <p className="text-blue-100 max-w-3xl mx-auto font-medium opacity-90">
-          Archivo histórico de nuestra oferta académica y programas de formación concluidos.
+          Transparencia y rendición de cuentas sobre nuestra gestión e impacto en los Derechos Humanos.
         </p>
         <div className="w-20 h-1.5 bg-main-red mx-auto mt-8 rounded-full"></div>
       </div>
@@ -23,10 +23,9 @@ export default function CursosPasados() {
         <div className="bg-watermark"></div>
         
         <div className="relative z-10 text-center">
-          {/* Animación de carga sutil */}
           <div className="w-16 h-16 border-4 border-pale-blue border-t-main-red rounded-full animate-spin mx-auto mb-6"></div>
           <p className="text-gray-400 uppercase tracking-widest font-bold">Sección en construcción</p>
-          <p className="text-gray-300 text-sm mt-2 italic">Estamos organizando nuestra memoria académica para su consulta pública.</p>
+          <p className="text-gray-300 text-sm mt-2 italic">Estamos digitalizando nuestro archivo histórico de gestión para consulta pública.</p>
         </div>
       </div>
     </div>

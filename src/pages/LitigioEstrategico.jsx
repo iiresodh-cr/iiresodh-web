@@ -1,7 +1,5 @@
 // src/pages/LitigioEstrategico.jsx
 import { useEffect } from "react";
-// Importamos la imagen para la cabecera
-import cabeceraImg from "../assets/Litigio_Estrategico.png";
 
 export default function LitigioEstrategico() {
   // Hacer scroll al tope de la página al cargar
@@ -10,33 +8,24 @@ export default function LitigioEstrategico() {
   }, []);
 
   return (
-    <div className="bg-white flex flex-col min-h-screen">
+    <div className="bg-white min-h-screen flex flex-col font-sans">
       
+      {/* ENCABEZADO: Franja Azul Sólida (Congruente con Equipo y Quiénes Somos) */}
+      <div className="bg-main-blue text-white py-14 px-6 text-center relative z-20">
+        <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter mb-3 uppercase">Litigio Estratégico</h1>
+        <p className="text-blue-100 max-w-3xl mx-auto font-medium opacity-90">
+          Defensa activa y capacitación en los sistemas universales y regionales de protección.
+        </p>
+        <div className="w-20 h-1.5 bg-main-red mx-auto mt-8 rounded-full"></div>
+      </div>
+
       <div className="relative overflow-hidden grow pb-20">
         {/* Marca de agua institucional */}
         <div className="bg-watermark"></div>
 
-        <section className="relative pt-8 md:pt-12 px-0 md:px-8 z-10">
-          {/* Contenedor estandarizado a max-w-7xl (1280px) con DISEÑO PLANO (Sin sombras ni bordes) */}
+        <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
+          {/* Contenedor estandarizado a max-w-7xl (1280px) con DISEÑO PLANO */}
           <div className="max-w-7xl mx-auto bg-white overflow-hidden">
-            
-            {/* IMAGEN DE CABECERA CON EL CORTE CURVO SUPERIOR IZQUIERDO */}
-            <div className="w-full bg-white">
-              <img 
-                src={cabeceraImg} 
-                alt="Banner Litigio Estratégico" 
-                // MODIFICACIÓN AQUÍ: rounded-tl con valores dinámicos para curvar esa esquina progresivamente
-                className="w-full h-48 md:h-80 lg:h-96 object-cover object-center rounded-tl-[80px] md:rounded-tl-[120px] lg:rounded-tl-[160px]"
-              />
-            </div>
-
-            {/* ENCABEZADO (Sin título redundante, padding superior ajustado, sin borde gris) */}
-            <div className="bg-white text-main-blue pt-10 pb-10 md:pt-8 md:pb-12 px-6 text-center">
-              <p className="text-base md:text-lg text-light-blue max-w-3xl mx-auto font-medium">
-                Defensa activa y capacitación en los sistemas universales y regionales de protección.
-              </p>
-              <div className="w-20 h-1 bg-main-red mx-auto mt-6 rounded-full"></div>
-            </div>
 
             {/* CONTENIDO PRINCIPAL */}
             <div className="px-8 md:px-12 lg:px-16 pb-12 md:pb-16 animate-fade-in-up">
@@ -51,25 +40,25 @@ export default function LitigioEstrategico() {
                 </p>
               </div>
 
-              {/* Caja destacada para las Certificaciones (Aprovecha el ancho, diseño plano con acento rojo) */}
-              <div className="bg-gray-50 border-l-4 border-main-red p-8 md:p-10 rounded-r-xl mb-12">
+              {/* Caja destacada para las Certificaciones (Diseño plano con acento rojo) */}
+              <div className="bg-gray-50 border-l-4 border-main-red p-8 md:p-10 rounded-r-xl mb-12 border-y border-r border-gray-100">
                 <h3 className="text-xl md:text-2xl font-extrabold text-main-blue mb-4">
                   Certificación en Litigio Estratégico Internacional
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify">
                   <p>
-                    Por medio de la Certificación en litigio estratégico internacional, <strong className="text-main-blue">más de mil cuatrocientas personas</strong> cuentan ahora con la herramienta para litigar ante la Corte Interamericana y los Comités de la ONU, así como para acudir a los procedimientos especiales de Naciones Unidas, tales como las Relatorías Especiales y los Grupos de Trabajo.
+                    Por medio de la Certificación en litigio estratégico internacional, <strong className="text-main-blue font-bold">más de mil cuatrocientas personas</strong> cuentan ahora con la herramienta para litigar ante la Corte Interamericana y los Comités de la ONU, así como para acudir a los procedimientos especiales de Naciones Unidas.
                   </p>
                   <p>
-                    Con el fin de disminuir la brecha entre los distintos sistemas de protección, en el IIRESODH impartimos también una <strong className="text-main-red">Certificación de Litigio que se lleva a cabo en Europa</strong>, que profundiza en los mandatos de la Corte Internacional de Justicia, la Corte Penal Internacional, el Tribunal Europeo de Derechos Humanos y la Oficina del Alto Comisionado de las Naciones Unidas para los Derechos Humanos.
+                    Impartimos también una <strong className="text-main-red font-bold">Certificación de Litigio que se lleva a cabo en Europa</strong>, que profundiza en los mandatos de la Corte Internacional de Justicia, la Corte Penal Internacional y el Tribunal Europeo de Derechos Humanos.
                   </p>
                 </div>
               </div>
 
-              {/* Grid de Impacto Global (Aprovecha todo el ancho, sin bordes divisorios) */}
+              {/* Grid de Impacto Global */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 items-center pt-6">
                 <div>
-                  <h3 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-6">
+                  <h3 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-6 tracking-tight uppercase">
                     Nuestro Impacto Global
                   </h3>
                   <p className="text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify">
@@ -77,9 +66,9 @@ export default function LitigioEstrategico() {
                   </p>
                 </div>
                 
-                {/* Caja plana azul sin bordes */}
-                <div className="bg-pale-blue/10 p-8 md:p-10 rounded-2xl h-full flex flex-col justify-center">
-                  <h4 className="text-xl font-extrabold text-main-blue mb-4 flex items-center gap-3">
+                {/* Caja plana azul sin bordes pesados */}
+                <div className="bg-pale-blue/10 p-8 md:p-10 rounded-2xl h-full flex flex-col justify-center border border-pale-blue/20">
+                  <h4 className="text-xl font-extrabold text-main-blue mb-4 flex items-center gap-3 uppercase tracking-tight">
                     <svg className="w-8 h-8 text-main-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path>
                     </svg>

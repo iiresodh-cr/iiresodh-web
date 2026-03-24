@@ -4,12 +4,12 @@ import { Link } from "react-router-dom";
 import logoBlanco from "../assets/logo.png";
 
 export default function Footer() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   return (
-    <>
-      <footer className="bg-light-blue text-white flex flex-col relative z-40">
-        {/* Padding vertical reducido significativamente a py-4 md:py-6 */}
+    <footer className="flex flex-col relative z-40 text-white">
+      {/* SECCIÓN DE CONTACTO: Se restauró a bg-light-blue */}
+      <div className="bg-light-blue">
         <div className="max-w-6xl mx-auto w-full px-8 py-4 md:py-6 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 items-center">
           
           <div className="space-y-3">
@@ -30,63 +30,36 @@ export default function Footer() {
             />
           </div>
         </div>
+      </div>
 
-        <div className="bg-main-blue py-4 px-4 text-center text-xs md:text-sm text-gray-300 font-light">
-          <p className="max-w-6xl mx-auto flex flex-col md:flex-row justify-center items-center gap-2 md:gap-3">
-            <span className="font-bold text-white tracking-wide">IIRESODH© 2026 is licensed under CC BY-NC-ND 4.0</span> 
-            <span className="hidden md:inline">—</span>
-            <Link to="/privacidad" className="hover:text-white transition-colors">Privacidad y Términos</Link>
-            <span className="hidden md:inline">—</span>
+      {/* Franja inferior de derechos y Aviso SUGEF: Se mantiene en azul oscuro (bg-main-blue) */}
+      <div className="bg-main-blue py-4 px-4 text-center text-xs md:text-sm text-gray-300 font-light border-t border-white/5">
+        <p className="max-w-6xl mx-auto flex flex-col md:flex-row justify-center items-center gap-2 md:gap-3">
+          <span className="font-bold text-white tracking-wide">IIRESODH© 2026 is licensed under CC BY-NC-ND 4.0</span> 
+          <span className="hidden md:inline">—</span>
+          <Link to="/privacidad" className="hover:text-white transition-colors">Privacidad y Términos</Link>
+          <span className="hidden md:inline">—</span>
+          
+          <span className="relative inline-block">
             <button 
-              onClick={() => setIsModalOpen(true)} 
-              className="hover:text-white transition-colors cursor-pointer"
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+              className="hover:text-white transition-colors cursor-help outline-none"
             >
               Aviso SUGEF
             </button>
-          </p>
-        </div>
-      </footer>
 
-      {/* Modal Aviso SUGEF */}
-      {isModalOpen && (
-        <div 
-          className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm transition-opacity"
-          onClick={() => setIsModalOpen(false)}
-        >
-          <div 
-            className="bg-white rounded-xl shadow-2xl max-w-xl w-full p-6 md:p-8 relative border-t-8 border-main-red animate-fade-in-up"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button 
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-main-red transition-colors cursor-pointer"
-              aria-label="Cerrar aviso"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </button>
-
-            <div className="pr-2">
-              <h3 className="text-xl md:text-2xl font-extrabold text-main-blue mb-4 uppercase tracking-wider border-b-2 border-pale-blue pb-2 inline-block">
-                Aviso SUGEF
-              </h3>
-              <p className="text-gray-700 text-base md:text-lg font-light leading-relaxed text-justify">
-                "Se advierte al público que la Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos es supervisada solamente en materia de prevención de legitimación de capitales, financiamiento al terrorismo y financiamiento de la proliferación de armas de destrucción masiva, y además se encuentra sujeta a disposiciones vinculantes de la Unidad de Inteligencia Financiera de Instituto Costarricense sobre Drogas. Por lo tanto, la Sugef no supervisa en materia financiera a la Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos, ni los negocios que ofrece, ni su seguridad, estabilidad o solvencia".
-              </p>
-            </div>
-
-            <div className="mt-8 flex justify-end">
-              <button 
-                onClick={() => setIsModalOpen(false)}
-                className="bg-main-blue hover:bg-light-blue text-white font-bold py-2 px-6 rounded-lg shadow-md transition-colors text-sm md:text-base cursor-pointer"
-              >
-                Entendido
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+            {showTooltip && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 md:w-80 p-3 bg-white text-main-blue rounded shadow-xl border border-gray-200 z-50 pointer-events-none">
+                <p className="text-[10px] leading-tight text-justify font-normal">
+                  "Se advierte al público que la Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos es supervisada solamente en materia de prevención de legitimación de capitales, financiamiento al terrorismo y financiamiento de la proliferación de armas de destrucción masiva, y además se encuentra sujeta a disposiciones vinculantes de la Unidad de Inteligencia Financiera de Instituto Costarricense sobre Drogas. Por lo tanto, la Sugef no supervisa en materia financiera a la Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos, ni los negocios que ofrece, ni su seguridad, estabilidad o solvencia".
+                </p>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-white"></div>
+              </div>
+            )}
+          </span>
+        </p>
+      </div>
+    </footer>
   );
 }

@@ -22,19 +22,21 @@ export default function Privacidad() {
   const legalTextClass = "space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify animate-fade-in-up";
 
   return (
-    <div className="bg-white flex flex-col min-h-screen">
-      {/* Encabezado de la página */}
-      <div className="bg-white text-main-blue py-12 px-6 text-center relative z-20 border-b border-gray-200">
-        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3 uppercase">
+    <div className="bg-white flex flex-col min-h-screen font-sans">
+      
+      {/* ENCABEZADO: Franja Azul Sólida (Congruente con el resto del sitio) */}
+      <div className="bg-main-blue text-white py-14 px-6 text-center relative z-20">
+        <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter mb-3 uppercase">
           Privacidad y Términos
         </h1>
-        <p className="text-base md:text-lg text-light-blue max-w-3xl mx-auto font-medium">
+        <p className="text-blue-100 max-w-3xl mx-auto font-medium opacity-90">
           Transparencia y protección de datos para todos nuestros usuarios.
         </p>
-        <div className="w-20 h-1 bg-main-red mx-auto mt-6 rounded-full"></div>
+        <div className="w-20 h-1.5 bg-main-red mx-auto mt-8 rounded-full"></div>
       </div>
 
       <div className="relative overflow-hidden grow pb-20">
+        {/* Marca de agua institucional */}
         <div className="bg-watermark"></div>
 
         <section className="relative py-12 md:py-16 px-0 md:px-8 z-10">

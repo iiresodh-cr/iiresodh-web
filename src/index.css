@@ -2,15 +2,12 @@
 @import "tailwindcss";
 
 @theme {
-  /* Paleta oficial IIRESODH */
   --color-main-blue: #1D3557;
   --color-light-blue: #457B9D;
   --color-pale-blue: #A8DADC;
   --color-main-red: #B92F32;
   --color-bright-red: #E63946;
   --color-basic-beige: #F1FAEE;
-  
-  /* Tipografía institucional */
   --font-sans: "Work Sans", sans-serif;
 }
 
@@ -22,7 +19,6 @@ body {
 }
 
 @layer utilities {
-  /* Contenedor del mapa: Redondeado y blanco */
   .map-container-wrapper {
     position: relative;
     width: 100%;
@@ -32,7 +28,6 @@ body {
     overflow: hidden;
   }
 
-  /* Marca de agua institucional sutil */
   .bg-watermark {
     position: absolute;
     inset: 0;
@@ -45,19 +40,17 @@ body {
     filter: invert(1);
   }
 
-  /* Swiper: Flechas y navegación rojos IIRESODH */
-  .swiper-custom-navigation {
-    --swiper-navigation-color: #B92F32;
+  /* Swiper: Espacio interno abajo exclusivo para los puntos */
+  .swiper-custom-pagination {
     --swiper-pagination-color: #B92F32;
-    --swiper-navigation-size: 24px;
+    padding-bottom: 2.5rem !important; 
   }
 
-  .swiper-button-next::after,
-  .swiper-button-prev::after {
-    font-weight: 900 !important;
+  /* Coloca los puntos al fondo del contenedor swiper (en el área del padding) */
+  .swiper-custom-pagination .swiper-pagination-bullets {
+    bottom: 0 !important; 
   }
 
-  /* Contenido de noticias original */
   .noticia-content {
     white-space: pre-line;
     text-align: justify;
@@ -67,7 +60,6 @@ body {
     display: block;
     margin: 2rem auto;
     border-radius: 0.5rem;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   }
 
   .animate-bounce-slow {

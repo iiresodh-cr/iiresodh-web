@@ -6,9 +6,8 @@ import { Link } from "react-router-dom";
 
 // Swiper
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import { Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
-import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
 // Mapa
@@ -22,7 +21,7 @@ const formatearTextoConLinksYHashtags = (texto) => {
   for (let i = 0; i < partes.length; i++) {
     if (i % 2 === 0) {
       let procesado = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
-        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-semibold underline">${url}</a>`;
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-semibold underline transition-colors pointer-events-auto wrap-break-word">${url}</a>`;
       });
       procesado = procesado.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
         const termino = hashtag.substring(1); 
@@ -101,20 +100,26 @@ export default function Home() {
           {/* BLOQUE 1: ÚLTIMA NOTICIA */}
           {noticia && (
             <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start bg-white">
-              <div className="w-full md:w-2/5 shrink-0"> 
-                <div className="aspect-4/5 rounded-xl overflow-hidden shadow-sm bg-white border border-gray-100">
-                  <Swiper modules={[Navigation, Pagination, Autoplay]} navigation pagination={{ clickable: true }} autoplay={{ delay: 4000 }} className="w-full h-full swiper-custom-navigation">
-                    <SwiperSlide className="bg-white flex items-center justify-center">
-                      <img src={noticia.imagenPrincipalUrl} alt="" className="w-full h-full object-contain" />
+              
+              <div className="w-full md:w-2/5 shrink-0 mb-8 md:mb-0">
+                <Swiper 
+                  modules={[Pagination, Autoplay]} 
+                  pagination={{ clickable: true }} 
+                  autoplay={{ delay: 4000 }} 
+                  className="w-full swiper-custom-pagination"
+                >
+                  <SwiperSlide className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex items-center justify-center">
+                    {/* SOLUCIÓN: La imagen usa aspect-[4/5] para reservar su espacio en el DOM sin brincos */}
+                    <img src={noticia.imagenPrincipalUrl} alt="" className="w-full aspect-[4/5] object-cover block" />
+                  </SwiperSlide>
+                  {noticia.imagenesCarruselUrls?.map((url, i) => (
+                    <SwiperSlide key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex items-center justify-center">
+                      <img src={url} alt="" className="w-full aspect-[4/5] object-cover block" />
                     </SwiperSlide>
-                    {noticia.imagenesCarruselUrls?.map((url, i) => (
-                      <SwiperSlide key={i} className="bg-white flex items-center justify-center">
-                        <img src={url} alt="" className="w-full h-full object-contain" />
-                      </SwiperSlide>
-                    ))}
-                  </Swiper>
-                </div>
+                  ))}
+                </Swiper>
               </div>
+
               <div className="w-full md:w-3/5 flex flex-col justify-start md:pl-12 overflow-hidden bg-white">
                 <span className="text-xs font-extrabold text-bright-red uppercase tracking-widest mb-3 block">Última Noticia</span>
                 <h2 className="text-3xl md:text-5xl font-extrabold text-main-blue mb-8 leading-tight tracking-tight">{noticia.titulo}</h2>
@@ -134,7 +139,6 @@ export default function Home() {
               Nuestras Oficinas
             </h2>
             
-            {/* CORRECCIÓN APLICADA AQUÍ: min-h-125 en lugar de min-h-[500px] */}
             <div className="grid grid-cols-1 md:grid-cols-10 gap-10 items-center overflow-visible bg-white min-h-125">
               
               {/* IZQUIERDA: TEXTO INSTITUCIONAL */}
@@ -170,6 +174,7 @@ export default function Home() {
                   ))}
                 </ComposableMap>
 
+                {/* TARJETA FLOTANTE HTML */}
                 {hoveredSede && (
                   <div 
                     className="absolute z-50 bg-white p-6 rounded-2xl shadow-2xl border-t-8 border-main-red flex flex-col gap-3 pointer-events-none w-[320px] transition-opacity duration-150"
