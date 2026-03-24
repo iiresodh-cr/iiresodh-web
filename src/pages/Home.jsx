@@ -4,31 +4,29 @@ import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { Link } from "react-router-dom";
 
-// Componentes para el bloque de noticias
+// Swiper
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
-// MapLibre GL JS: Tecnología de excelencia para mapas vectoriales (WebGL)
-import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
+// Mapa
+import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 
-/**
- * FUNCIÓN: Detecta URLs y también Hashtags (#) en el contenido
- */
+const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
   const partes = texto.split(/(<[^>]+>)/g);
   for (let i = 0; i < partes.length; i++) {
     if (i % 2 === 0) {
       let procesado = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
-        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red hover:text-main-blue font-bold underline transition-colors pointer-events-auto wrap-break-word">${url}</a>`;
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-semibold underline">${url}</a>`;
       });
       procesado = procesado.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
         const termino = hashtag.substring(1); 
-        return `<a href="/buscar?q=${termino}" class="text-light-blue hover:text-main-red font-bold transition-colors pointer-events-auto">${hashtag}</a>`;
+        return `<a href="/buscar?q=${termino}" class="text-light-blue font-semibold">${hashtag}</a>`;
       });
       partes[i] = procesado;
     }
@@ -40,138 +38,30 @@ export default function Home() {
   const [noticia, setNoticia] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isOverflowing, setIsOverflowing] = useState(false);
+  const [hoveredSede, setHoveredSede] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
   
   const contentRef = useRef(null);
-  const mapContainer = useRef(null);
-  const map = useRef(null);
+  const mapContainerRef = useRef(null);
 
-  // SEDES CON COORDENADAS GEOGRÁFICAS DE PRECISIÓN (Longitud, Latitud)
   const sedes = [
-    {
-      id: 'ca',
-      pais: 'Canadá',
-      coords: [-71.1743, 46.8033], // Lévis, Québec
-      detalles: 'Atención virtual o presencial previa cita en la ciudad de Lévis, Québec.'
-    },
-    {
-      id: 'mx',
-      pais: 'México',
-      coords: [-99.1332, 19.4326], // Ciudad de México
-      detalles: 'Atención virtual o presencial previa cita.'
-    },
-    {
-      id: 'gt',
-      pais: 'Guatemala',
-      coords: [-90.5069, 14.6349], // Ciudad de Guatemala
-      detalles: 'Diagonal 6 12-42, Edificio Design Center, Zona 10'
-    },
-    {
-      id: 'cr',
-      pais: 'Costa Rica',
-      coords: [-84.0833, 9.9333], // San José
-      detalles: 'Centro Corporativo San Rafael, nivel 3'
-    },
-    {
-      id: 'co',
-      pais: 'Colombia',
-      coords: [-74.0636, 4.6243], // Bogotá
-      detalles: 'Carrera. 11C No. 117-05. Oficina 5'
-    }
+    { id: 'ca', pais: 'Canadá', coords: [-71.1743, 46.8033], info: 'Atención virtual o presencial previa cita en la ciudad de Lévis, Québec. En Toronto vinculado con Waldman & Associates. Email: contacto@iiresodh.org' },
+    { id: 'mx', pais: 'México', coords: [-99.1332, 19.4326], info: 'Atención virtual o presencial previa cita. Email: contacto@iiresodh.org' },
+    { id: 'gt', pais: 'Guatemala', coords: [-90.5069, 14.6349], info: 'Diagonal 6 12-42, Edificio Design Center. Oficina No. 506, Torre 1, Zona 10. Ciudad de Guatemala. Teléfono: +502 5557 7466' },
+    { id: 'cr', pais: 'Costa Rica', coords: [-84.0833, 9.9333], info: 'Centro Corporativo San Rafael, nivel 3. San Rafael de Escazú, San José. CP 10201. Teléfono: +506 4703 5727' },
+    { id: 'co', pais: 'Colombia', coords: [-74.0636, 4.6243], info: 'Carrera. 11C No. 117-05. Oficina 5. Bogotá, Colombia. Teléfono: Bogotá +7461964. Móvil: +57 301 4844324' }
   ];
 
-  // EFECTO: Inicialización y gestión del Mapa (Evita el cuadro blanco)
   useEffect(() => {
-    if (!mapContainer.current) return;
-
-    const inicializarMapa = () => {
-      if (map.current) return;
-
-      // Estilo minimalista profesional
-      map.current = new maplibregl.Map({
-        container: mapContainer.current,
-        style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-        center: [-80, 20],
-        zoom: 2.2,
-        scrollZoom: false,
-        trackResize: true
-      });
-
-      map.current.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
-
-      map.current.on('load', () => {
-        sedes.forEach((sede) => {
-          const el = document.createElement('div');
-          el.className = 'custom-marker';
-          el.style.width = '18px';
-          el.style.height = '18px';
-          el.style.backgroundColor = '#B92F32';
-          el.style.borderRadius = '50%';
-          el.style.border = '3px solid white';
-          el.style.boxShadow = '0 0 15px rgba(185, 47, 50, 0.4)';
-          el.style.cursor = 'pointer';
-          el.style.position = 'relative';
-
-          const pulse = document.createElement('div');
-          pulse.className = 'animate-ping absolute inset-0 rounded-full bg-main-red opacity-40';
-          el.appendChild(pulse);
-
-          const popup = new maplibregl.Popup({ offset: 15, closeButton: false })
-            .setHTML(`
-              <div style="padding: 10px; font-family: 'Work Sans', sans-serif; min-width: 150px;">
-                <h3 style="color: #1D3557; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; font-size: 14px; border-bottom: 1px solid #F1FAEE; padding-bottom: 5px;">${sede.pais}</h3>
-                <p style="color: #457B9D; font-size: 12px; line-height: 1.4; margin: 0;">${sede.detalles}</p>
-              </div>
-            `);
-
-          new maplibregl.Marker(el)
-            .setLngLat(sede.coords)
-            .setPopup(popup)
-            .addTo(map.current);
-
-          el.addEventListener('mouseenter', () => popup.addTo(map.current));
-          el.addEventListener('mouseleave', () => popup.remove());
-        });
-
-        // Forzar redibujado tras la carga de estilos
-        map.current.resize();
-      });
-    };
-
-    // Retardo controlado para asegurar que el DOM esté listo
-    const timer = setTimeout(inicializarMapa, 150);
-
-    // Observador para redimensionar el mapa si el contenedor cambia
-    const resizeObserver = new ResizeObserver(() => {
-      if (map.current) map.current.resize();
-    });
-    resizeObserver.observe(mapContainer.current);
-
-    return () => {
-      clearTimeout(timer);
-      resizeObserver.disconnect();
-      if (map.current) {
-        map.current.remove();
-        map.current = null;
-      }
-    };
-  }, []);
-
-  // Carga de la última noticia
-  useEffect(() => {
-    const fetchUltimaNoticia = async () => {
+    const fetchNoticia = async () => {
       try {
         const q = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), limit(1));
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-          setNoticia({ id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() });
-        }
-      } catch (error) {
-        console.error("Error al obtener la noticia:", error);
-      } finally {
-        setLoading(false);
-      }
+        const snap = await getDocs(q);
+        if (!snap.empty) setNoticia({ id: snap.docs[0].id, ...snap.docs[0].data() });
+      } catch (e) { console.error(e); }
+      finally { setLoading(false); }
     };
-    fetchUltimaNoticia();
+    fetchNoticia();
   }, []);
 
   useEffect(() => {
@@ -186,97 +76,110 @@ export default function Home() {
     return () => window.removeEventListener('resize', checkOverflow);
   }, [noticia]);
 
-  if (loading) {
-    return <div className="min-h-screen bg-white flex items-center justify-center text-main-blue font-bold text-xl">Cargando IIRESODH...</div>;
-  }
+  const handleHover = (sede, e) => {
+    if (!mapContainerRef.current) return;
+    const rect = mapContainerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const leftPos = x > rect.width / 2 ? x - 340 : x + 20;
+    const topPos = y < 150 ? y + 20 : y - 180;
 
-  const contenidoNoticiaRaw = noticia ? (noticia.contenido || noticia.contenidoHTML || noticia.cuerpo || `<p>${noticia.resumen}</p>` || "") : "";
-  const contenidoNoticia = formatearTextoConLinksYHashtags(contenidoNoticiaRaw);
+    setTooltipPos({ top: topPos, left: leftPos });
+    setHoveredSede(sede);
+  };
+
+  if (loading) return <div className="min-h-screen bg-white flex items-center justify-center font-bold text-main-blue text-xl">Cargando IIRESODH...</div>;
 
   return (
     <div className="bg-white flex flex-col min-h-screen font-sans">
       <div className="relative overflow-hidden grow pb-20">
-        
         <div className="bg-watermark"></div>
 
-        <div className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-8 md:pt-12 pb-16 flex flex-col gap-12 md:gap-20 overflow-hidden">
+        {/* AQUÍ SE REDUJO EL ESPACIO: gap-12 md:gap-20 pasó a gap-8 md:gap-10 */}
+        <div className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-8 md:pt-12 pb-16 flex flex-col gap-8 md:gap-10 overflow-hidden">
           
           {/* BLOQUE 1: ÚLTIMA NOTICIA */}
-          {!noticia ? (
-            <div className="text-center text-light-blue text-xl py-20">Aún no hay noticias publicadas.</div>
-          ) : (
-            <div className="flex flex-col md:flex-row gap-8 md:gap-0 items-start min-h-112 md:min-h-120">
-              <div className="w-full md:w-2/5 relative shrink-0"> 
-                <div className="aspect-4/5 w-full relative rounded-xl overflow-hidden shadow-sm bg-gray-50">
-                  <Swiper
-                    modules={[Navigation, Pagination, Autoplay]}
-                    navigation pagination={{ clickable: true }} autoplay={{ delay: 4000 }}
-                    className="absolute inset-0 w-full h-full swiper-custom-navigation"
-                  >
-                    <SwiperSlide className="flex items-center justify-center h-full w-full">
-                      <img src={noticia.imagenPrincipalUrl} alt="Principal" className="w-full h-full object-contain" />
+          {noticia && (
+            <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start bg-white">
+              <div className="w-full md:w-2/5 shrink-0"> 
+                <div className="aspect-4/5 rounded-xl overflow-hidden shadow-sm bg-white border border-gray-100">
+                  <Swiper modules={[Navigation, Pagination, Autoplay]} navigation pagination={{ clickable: true }} autoplay={{ delay: 4000 }} className="w-full h-full swiper-custom-navigation">
+                    <SwiperSlide className="bg-white flex items-center justify-center">
+                      <img src={noticia.imagenPrincipalUrl} alt="" className="w-full h-full object-contain" />
                     </SwiperSlide>
-                    {noticia.imagenesCarruselUrls?.map((url, index) => (
-                      <SwiperSlide key={index} className="flex items-center justify-center h-full w-full">
-                        <img src={url} alt={`Carrusel ${index + 1}`} className="w-full h-full object-contain" />
+                    {noticia.imagenesCarruselUrls?.map((url, i) => (
+                      <SwiperSlide key={i} className="bg-white flex items-center justify-center">
+                        <img src={url} alt="" className="w-full h-full object-contain" />
                       </SwiperSlide>
                     ))}
                   </Swiper>
                 </div>
               </div>
-              
-              <div className="w-full md:w-3/5 flex flex-col justify-start md:pl-12 overflow-hidden">
+              <div className="w-full md:w-3/5 flex flex-col justify-start md:pl-12 overflow-hidden bg-white">
                 <span className="text-xs font-extrabold text-bright-red uppercase tracking-widest mb-3 block">Última Noticia</span>
-                <h2 className="text-2xl md:text-4xl font-extrabold text-main-blue mb-6 leading-tight wrap-break-word">{noticia.titulo}</h2>
-                <div 
-                  ref={contentRef}
-                  className="text-gray-600 mb-6 text-base md:text-lg font-light leading-relaxed noticia-content text-justify overflow-hidden wrap-break-word"
-                  dangerouslySetInnerHTML={{ __html: contenidoNoticia }}
-                />
+                <h2 className="text-3xl md:text-5xl font-extrabold text-main-blue mb-8 leading-tight tracking-tight">{noticia.titulo}</h2>
+                <div ref={contentRef} className="text-gray-600 mb-6 text-base md:text-lg font-light leading-relaxed noticia-content text-justify overflow-hidden" dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(noticia.contenido) }} />
                 {isOverflowing && (
                   <Link to={`/noticias/${noticia.slug || noticia.id}`} className="text-main-red font-bold hover:text-main-blue transition-colors mt-auto flex items-center gap-2 self-start uppercase tracking-wide text-sm">
-                    Leer noticia completa <span className="text-xl">&rarr;</span>
+                    Leer noticia completa <span>&rarr;</span>
                   </Link>
                 )}
               </div>
             </div>
           )}
 
-          {/* BLOQUE 2: NUESTRAS OFICINAS (MAPA + TEXTO UNIFICADO) */}
-          <div className="pt-12 border-t border-gray-100 flex flex-col gap-10">
-            <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue uppercase tracking-widest mb-2 text-center">
+          {/* BLOQUE 2: NUESTRAS OFICINAS */}
+          {/* AQUÍ SE REDUJO EL ESPACIO: pt-12 pasó a pt-4 */}
+          <div className="pt-4 bg-white">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue uppercase tracking-widest mb-12 text-center w-full bg-white">
               Nuestras Oficinas
             </h2>
             
-            <div className="flex flex-col md:flex-row gap-12 items-stretch">
+            <div className="grid grid-cols-1 md:grid-cols-10 gap-10 items-center overflow-visible bg-white min-h-[500px]">
               
-              {/* IZQUIERDA: MAPA VECTORIAL PROFESIONAL */}
-              <div className="w-full md:w-2/5 h-100 md:h-auto rounded-3xl overflow-hidden shadow-2xl border border-gray-200 z-10 relative bg-gray-50 flex items-center justify-center">
-                <div ref={mapContainer} className="w-full h-full min-h-100 md:min-h-120" />
-              </div>
-
-              {/* DERECHA: TEXTO INSTITUCIONAL */}
-              <div className="w-full md:w-3/5 space-y-6 text-gray-700 text-lg md:text-xl font-light leading-relaxed text-justify flex flex-col justify-center px-4 md:pl-8">
-                <p>
+              {/* IZQUIERDA: TEXTO INSTITUCIONAL */}
+              <div className="md:col-span-4 flex flex-col justify-center space-y-4 bg-white pr-10">
+                <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
                   El <strong className="font-extrabold text-main-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
                 </p>
-                <p>
+                <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
                   Desde su creación fue una entidad con claridad en sus objetivos para el fortalecimiento, promoción y protección de los derechos humanos, y con ello incidir en una cultura donde el respeto sea asumido por las empresas e instituciones públicas como una forma de desarrollo directo.
                 </p>
-                <p>
+                <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
                   Fomenta el mejoramiento social, económico, cultural, educativo, organizativo y productivo por medio de la promoción de la responsabilidad social empresarial y la promoción y protección de los derechos humanos.
                 </p>
-                
-                <div className="pt-4 flex flex-wrap gap-4">
-                  <div className="flex items-center gap-2 bg-pale-blue/20 px-4 py-2 rounded-full border border-pale-blue/30">
-                    <div className="w-2 h-2 rounded-full bg-main-red"></div>
-                    <span className="text-xs font-bold text-main-blue uppercase tracking-wider">Presencia Continental</span>
+              </div>
+
+              {/* DERECHA: MAPA */}
+              <div ref={mapContainerRef} className="md:col-span-6 map-container-wrapper bg-white">
+                <ComposableMap projection="geoMercator" projectionConfig={{ scale: 280, center: [-85, 30] }} className="w-full h-full bg-white overflow-visible">
+                  <Geographies geography={geoUrl}>
+                    {({ geographies }) =>
+                      geographies.map((geo) => (
+                        <Geography key={geo.rsmKey} geography={geo} fill="#F3F4F6" stroke="#FFFFFF" strokeWidth={0.5} style={{ default: { outline: "none" }, hover: { fill: "#E5E7EB", outline: "none" } }} />
+                      ))
+                    }
+                  </Geographies>
+
+                  {sedes.map((sede) => (
+                    <Marker key={sede.id} coordinates={sede.coords}>
+                      <circle r={20} fill="transparent" className="cursor-pointer" onMouseEnter={(e) => handleHover(sede, e)} onMouseLeave={() => setHoveredSede(null)} />
+                      <circle r={10} fill="#B92F32" fillOpacity={0.1} className="animate-pulse pointer-events-none" />
+                      <circle r={5} fill="#B92F32" stroke="#FFFFFF" strokeWidth={2} className="pointer-events-none" />
+                    </Marker>
+                  ))}
+                </ComposableMap>
+
+                {hoveredSede && (
+                  <div 
+                    className="absolute z-50 bg-white p-6 rounded-2xl shadow-2xl border-t-8 border-main-red flex flex-col gap-3 pointer-events-none w-[320px] transition-opacity duration-150"
+                    style={{ top: `${tooltipPos.top}px`, left: `${tooltipPos.left}px` }}
+                  >
+                    <h3 className="text-xl font-extrabold text-main-blue uppercase tracking-tight border-b border-gray-100 pb-2">{hoveredSede.pais}</h3>
+                    <p className="text-sm text-gray-700 leading-relaxed font-medium">{hoveredSede.info}</p>
                   </div>
-                  <div className="flex items-center gap-2 bg-pale-blue/20 px-4 py-2 rounded-full border border-pale-blue/30">
-                    <div className="w-2 h-2 rounded-full bg-main-red"></div>
-                    <span className="text-xs font-bold text-main-blue uppercase tracking-wider">Litigio Estratégico</span>
-                  </div>
-                </div>
+                )}
               </div>
 
             </div>
