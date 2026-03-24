@@ -26,7 +26,7 @@ export default function Navbar() {
     if (searchTerm.trim()) {
       navigate(`/buscar?q=${encodeURIComponent(searchTerm.trim())}`);
       setSearchTerm("");
-      setIsMobileMenuOpen(false); // Cierra el menú si se busca desde el celular
+      setIsMobileMenuOpen(false);
     }
   };
 
@@ -37,17 +37,16 @@ export default function Navbar() {
 
   return (
     <header className="w-full shadow-sm relative z-50 bg-white">
-      {/* Contenedor principal: En desktop se divide en 2 columnas (Logo a la izq, Franjas a la der) */}
+      {/* Contenedor principal */}
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-stretch">
         
         {/* COLUMNA IZQUIERDA: LOGO */}
         <div className="shrink-0 flex items-center justify-between px-6 py-4 md:pr-8 bg-white relative z-20">
           <Link to="/" className="flex items-center">
-            {/* Altura aumentada para que abarque visualmente las dos franjas */}
             <img src={logo} alt="IIRESODH Logo" className="h-16 md:h-28 lg:h-32 w-auto object-contain" />
           </Link>
           
-          {/* BOTÓN HAMBURGUESA (Solo visible en móviles) */}
+          {/* BOTÓN HAMBURGUESA (Móviles) */}
           <button 
             className="md:hidden p-2 text-main-blue hover:text-main-red transition-colors focus:outline-none cursor-pointer"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -68,8 +67,6 @@ export default function Navbar() {
           
           {/* FRANJA SUPERIOR: Buscador y Redes Sociales */}
           <div className="bg-white px-6 py-4 flex flex-col md:flex-row justify-between md:justify-end items-center gap-6">
-            
-            {/* BARRA DE BÚSQUEDA */}
             <div className="w-full md:w-auto md:flex-1 max-w-md md:mr-auto">
               <form onSubmit={handleSearch} className="relative group">
                 <input
@@ -91,7 +88,6 @@ export default function Navbar() {
               </form>
             </div>
 
-            {/* REDES SOCIALES DESKTOP */}
             <div className="hidden md:flex items-center gap-6 text-light-blue shrink-0">
               <a href="https://www.facebook.com/iiresodhcostarica" target="_blank" rel="noreferrer" className="hover:text-main-red transition-colors">
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" /></svg>
@@ -111,7 +107,7 @@ export default function Navbar() {
           {/* FRANJA INFERIOR: Menú de navegación y Donaciones */}
           <div className="bg-white px-6 py-2 flex flex-col md:flex-row md:items-center justify-between grow">
             
-            {/* BOTÓN VOLVER (Solo cuando no estamos en Home) */}
+            {/* BOTÓN VOLVER */}
             <div className="w-full md:w-auto flex justify-start order-2 md:order-1 mt-4 md:mt-0 mb-4 md:mb-0">
               {!isHome ? (
                 <Link to="/" className="flex items-center gap-2 text-sm font-bold tracking-wider uppercase text-main-blue hover:text-light-blue transition-colors">
@@ -121,7 +117,6 @@ export default function Navbar() {
             </div>
 
             {/* ENLACES PRINCIPALES */}
-            {/* Modificado a gap-5 para asegurar que todos los elementos quepan bien en una línea */}
             <nav className="w-full md:w-auto flex flex-col md:flex-row justify-center md:items-center gap-2 md:gap-5 text-sm font-bold tracking-widest uppercase text-main-blue order-1 md:order-2">
               
               {/* DROPDOWN NOSOTROS */}
@@ -152,7 +147,7 @@ export default function Navbar() {
                 </div>
               </div>
 
-              {/* DROPDOWN ÁREAS DE TRABAJO */}
+              {/* DROPDOWN ÁREAS DE TRABAJO (Estructura corregida según imagen) */}
               <div 
                 className="relative group cursor-pointer w-full md:w-auto"
                 onMouseLeave={() => setActiveDropdown(null)}
@@ -166,7 +161,6 @@ export default function Navbar() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path>
                   </svg>
                 </button>
-                {/* Modificado a md:w-72 para dar espacio al ícono y la sangría */}
                 <div className={`
                   ${activeDropdown === 'areas' ? 'block' : 'hidden'} 
                   md:block md:absolute md:left-0 md:top-full md:w-72 md:bg-white md:shadow-xl md:rounded-b 
@@ -175,50 +169,31 @@ export default function Navbar() {
                 `}>
                   <ul className="py-2 flex flex-col">
                     <li><Link to="/litigio-estrategico" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Litigio Estratégico</Link></li>
-                    {/* ENLACE PRIVADO INDENTADO */}
+                    
+                    {/* LITIGIOS ACTIVOS (Indentado) */}
                     <li>
-                      <Link to="/litigios-activos" className="flex items-center gap-2 w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors text-main-red text-xs pl-8">
+                      <Link to="/litigios-activos" className="flex items-center gap-2 w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors text-main-red text-xs pl-8 font-bold">
                         <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                         </svg>
                         LITIGIOS ACTIVOS (PRIVADO)
                       </Link>
                     </li>
+                    
                     <li><Link to="/cooperacion-internacional" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Cooperación Internacional</Link></li>
+                    <li><Link to="/colombia" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Colombia (Landing Page)</Link></li>
+                    
+                    {/* CURSOS (Categoría no clickeable, actúa como header) */}
+                    <li className="block w-full px-5 py-2 mt-2 text-xs font-bold text-gray-400 uppercase tracking-widest border-t border-gray-200/60 pt-3 cursor-default">
+                      Cursos
+                    </li>
+                    {/* CURSOS ACTIVOS Y PASADOS (Indentados) */}
+                    <li><Link to="/cursos-activos" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors pl-8">Cursos Activos</Link></li>
+                    <li><Link to="/cursos-pasados" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors pl-8">Cursos Pasados</Link></li>
                   </ul>
                 </div>
               </div>
               
-              {/* ENLACE COLOMBIA */}
-              <Link to="/colombia" className="hover:text-light-blue py-3 md:py-2 transition-colors w-full md:w-auto block">COLOMBIA</Link>
-
-              {/* DROPDOWN CURSOS */}
-              <div 
-                className="relative group cursor-pointer w-full md:w-auto"
-                onMouseLeave={() => setActiveDropdown(null)}
-              >
-                <button 
-                  className="flex items-center justify-between md:justify-center w-full gap-1.5 hover:text-light-blue transition-colors py-3 md:py-2 cursor-pointer"
-                  onClick={() => toggleDropdown('cursos')}
-                >
-                  CURSOS 
-                  <svg className={`w-4 h-4 text-pale-blue transition-transform duration-300 ${activeDropdown === 'cursos' ? 'rotate-180' : ''} md:group-hover:rotate-180`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path>
-                  </svg>
-                </button>
-                <div className={`
-                  ${activeDropdown === 'cursos' ? 'block' : 'hidden'} 
-                  md:block md:absolute md:left-0 md:top-full md:w-56 md:bg-white md:shadow-xl md:rounded-b 
-                  md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300 
-                  md:border-t-4 md:border-main-red w-full bg-gray-50 border-l-4 border-main-red md:border-l-0 z-50
-                `}>
-                  <ul className="py-2 flex flex-col">
-                    <li><Link to="/cursos-activos" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Cursos Activos</Link></li>
-                    <li><Link to="/cursos-pasados" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Cursos Pasados</Link></li>
-                  </ul>
-                </div>
-              </div>
-
               <Link to="/noticias" className="hover:text-light-blue py-3 md:py-2 transition-colors w-full md:w-auto block">NOTICIAS</Link>
             </nav>
 
