@@ -142,12 +142,13 @@ export default function Navbar() {
                   <ul className="py-2 flex flex-col">
                     <li><Link to="/quienes-somos" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">¿Quiénes somos?</Link></li>
                     <li><Link to="/equipo" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Equipo de Trabajo</Link></li>
-                    <li><Link to="/informes" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Informes Anuales</Link></li>
+                    {/* ENLACE CORREGIDO: Se cambió de /informes a /informes-anuales */}
+                    <li><Link to="/informes-anuales" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Informes Anuales</Link></li>
                   </ul>
                 </div>
               </div>
 
-              {/* DROPDOWN ÁREAS DE TRABAJO (Estructura corregida según imagen) */}
+              {/* DROPDOWN ÁREAS DE TRABAJO */}
               <div 
                 className="relative group cursor-pointer w-full md:w-auto"
                 onMouseLeave={() => setActiveDropdown(null)}
@@ -183,11 +184,10 @@ export default function Navbar() {
                     <li><Link to="/cooperacion-internacional" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Cooperación Internacional</Link></li>
                     <li><Link to="/colombia" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Colombia</Link></li>
                     
-                    {/* CURSOS (Categoría no clickeable, actúa como header) */}
+                    {/* CURSOS (Categoría no clickeable) */}
                     <li className="block w-full px-5 py-2 mt-2 text-xs font-bold text-gray-400 uppercase tracking-widest border-t border-gray-200/60 pt-3 cursor-default">
                       Cursos
                     </li>
-                    {/* CURSOS ACTIVOS Y PASADOS (Indentados) */}
                     <li><Link to="/cursos-activos" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors pl-8">Cursos Activos</Link></li>
                     <li><Link to="/cursos-pasados" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors pl-8">Cursos Pasados</Link></li>
                   </ul>
@@ -204,7 +204,7 @@ export default function Navbar() {
               </Link>
             </div>
             
-            {/* REDES SOCIALES MÓVIL (Solo se ven si el menú está abierto) */}
+            {/* REDES SOCIALES MÓVIL */}
             <div className="flex md:hidden items-center justify-center gap-8 py-6 text-light-blue order-4">
               <a href="https://www.facebook.com/iiresodhcostarica" target="_blank" rel="noreferrer" className="hover:text-main-red transition-colors">
                 <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" /></svg>
