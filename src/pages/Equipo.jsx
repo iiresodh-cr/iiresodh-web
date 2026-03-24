@@ -11,9 +11,9 @@ export default function Equipo() {
     const mockupData = [
       {
         id: "pres-1",
-        nombre: "Nombre del Presidente",
+        nombre: "Dr. Víctor Rodríguez Rescia",
         cargo: "Presidente del IIRESODH",
-        bio: "Reseña profesional aquí. Este bloque es totalmente plano y sólido, diseñado para destacar la autoridad del cargo mediante una tipografía limpia y un uso equilibrado del espacio, sin efectos de flotación o sombras pesadas.",
+        bio: "Reseña profesional aquí.",
         fotoUrl: "https://via.placeholder.com/600x750",
         destacado: true,
         orden: 1
