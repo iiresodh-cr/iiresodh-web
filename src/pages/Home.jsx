@@ -4,19 +4,19 @@ import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { Link } from "react-router-dom";
 
-// Componentes para el Carrusel de Noticias
+// Componentes para el bloque de noticias
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
-// MapLibre GL JS: Tecnología de alto rendimiento para mapas vectoriales (WebGL)
+// MapLibre GL JS: Tecnología de excelencia para mapas vectoriales (WebGL)
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 /**
- * FUNCIÓN: Detecta URLs y también Hashtags (#)
+ * FUNCIÓN: Detecta URLs y también Hashtags (#) en el contenido
  */
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
@@ -79,14 +79,14 @@ export default function Home() {
     }
   ];
 
-  // EFECTO: Inicialización y Rescate del Mapa (Evita cuadro blanco)
+  // EFECTO: Inicialización y gestión del Mapa (Evita el cuadro blanco)
   useEffect(() => {
     if (!mapContainer.current) return;
 
     const inicializarMapa = () => {
       if (map.current) return;
 
-      // Estilo minimalista CartoDB Positron
+      // Estilo minimalista profesional
       map.current = new maplibregl.Map({
         container: mapContainer.current,
         style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
@@ -100,7 +100,6 @@ export default function Home() {
 
       map.current.on('load', () => {
         sedes.forEach((sede) => {
-          // Crear elemento visual personalizado para el marcador
           const el = document.createElement('div');
           el.className = 'custom-marker';
           el.style.width = '18px';
@@ -112,7 +111,6 @@ export default function Home() {
           el.style.cursor = 'pointer';
           el.style.position = 'relative';
 
-          // Efecto de pulso
           const pulse = document.createElement('div');
           pulse.className = 'animate-ping absolute inset-0 rounded-full bg-main-red opacity-40';
           el.appendChild(pulse);
@@ -134,15 +132,15 @@ export default function Home() {
           el.addEventListener('mouseleave', () => popup.remove());
         });
 
-        // Forzar redibujado inmediato tras carga
+        // Forzar redibujado tras la carga de estilos
         map.current.resize();
       });
     };
 
-    // Retardo mínimo para asegurar que Tailwind haya aplicado dimensiones al DOM
-    const timer = setTimeout(inicializarMapa, 100);
+    // Retardo controlado para asegurar que el DOM esté listo
+    const timer = setTimeout(inicializarMapa, 150);
 
-    // Observador para corregir dimensiones dinámicamente si la ventana cambia
+    // Observador para redimensionar el mapa si el contenedor cambia
     const resizeObserver = new ResizeObserver(() => {
       if (map.current) map.current.resize();
     });
@@ -158,7 +156,7 @@ export default function Home() {
     };
   }, []);
 
-  // Carga de noticias
+  // Carga de la última noticia
   useEffect(() => {
     const fetchUltimaNoticia = async () => {
       try {
@@ -244,7 +242,7 @@ export default function Home() {
             </div>
           )}
 
-          {/* BLOQUE 2: NUESTRAS OFICINAS (MAPA + TEXTO EXCLUSIVO) */}
+          {/* BLOQUE 2: NUESTRAS OFICINAS (MAPA + TEXTO UNIFICADO) */}
           <div className="pt-12 border-t border-gray-100 flex flex-col gap-10">
             <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue uppercase tracking-widest mb-2 text-center">
               Nuestras Oficinas
@@ -252,12 +250,12 @@ export default function Home() {
             
             <div className="flex flex-col md:flex-row gap-12 items-stretch">
               
-              {/* IZQUIERDA: MAPA PROFESIONAL (Evita el cuadro blanco con h-100 / md:h-auto) */}
+              {/* IZQUIERDA: MAPA VECTORIAL PROFESIONAL */}
               <div className="w-full md:w-2/5 h-100 md:h-auto rounded-3xl overflow-hidden shadow-2xl border border-gray-200 z-10 relative bg-gray-50 flex items-center justify-center">
                 <div ref={mapContainer} className="w-full h-full min-h-100 md:min-h-120" />
               </div>
 
-              {/* DERECHA: TEXTO INSTITUCIONAL (Reubicado de la sección anterior) */}
+              {/* DERECHA: TEXTO INSTITUCIONAL */}
               <div className="w-full md:w-3/5 space-y-6 text-gray-700 text-lg md:text-xl font-light leading-relaxed text-justify flex flex-col justify-center px-4 md:pl-8">
                 <p>
                   El <strong className="font-extrabold text-main-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
