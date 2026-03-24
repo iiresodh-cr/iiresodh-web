@@ -11,7 +11,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
-// MapLibre GL JS: Tecnología de alto rendimiento para mapas vectoriales
+// MapLibre GL JS: Estándar de alto rendimiento para mapas vectoriales
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -68,7 +68,7 @@ export default function Home() {
     {
       id: 'cr',
       pais: 'Costa Rica',
-      coords: [-84.0833, 9.9333], // San José / Escazú
+      coords: [-84.1453, 9.9392], // San Rafael de Escazú
       detalles: 'Centro Corporativo San Rafael, nivel 3'
     },
     {
@@ -81,68 +81,73 @@ export default function Home() {
 
   // Inicialización y gestión del Mapa
   useEffect(() => {
-    if (map.current || !mapContainer.current) return;
+    if (!mapContainer.current) return;
 
-    // Inicializar mapa con estilo profesional minimalista
-    map.current = new maplibregl.Map({
-      container: mapContainer.current,
-      style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-      center: [-80, 20],
-      zoom: 2.5,
-      scrollZoom: false,
-      trackResize: true
-    });
+    // Timeout para asegurar que el layout de React/Tailwind se haya asentado
+    const initTimer = setTimeout(() => {
+      if (map.current) return;
 
-    map.current.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
-
-    // Esperar a que el estilo cargue para añadir los marcadores
-    map.current.on('load', () => {
-      sedes.forEach((sede) => {
-        const el = document.createElement('div');
-        el.className = 'custom-marker';
-        el.style.width = '16px';
-        el.style.height = '16px';
-        el.style.backgroundColor = '#B92F32';
-        el.style.borderRadius = '50%';
-        el.style.border = '3px solid white';
-        el.style.boxShadow = '0 0 15px rgba(185, 47, 50, 0.4)';
-        el.style.cursor = 'pointer';
-        el.style.position = 'relative';
-
-        const pulse = document.createElement('div');
-        pulse.className = 'animate-ping absolute inset-0 rounded-full bg-main-red opacity-40';
-        el.appendChild(pulse);
-
-        const popup = new maplibregl.Popup({ offset: 15, closeButton: false })
-          .setHTML(`
-            <div style="padding: 8px; font-family: 'Work Sans', sans-serif;">
-              <h3 style="color: #1D3557; font-weight: 800; margin-bottom: 4px; text-transform: uppercase; font-size: 14px; border-bottom: 1px solid #F1FAEE; padding-bottom: 4px;">${sede.pais}</h3>
-              <p style="color: #457B9D; font-size: 12px; line-height: 1.4; margin: 0;">${sede.detalles}</p>
-            </div>
-          `);
-
-        new maplibregl.Marker(el)
-          .setLngLat(sede.coords)
-          .setPopup(popup)
-          .addTo(map.current);
-
-        el.addEventListener('mouseenter', () => popup.addTo(map.current));
-        el.addEventListener('mouseleave', () => popup.remove());
+      map.current = new maplibregl.Map({
+        container: mapContainer.current,
+        style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        center: [-85, 25],
+        zoom: 2.2,
+        scrollZoom: false,
+        trackResize: true
       });
-      
-      // Forzar re-cálculo de dimensiones para evitar el cuadro blanco
-      map.current.resize();
-    });
 
-    // Observador para redimensionar el mapa si el contenedor cambia (crucial para evitar cuadro blanco)
-    const resizeObserver = new ResizeObserver(() => {
-      map.current?.resize();
-    });
-    resizeObserver.observe(mapContainer.current);
+      map.current.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
+
+      map.current.on('load', () => {
+        sedes.forEach((sede) => {
+          const el = document.createElement('div');
+          el.className = 'custom-marker';
+          el.style.width = '16px';
+          el.style.height = '16px';
+          el.style.backgroundColor = '#B92F32';
+          el.style.borderRadius = '50%';
+          el.style.border = '3px solid white';
+          el.style.boxShadow = '0 0 15px rgba(185, 47, 50, 0.4)';
+          el.style.cursor = 'pointer';
+          el.style.position = 'relative';
+
+          const pulse = document.createElement('div');
+          pulse.className = 'animate-ping absolute inset-0 rounded-full bg-main-red opacity-40';
+          el.appendChild(pulse);
+
+          const popup = new maplibregl.Popup({ offset: 15, closeButton: false })
+            .setHTML(`
+              <div style="padding: 8px; font-family: 'Work Sans', sans-serif;">
+                <h3 style="color: #1D3557; font-weight: 800; margin-bottom: 4px; text-transform: uppercase; font-size: 14px; border-bottom: 1px solid #F1FAEE; padding-bottom: 4px;">${sede.pais}</h3>
+                <p style="color: #457B9D; font-size: 12px; line-height: 1.4; margin: 0;">${sede.detalles}</p>
+              </div>
+            `);
+
+          new maplibregl.Marker(el)
+            .setLngLat(sede.coords)
+            .setPopup(popup)
+            .addTo(map.current);
+
+          el.addEventListener('mouseenter', () => popup.addTo(map.current));
+          el.addEventListener('mouseleave', () => popup.remove());
+        });
+        
+        map.current.resize();
+      });
+
+      // Observer para evitar el cuadro blanco si el contenedor cambia de tamaño
+      const resizer = new ResizeObserver(() => {
+        if (map.current) map.current.resize();
+      });
+      resizer.observe(mapContainer.current);
+    }, 100);
 
     return () => {
-      resizeObserver.disconnect();
-      map.current?.remove();
+      clearTimeout(initTimer);
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
     };
   }, []);
 
@@ -231,7 +236,7 @@ export default function Home() {
             </div>
           )}
 
-          {/* BLOQUE 2: NUESTRAS OFICINAS (LAYOUT PROFESIONAL) */}
+          {/* BLOQUE 2: NUESTRAS OFICINAS (LAYOUT INTEGRAL) */}
           <div className="pt-12 border-t border-gray-100 flex flex-col gap-10">
             <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue uppercase tracking-widest mb-2 text-center">
               Nuestras Oficinas
@@ -239,7 +244,7 @@ export default function Home() {
             
             <div className="flex flex-col md:flex-row gap-12 items-stretch min-h-120">
               
-              {/* IZQUIERDA: MAPA VECTORIAL DE ALTA PRECISIÓN */}
+              {/* IZQUIERDA: MAPA VECTORIAL PROFESIONAL */}
               <div className="w-full md:w-2/5 h-100 md:h-auto rounded-3xl overflow-hidden shadow-2xl border border-gray-200 z-10 relative bg-gray-50">
                 <div ref={mapContainer} className="w-full h-full min-h-100 md:min-h-120" />
               </div>
@@ -270,7 +275,6 @@ export default function Home() {
 
             </div>
           </div>
-
         </div>
       </div>
     </div>
