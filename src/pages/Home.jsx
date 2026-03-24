@@ -96,7 +96,6 @@ export default function Home() {
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark"></div>
 
-        {/* AQUÍ SE REDUJO EL ESPACIO: gap-12 md:gap-20 pasó a gap-8 md:gap-10 */}
         <div className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-8 md:pt-12 pb-16 flex flex-col gap-8 md:gap-10 overflow-hidden">
           
           {/* BLOQUE 1: ÚLTIMA NOTICIA */}
@@ -130,13 +129,13 @@ export default function Home() {
           )}
 
           {/* BLOQUE 2: NUESTRAS OFICINAS */}
-          {/* AQUÍ SE REDUJO EL ESPACIO: pt-12 pasó a pt-4 */}
           <div className="pt-4 bg-white">
             <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue uppercase tracking-widest mb-12 text-center w-full bg-white">
               Nuestras Oficinas
             </h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-10 gap-10 items-center overflow-visible bg-white min-h-[500px]">
+            {/* CORRECCIÓN APLICADA AQUÍ: min-h-125 en lugar de min-h-[500px] */}
+            <div className="grid grid-cols-1 md:grid-cols-10 gap-10 items-center overflow-visible bg-white min-h-125">
               
               {/* IZQUIERDA: TEXTO INSTITUCIONAL */}
               <div className="md:col-span-4 flex flex-col justify-center space-y-4 bg-white pr-10">
