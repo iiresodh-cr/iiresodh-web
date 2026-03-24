@@ -4,19 +4,19 @@ import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { Link } from "react-router-dom";
 
-// Componentes para el bloque de noticias
+// Componentes para el Carrusel de Noticias
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
-// MapLibre GL JS: Estándar de alto rendimiento para mapas vectoriales
+// MapLibre GL JS: Tecnología de alto rendimiento para mapas vectoriales (WebGL)
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 /**
- * FUNCIÓN: Formatea el texto detectando URLs y Hashtags
+ * FUNCIÓN: Detecta URLs y también Hashtags (#)
  */
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
@@ -45,7 +45,7 @@ export default function Home() {
   const mapContainer = useRef(null);
   const map = useRef(null);
 
-  // SEDES CON COORDENADAS GEOGRÁFICAS REALES (Longitud, Latitud)
+  // SEDES CON COORDENADAS GEOGRÁFICAS DE PRECISIÓN (Longitud, Latitud)
   const sedes = [
     {
       id: 'ca',
@@ -68,7 +68,7 @@ export default function Home() {
     {
       id: 'cr',
       pais: 'Costa Rica',
-      coords: [-84.1453, 9.9392], // San Rafael de Escazú
+      coords: [-84.0833, 9.9333], // San José
       detalles: 'Centro Corporativo San Rafael, nivel 3'
     },
     {
@@ -79,18 +79,18 @@ export default function Home() {
     }
   ];
 
-  // Inicialización y gestión del Mapa
+  // EFECTO: Inicialización y Rescate del Mapa (Evita cuadro blanco)
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    // Timeout para asegurar que el layout de React/Tailwind se haya asentado
-    const initTimer = setTimeout(() => {
+    const inicializarMapa = () => {
       if (map.current) return;
 
+      // Estilo minimalista CartoDB Positron
       map.current = new maplibregl.Map({
         container: mapContainer.current,
         style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-        center: [-85, 25],
+        center: [-80, 20],
         zoom: 2.2,
         scrollZoom: false,
         trackResize: true
@@ -100,10 +100,11 @@ export default function Home() {
 
       map.current.on('load', () => {
         sedes.forEach((sede) => {
+          // Crear elemento visual personalizado para el marcador
           const el = document.createElement('div');
           el.className = 'custom-marker';
-          el.style.width = '16px';
-          el.style.height = '16px';
+          el.style.width = '18px';
+          el.style.height = '18px';
           el.style.backgroundColor = '#B92F32';
           el.style.borderRadius = '50%';
           el.style.border = '3px solid white';
@@ -111,14 +112,15 @@ export default function Home() {
           el.style.cursor = 'pointer';
           el.style.position = 'relative';
 
+          // Efecto de pulso
           const pulse = document.createElement('div');
           pulse.className = 'animate-ping absolute inset-0 rounded-full bg-main-red opacity-40';
           el.appendChild(pulse);
 
           const popup = new maplibregl.Popup({ offset: 15, closeButton: false })
             .setHTML(`
-              <div style="padding: 8px; font-family: 'Work Sans', sans-serif;">
-                <h3 style="color: #1D3557; font-weight: 800; margin-bottom: 4px; text-transform: uppercase; font-size: 14px; border-bottom: 1px solid #F1FAEE; padding-bottom: 4px;">${sede.pais}</h3>
+              <div style="padding: 10px; font-family: 'Work Sans', sans-serif; min-width: 150px;">
+                <h3 style="color: #1D3557; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; font-size: 14px; border-bottom: 1px solid #F1FAEE; padding-bottom: 5px;">${sede.pais}</h3>
                 <p style="color: #457B9D; font-size: 12px; line-height: 1.4; margin: 0;">${sede.detalles}</p>
               </div>
             `);
@@ -131,19 +133,24 @@ export default function Home() {
           el.addEventListener('mouseenter', () => popup.addTo(map.current));
           el.addEventListener('mouseleave', () => popup.remove());
         });
-        
+
+        // Forzar redibujado inmediato tras carga
         map.current.resize();
       });
+    };
 
-      // Observer para evitar el cuadro blanco si el contenedor cambia de tamaño
-      const resizer = new ResizeObserver(() => {
-        if (map.current) map.current.resize();
-      });
-      resizer.observe(mapContainer.current);
-    }, 100);
+    // Retardo mínimo para asegurar que Tailwind haya aplicado dimensiones al DOM
+    const timer = setTimeout(inicializarMapa, 100);
+
+    // Observador para corregir dimensiones dinámicamente si la ventana cambia
+    const resizeObserver = new ResizeObserver(() => {
+      if (map.current) map.current.resize();
+    });
+    resizeObserver.observe(mapContainer.current);
 
     return () => {
-      clearTimeout(initTimer);
+      clearTimeout(timer);
+      resizeObserver.disconnect();
       if (map.current) {
         map.current.remove();
         map.current = null;
@@ -151,7 +158,7 @@ export default function Home() {
     };
   }, []);
 
-  // Carga de la última noticia
+  // Carga de noticias
   useEffect(() => {
     const fetchUltimaNoticia = async () => {
       try {
@@ -191,6 +198,7 @@ export default function Home() {
   return (
     <div className="bg-white flex flex-col min-h-screen font-sans">
       <div className="relative overflow-hidden grow pb-20">
+        
         <div className="bg-watermark"></div>
 
         <div className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-8 md:pt-12 pb-16 flex flex-col gap-12 md:gap-20 overflow-hidden">
@@ -236,20 +244,20 @@ export default function Home() {
             </div>
           )}
 
-          {/* BLOQUE 2: NUESTRAS OFICINAS (LAYOUT INTEGRAL) */}
+          {/* BLOQUE 2: NUESTRAS OFICINAS (MAPA + TEXTO EXCLUSIVO) */}
           <div className="pt-12 border-t border-gray-100 flex flex-col gap-10">
             <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue uppercase tracking-widest mb-2 text-center">
               Nuestras Oficinas
             </h2>
             
-            <div className="flex flex-col md:flex-row gap-12 items-stretch min-h-120">
+            <div className="flex flex-col md:flex-row gap-12 items-stretch">
               
-              {/* IZQUIERDA: MAPA VECTORIAL PROFESIONAL */}
-              <div className="w-full md:w-2/5 h-100 md:h-auto rounded-3xl overflow-hidden shadow-2xl border border-gray-200 z-10 relative bg-gray-50">
+              {/* IZQUIERDA: MAPA PROFESIONAL (Evita el cuadro blanco con h-100 / md:h-auto) */}
+              <div className="w-full md:w-2/5 h-100 md:h-auto rounded-3xl overflow-hidden shadow-2xl border border-gray-200 z-10 relative bg-gray-50 flex items-center justify-center">
                 <div ref={mapContainer} className="w-full h-full min-h-100 md:min-h-120" />
               </div>
 
-              {/* DERECHA: TEXTO INSTITUCIONAL */}
+              {/* DERECHA: TEXTO INSTITUCIONAL (Reubicado de la sección anterior) */}
               <div className="w-full md:w-3/5 space-y-6 text-gray-700 text-lg md:text-xl font-light leading-relaxed text-justify flex flex-col justify-center px-4 md:pl-8">
                 <p>
                   El <strong className="font-extrabold text-main-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
@@ -275,6 +283,7 @@ export default function Home() {
 
             </div>
           </div>
+
         </div>
       </div>
     </div>
