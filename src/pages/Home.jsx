@@ -97,7 +97,7 @@ export default function Home() {
 
         <div className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-8 md:pt-12 pb-16 flex flex-col gap-8 md:gap-10 overflow-hidden">
           
-          {/* BLOQUE 1: ÚLTIMA NOTICIA */}
+          {/* BLOQUE 1: NOTICIA DESTACADA */}
           {noticia && (
             <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start bg-white">
               
@@ -109,7 +109,6 @@ export default function Home() {
                   className="w-full swiper-custom-pagination"
                 >
                   <SwiperSlide className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex items-center justify-center">
-                    {/* SOLUCIÓN: La imagen usa aspect-[4/5] para reservar su espacio en el DOM sin brincos */}
                     <img src={noticia.imagenPrincipalUrl} alt="" className="w-full aspect-[4/5] object-cover block" />
                   </SwiperSlide>
                   {noticia.imagenesCarruselUrls?.map((url, i) => (
@@ -121,8 +120,10 @@ export default function Home() {
               </div>
 
               <div className="w-full md:w-3/5 flex flex-col justify-start md:pl-12 overflow-hidden bg-white">
-                <span className="text-xs font-extrabold text-bright-red uppercase tracking-widest mb-3 block">Última Noticia</span>
-                <h2 className="text-3xl md:text-5xl font-extrabold text-main-blue mb-8 leading-tight tracking-tight">{noticia.titulo}</h2>
+                {/* TÍTULO: SEMIBOLD (600), FONDO AZUL, TEXTO BLANCO, REDONDEADO, PADDING VERTICAL Y HORIZONTAL */}
+                <h2 className="text-3xl md:text-5xl font-semibold bg-main-blue text-white mb-8 leading-tight tracking-tight py-6 md:py-8 px-6 md:px-10 rounded-lg">
+                  {noticia.titulo}
+                </h2>
                 <div ref={contentRef} className="text-gray-600 mb-6 text-base md:text-lg font-light leading-relaxed noticia-content text-justify overflow-hidden" dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(noticia.contenido) }} />
                 {isOverflowing && (
                   <Link to={`/noticias/${noticia.slug || noticia.id}`} className="text-main-red font-bold hover:text-main-blue transition-colors mt-auto flex items-center gap-2 self-start uppercase tracking-wide text-sm">
