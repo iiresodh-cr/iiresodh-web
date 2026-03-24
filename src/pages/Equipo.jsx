@@ -8,7 +8,6 @@ export default function Equipo() {
   useEffect(() => {
     window.scrollTo(0, 0);
     
-    // Estructura de datos preparada para ser cargada desde Firebase en el futuro
     const mockupData = [
       {
         id: "pres-1",
@@ -61,7 +60,6 @@ export default function Equipo() {
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
       
-      {/* ENCABEZADO: Franja Azul Sólida */}
       <div className="bg-main-blue text-white py-14 px-6 text-center relative z-20">
         <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter mb-3 uppercase">Equipo de Trabajo</h1>
         <p className="text-blue-100 max-w-3xl mx-auto font-medium opacity-90">
@@ -71,19 +69,15 @@ export default function Equipo() {
       </div>
 
       <div className="relative overflow-hidden grow pb-20">
-        {/* Marca de agua institucional */}
         <div className="bg-watermark"></div>
 
         <div className="relative z-10 max-w-6xl mx-auto py-16 px-6">
           
-          {/* SECCIÓN PRESIDENTE: Diseño Plano y Serio (Sin franja divisoria) */}
           {presidente && (
             <div className="mb-24">
-              {/* Se eliminó 'border-b border-gray-100' y 'pb-20' para que no haya línea divisoria */}
               <div className="flex flex-col md:flex-row items-center gap-10 md:gap-20">
-                {/* Foto del Presidente: Marco plano sin sombra */}
                 <div className="w-full md:w-2/5 shrink-0">
-                  <div className="aspect-[4/5] bg-gray-50 border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="aspect-4/5 bg-gray-50 border border-gray-200 rounded-xl overflow-hidden">
                     <img 
                       src={presidente.fotoUrl} 
                       alt={presidente.nombre} 
@@ -92,7 +86,6 @@ export default function Equipo() {
                   </div>
                 </div>
                 
-                {/* Reseña del Presidente */}
                 <div className="w-full md:w-3/5 text-justify md:text-left">
                   <span className="text-xs font-black text-main-red uppercase tracking-[0.4em] mb-4 block">Alta Dirección</span>
                   <h2 className="text-3xl md:text-5xl font-extrabold text-main-blue mb-4 tracking-tighter uppercase">
@@ -109,11 +102,10 @@ export default function Equipo() {
             </div>
           )}
 
-          {/* GRID DEL STAFF: Congruente con el estilo limpio del sitio */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
             {staff.map((miembro) => (
               <div key={miembro.id} className="flex flex-col group">
-                <div className="aspect-[4/5] w-full mb-6 rounded-xl overflow-hidden bg-gray-50 border border-gray-200">
+                <div className="aspect-4/5 w-full mb-6 rounded-xl overflow-hidden bg-gray-50 border border-gray-200">
                   <img 
                     src={miembro.fotoUrl} 
                     alt={miembro.nombre} 

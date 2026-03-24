@@ -2,7 +2,6 @@
 import { useEffect } from "react";
 
 export default function LitigioEstrategico() {
-  // Hacer scroll al tope de la página al cargar
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -10,7 +9,6 @@ export default function LitigioEstrategico() {
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
       
-      {/* ENCABEZADO: Franja Azul Sólida (Congruente con Equipo y Quiénes Somos) */}
       <div className="bg-main-blue text-white py-14 px-6 text-center relative z-20">
         <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter mb-3 uppercase">Litigio Estratégico</h1>
         <p className="text-blue-100 max-w-3xl mx-auto font-medium opacity-90">
@@ -20,17 +18,12 @@ export default function LitigioEstrategico() {
       </div>
 
       <div className="relative overflow-hidden grow pb-20">
-        {/* Marca de agua institucional */}
         <div className="bg-watermark"></div>
 
         <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
-          {/* Contenedor estandarizado a max-w-7xl (1280px) con DISEÑO PLANO */}
           <div className="max-w-7xl mx-auto bg-white overflow-hidden">
-
-            {/* CONTENIDO PRINCIPAL */}
             <div className="px-8 md:px-12 lg:px-16 pb-12 md:pb-16 animate-fade-in-up">
               
-              {/* Párrafos centrados para lectura cómoda */}
               <div className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify mb-12">
                 <p>
                   <strong className="font-extrabold text-main-blue">IIRESODH</strong> fomenta activamente el litigio estratégico internacional en materia de derechos humanos. Capacitamos a ONGs, defensores de derechos humanos y otras organizaciones de la sociedad civil, con el fin de que hagan uso de los mecanismos judiciales y cuasi-judiciales que ofrecen los sistemas universales y regionales de protección. 
@@ -40,8 +33,7 @@ export default function LitigioEstrategico() {
                 </p>
               </div>
 
-              {/* Caja destacada para las Certificaciones (Diseño plano con acento rojo) */}
-              <div className="bg-gray-50 border-l-4 border-main-red p-8 md:p-10 rounded-r-xl mb-12 border-y border-r border-gray-100">
+              <div className="bg-gray-50 border-l-4 border-l-main-red p-8 md:p-10 rounded-r-xl mb-12 border-y border-r border-gray-100">
                 <h3 className="text-xl md:text-2xl font-extrabold text-main-blue mb-4">
                   Certificación en Litigio Estratégico Internacional
                 </h3>
@@ -55,7 +47,6 @@ export default function LitigioEstrategico() {
                 </div>
               </div>
 
-              {/* Grid de Impacto Global */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 items-center pt-6">
                 <div>
                   <h3 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-6 tracking-tight uppercase">
@@ -66,7 +57,6 @@ export default function LitigioEstrategico() {
                   </p>
                 </div>
                 
-                {/* Caja plana azul sin bordes pesados */}
                 <div className="bg-pale-blue/10 p-8 md:p-10 rounded-2xl h-full flex flex-col justify-center border border-pale-blue/20">
                   <h4 className="text-xl font-extrabold text-main-blue mb-4 flex items-center gap-3 uppercase tracking-tight">
                     <svg className="w-8 h-8 text-main-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,7 +71,6 @@ export default function LitigioEstrategico() {
               </div>
 
             </div>
-
           </div>
         </section>
       </div>
