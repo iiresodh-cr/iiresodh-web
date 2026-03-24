@@ -52,10 +52,8 @@ export default function NoticiaDetalle() {
 
         if (data) {
           setNoticia(data);
-          if (data.imagenPrincipalUrl) {
+          if (data.titulo) {
             document.title = `${data.titulo} | IIRESODH`;
-            let ogImage = document.querySelector('meta[property="og:image"]');
-            if (ogImage) ogImage.setAttribute('content', data.imagenPrincipalUrl);
           }
         }
       } catch (error) {
@@ -75,31 +73,33 @@ export default function NoticiaDetalle() {
   const shareUrls = {
     whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(noticia.titulo + " " + currentUrl)}`,
     twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(noticia.titulo)}`,
-    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`,
-    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`
   };
 
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
+      
+      {/* ENCABEZADO: Franja Azul Sólida Institucional */}
+      <div className="bg-main-blue text-white py-14 px-6 text-center relative z-20">
+        <span className="text-xs font-black text-main-red uppercase tracking-[0.3em] mb-4 block">
+          {noticia.fechaPublicacion?.toDate ? 
+            noticia.fechaPublicacion.toDate().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }) 
+            : 'Comunicado Oficial'}
+        </span>
+        <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter mb-8 max-w-5xl mx-auto leading-[1.1]">
+          {noticia.titulo}
+        </h1>
+        <div className="w-24 h-1.5 bg-main-red mx-auto rounded-full"></div>
+      </div>
+
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark"></div>
 
-        <article className="relative z-10 max-w-5xl mx-auto px-6 pt-12">
+        <article className="relative z-10 max-w-6xl mx-auto px-6 pt-12">
           
-          <header className="mb-12 text-center">
-            <span className="text-xs font-black text-main-red uppercase tracking-[0.3em] mb-4 block">
-              {noticia.fechaPublicacion?.toDate ? 
-                noticia.fechaPublicacion.toDate().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }) 
-                : 'Comunicado Oficial'}
-            </span>
-            <h1 className="text-3xl md:text-5xl font-extrabold text-main-blue leading-[1.1] mb-8 tracking-tighter">
-              {noticia.titulo}
-            </h1>
-            <div className="w-24 h-1.5 bg-main-red mx-auto rounded-full"></div>
-          </header>
-
           <div className="flex flex-col lg:flex-row gap-12 items-start">
             
+            {/* Carrusel de Imágenes */}
             <div className="w-full lg:w-1/2 shrink-0">
               <Swiper 
                 modules={[Pagination, Autoplay]} 
@@ -119,6 +119,7 @@ export default function NoticiaDetalle() {
               </Swiper>
             </div>
 
+            {/* Contenido de la Noticia */}
             <div className="w-full lg:w-1/2">
               <div 
                 className="noticia-content text-lg text-gray-600 leading-relaxed font-light text-justify"
@@ -131,6 +132,7 @@ export default function NoticiaDetalle() {
                 </p>
                 <div className="flex flex-wrap justify-center lg:justify-start gap-3">
                   
+                  {/* WhatsApp */}
                   <a href={shareUrls.whatsapp} target="_blank" rel="noreferrer" 
                     className="group flex items-center gap-2 px-4 py-2 rounded-full bg-gray-50 text-gray-500 hover:bg-green-50 hover:text-green-600 transition-all border border-transparent hover:border-green-200"
                   >
@@ -138,6 +140,7 @@ export default function NoticiaDetalle() {
                     <span className="text-xs font-bold uppercase tracking-wider">WhatsApp</span>
                   </a>
 
+                  {/* Facebook */}
                   <a href={shareUrls.facebook} target="_blank" rel="noreferrer"
                     className="group flex items-center gap-2 px-4 py-2 rounded-full bg-gray-50 text-gray-500 hover:bg-blue-50 hover:text-blue-700 transition-all border border-transparent hover:border-blue-200"
                   >
@@ -145,6 +148,7 @@ export default function NoticiaDetalle() {
                     <span className="text-xs font-bold uppercase tracking-wider">Facebook</span>
                   </a>
 
+                  {/* Twitter / X */}
                   <a href={shareUrls.twitter} target="_blank" rel="noreferrer"
                     className="group flex items-center gap-2 px-4 py-2 rounded-full bg-gray-50 text-gray-500 hover:bg-black hover:text-white transition-all border border-transparent hover:border-gray-800"
                   >
