@@ -178,65 +178,99 @@ export default function Home() {
           </div>
 
           {/* ========================================================== */}
-          {/* BLOQUE 3: OFICINAS */}
+          {/* BLOQUE 3: OFICINAS (MAPA INTERACTIVO) */}
           {/* ========================================================== */}
-          <div className="pt-8 border-t border-gray-100">
-            <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue uppercase tracking-widest mb-10 text-center md:text-left break-words">
+          <div className="pt-12 border-t border-gray-100">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue uppercase tracking-widest mb-10 text-center break-words">
               Nuestras Oficinas
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-12">
+            
+            <div className="relative w-full max-w-5xl mx-auto aspect-[16/9] md:aspect-[21/9] bg-pale-blue/5 rounded-2xl overflow-hidden border border-gray-100 shadow-inner flex items-center justify-center">
               
-              <div>
-                <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Costa Rica</h3>
-                <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
-                  <p>Centro Corporativo San Rafael, nivel 3</p>
-                  <p>San Rafael de Escazú, San José, Costa Rica</p>
-                  <p>CP 10201</p>
-                  <p className="pt-3 text-light-blue font-medium">Teléfono: +506 4703 5727</p>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Colombia</h3>
-                <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
-                  <p>Carrera. 11C No. 117-05. Oficina 5</p>
-                  <p>Bogotá, Colombia</p>
-                  <p className="pt-3 text-light-blue font-medium">Teléfono: Bogotá +7461964</p>
-                  <p className="text-light-blue font-medium break-words">Móvil: +57 301 4844324</p>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">México</h3>
-                <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
-                  <p>Atención virtual o presencial previa cita.</p>
-                  <p className="pt-3 font-medium break-words">
-                    Email: <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-red transition-colors">contacto@iiresodh.org</a>
-                  </p>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Guatemala</h3>
-                <div className="text-gray-600 font-light space-y-1 text-sm md:text-base">
-                  <p>Diagonal 6 12-42, Edificio Design Center</p>
-                  <p>Oficina No. 506, Torre 1, Zona 10</p>
-                  <p>Ciudad de Guatemala</p>
-                  <p className="pt-3 text-light-blue font-medium">Teléfono: +502 5557 7466</p>
-                </div>
-              </div>
-              
-              <div className="lg:col-span-2">
-                <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-4 border-b-2 border-pale-blue pb-2 inline-block">Canadá</h3>
-                <div className="text-gray-600 font-light space-y-3 text-sm md:text-base">
-                  <p>Atención virtual o presencial previa cita en la ciudad de Lévis, Québec.</p>
-                  <p>En Toronto, Ontario de manera vinculada con la firma de abogados Waldman & Associates.</p>
-                  <p className="pt-1 font-medium break-words">
-                    Email: <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-red transition-colors">contacto@iiresodh.org</a>
-                  </p>
-                </div>
-              </div>
+              {/* Mapa Vectorial de Fondo (Simplificado para el ejemplo) */}
+              <svg className="absolute inset-0 w-full h-full text-gray-200" fill="currentColor" viewBox="0 0 1008 650" preserveAspectRatio="xMidYMid slice">
+                <path d="M260.6,121.2c-5.8,1.4-9.8,3.5-14.1,7.2c-7.3,6.3-10.4,12.5-12.8,25.4c-1.4,7.8-0.9,13.6,1.9,19 c2.8,5.4,7.5,8.8,14.6,10.6c4.6,1.1,13.7,0.7,19.3-0.9c9.3-2.6,14.8-6.6,19.7-14.1c6.5-10,7-21.5,1.5-31.5 C285.5,127.3,274.6,122.1,260.6,121.2z M287.6,183.3c-2.3,4.4-7.2,8.8-11.6,10.4c-8.8,3.3-20.9,1.1-27.4-4.9 c-3.9-3.6-5.8-7.5-6.6-13.6c-0.6-4.5-0.2-9.7,1.1-13.3c1.3-3.6,5.3-9.5,8.9-13.1c4.5-4.5,10.4-7.2,16.8-7.8 c6.8-0.6,13.6,1.4,19,5.7c3.9,3.1,8.1,9.2,9.6,14.1C299.1,166.4,299.3,174.6,287.6,183.3z" />
+                {/* Nota: Este es un path decorativo corto. Para producción te recomendaría inyectar un SVG completo del mapa de América o el Mundo. */}
+                <path d="M150 50 Q 200 150 300 200 T 450 400 T 550 600" stroke="#e5e7eb" strokeWidth="4" fill="none" opacity="0.5"/>
+                <path d="M 280 150 C 300 200, 350 250, 380 350 C 400 450, 450 500, 480 580" fill="#e5e7eb" opacity="0.3"/>
+              </svg>
 
+              {/* PUNTOS INTERACTIVOS (Oficinas) */}
+              {[
+                {
+                  id: 'ca',
+                  pais: 'Canadá',
+                  top: '20%',
+                  left: '25%',
+                  detalles: ['Atención virtual o presencial previa cita en la ciudad de Lévis, Québec.', 'En Toronto, Ontario vinculados con Waldman & Associates.', 'Email: contacto@iiresodh.org']
+                },
+                {
+                  id: 'mx',
+                  pais: 'México',
+                  top: '40%',
+                  left: '20%',
+                  detalles: ['Atención virtual o presencial previa cita.', 'Email: contacto@iiresodh.org']
+                },
+                {
+                  id: 'gt',
+                  pais: 'Guatemala',
+                  top: '48%',
+                  left: '22%',
+                  detalles: ['Diagonal 6 12-42, Edificio Design Center', 'Oficina No. 506, Torre 1, Zona 10', 'Ciudad de Guatemala', 'Teléfono: +502 5557 7466']
+                },
+                {
+                  id: 'cr',
+                  pais: 'Costa Rica',
+                  top: '55%',
+                  left: '24%',
+                  detalles: ['Centro Corporativo San Rafael, nivel 3', 'San Rafael de Escazú, San José', 'CP 10201', 'Teléfono: +506 4703 5727']
+                },
+                {
+                  id: 'co',
+                  pais: 'Colombia',
+                  top: '62%',
+                  left: '28%',
+                  detalles: ['Carrera. 11C No. 117-05. Oficina 5', 'Bogotá, Colombia', 'Teléfono: Bogotá +7461964', 'Móvil: +57 301 4844324']
+                }
+              ].map((oficina) => (
+                <div 
+                  key={oficina.id} 
+                  className="absolute group z-20 cursor-pointer"
+                  style={{ top: oficina.top, left: oficina.left }}
+                >
+                  {/* Punto Rojo con animación "Ping" (Radar) */}
+                  <div className="relative flex items-center justify-center">
+                    <div className="absolute w-4 h-4 md:w-6 md:h-6 bg-main-red rounded-full animate-ping opacity-75"></div>
+                    <div className="relative w-3 h-3 md:w-4 md:h-4 bg-main-red rounded-full border-2 border-white shadow-md group-hover:scale-125 transition-transform duration-300"></div>
+                  </div>
+
+                  {/* Tarjeta de Información (Aparece en Hover) */}
+                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 w-64 md:w-72 bg-white rounded-xl shadow-2xl p-5 border-t-4 border-main-red opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:-translate-y-2 pointer-events-none group-hover:pointer-events-auto">
+                    <h3 className="text-lg font-extrabold text-main-blue border-b border-gray-100 pb-2 mb-3">
+                      {oficina.pais}
+                    </h3>
+                    <ul className="text-sm font-light text-gray-600 space-y-2">
+                      {oficina.detalles.map((linea, i) => (
+                        <li key={i} className="leading-snug break-words">
+                          {linea.includes('Email:') ? (
+                            <span>Email: <a href={`mailto:${linea.split('Email: ')[1]}`} className="text-light-blue font-bold hover:text-main-red transition-colors">{linea.split('Email: ')[1]}</a></span>
+                          ) : (
+                            linea
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                    {/* Triángulo apuntador de la tarjeta */}
+                    <div className="absolute left-1/2 -bottom-2 -translate-x-1/2 border-solid border-t-8 border-t-white border-x-8 border-x-transparent border-b-0 drop-shadow-md"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Lista visible solo en móviles por si el mapa es muy pequeño para interactuar cómodamente */}
+            <div className="mt-8 md:hidden grid grid-cols-1 gap-4">
+               {/* Aquí puedes dejar una versión simplificada de la lista anterior o un acordeón si lo deseas, pero el mapa ya es interactivo. */}
+               <p className="text-center text-xs text-gray-400 italic">Toca los puntos en el mapa para ver la información de contacto.</p>
             </div>
           </div>
 
