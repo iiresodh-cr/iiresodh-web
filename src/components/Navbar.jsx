@@ -199,7 +199,7 @@ export default function Navbar() {
 
             {/* BOTÓN DONACIONES */}
             <div className="w-full md:w-auto flex justify-center md:justify-end order-3 mt-6 md:mt-0 pb-4 md:pb-0">
-              <Link to="/" className="bg-main-red hover:bg-bright-red text-white px-6 py-2.5 rounded-full font-bold uppercase text-xs tracking-widest shadow-sm transition-colors w-full md:w-auto text-center">
+              <Link to="/donaciones" className="bg-main-red hover:bg-bright-red text-white px-6 py-2.5 rounded-full font-bold uppercase text-xs tracking-widest shadow-sm transition-colors w-full md:w-auto text-center">
                 DONACIONES
               </Link>
             </div>

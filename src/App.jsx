@@ -12,6 +12,7 @@ import Home from "./pages/Home";
 import QuienesSomos from "./pages/QuienesSomos";
 import LitigioEstrategico from "./pages/LitigioEstrategico";
 import Noticias from "./pages/Noticias";
+import Donaciones from "./pages/Donaciones";
 import NoticiaDetalle from "./pages/NoticiaDetalle";
 import ResultadosBusqueda from "./pages/ResultadosBusqueda";
 import Privacidad from "./pages/Privacidad";
@@ -54,7 +55,7 @@ function App() {
           <Route path="/colombia" element={<Colombia />} />
           <Route path="/cursos-activos" element={<CursosActivos />} />
           <Route path="/cursos-pasados" element={<CursosPasados />} />
-          
+          <Route path="/donaciones" element={<Donaciones />} />
           <Route path="/noticias" element={<Noticias />} />
           <Route path="/noticias/:id" element={<NoticiaDetalle />} />
           <Route path="/buscar" element={<ResultadosBusqueda />} />
