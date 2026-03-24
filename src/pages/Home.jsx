@@ -4,15 +4,20 @@ import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { Link } from "react-router-dom";
 
+// Componentes para el bloque de noticias
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
-import mapaAmerica from "../assets/mapa-america.svg";
+// MapLibre GL JS: Tecnología de alto rendimiento para mapas vectoriales
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
-// FUNCIÓN: Detecta URLs y también Hashtags (#)
+/**
+ * FUNCIÓN: Formatea el texto detectando URLs y Hashtags
+ */
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
   const partes = texto.split(/(<[^>]+>)/g);
@@ -35,14 +40,118 @@ export default function Home() {
   const [noticia, setNoticia] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isOverflowing, setIsOverflowing] = useState(false);
+  
   const contentRef = useRef(null);
+  const mapContainer = useRef(null);
+  const map = useRef(null);
 
+  // SEDES CON COORDENADAS GEOGRÁFICAS REALES (Longitud, Latitud)
+  const sedes = [
+    {
+      id: 'ca',
+      pais: 'Canadá',
+      coords: [-71.1743, 46.8033], // Lévis, Québec
+      detalles: 'Atención virtual o presencial previa cita en la ciudad de Lévis, Québec.'
+    },
+    {
+      id: 'mx',
+      pais: 'México',
+      coords: [-99.1332, 19.4326], // Ciudad de México
+      detalles: 'Atención virtual o presencial previa cita.'
+    },
+    {
+      id: 'gt',
+      pais: 'Guatemala',
+      coords: [-90.5069, 14.6349], // Ciudad de Guatemala
+      detalles: 'Diagonal 6 12-42, Edificio Design Center, Zona 10'
+    },
+    {
+      id: 'cr',
+      pais: 'Costa Rica',
+      coords: [-84.0833, 9.9333], // San José / Escazú
+      detalles: 'Centro Corporativo San Rafael, nivel 3'
+    },
+    {
+      id: 'co',
+      pais: 'Colombia',
+      coords: [-74.0636, 4.6243], // Bogotá
+      detalles: 'Carrera. 11C No. 117-05. Oficina 5'
+    }
+  ];
+
+  // Inicialización y gestión del Mapa
+  useEffect(() => {
+    if (map.current || !mapContainer.current) return;
+
+    // Inicializar mapa con estilo profesional minimalista
+    map.current = new maplibregl.Map({
+      container: mapContainer.current,
+      style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+      center: [-80, 20],
+      zoom: 2.5,
+      scrollZoom: false,
+      trackResize: true
+    });
+
+    map.current.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
+
+    // Esperar a que el estilo cargue para añadir los marcadores
+    map.current.on('load', () => {
+      sedes.forEach((sede) => {
+        const el = document.createElement('div');
+        el.className = 'custom-marker';
+        el.style.width = '16px';
+        el.style.height = '16px';
+        el.style.backgroundColor = '#B92F32';
+        el.style.borderRadius = '50%';
+        el.style.border = '3px solid white';
+        el.style.boxShadow = '0 0 15px rgba(185, 47, 50, 0.4)';
+        el.style.cursor = 'pointer';
+        el.style.position = 'relative';
+
+        const pulse = document.createElement('div');
+        pulse.className = 'animate-ping absolute inset-0 rounded-full bg-main-red opacity-40';
+        el.appendChild(pulse);
+
+        const popup = new maplibregl.Popup({ offset: 15, closeButton: false })
+          .setHTML(`
+            <div style="padding: 8px; font-family: 'Work Sans', sans-serif;">
+              <h3 style="color: #1D3557; font-weight: 800; margin-bottom: 4px; text-transform: uppercase; font-size: 14px; border-bottom: 1px solid #F1FAEE; padding-bottom: 4px;">${sede.pais}</h3>
+              <p style="color: #457B9D; font-size: 12px; line-height: 1.4; margin: 0;">${sede.detalles}</p>
+            </div>
+          `);
+
+        new maplibregl.Marker(el)
+          .setLngLat(sede.coords)
+          .setPopup(popup)
+          .addTo(map.current);
+
+        el.addEventListener('mouseenter', () => popup.addTo(map.current));
+        el.addEventListener('mouseleave', () => popup.remove());
+      });
+      
+      // Forzar re-cálculo de dimensiones para evitar el cuadro blanco
+      map.current.resize();
+    });
+
+    // Observador para redimensionar el mapa si el contenedor cambia (crucial para evitar cuadro blanco)
+    const resizeObserver = new ResizeObserver(() => {
+      map.current?.resize();
+    });
+    resizeObserver.observe(mapContainer.current);
+
+    return () => {
+      resizeObserver.disconnect();
+      map.current?.remove();
+    };
+  }, []);
+
+  // Carga de la última noticia
   useEffect(() => {
     const fetchUltimaNoticia = async () => {
       try {
         const q = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), limit(1));
         const querySnapshot = await getDocs(q);
-        
         if (!querySnapshot.empty) {
           setNoticia({ id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() });
         }
@@ -52,7 +161,6 @@ export default function Home() {
         setLoading(false);
       }
     };
-
     fetchUltimaNoticia();
   }, []);
 
@@ -63,15 +171,9 @@ export default function Home() {
         setIsOverflowing(scrollHeight > clientHeight + 2);
       }
     };
-
     checkOverflow();
-    const timeoutId = setTimeout(checkOverflow, 150);
     window.addEventListener('resize', checkOverflow);
-    
-    return () => {
-      clearTimeout(timeoutId);
-      window.removeEventListener('resize', checkOverflow);
-    };
+    return () => window.removeEventListener('resize', checkOverflow);
   }, [noticia]);
 
   if (loading) {
@@ -82,38 +184,28 @@ export default function Home() {
   const contenidoNoticia = formatearTextoConLinksYHashtags(contenidoNoticiaRaw);
 
   return (
-    <div className="bg-white flex flex-col min-h-screen">
+    <div className="bg-white flex flex-col min-h-screen font-sans">
       <div className="relative overflow-hidden grow pb-20">
-        
         <div className="bg-watermark"></div>
 
-        {/* CONTENEDOR MAESTRO UNIFICADO */}
-        <div className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-8 md:pt-12 pb-16 flex flex-col gap-12 md:gap-16">
+        <div className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-8 md:pt-12 pb-16 flex flex-col gap-12 md:gap-20 overflow-hidden">
           
-          {/* ========================================================== */}
           {/* BLOQUE 1: ÚLTIMA NOTICIA */}
-          {/* ========================================================== */}
           {!noticia ? (
-            <div className="text-center text-light-blue text-xl py-20">
-              Aún no hay noticias publicadas.
-            </div>
+            <div className="text-center text-light-blue text-xl py-20">Aún no hay noticias publicadas.</div>
           ) : (
             <div className="flex flex-col md:flex-row gap-8 md:gap-0 items-start min-h-112 md:min-h-120">
-              
-              {/* Izquierda: Imagen */}
               <div className="w-full md:w-2/5 relative shrink-0"> 
                 <div className="aspect-4/5 w-full relative rounded-xl overflow-hidden shadow-sm bg-gray-50">
                   <Swiper
                     modules={[Navigation, Pagination, Autoplay]}
-                    navigation
-                    pagination={{ clickable: true }}
-                    autoplay={{ delay: 4000 }}
+                    navigation pagination={{ clickable: true }} autoplay={{ delay: 4000 }}
                     className="absolute inset-0 w-full h-full swiper-custom-navigation"
                   >
                     <SwiperSlide className="flex items-center justify-center h-full w-full">
                       <img src={noticia.imagenPrincipalUrl} alt="Principal" className="w-full h-full object-contain" />
                     </SwiperSlide>
-                    {noticia.imagenesCarruselUrls && noticia.imagenesCarruselUrls.map((url, index) => (
+                    {noticia.imagenesCarruselUrls?.map((url, index) => (
                       <SwiperSlide key={index} className="flex items-center justify-center h-full w-full">
                         <img src={url} alt={`Carrusel ${index + 1}`} className="w-full h-full object-contain" />
                       </SwiperSlide>
@@ -122,22 +214,16 @@ export default function Home() {
                 </div>
               </div>
               
-              {/* Derecha: Texto */}
               <div className="w-full md:w-3/5 flex flex-col justify-start md:pl-12 overflow-hidden">
                 <span className="text-xs font-extrabold text-bright-red uppercase tracking-widest mb-3 block">Última Noticia</span>
                 <h2 className="text-2xl md:text-4xl font-extrabold text-main-blue mb-6 leading-tight wrap-break-word">{noticia.titulo}</h2>
-                
                 <div 
                   ref={contentRef}
                   className="text-gray-600 mb-6 text-base md:text-lg font-light leading-relaxed noticia-content text-justify overflow-hidden wrap-break-word"
                   dangerouslySetInnerHTML={{ __html: contenidoNoticia }}
                 />
-                
                 {isOverflowing && (
-                  <Link 
-                    to={`/noticias/${noticia.slug || noticia.id}`} 
-                    className="text-main-red font-bold hover:text-main-blue transition-colors mt-auto flex items-center gap-2 self-start uppercase tracking-wide text-sm"
-                  >
+                  <Link to={`/noticias/${noticia.slug || noticia.id}`} className="text-main-red font-bold hover:text-main-blue transition-colors mt-auto flex items-center gap-2 self-start uppercase tracking-wide text-sm">
                     Leer noticia completa <span className="text-xl">&rarr;</span>
                   </Link>
                 )}
@@ -145,132 +231,43 @@ export default function Home() {
             </div>
           )}
 
-          {/* ========================================================== */}
-          {/* BLOQUE 2: ACERCA DEL INSTITUTO */}
-          {/* ========================================================== */}
-          <div className="flex flex-col md:flex-row gap-8 md:gap-0 items-start">
-            
-            {/* Izquierda: Texto justificado */}
-            <div className="w-full md:w-3/5 space-y-6 text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify md:pr-12">
-              <p>
-                El <strong className="font-extrabold text-main-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
-              </p>
-              <p>
-                Desde su creación fue una entidad con claridad en sus objetivos para el fortalecimiento, promoción y protección de los derechos humanos, y con ello incidir en una cultura donde el respeto sea asumido por las empresas e instituciones públicas como una forma de desarrollo directo.
-              </p>
-              <p>
-                Fomenta el mejoramiento social, económico, cultural, educativo, organizativo y productivo por medio de la promoción de la responsabilidad social empresarial y la promoción y protección de los derechos humanos.
-              </p>
-            </div>
-
-            {/* Derecha: Video */}
-            <div className="w-full md:w-2/5 shrink-0">
-              <div className="w-full aspect-video bg-black rounded-xl overflow-hidden shadow-md">
-                <video 
-                  className="w-full h-full object-cover"
-                  controls 
-                  preload="metadata"
-                  src="https://storage.googleapis.com/iiresodh_10_anios/IIRESODH.mp4"
-                >
-                  Tu navegador no soporta la reproducción de videos.
-                </video>
-              </div>
-            </div>
-          </div>
-
-          {/* ========================================================== */}
-          {/* BLOQUE 3: OFICINAS (MAPA INTERACTIVO DE AMÉRICA) */}
-          {/* ========================================================== */}
-          <div className="pt-12 border-t border-gray-100">
-            <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue uppercase tracking-widest mb-10 text-center wrap-break-word">
+          {/* BLOQUE 2: NUESTRAS OFICINAS (LAYOUT PROFESIONAL) */}
+          <div className="pt-12 border-t border-gray-100 flex flex-col gap-10">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue uppercase tracking-widest mb-2 text-center">
               Nuestras Oficinas
             </h2>
             
-            {/* Contenedor del Mapa */}
-            <div className="relative w-full max-w-3xl mx-auto aspect-3/4 md:aspect-[4/5] bg-pale-blue/5 rounded-2xl overflow-hidden border border-gray-100 shadow-inner flex items-center justify-center p-4">
+            <div className="flex flex-col md:flex-row gap-12 items-stretch min-h-120">
               
-              {/* IMAGEN DEL MAPA REAL */}
-              <img 
-                src={mapaAmerica} 
-                alt="Mapa de América" 
-                className="absolute inset-0 w-full h-full object-contain opacity-20 p-8"
-              />
+              {/* IZQUIERDA: MAPA VECTORIAL DE ALTA PRECISIÓN */}
+              <div className="w-full md:w-2/5 h-100 md:h-auto rounded-3xl overflow-hidden shadow-2xl border border-gray-200 z-10 relative bg-gray-50">
+                <div ref={mapContainer} className="w-full h-full min-h-100 md:min-h-120" />
+              </div>
 
-              {/* PUNTOS INTERACTIVOS (Oficinas IIRESODH) */}
-              {[
-                {
-                  id: 'ca',
-                  pais: 'Canadá',
-                  top: '20%', 
-                  left: '35%',
-                  detalles: ['Atención virtual o presencial previa cita en la ciudad de Lévis, Québec.', 'En Toronto, Ontario vinculados con Waldman & Associates.', 'Email: contacto@iiresodh.org']
-                },
-                {
-                  id: 'mx',
-                  pais: 'México',
-                  top: '40%',
-                  left: '25%',
-                  detalles: ['Atención virtual o presencial previa cita.', 'Email: contacto@iiresodh.org']
-                },
-                {
-                  id: 'gt',
-                  pais: 'Guatemala',
-                  top: '48%',
-                  left: '27%',
-                  detalles: ['Diagonal 6 12-42, Edificio Design Center', 'Oficina No. 506, Torre 1, Zona 10', 'Ciudad de Guatemala', 'Teléfono: +502 5557 7466']
-                },
-                {
-                  id: 'cr',
-                  pais: 'Costa Rica',
-                  top: '55%',
-                  left: '32%',
-                  detalles: ['Centro Corporativo San Rafael, nivel 3', 'San Rafael de Escazú, San José', 'CP 10201', 'Teléfono: +506 4703 5727']
-                },
-                {
-                  id: 'co',
-                  pais: 'Colombia',
-                  top: '62%',
-                  left: '39%',
-                  detalles: ['Carrera. 11C No. 117-05. Oficina 5', 'Bogotá, Colombia', 'Teléfono: Bogotá +7461964', 'Móvil: +57 301 4844324']
-                }
-              ].map((oficina) => (
-                <div 
-                  key={oficina.id} 
-                  className="absolute group z-20 cursor-pointer"
-                  style={{ top: oficina.top, left: oficina.left }}
-                >
-                  {/* Punto Rojo con animación "Ping" (Radar) */}
-                  <div className="relative flex items-center justify-center">
-                    <div className="absolute w-4 h-4 md:w-5 md:h-5 bg-main-red rounded-full animate-ping opacity-75"></div>
-                    <div className="relative w-3 h-3 md:w-3.5 md:h-3.5 bg-main-red rounded-full border-2 border-white shadow-md group-hover:scale-125 transition-transform duration-300"></div>
+              {/* DERECHA: TEXTO INSTITUCIONAL */}
+              <div className="w-full md:w-3/5 space-y-6 text-gray-700 text-lg md:text-xl font-light leading-relaxed text-justify flex flex-col justify-center px-4 md:pl-8">
+                <p>
+                  El <strong className="font-extrabold text-main-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
+                </p>
+                <p>
+                  Desde su creación fue una entidad con claridad en sus objetivos para el fortalecimiento, promoción y protección de los derechos humanos, y con ello incidir en una cultura donde el respeto sea asumido por las empresas e instituciones públicas como una forma de desarrollo directo.
+                </p>
+                <p>
+                  Fomenta el mejoramiento social, económico, cultural, educativo, organizativo y productivo por medio de la promoción de la responsabilidad social empresarial y la promoción y protección de los derechos humanos.
+                </p>
+                
+                <div className="pt-4 flex flex-wrap gap-4">
+                  <div className="flex items-center gap-2 bg-pale-blue/20 px-4 py-2 rounded-full border border-pale-blue/30">
+                    <div className="w-2 h-2 rounded-full bg-main-red"></div>
+                    <span className="text-xs font-bold text-main-blue uppercase tracking-wider">Presencia Continental</span>
                   </div>
-
-                  {/* Tarjeta de Información (Aparece en Hover) */}
-                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 w-64 md:w-72 bg-white rounded-xl shadow-2xl p-5 border-t-4 border-main-red opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:-translate-y-2 pointer-events-none group-hover:pointer-events-auto">
-                    <h3 className="text-lg font-extrabold text-main-blue border-b border-gray-100 pb-2 mb-3">
-                      {oficina.pais}
-                    </h3>
-                    <ul className="text-sm font-light text-gray-600 space-y-2">
-                      {oficina.detalles.map((linea, i) => (
-                        <li key={i} className="leading-snug wrap-break-word">
-                          {linea.includes('Email:') ? (
-                            <span>Email: <a href={`mailto:${linea.split('Email: ')[1]}`} className="text-light-blue font-bold hover:text-main-red transition-colors">{linea.split('Email: ')[1]}</a></span>
-                          ) : (
-                            linea
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                    {/* Triángulo apuntador de la tarjeta */}
-                    <div className="absolute left-1/2 -bottom-2 -translate-x-1/2 border-solid border-t-8 border-t-white border-x-8 border-x-transparent border-b-0 drop-shadow-md"></div>
+                  <div className="flex items-center gap-2 bg-pale-blue/20 px-4 py-2 rounded-full border border-pale-blue/30">
+                    <div className="w-2 h-2 rounded-full bg-main-red"></div>
+                    <span className="text-xs font-bold text-main-blue uppercase tracking-wider">Litigio Estratégico</span>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
 
-            {/* Texto de ayuda para móviles */}
-            <div className="mt-6 md:hidden text-center">
-               <p className="text-xs text-gray-400 italic bg-gray-50 inline-block px-4 py-1.5 rounded-full border border-gray-100 wrap-break-word">Toca los puntos en el mapa para ver la información de contacto.</p>
             </div>
           </div>
 
