@@ -55,19 +55,20 @@ body {
     font-size: 1rem;
     line-height: 1.7;
     color: #4b5563; 
-    text-align: left !important; /* Alineación natural a la izquierda */
+    text-align: left; 
   }
 
-  /* SOLUCIÓN FINAL A PALABRAS CORTADAS */
-  .noticia-content * {
+  /* * EL SECRETO DE LA SOLUCIÓN:
+   * Aquí neutralizamos la clase 'break-all' que quedó guardada en Firebase 
+   * por culpa del formateador de texto antiguo.
+   */
+  .noticia-content *, 
+  .noticia-content a.break-all {
     text-align: left !important;
     white-space: normal !important; 
-    /* 'keep-all' impide que se rompan palabras como Cuestionario */
-    word-break: keep-all !important; 
-    overflow-wrap: break-word !important;
+    word-break: normal !important; /* Esto anula el break-all viejo */
+    overflow-wrap: break-word !important; /* Solo rompe si es una URL larguísima */
     hyphens: none !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
   }
 
   .noticia-content p {
@@ -84,6 +85,7 @@ body {
     height: auto;
   }
 
+  /* Enlaces */
   .noticia-content a {
     color: var(--color-main-red);
     font-weight: bold;
@@ -130,8 +132,7 @@ body {
     padding: 12px 16px;
     border: 1px solid #e5e7eb;
     min-width: 140px; 
-    word-break: normal !important; /* En tablas sí permitimos break normal si es muy angosto */
-    text-align: left !important;
+    word-break: normal !important; 
   }
 
   .noticia-content th {
