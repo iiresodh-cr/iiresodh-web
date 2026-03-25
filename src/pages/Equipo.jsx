@@ -47,7 +47,7 @@ export default function Equipo() {
         fotoUrl: fotoJIR,
         destacado: false,
         orden: 4
-      }
+      },
       {
         id: "staff-3",
         nombre: "Randall Quirós Soto",
