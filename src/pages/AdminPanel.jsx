@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { signOut } from "firebase/auth";
 import { auth, db, storage, functions } from "../firebase/config";
-import { collection, addDoc, updateDoc, serverTimestamp, doc, deleteDoc, getDocs, query, orderBy, Timestamp, limit, startAfter } from "firebase/firestore";
+import { collection, addDoc, updateDoc, serverTimestamp, doc, deleteDoc, getDocs, query, orderBy, Timestamp, limit, startAfter, endBefore, limitToLast } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { httpsCallable } from "firebase/functions";
 
@@ -109,7 +109,6 @@ export default function AdminPanel() {
   const [imagenPrincipalAnterior, setImagenPrincipalAnterior] = useState(null); 
   const [carruselExistente, setCarruselExistente] = useState([]); 
 
-  // NUEVOS ESTADOS PARA DOCUMENTOS
   const [archivosAdjuntos, setArchivosAdjuntos] = useState([]);
   const [subiendoArchivo, setSubiendoArchivo] = useState(false);
 
@@ -118,9 +117,11 @@ export default function AdminPanel() {
   const [mensaje, setMensaje] = useState("");
   const [listaNoticias, setListaNoticias] = useState([]);
 
+  // ESTADOS PARA PAGINACIÓN DEL ADMIN
+  const [primerDoc, setPrimerDoc] = useState(null);
   const [ultimoDoc, setUltimoDoc] = useState(null);
+  const [paginaActual, setPaginaActual] = useState(1);
   const [hayMas, setHayMas] = useState(true);
-  const [cargandoMas, setCargandoMas] = useState(false);
   const NOTICIAS_POR_PAGINA = 10;
 
   const contenidoPreviewRef = useRef(null);
@@ -149,45 +150,48 @@ export default function AdminPanel() {
     }
   };
 
-  const cargarNoticias = async () => {
+  // Función de carga estandarizada para paginación
+  const cargarNoticiasBatch = async (consulta, direccion) => {
     try {
-      const q = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), limit(NOTICIAS_POR_PAGINA));
-      const querySnapshot = await getDocs(q);
-      const noticiasData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setListaNoticias(noticiasData);
-
-      if (querySnapshot.docs.length > 0) {
+      const querySnapshot = await getDocs(consulta);
+      if (!querySnapshot.empty) {
+        setPrimerDoc(querySnapshot.docs[0]);
         setUltimoDoc(querySnapshot.docs[querySnapshot.docs.length - 1]);
+        
+        const noticiasData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setListaNoticias(noticiasData);
         setHayMas(querySnapshot.docs.length === NOTICIAS_POR_PAGINA);
+
+        if (direccion === "sig") setPaginaActual(prev => prev + 1);
+        if (direccion === "ant") setPaginaActual(prev => prev - 1);
+        if (direccion === "inicio") setPaginaActual(1);
       } else {
-        setHayMas(false);
+        if (direccion === "inicio") {
+            setListaNoticias([]);
+            setHayMas(false);
+        }
       }
     } catch (error) {
       console.error("Error al cargar noticias:", error);
     }
   };
 
-  const cargarMasNoticias = async () => {
+  // Carga inicial
+  const cargarNoticias = () => {
+    const q = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), limit(NOTICIAS_POR_PAGINA));
+    cargarNoticiasBatch(q, "inicio");
+  };
+
+  const paginaSiguiente = () => {
     if (!ultimoDoc) return;
-    setCargandoMas(true);
-    try {
-      const q = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), startAfter(ultimoDoc), limit(NOTICIAS_POR_PAGINA));
-      const querySnapshot = await getDocs(q);
-      const noticiasData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      
-      setListaNoticias(prev => [...prev, ...noticiasData]);
-      
-      if (querySnapshot.docs.length > 0) {
-        setUltimoDoc(querySnapshot.docs[querySnapshot.docs.length - 1]);
-        setHayMas(querySnapshot.docs.length === NOTICIAS_POR_PAGINA);
-      } else {
-        setHayMas(false);
-      }
-    } catch (error) {
-      console.error("Error al cargar más noticias:", error);
-    } finally {
-      setCargandoMas(false);
-    }
+    const q = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), startAfter(ultimoDoc), limit(NOTICIAS_POR_PAGINA));
+    cargarNoticiasBatch(q, "sig");
+  };
+
+  const paginaAnterior = () => {
+    if (!primerDoc) return;
+    const q = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), endBefore(primerDoc), limitToLast(NOTICIAS_POR_PAGINA));
+    cargarNoticiasBatch(q, "ant");
   };
 
   useEffect(() => {
@@ -261,7 +265,6 @@ export default function AdminPanel() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // UNIFICADO: Limpia el formulario cancelando la edición o descartando la nueva noticia
   const limpiarFormulario = () => {
     setEditandoId(null);
     setTitulo("");
@@ -290,7 +293,6 @@ export default function AdminPanel() {
     }
   };
 
-  // NUEVA FUNCIÓN: Subir documentos PDF, Word, Excel a Firebase Storage
   const handleSubirDocumento = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -298,8 +300,6 @@ export default function AdminPanel() {
     setSubiendoArchivo(true);
     setMensaje("Subiendo documento...");
     try {
-      // EL CAMBIO ESTÁ AQUÍ: Ahora lo guarda en "noticias/documentos/..." 
-      // para que Firebase Storage no bloquee la subida por las reglas de seguridad.
       const refDoc = ref(storage, `noticias/documentos/${Date.now()}_${file.name}`);
       await uploadBytes(refDoc, file);
       const url = await getDownloadURL(refDoc);
@@ -311,12 +311,11 @@ export default function AdminPanel() {
       setMensaje("Error al subir el documento. Revisa la consola.");
     } finally {
       setSubiendoArchivo(false);
-      e.target.value = ""; // Reset input
+      e.target.value = ""; 
       setTimeout(() => setMensaje(""), 4000);
     }
   };
 
-  // NUEVA FUNCIÓN: Copiar al portapapeles en formato Markdown
   const copiarEnlaceDocumento = (nombre, url) => {
     const snippet = `[📄 Ver anexo: ${nombre}](${url})`;
     navigator.clipboard.writeText(snippet);
@@ -514,7 +513,6 @@ export default function AdminPanel() {
                   <textarea required maxLength="250" value={resumen} onChange={(e) => setResumen(e.target.value)} className="w-full border border-gray-300 p-3 rounded" rows="2" />
                 </div>
 
-                {/* SECCIÓN NUEVA: GESTOR DE DOCUMENTOS ADJUNTOS */}
                 <div className="bg-gray-50 p-4 rounded border border-gray-200">
                   <label className="flex items-center text-main-blue font-bold mb-2">
                     📁 Generador de Enlaces para Documentos (PDF, DOCX, XLSX)
@@ -607,7 +605,6 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                {/* BOTONES DE ACCIÓN: CANCELAR Y PUBLICAR/ACTUALIZAR */}
                 <div className="flex gap-4 pt-4 border-t border-gray-100">
                   <button type="button" onClick={limpiarFormulario} className="w-1/3 bg-gray-200 hover:bg-gray-300 text-main-blue font-bold py-4 rounded uppercase tracking-widest transition-all">
                     Cancelar
@@ -642,17 +639,36 @@ export default function AdminPanel() {
                 ))}
               </div>
               
-              {hayMas && (
-                <div className="mt-8 flex justify-center">
-                  <button 
-                    onClick={cargarMasNoticias} 
-                    disabled={cargandoMas}
-                    className="bg-pale-blue text-main-blue hover:bg-light-blue hover:text-white px-8 py-3 rounded-full font-bold transition-colors disabled:opacity-50 shadow-sm"
-                  >
-                    {cargandoMas ? "Cargando..." : "Cargar más noticias ↓"}
-                  </button>
-                </div>
-              )}
+              {/* CONTROLES DE PAGINACIÓN DEL ADMIN */}
+              <div className="mt-12 flex items-center justify-center gap-8">
+                <button 
+                  onClick={paginaAnterior}
+                  disabled={paginaActual === 1 || loading}
+                  className={`px-6 py-2 rounded-full font-bold text-sm uppercase tracking-widest transition-all ${
+                    paginaActual === 1 || loading 
+                    ? 'text-gray-300 cursor-not-allowed border border-gray-200' 
+                    : 'text-main-blue hover:bg-main-blue hover:text-white border border-main-blue cursor-pointer'
+                  }`}
+                >
+                  &larr; Anterior
+                </button>
+
+                <span className="text-main-blue font-black text-lg">
+                  {paginaActual}
+                </span>
+
+                <button 
+                  onClick={paginaSiguiente}
+                  disabled={!hayMas || loading}
+                  className={`px-6 py-2 rounded-full font-bold text-sm uppercase tracking-widest transition-all ${
+                    !hayMas || loading 
+                    ? 'text-gray-300 cursor-not-allowed border border-gray-200' 
+                    : 'text-main-blue hover:bg-main-blue hover:text-white border border-main-blue cursor-pointer'
+                  }`}
+                >
+                  Siguiente &rarr;
+                </button>
+              </div>
             </div>
           </div>
         )}
