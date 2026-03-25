@@ -55,9 +55,19 @@ body {
     text-align: justify;
   }
 
+  /* --- REGLA ESTRICTA PARA FORZAR EL SALTO DE LÍNEA --- */
+  /* Esto destruye los estilos ocultos (como nowrap) que traen Word o PDFs al pegar */
+  .noticia-content * {
+    white-space: normal !important; 
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    max-width: 100% !important;
+  }
+
   /* Párrafos base */
   .noticia-content p {
     margin-bottom: 1.25rem;
+    width: 100%;
   }
 
   /* Imágenes */
@@ -97,6 +107,7 @@ body {
 
   .noticia-content li {
     margin-bottom: 0.5rem;
+    width: 100%;
   }
 
   /* Tablas (Estilo Institucional - Reducción Proporcional) */
@@ -117,9 +128,10 @@ body {
     /* El padding también se reduce en pantallas pequeñas para ganar espacio */
     padding: clamp(0.3rem, 1vw, 1rem); 
     vertical-align: top;
-    word-wrap: normal;
-    word-break: normal;
-    overflow-wrap: normal;
+    /* Redundancia intencional por si la tabla intenta ignorar la regla global */
+    word-wrap: normal !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
   }
 
   .noticia-content th {
