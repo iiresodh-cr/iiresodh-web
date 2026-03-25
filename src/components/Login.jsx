@@ -1,18 +1,26 @@
 // src/components/Login.jsx
-import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { auth } from "../firebase/config";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // <-- AGREGAR ESTO
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [error, setError] = useState(null);
-  const navigate = useNavigate(); // <-- AGREGAR ESTO
+  const navigate = useNavigate();
 
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
-      navigate("/admin"); // <-- AGREGAR ESTO: Redirige al panel al tener éxito
+      const result = await signInWithPopup(auth, provider);
+      
+      // VERIFICACIÓN ESTRICTA DE PERMISOS
+      if (result.user.email === "webmaster@iiresodh.org") {
+        navigate("/admin"); 
+      } else {
+        // Si no es el correo autorizado, cerramos la sesión creada y mostramos error
+        await signOut(auth);
+        setError("Acceso denegado: Esta cuenta no tiene permisos de administrador.");
+      }
     } catch (err) {
       console.error("Error al iniciar sesión:", err);
       setError("Hubo un problema al iniciar sesión con Google.");
@@ -23,7 +31,6 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-[#F1FAEE]">
       <div className="bg-white p-10 rounded-xl shadow-lg max-w-md w-full text-center border-t-4 border-[#B92F32]">
         
-        {/* Aquí luego pondremos la etiqueta <img> con el logo real */}
         <h1 className="text-4xl font-extrabold text-[#1D3557] mb-2 font-sans">
           IIRESODH
         </h1>
@@ -32,7 +39,7 @@ export default function Login() {
         </p>
 
         {error && (
-          <div className="bg-[#E63946] text-white p-3 rounded mb-4 text-sm">
+          <div className="bg-[#E63946] text-white p-3 rounded mb-4 text-sm font-bold">
             {error}
           </div>
         )}

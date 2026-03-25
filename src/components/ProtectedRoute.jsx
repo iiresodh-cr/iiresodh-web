@@ -1,7 +1,7 @@
 // src/components/ProtectedRoute.jsx
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "../firebase/config";
 
 export default function ProtectedRoute({ children }) {
@@ -18,8 +18,16 @@ export default function ProtectedRoute({ children }) {
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-[#1D3557] font-bold">Cargando...</div>;
   
-  // AQUÍ ESTÁ EL CAMBIO: Asegúrate de que tenga el "/" antes de login y la palabra "replace"
-  if (!user) return <Navigate to="/login" replace />;
+  // Doble capa de seguridad: Debe haber usuario y debe ser el autorizado
+  if (!user || user.email !== "webmaster@iiresodh.org") {
+    
+    // Si alguien logró loguearse pero no es el correo autorizado, lo forzamos a salir
+    if (user) {
+      signOut(auth).catch(console.error);
+    }
+    
+    return <Navigate to="/login" replace />;
+  }
 
   return children;
 }
