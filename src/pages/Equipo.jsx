@@ -32,7 +32,7 @@ export default function Equipo() {
       {
         id: "staff-1",
         nombre: "David Urquilla",
-        cargo: "Abogado y Coordinador de tecnología",
+        cargo: "Coordinador de tecnología y Abogado",
         fotoUrl: "https://via.placeholder.com/400x500",
         destacado: false,
         orden: 3
