@@ -54,20 +54,24 @@ body {
   .noticia-content {
     font-size: 1rem;
     line-height: 1.7;
-    color: #4b5563; /* Gris suave igual al Home */
-    text-align: justify;
+    color: #4b5563; 
+    text-align: left; /* Cambiado a left para evitar estiramientos raros en móvil */
     max-width: 100%;
   }
 
-  /* Párrafos y Listas: Corrección de saltos de línea y palabras cortadas */
-  .noticia-content p, 
-  .noticia-content li, 
-  .noticia-content span,
-  .noticia-content strong {
+  /* REGLA MAESTRA: Evita el corte de palabras y fuerza el flujo natural */
+  .noticia-content * {
     white-space: normal !important; 
-    word-break: normal !important;      /* EVITA romper palabras como Cuestionario */
-    overflow-wrap: break-word !important; /* Solo rompe si la palabra es más ancha que el móvil */
+    word-break: normal !important;      /* EVITA romper "Cuesti-onario" */
+    overflow-wrap: break-word !important; /* Solo rompe si la palabra es eterna */
+    hyphens: none !important;           /* Desactiva guiones automáticos del navegador */
+    max-width: 100%;
+  }
+
+  /* Párrafos base */
+  .noticia-content p {
     margin-bottom: 1.25rem;
+    width: 100%;
   }
 
   /* Imágenes */
@@ -104,6 +108,11 @@ body {
     margin-bottom: 1.5rem;
   }
 
+  .noticia-content li {
+    margin-bottom: 0.5rem;
+    width: 100%;
+  }
+
   /* Tablas responsivas con scroll independiente */
   .noticia-content table {
     display: block;
@@ -122,7 +131,7 @@ body {
   .noticia-content td {
     padding: 12px 16px;
     border: 1px solid #e5e7eb;
-    min-width: 140px; /* Evita colapso total de columnas */
+    min-width: 140px; 
     word-break: normal !important;
   }
 
