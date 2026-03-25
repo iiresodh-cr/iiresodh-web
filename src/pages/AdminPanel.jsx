@@ -48,6 +48,46 @@ const formatearTextoConLinksYHashtags = (texto) => {
   return partes.join('');
 };
 
+// NUEVA FUNCIÓN: Convierte imágenes JPG/PNG a WebP en el navegador
+const convertirAWebp = (file, calidad = 0.8) => {
+  return new Promise((resolve, reject) => {
+    // Si ya es webp, gif o svg, no lo tocamos
+    if (file.type === 'image/webp' || file.type === 'image/gif' || file.type === 'image/svg+xml') {
+      resolve(file);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        
+        // Exportar a WebP
+        canvas.toBlob((blob) => {
+          if (blob) {
+            // Cambiamos la extensión del nombre original a .webp
+            const nuevoNombre = file.name.replace(/\.[^/.]+$/, "") + ".webp";
+            const webpFile = new File([blob], nuevoNombre, { type: 'image/webp' });
+            resolve(webpFile);
+          } else {
+            reject(new Error("Error al convertir la imagen a WebP"));
+          }
+        }, 'image/webp', calidad);
+      };
+      img.onerror = () => reject(new Error("Error al cargar la imagen para convertirla"));
+      img.src = event.target.result;
+    };
+    reader.onerror = () => reject(new Error("Error al leer el archivo"));
+    reader.readAsDataURL(file);
+  });
+};
+
 export default function AdminPanel() {
   const navigate = useNavigate(); 
   
@@ -179,7 +219,7 @@ export default function AdminPanel() {
       }
     };
     checkOverflow();
-  }, [contenido, vistaActiva]); // Se agregó vistaActiva a las dependencias
+  }, [contenido, vistaActiva]);
 
   const handleAutoResumen = async () => {
     if (!contenido || contenido.trim().length < 20) {
@@ -253,19 +293,39 @@ export default function AdminPanel() {
     }
   };
 
-  const handleSeleccionPrincipal = (e) => {
+  // MANEJADOR ACTUALIZADO: Convierte a WebP antes de guardar en estado
+  const handleSeleccionPrincipal = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImagenPrincipal(file);
-      setMainImagePreviewUrl(URL.createObjectURL(file));
+      try {
+        setMensaje("Optimizando imagen principal...");
+        const webpFile = await convertirAWebp(file);
+        setImagenPrincipal(webpFile);
+        setMainImagePreviewUrl(URL.createObjectURL(webpFile));
+        setMensaje(""); 
+      } catch (error) {
+        console.error("Error al procesar imagen principal:", error);
+        setMensaje("Error al optimizar la imagen.");
+        setTimeout(() => setMensaje(""), 3000);
+      }
     }
   };
 
-  const handleAgregarImagenes = (e) => {
+  // MANEJADOR ACTUALIZADO: Convierte a WebP antes de guardar en estado
+  const handleAgregarImagenes = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
-      setImagenesCarrusel((prev) => [...prev, ...files]);
-      e.target.value = ""; 
+      try {
+        setMensaje("Optimizando imágenes para el carrusel...");
+        const webpFiles = await Promise.all(files.map(file => convertirAWebp(file)));
+        setImagenesCarrusel((prev) => [...prev, ...webpFiles]);
+        e.target.value = ""; 
+        setMensaje("");
+      } catch (error) {
+        console.error("Error al procesar imágenes del carrusel:", error);
+        setMensaje("Error al optimizar las imágenes del carrusel.");
+        setTimeout(() => setMensaje(""), 3000);
+      }
     }
   };
 
@@ -416,7 +476,7 @@ export default function AdminPanel() {
                 {editandoId && <button onClick={cancelarEdicion} className="text-sm bg-gray-200 px-3 py-1 rounded font-bold hover:bg-gray-300 transition-colors">Cancelar Edición</button>}
               </div>
               
-              {mensaje && <div className={`p-4 rounded mb-6 font-bold ${mensaje.includes("¡") || mensaje.includes("PIDA") ? "bg-green-100 text-green-700" : "bg-blue-100 text-main-blue"}`}>{mensaje}</div>}
+              {mensaje && <div className={`p-4 rounded mb-6 font-bold ${mensaje.includes("¡") || mensaje.includes("PIDA") || mensaje.includes("Optimizando") ? "bg-green-100 text-green-700" : "bg-blue-100 text-main-blue"}`}>{mensaje}</div>}
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -443,7 +503,6 @@ export default function AdminPanel() {
                 <div>
                   <label className="flex items-center text-main-blue font-bold mb-2">
                     Contenido Completo 
-                    {/* MENSAJE DE AYUDA ACTUALIZADO */}
                     <span className="text-xs font-normal text-light-blue ml-3 bg-blue-50 px-2 py-1 rounded">
                       (Soporta Emojis 🚀, Enlaces 🔗 y Hashtags #)
                     </span>
