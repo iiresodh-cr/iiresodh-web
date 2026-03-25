@@ -111,7 +111,7 @@ export default function QuienesSomos() {
 
               {/* SECCIÓN PRINCIPIOS RECTORES ACTUALIZADA */}
               <div id="principios-rectores" className="pt-10 border-t border-gray-100 scroll-mt-32">
-                <h2 className="text-2xl md:text-3xl font-semibold text-main-blue text-center mb-10 tracking-widest">
+                <h2 className="text-2xl md:text-3xl font-semibold text-main-blue text-center mb-10 uppercase">
                   Principios Rectores
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -136,7 +136,7 @@ export default function QuienesSomos() {
         {/* SECCIÓN ORGANIGRAMA */}
         <section id="organigrama" className="bg-main-blue text-white py-16 md:py-20 px-6 relative z-20 scroll-mt-32 mt-8">
           <div className="max-w-5xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-8 uppercase tracking-widest text-white">
+            <h2 className="text-3xl md:text-4xl font-semibold text-center mb-8 uppercase text-white">
               Organigrama y Estructura
             </h2>
             <div className="text-base md:text-lg text-gray-200 leading-relaxed text-justify space-y-6 mb-16 font-light max-w-4xl mx-auto">
