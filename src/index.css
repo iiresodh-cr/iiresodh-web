@@ -54,17 +54,18 @@ body {
   .noticia-content {
     font-size: 1rem;
     line-height: 1.7;
-    color: #4b5563; 
-    text-align: left; /* Cambiado a left para evitar estiramientos raros en móvil */
+    color: #4b5563; /* Gris suave igual al Home */
+    text-align: left; /* Alineado a la izquierda siempre */
     max-width: 100%;
   }
 
-  /* REGLA MAESTRA: Evita el corte de palabras y fuerza el flujo natural */
+  /* REGLA MAESTRA: Prohíbe el corte de palabras y fuerza alineación a la izquierda */
   .noticia-content * {
+    text-align: left !important;
     white-space: normal !important; 
-    word-break: normal !important;      /* EVITA romper "Cuesti-onario" */
-    overflow-wrap: break-word !important; /* Solo rompe si la palabra es eterna */
-    hyphens: none !important;           /* Desactiva guiones automáticos del navegador */
+    word-break: normal !important;      /* EVITA romper palabras por la mitad */
+    overflow-wrap: break-word !important; /* Solo rompe si la palabra es más ancha que el contenedor móvil */
+    hyphens: none !important;           /* Desactiva los guiones de separación silábica */
     max-width: 100%;
   }
 
@@ -133,13 +134,13 @@ body {
     border: 1px solid #e5e7eb;
     min-width: 140px; 
     word-break: normal !important;
+    text-align: left !important;
   }
 
   .noticia-content th {
     background-color: #f9fafb;
     color: var(--color-main-blue);
     font-weight: 700;
-    text-align: left;
   }
 
   .animate-bounce-slow {
