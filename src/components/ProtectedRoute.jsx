@@ -9,25 +9,28 @@ export default function ProtectedRoute({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        // DOBLE FILTRO: Validamos el correo ANTES de aprobar el acceso a la ruta
+        if (currentUser.email !== "webmaster@iiresodh.org") {
+          await signOut(auth); // Lo expulsamos del sistema localmente
+          setUser(null);
+        } else {
+          setUser(currentUser); // Es el administrador, lo dejamos pasar
+        }
+      } else {
+        setUser(null);
+      }
       setLoading(false);
     });
-    return () => unsubscribe(); // Limpieza al desmontar
+    
+    return () => unsubscribe();
   }, []);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-main-blue font-bold">Cargando...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-main-blue font-bold tracking-widest uppercase">Verificando Credenciales...</div>;
   
-  // Doble capa de seguridad: Debe haber usuario y debe ser el autorizado
-  if (!user || user.email !== "webmaster@iiresodh.org") {
-    
-    // Si alguien logró loguearse pero no es el correo autorizado, lo forzamos a salir
-    if (user) {
-      signOut(auth).catch(console.error);
-    }
-    
-    return <Navigate to="/login" replace />;
-  }
+  // Si no hay usuario (o si fue expulsado arriba), redirige de inmediato
+  if (!user) return <Navigate to="/login" replace />;
 
   return children;
 }
