@@ -49,25 +49,25 @@ body {
     bottom: 0 !important; 
   }
 
-  /* --- ESTILOS PARA EL CONTENIDO HTML GENERADO POR QUILL --- */
+  /* --- ESTILOS PARA EL CONTENIDO HTML GENERADO POR EL EDITOR --- */
   
   .noticia-content {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #4b5563; /* Gris suave igual al Home */
     text-align: justify;
+    max-width: 100%;
   }
 
-  /* --- REGLA ESTRICTA PARA FORZAR EL SALTO DE LÍNEA --- */
-  /* Esto destruye los estilos ocultos (como nowrap) que traen Word o PDFs al pegar */
-  .noticia-content * {
+  /* Párrafos y Listas: Corrección de saltos de línea y palabras cortadas */
+  .noticia-content p, 
+  .noticia-content li, 
+  .noticia-content span,
+  .noticia-content strong {
     white-space: normal !important; 
-    word-wrap: break-word !important;
-    overflow-wrap: break-word !important;
-    max-width: 100% !important;
-  }
-
-  /* Párrafos base */
-  .noticia-content p {
+    word-break: normal !important;      /* EVITA romper palabras como Cuestionario */
+    overflow-wrap: break-word !important; /* Solo rompe si la palabra es más ancha que el móvil */
     margin-bottom: 1.25rem;
-    width: 100%;
   }
 
   /* Imágenes */
@@ -84,7 +84,6 @@ body {
     color: var(--color-main-red);
     font-weight: bold;
     text-decoration: underline;
-    word-break: break-all;
     transition: color 0.3s;
   }
 
@@ -105,46 +104,33 @@ body {
     margin-bottom: 1.5rem;
   }
 
-  .noticia-content li {
-    margin-bottom: 0.5rem;
-    width: 100%;
-  }
-
-  /* Tablas (Estilo Institucional - Reducción Proporcional) */
+  /* Tablas responsivas con scroll independiente */
   .noticia-content table {
+    display: block;
     width: 100%;
-    table-layout: auto;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     border-collapse: collapse;
     margin: 2.5rem 0;
-    /* La fuente se escala dinámicamente entre 0.65rem y 1rem según la pantalla */
-    font-size: clamp(0.65rem, 1.2vw, 1rem); 
+    font-size: 0.9rem;
     background-color: white;
     border-radius: 0.5rem;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   }
 
-  .noticia-content th,
+  .noticia-content th, 
   .noticia-content td {
-    /* El padding también se reduce en pantallas pequeñas para ganar espacio */
-    padding: clamp(0.3rem, 1vw, 1rem); 
-    vertical-align: top;
-    /* Redundancia intencional por si la tabla intenta ignorar la regla global */
-    word-wrap: normal !important;
+    padding: 12px 16px;
+    border: 1px solid #e5e7eb;
+    min-width: 140px; /* Evita colapso total de columnas */
     word-break: normal !important;
-    overflow-wrap: normal !important;
   }
 
   .noticia-content th {
-    background-color: #f1f5f9;
+    background-color: #f9fafb;
     color: var(--color-main-blue);
     font-weight: 700;
     text-align: left;
-    border-bottom: 2px solid #e2e8f0;
-  }
-
-  .noticia-content td {
-    border-bottom: 1px solid #f8fafc;
-    color: #334155;
   }
 
   .animate-bounce-slow {

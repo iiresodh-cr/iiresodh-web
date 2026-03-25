@@ -94,9 +94,8 @@ export default function ArticuloDetalle() {
                 </div>
               )}
 
-              {/* AQUÍ ELIMINAMOS EL WRAPPER QUE HACÍA SCROLL Y NORMALIZAMOS LA FUENTE */}
               <div 
-                className="text-gray-600 text-base font-normal leading-relaxed noticia-content text-justify"
+                className="noticia-content"
                 dangerouslySetInnerHTML={{ __html: articulo.contenido }}
               />
 
