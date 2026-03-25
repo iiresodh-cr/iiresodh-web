@@ -7,6 +7,7 @@ import fotoDavid from "../assets/David_Urquilla-IIRE.webp";
 import fotoJIR from "../assets/Juan-Ignacio-Rodriguez.webp";
 import fotoRandall from "../assets/Randall.webp";
 import fotoRoxanne from "../assets/Roxanne-Cabrera.webp";
+import fotoFabricio from "../assets/Fabricio-Soley.webp";
 
 export default function Equipo() {
   const [equipo, setEquipo] = useState([]);
@@ -55,15 +56,23 @@ export default function Equipo() {
         cargo: "Coordinador de Administración",
         fotoUrl: fotoRandall,
         destacado: false,
-        orden: 4
+        orden: 5
       },
       {
-        id: "staff-3",
+        id: "staff-4",
         nombre: "Roxanne Cabrera Baptista",
         cargo: "Coordinadora de Cooperación Internacional y Abogada",
         fotoUrl: fotoRoxanne,
         destacado: false,
-        orden: 4
+        orden: 6
+      },
+      {
+        id: "staff-5",
+        nombre: "Fabricio Soley Rojas",
+        cargo: "Abogado de Litigio Estratégico",
+        fotoUrl: fotoFabricio,
+        destacado: false,
+        orden: 7
       }
     ];
 
