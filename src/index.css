@@ -40,26 +40,92 @@ body {
     filter: invert(1);
   }
 
-  /* Swiper: Espacio interno abajo exclusivo para los puntos */
   .swiper-custom-pagination {
     --swiper-pagination-color: #B92F32;
     padding-bottom: 2.5rem !important; 
   }
 
-  /* Coloca los puntos al fondo del contenedor swiper (en el área del padding) */
   .swiper-custom-pagination .swiper-pagination-bullets {
     bottom: 0 !important; 
   }
 
+  /* --- ESTILOS PARA EL CONTENIDO HTML GENERADO POR QUILL --- */
+  
   .noticia-content {
-    white-space: pre-line;
+    /* ELIMINADO white-space: pre-line; */
     text-align: justify;
   }
 
+  /* Párrafos base */
+  .noticia-content p {
+    margin-bottom: 1.25rem;
+  }
+
+  /* Imágenes */
   .noticia-content img {
     display: block;
     margin: 2rem auto;
     border-radius: 0.5rem;
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Enlaces */
+  .noticia-content a {
+    color: var(--color-main-red);
+    font-weight: bold;
+    text-decoration: underline;
+    word-break: break-all;
+    transition: color 0.3s;
+  }
+
+  .noticia-content a:hover {
+    color: var(--color-main-blue);
+  }
+
+  /* Listas */
+  .noticia-content ul {
+    list-style-type: disc;
+    padding-left: 2.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .noticia-content ol {
+    list-style-type: decimal;
+    padding-left: 2.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .noticia-content li {
+    margin-bottom: 0.5rem;
+  }
+
+  /* Tablas (Estilo Institucional) */
+  .noticia-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2.5rem 0;
+    font-size: 1rem;
+    background-color: white;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  .noticia-content th {
+    background-color: #f1f5f9;
+    color: var(--color-main-blue);
+    font-weight: 700;
+    text-align: left;
+    padding: 1rem 1.5rem;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  .noticia-content td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f8fafc;
+    color: #334155;
+    vertical-align: top;
   }
 
   .animate-bounce-slow {

@@ -6,6 +6,8 @@ import { auth, db, storage, functions } from "../firebase/config";
 import { collection, addDoc, updateDoc, serverTimestamp, doc, deleteDoc, getDocs, query, orderBy, Timestamp, limit, startAfter, endBefore, limitToLast } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { httpsCallable } from "firebase/functions";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 import logoColor from "../assets/Logo_Oficiale_200w-trim.png";
 
@@ -382,7 +384,6 @@ export default function AdminPanel() {
         finalPrincipalUrl = await getDownloadURL(refImg);
       }
 
-      // Solo procesar carrusel si estamos en noticias
       const nuevasUrls = [];
       if (vistaActiva === "comunicaciones") {
         for (const file of imagenesCarrusel) {
@@ -398,7 +399,7 @@ export default function AdminPanel() {
 
       const datos = {
         titulo, 
-        resumen, // El resumen ahora se pasa tal cual para ambas colecciones
+        resumen, 
         contenido,
         slug: slugGenerado, 
         imagenPrincipalUrl: finalPrincipalUrl || null,
@@ -437,7 +438,6 @@ export default function AdminPanel() {
 
       <main className="p-8 max-w-6xl mx-auto">
         
-        {/* PANEL PRINCIPAL */}
         {vistaActiva === "inicio" && (
           <div className="bg-white p-8 md:p-12 rounded-lg shadow-md border-t-4 border-main-blue animate-fade-in-up">
             <h1 className="text-3xl md:text-4xl font-extrabold text-main-blue mb-4">Panel de Control Principal</h1>
@@ -471,7 +471,6 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {/* VISTAS DE FORMULARIO (NOTICIAS O ARTÍCULOS) */}
         {(vistaActiva === "comunicaciones" || vistaActiva === "articulos") && (
           <div className="animate-fade-in-up">
             
@@ -508,7 +507,6 @@ export default function AdminPanel() {
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 
-                {/* TÍTULO Y FECHA */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="md:col-span-2">
                     <label className="block text-main-blue font-bold mb-2">
@@ -522,7 +520,6 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                {/* RESUMEN PARA PORTADA (AHORA VISIBLE EN AMBOS) */}
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <label className="font-bold text-main-blue">Resumen para Portada</label>
@@ -533,7 +530,6 @@ export default function AdminPanel() {
                   <textarea required maxLength="250" value={resumen} onChange={(e) => setResumen(e.target.value)} className="w-full border border-gray-300 p-3 rounded" rows="2" />
                 </div>
 
-                {/* BLOQUES EXCLUSIVOS DE NOTICIAS */}
                 {vistaActiva === "comunicaciones" && (
                   <div className="bg-gray-50 p-4 rounded border border-gray-200">
                     <label className="flex items-center text-main-blue font-bold mb-2">
@@ -563,7 +559,6 @@ export default function AdminPanel() {
                   </div>
                 )}
 
-                {/* CONTENIDO PRINCIPAL (Común) */}
                 <div>
                   <label className="flex items-center text-main-blue font-bold mb-2">
                     Contenido Completo 
@@ -573,9 +568,27 @@ export default function AdminPanel() {
                       </span>
                     )}
                   </label>
-                  <textarea required value={contenido} onChange={(e) => setContenido(e.target.value)} className="w-full border border-gray-300 p-3 rounded" rows="12" />
                   
-                  {/* Simulación visual solo para Noticias */}
+                  {/* React Quill Editor */}
+                  <div className="bg-white rounded border border-gray-300">
+                    <ReactQuill 
+                      theme="snow"
+                      value={contenido} 
+                      onChange={setContenido}
+                      className="h-80 mb-12"
+                      modules={{
+                        toolbar: [
+                          [{ 'header': [1, 2, 3, false] }],
+                          ['bold', 'italic', 'underline', 'strike'],
+                          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                          ['link', 'image', 'video'],
+                          ['clean'] 
+                        ]
+                      }}
+                      placeholder="Escribe el contenido aquí o pega el texto y tablas desde Word/Excel..."
+                    />
+                  </div>
+                  
                   {vistaActiva === "comunicaciones" && (
                     <div className="mt-4 bg-gray-50 p-5 rounded border border-gray-200 shadow-inner">
                       <label className="block text-xs font-bold text-gray-500 uppercase mb-3">Simulación en Portada</label>
@@ -585,10 +598,8 @@ export default function AdminPanel() {
                   )}
                 </div>
 
-                {/* GESTIÓN DE IMÁGENES */}
                 <div className="grid grid-cols-1 gap-6 bg-basic-beige p-6 rounded border-2 border-pale-blue">
                   
-                  {/* Imagen Principal (Opcional para Artículos, Requerida para Noticias nuevas) */}
                   <input 
                     type="file" 
                     accept="image/*" 
@@ -610,7 +621,6 @@ export default function AdminPanel() {
                     </div>
                   )}
 
-                  {/* Carrusel (Solo para Noticias) */}
                   {vistaActiva === "comunicaciones" && (
                     <>
                       <input type="file" accept="image/*" multiple onChange={handleAgregarImagenes} className="sr-only" id="input-c" />
@@ -698,7 +708,6 @@ export default function AdminPanel() {
                 )}
               </div>
               
-              {/* CONTROLES DE PAGINACIÓN */}
               {listaItems.length > 0 && (
                 <div className="mt-12 flex items-center justify-center gap-8">
                   <button 

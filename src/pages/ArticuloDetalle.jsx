@@ -4,27 +4,6 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
 
-const formatearTextoConLinksYHashtags = (texto) => {
-  if (!texto) return "";
-  let procesado = texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<]+)\)/g, (match, textoEnlace, url) => {
-    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red hover:text-main-blue font-bold underline transition-colors pointer-events-auto break-all">${textoEnlace}</a>`;
-  });
-  const partes = procesado.split(/(<[^>]+>)/g);
-  for (let i = 0; i < partes.length; i++) {
-    if (i % 2 === 0) {
-      let parte = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
-        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red hover:text-main-blue font-bold underline transition-colors pointer-events-auto break-all">${url}</a>`;
-      });
-      parte = parte.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
-        const termino = hashtag.substring(1); 
-        return `<a href="/buscar?q=${termino}" class="text-light-blue hover:text-main-red font-bold transition-colors pointer-events-auto">${hashtag}</a>`;
-      });
-      partes[i] = parte;
-    }
-  }
-  return partes.join('');
-};
-
 export default function ArticuloDetalle() {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -105,7 +84,6 @@ export default function ArticuloDetalle() {
                 </h1>
               </div>
 
-              {/* CORREGIDO: max-h-125 nativo de Tailwind 4 */}
               {articulo.imagenPrincipalUrl && (
                 <div className="mb-12 w-full rounded-2xl overflow-hidden bg-gray-50 shadow-sm border border-gray-100">
                   <img 
@@ -116,9 +94,10 @@ export default function ArticuloDetalle() {
                 </div>
               )}
 
+              {/* AQUÍ ESTÁ EL CAMBIO CLAVE: Pasamos articulo.contenido directo */}
               <div 
                 className="text-gray-700 text-lg md:text-xl font-light leading-relaxed noticia-content text-justify space-y-6"
-                dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(articulo.contenido) }}
+                dangerouslySetInnerHTML={{ __html: articulo.contenido }}
               />
 
             </div>
