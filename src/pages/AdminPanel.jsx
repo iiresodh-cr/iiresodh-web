@@ -10,7 +10,7 @@ import { httpsCallable } from "firebase/functions";
 import logoColor from "../assets/Logo_Oficiale_200w-trim.png";
 
 const generarSlug = (texto) => {
-  if (!texto) return `noticia-${Math.random().toString(36).substring(2, 6)}`;
+  if (!texto) return `item-${Math.random().toString(36).substring(2, 6)}`;
   
   const baseSlug = texto
     .toString()
@@ -24,14 +24,12 @@ const generarSlug = (texto) => {
   
   const randomCode = Math.random().toString(36).substring(2, 6);
   
-  return baseSlug ? `${baseSlug}-${randomCode}` : `noticia-${randomCode}`;
+  return baseSlug ? `${baseSlug}-${randomCode}` : `item-${randomCode}`;
 };
 
-// FUNCIÓN ACTUALIZADA: Ahora detecta formato Markdown [Texto Corto](URLLarga)
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
 
-  // 1. Procesar enlaces estilo Markdown: [Texto visible](https://url-larga.com)
   let procesado = texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<]+)\)/g, (match, textoEnlace, url) => {
     return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red hover:text-main-blue font-bold underline transition-colors pointer-events-auto">${textoEnlace}</a>`;
   });
@@ -39,11 +37,9 @@ const formatearTextoConLinksYHashtags = (texto) => {
   const partes = procesado.split(/(<[^>]+>)/g);
   for (let i = 0; i < partes.length; i++) {
     if (i % 2 === 0) {
-      // 2. Convertir URLs sueltas
       let parte = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
         return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red hover:text-main-blue font-bold underline transition-colors pointer-events-auto">${url}</a>`;
       });
-      // 3. Convertir Hashtags (#)
       parte = parte.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
         const termino = hashtag.substring(1); 
         return `<a href="/buscar?q=${termino}" class="text-light-blue hover:text-main-red font-bold transition-colors pointer-events-auto">${hashtag}</a>`;
@@ -54,7 +50,6 @@ const formatearTextoConLinksYHashtags = (texto) => {
   return partes.join('');
 };
 
-// Convierte imágenes JPG/PNG a WebP en el navegador
 const convertirAWebp = (file, calidad = 0.8) => {
   return new Promise((resolve, reject) => {
     if (file.type === 'image/webp' || file.type === 'image/gif' || file.type === 'image/svg+xml') {
@@ -115,14 +110,14 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(false);
   const [generandoResumen, setGenerandoResumen] = useState(false);
   const [mensaje, setMensaje] = useState("");
-  const [listaNoticias, setListaNoticias] = useState([]);
+  const [listaItems, setListaItems] = useState([]);
 
-  // ESTADOS PARA PAGINACIÓN DEL ADMIN
+  // PAGINACIÓN
   const [primerDoc, setPrimerDoc] = useState(null);
   const [ultimoDoc, setUltimoDoc] = useState(null);
   const [paginaActual, setPaginaActual] = useState(1);
   const [hayMas, setHayMas] = useState(true);
-  const NOTICIAS_POR_PAGINA = 10;
+  const ITEMS_POR_PAGINA = 10;
 
   const contenidoPreviewRef = useRef(null);
   const [showReadMoreWarning, setShowReadMoreWarning] = useState(false);
@@ -150,53 +145,62 @@ export default function AdminPanel() {
     }
   };
 
-  // Función de carga estandarizada para paginación
-  const cargarNoticiasBatch = async (consulta, direccion) => {
+  // Función de carga dinámica que depende de la vistaActiva (noticias o articulos_academicos)
+  const obtenerColeccionActiva = () => {
+    return vistaActiva === "articulos" ? "articulos_academicos" : "noticias";
+  };
+
+  const cargarItemsBatch = async (consulta, direccion) => {
     try {
       const querySnapshot = await getDocs(consulta);
       if (!querySnapshot.empty) {
         setPrimerDoc(querySnapshot.docs[0]);
         setUltimoDoc(querySnapshot.docs[querySnapshot.docs.length - 1]);
         
-        const noticiasData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setListaNoticias(noticiasData);
-        setHayMas(querySnapshot.docs.length === NOTICIAS_POR_PAGINA);
+        const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setListaItems(data);
+        setHayMas(querySnapshot.docs.length === ITEMS_POR_PAGINA);
 
         if (direccion === "sig") setPaginaActual(prev => prev + 1);
         if (direccion === "ant") setPaginaActual(prev => prev - 1);
         if (direccion === "inicio") setPaginaActual(1);
       } else {
         if (direccion === "inicio") {
-            setListaNoticias([]);
+            setListaItems([]);
             setHayMas(false);
         }
       }
     } catch (error) {
-      console.error("Error al cargar noticias:", error);
+      console.error("Error al cargar datos:", error);
     }
   };
 
-  // Carga inicial
-  const cargarNoticias = () => {
-    const q = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), limit(NOTICIAS_POR_PAGINA));
-    cargarNoticiasBatch(q, "inicio");
+  const cargarItems = () => {
+    const coleccion = obtenerColeccionActiva();
+    const q = query(collection(db, coleccion), orderBy("fechaPublicacion", "desc"), limit(ITEMS_POR_PAGINA));
+    cargarItemsBatch(q, "inicio");
   };
 
   const paginaSiguiente = () => {
     if (!ultimoDoc) return;
-    const q = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), startAfter(ultimoDoc), limit(NOTICIAS_POR_PAGINA));
-    cargarNoticiasBatch(q, "sig");
+    const coleccion = obtenerColeccionActiva();
+    const q = query(collection(db, coleccion), orderBy("fechaPublicacion", "desc"), startAfter(ultimoDoc), limit(ITEMS_POR_PAGINA));
+    cargarItemsBatch(q, "sig");
   };
 
   const paginaAnterior = () => {
     if (!primerDoc) return;
-    const q = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), endBefore(primerDoc), limitToLast(NOTICIAS_POR_PAGINA));
-    cargarNoticiasBatch(q, "ant");
+    const coleccion = obtenerColeccionActiva();
+    const q = query(collection(db, coleccion), orderBy("fechaPublicacion", "desc"), endBefore(primerDoc), limitToLast(ITEMS_POR_PAGINA));
+    cargarItemsBatch(q, "ant");
   };
 
+  // Cargar items cada vez que el usuario cambia de sección (noticias a artículos, o viceversa)
   useEffect(() => {
-    cargarNoticias();
-  }, []);
+    if (vistaActiva !== "inicio") {
+      cargarItems();
+    }
+  }, [vistaActiva]);
 
   useEffect(() => {
     return () => {
@@ -218,7 +222,7 @@ export default function AdminPanel() {
 
   const handleAutoResumen = async () => {
     if (!contenido || contenido.trim().length < 20) {
-      setMensaje("Escribe el contenido de la noticia antes de generar un resumen.");
+      setMensaje("Escribe el contenido antes de generar un resumen.");
       setTimeout(() => setMensaje(""), 3000);
       return;
     }
@@ -245,21 +249,21 @@ export default function AdminPanel() {
     }
   };
 
-  const handleEditarNoticia = (noticia) => {
-    setEditandoId(noticia.id);
-    setTitulo(noticia.titulo);
-    setResumen(noticia.resumen);
-    setContenido(noticia.contenido || "");
+  const handleEditarItem = (item) => {
+    setEditandoId(item.id);
+    setTitulo(item.titulo);
+    setResumen(item.resumen);
+    setContenido(item.contenido || "");
 
-    if (noticia.fechaPublicacion) {
-      const date = noticia.fechaPublicacion.toDate();
+    if (item.fechaPublicacion) {
+      const date = item.fechaPublicacion.toDate();
       const localISOTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
       setFechaPersonalizada(localISOTime);
     }
 
-    setImagenPrincipalAnterior(noticia.imagenPrincipalUrl);
-    setMainImagePreviewUrl(noticia.imagenPrincipalUrl); 
-    setCarruselExistente(noticia.imagenesCarruselUrls || []);
+    setImagenPrincipalAnterior(item.imagenPrincipalUrl);
+    setMainImagePreviewUrl(item.imagenPrincipalUrl); 
+    setCarruselExistente(item.imagenesCarruselUrls || []);
     setImagenesCarrusel([]); 
     setArchivosAdjuntos([]);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -282,11 +286,12 @@ export default function AdminPanel() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleBorrarNoticia = async (id, titulo) => {
-    if (window.confirm(`¿Eliminar permanentemente "${titulo}"?`)) {
+  const handleBorrarItem = async (id, tituloItem) => {
+    if (window.confirm(`¿Eliminar permanentemente "${tituloItem}"?`)) {
       try {
-        await deleteDoc(doc(db, "noticias", id));
-        cargarNoticias(); 
+        const coleccion = obtenerColeccionActiva();
+        await deleteDoc(doc(db, coleccion, id));
+        cargarItems(); 
       } catch (error) {
         console.error("Error al borrar:", error);
       }
@@ -300,7 +305,8 @@ export default function AdminPanel() {
     setSubiendoArchivo(true);
     setMensaje("Subiendo documento...");
     try {
-      const refDoc = ref(storage, `noticias/documentos/${Date.now()}_${file.name}`);
+      const carpeta = vistaActiva === "articulos" ? "articulos" : "noticias";
+      const refDoc = ref(storage, `${carpeta}/documentos/${Date.now()}_${file.name}`);
       await uploadBytes(refDoc, file);
       const url = await getDownloadURL(refDoc);
 
@@ -319,7 +325,7 @@ export default function AdminPanel() {
   const copiarEnlaceDocumento = (nombre, url) => {
     const snippet = `[📄 Ver anexo: ${nombre}](${url})`;
     navigator.clipboard.writeText(snippet);
-    setMensaje("¡Enlace copiado! Pégalo en el contenido de la noticia.");
+    setMensaje("¡Enlace copiado! Pégalo en el contenido.");
     setTimeout(() => setMensaje(""), 4000);
   };
 
@@ -333,7 +339,7 @@ export default function AdminPanel() {
         setMainImagePreviewUrl(URL.createObjectURL(webpFile));
         setMensaje(""); 
       } catch (error) {
-        console.error("Error al procesar imagen principal:", error);
+        console.error("Error al procesar imagen:", error);
         setMensaje("Error al optimizar la imagen.");
         setTimeout(() => setMensaje(""), 3000);
       }
@@ -350,8 +356,8 @@ export default function AdminPanel() {
         e.target.value = ""; 
         setMensaje("");
       } catch (error) {
-        console.error("Error al procesar imágenes del carrusel:", error);
-        setMensaje("Error al optimizar las imágenes del carrusel.");
+        console.error("Error al procesar imágenes:", error);
+        setMensaje("Error al optimizar las imágenes.");
         setTimeout(() => setMensaje(""), 3000);
       }
     }
@@ -374,28 +380,33 @@ export default function AdminPanel() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMensaje(editandoId ? "Actualizando noticia..." : "Publicando noticia...");
+    setMensaje(editandoId ? "Actualizando información..." : "Publicando contenido...");
 
     try {
+      const carpeta = vistaActiva === "articulos" ? "articulos" : "noticias";
       let finalPrincipalUrl = imagenPrincipalAnterior;
+      
       if (imagenPrincipal) {
-        const refImg = ref(storage, `noticias/${Date.now()}_${imagenPrincipal.name}`);
+        const refImg = ref(storage, `${carpeta}/${Date.now()}_${imagenPrincipal.name}`);
         await uploadBytes(refImg, imagenPrincipal);
         finalPrincipalUrl = await getDownloadURL(refImg);
       }
 
       const nuevasUrls = [];
       for (const file of imagenesCarrusel) {
-        const refCar = ref(storage, `noticias/carrusel/${Date.now()}_${file.name}`);
+        const refCar = ref(storage, `${carpeta}/carrusel/${Date.now()}_${file.name}`);
         await uploadBytes(refCar, file);
         const url = await getDownloadURL(refCar);
         nuevasUrls.push(url);
       }
       
       const slugGenerado = generarSlug(titulo);
+      const coleccion = obtenerColeccionActiva();
 
       const datos = {
-        titulo, resumen, contenido,
+        titulo, 
+        resumen, 
+        contenido,
         slug: slugGenerado, 
         imagenPrincipalUrl: finalPrincipalUrl,
         imagenesCarruselUrls: [...carruselExistente, ...nuevasUrls],
@@ -404,15 +415,15 @@ export default function AdminPanel() {
       };
 
       if (editandoId) {
-        await updateDoc(doc(db, "noticias", editandoId), datos);
-        setMensaje("¡Noticia actualizada!");
+        await updateDoc(doc(db, coleccion, editandoId), datos);
+        setMensaje("¡Contenido actualizado!");
       } else {
-        await addDoc(collection(db, "noticias"), datos);
-        setMensaje("¡Noticia publicada!");
+        await addDoc(collection(db, coleccion), datos);
+        setMensaje("¡Contenido publicado!");
       }
 
       limpiarFormulario();
-      cargarNoticias(); 
+      cargarItems(); 
     } catch (err) {
       console.error(err);
       setMensaje("Error en el proceso.");
@@ -439,6 +450,8 @@ export default function AdminPanel() {
             <p className="text-gray-600 mb-10 text-lg">Seleccione el área departamental que desea administrar. Las opciones disponibles dependen de sus permisos de usuario.</p>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              {/* BOTÓN 1: COMUNICACIONES / NOTICIAS */}
               <button onClick={() => setVistaActiva("comunicaciones")} className="bg-gray-50 border border-gray-200 p-8 rounded-xl hover:shadow-lg hover:border-main-red transition-all flex flex-col items-center justify-center gap-4 group cursor-pointer">
                 <svg className="w-14 h-14 text-main-blue group-hover:text-main-red transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path>
@@ -448,11 +461,14 @@ export default function AdminPanel() {
                 <p className="text-sm text-gray-500 text-center">Gestión y publicación de noticias institucionales</p>
               </button>
 
-              <div className="bg-gray-50 border border-gray-200 p-8 rounded-xl opacity-60 flex flex-col items-center justify-center gap-4 cursor-not-allowed">
-                <svg className="w-14 h-14 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                <h2 className="text-xl font-bold text-gray-500">Cursos / Académico</h2>
-                <p className="text-sm text-gray-400 text-center">Próximamente</p>
-              </div>
+              {/* BOTÓN 2: ARTÍCULOS ACADÉMICOS */}
+              <button onClick={() => setVistaActiva("articulos")} className="bg-gray-50 border border-gray-200 p-8 rounded-xl hover:shadow-lg hover:border-main-red transition-all flex flex-col items-center justify-center gap-4 group cursor-pointer">
+                <svg className="w-14 h-14 text-main-blue group-hover:text-main-red transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+                <h2 className="text-xl font-bold text-main-blue group-hover:text-main-red transition-colors">Artículos Académicos</h2>
+                <p className="text-sm text-gray-500 text-center">Publicación de investigaciones, ensayos y revistas</p>
+              </button>
 
               <div className="bg-gray-50 border border-gray-200 p-8 rounded-xl opacity-60 flex flex-col items-center justify-center gap-4 cursor-not-allowed">
                 <svg className="w-14 h-14 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
@@ -463,7 +479,7 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {vistaActiva === "comunicaciones" && (
+        {(vistaActiva === "comunicaciones" || vistaActiva === "articulos") && (
           <div className="animate-fade-in-up">
             
             <button 
@@ -478,14 +494,20 @@ export default function AdminPanel() {
             </button>
 
             <div className={`bg-white p-6 rounded-lg shadow-md mb-8 border-l-4 ${editandoId ? 'border-main-red' : 'border-main-blue'}`}>
-              <h1 className="text-3xl font-extrabold text-main-blue">Departamento de Comunicaciones</h1>
-              <p className="text-light-blue">{editandoId ? "Modo Edición Activo" : "Gestión de Noticias"}</p>
+              <h1 className="text-3xl font-extrabold text-main-blue">
+                {vistaActiva === "comunicaciones" ? "Departamento de Comunicaciones" : "Repositorio Académico"}
+              </h1>
+              <p className="text-light-blue">
+                {editandoId 
+                  ? "Modo Edición Activo" 
+                  : (vistaActiva === "comunicaciones" ? "Gestión de Noticias" : "Gestión de Artículos")}
+              </p>
             </div>
 
             <div className="bg-white p-8 rounded-lg shadow-md mb-12 border-t-4 border-gray-100">
               <div className="flex justify-between items-center mb-6 border-b pb-2">
                 <h2 className={`text-2xl font-bold ${editandoId ? 'text-main-red' : 'text-main-blue'}`}>
-                  {editandoId ? "Editar Noticia" : "Crear Nueva Noticia"}
+                  {editandoId ? "Editar Contenido" : "Crear Nueva Entrada"}
                 </h2>
               </div>
               
@@ -494,7 +516,9 @@ export default function AdminPanel() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="md:col-span-2">
-                    <label className="block text-main-blue font-bold mb-2">Título de la Noticia</label>
+                    <label className="block text-main-blue font-bold mb-2">
+                      {vistaActiva === "articulos" ? "Título del Artículo" : "Título de la Noticia"}
+                    </label>
                     <input type="text" required value={titulo} onChange={(e) => setTitulo(e.target.value)} className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-light-blue" />
                   </div>
                   <div className="md:col-span-2 bg-basic-beige p-4 rounded border border-pale-blue">
@@ -517,7 +541,7 @@ export default function AdminPanel() {
                   <label className="flex items-center text-main-blue font-bold mb-2">
                     📁 Generador de Enlaces para Documentos (PDF, DOCX, XLSX)
                   </label>
-                  <p className="text-sm text-gray-500 mb-4">Sube un archivo aquí para obtener un enlace corto y pegarlo dentro de tu noticia.</p>
+                  <p className="text-sm text-gray-500 mb-4">Sube un archivo aquí para obtener un enlace corto y pegarlo dentro de tu texto.</p>
                   
                   <div className="flex flex-col sm:flex-row gap-4 items-center">
                     <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" onChange={handleSubirDocumento} className="sr-only" id="input-doc" />
@@ -610,7 +634,7 @@ export default function AdminPanel() {
                     Cancelar
                   </button>
                   <button type="submit" disabled={loading} className="w-2/3 bg-main-blue hover:bg-light-blue text-white font-bold py-4 rounded uppercase tracking-widest transition-all shadow-lg">
-                    {loading ? "Procesando..." : (editandoId ? "Actualizar Noticia" : "Publicar Noticia")}
+                    {loading ? "Procesando..." : (editandoId ? "Actualizar Contenido" : "Publicar Contenido")}
                   </button>
                 </div>
 
@@ -618,57 +642,65 @@ export default function AdminPanel() {
             </div>
 
             <div className="bg-white p-8 rounded-lg shadow-md border-t-4 border-main-blue">
-              <h2 className="text-2xl font-bold text-main-blue mb-6 border-b pb-2">Gestionar Noticias Publicadas</h2>
+              <h2 className="text-2xl font-bold text-main-blue mb-6 border-b pb-2">
+                Gestionar {vistaActiva === "comunicaciones" ? "Noticias" : "Artículos"} Publicados
+              </h2>
               <div className="space-y-4">
-                {listaNoticias.map((n) => (
-                  <div key={n.id} className="flex items-center justify-between bg-gray-50 p-4 rounded border hover:bg-white transition-colors">
-                    <div className="flex items-center gap-4">
-                      <img src={n.imagenPrincipalUrl} className="w-12 h-12 object-cover rounded shadow-sm" alt="Thumbnail" />
-                      <div className="flex flex-col">
-                        <h3 className="font-bold text-main-blue line-clamp-1">{n.titulo}</h3>
-                        <span className="text-xs text-light-blue font-medium mt-1">
-                          URL: /noticias/{n.slug || n.id}
-                        </span>
+                {listaItems.length === 0 ? (
+                  <p className="text-gray-500 text-center py-4">No hay contenido publicado en esta sección.</p>
+                ) : (
+                  listaItems.map((n) => (
+                    <div key={n.id} className="flex items-center justify-between bg-gray-50 p-4 rounded border hover:bg-white transition-colors">
+                      <div className="flex items-center gap-4">
+                        <img src={n.imagenPrincipalUrl} className="w-12 h-12 object-cover rounded shadow-sm" alt="Thumbnail" />
+                        <div className="flex flex-col">
+                          <h3 className="font-bold text-main-blue line-clamp-1">{n.titulo}</h3>
+                          <span className="text-xs text-light-blue font-medium mt-1">
+                            URL: /{vistaActiva === "articulos" ? "articulos" : "noticias"}/{n.slug || n.id}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => handleEditarItem(n)} className="border-2 border-main-blue text-main-blue px-4 py-1 rounded font-bold text-sm hover:bg-main-blue hover:text-white transition-all">Editar</button>
+                        <button onClick={() => handleBorrarItem(n.id, n.titulo)} className="border-2 border-bright-red text-bright-red px-4 py-1 rounded font-bold text-sm hover:bg-bright-red hover:text-white transition-all">Borrar</button>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => handleEditarNoticia(n)} className="border-2 border-main-blue text-main-blue px-4 py-1 rounded font-bold text-sm hover:bg-main-blue hover:text-white transition-all">Editar</button>
-                      <button onClick={() => handleBorrarNoticia(n.id, n.titulo)} className="border-2 border-bright-red text-bright-red px-4 py-1 rounded font-bold text-sm hover:bg-bright-red hover:text-white transition-all">Borrar</button>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
               
-              {/* CONTROLES DE PAGINACIÓN DEL ADMIN */}
-              <div className="mt-12 flex items-center justify-center gap-8">
-                <button 
-                  onClick={paginaAnterior}
-                  disabled={paginaActual === 1 || loading}
-                  className={`px-6 py-2 rounded-full font-bold text-sm uppercase tracking-widest transition-all ${
-                    paginaActual === 1 || loading 
-                    ? 'text-gray-300 cursor-not-allowed border border-gray-200' 
-                    : 'text-main-blue hover:bg-main-blue hover:text-white border border-main-blue cursor-pointer'
-                  }`}
-                >
-                  &larr; Anterior
-                </button>
+              {/* CONTROLES DE PAGINACIÓN */}
+              {listaItems.length > 0 && (
+                <div className="mt-12 flex items-center justify-center gap-8">
+                  <button 
+                    onClick={paginaAnterior}
+                    disabled={paginaActual === 1 || loading}
+                    className={`px-6 py-2 rounded-full font-bold text-sm uppercase tracking-widest transition-all ${
+                      paginaActual === 1 || loading 
+                      ? 'text-gray-300 cursor-not-allowed border border-gray-200' 
+                      : 'text-main-blue hover:bg-main-blue hover:text-white border border-main-blue cursor-pointer'
+                    }`}
+                  >
+                    &larr; Anterior
+                  </button>
 
-                <span className="text-main-blue font-black text-lg">
-                  {paginaActual}
-                </span>
+                  <span className="text-main-blue font-black text-lg">
+                    {paginaActual}
+                  </span>
 
-                <button 
-                  onClick={paginaSiguiente}
-                  disabled={!hayMas || loading}
-                  className={`px-6 py-2 rounded-full font-bold text-sm uppercase tracking-widest transition-all ${
-                    !hayMas || loading 
-                    ? 'text-gray-300 cursor-not-allowed border border-gray-200' 
-                    : 'text-main-blue hover:bg-main-blue hover:text-white border border-main-blue cursor-pointer'
-                  }`}
-                >
-                  Siguiente &rarr;
-                </button>
-              </div>
+                  <button 
+                    onClick={paginaSiguiente}
+                    disabled={!hayMas || loading}
+                    className={`px-6 py-2 rounded-full font-bold text-sm uppercase tracking-widest transition-all ${
+                      !hayMas || loading 
+                      ? 'text-gray-300 cursor-not-allowed border border-gray-200' 
+                      : 'text-main-blue hover:bg-main-blue hover:text-white border border-main-blue cursor-pointer'
+                    }`}
+                  >
+                    Siguiente &rarr;
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
