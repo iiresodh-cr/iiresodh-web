@@ -2,7 +2,9 @@
 import { useEffect, useState } from "react";
 import PageHeader from "../components/PageHeader";
 // Importamos las imágenes desde la carpeta assets
+import noFoto from "../assets/NoFoto.png";
 import fotoPresidente from "../assets/victor.webp";
+import fotoFabiola from "../assets/fabiola-galaviz.webp"
 import fotoDavid from "../assets/David_Urquilla-IIRE.webp";
 import fotoJIR from "../assets/Juan-Ignacio-Rodriguez.webp";
 import fotoRandall from "../assets/Randall.webp";
@@ -28,9 +30,9 @@ export default function Equipo() {
       },
       {
         id: "dir-1",
-        nombre: "Nombre Ejecutivo",
-        cargo: "Dirección Ejecutiva",
-        fotoUrl: "https://via.placeholder.com/400x500",
+        nombre: "Fabiola Galaviz",
+        cargo: "Direcctora Ejecutiva",
+        fotoUrl: fotoFabiola,
         destacado: false,
         orden: 2
       },
@@ -40,7 +42,7 @@ export default function Equipo() {
         cargo: "Coordinador de tecnología y Abogado",
         fotoUrl: fotoDavid, // Imagen actualizada aquí
         destacado: false,
-        orden: 3
+        orden: 6
       },
       {
         id: "staff-2",
@@ -64,7 +66,7 @@ export default function Equipo() {
         cargo: "Coordinadora de Cooperación Internacional y Abogada",
         fotoUrl: fotoRoxanne,
         destacado: false,
-        orden: 6
+        orden: 7
       },
       {
         id: "staff-5",
@@ -72,7 +74,15 @@ export default function Equipo() {
         cargo: "Abogado de Litigio Estratégico",
         fotoUrl: fotoFabricio,
         destacado: false,
-        orden: 7
+        orden: 8
+      },
+      {
+        id: "dir-2",
+        nombre: "Jessica Bellanger",
+        cargo: "Asistente de Presidencia",
+        fotoUrl: noFoto,
+        destacado: false,
+        orden: 3
       }
     ];
 
