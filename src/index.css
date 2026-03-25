@@ -49,33 +49,33 @@ body {
     bottom: 0 !important; 
   }
 
-  /* --- ESTILOS PARA EL CONTENIDO HTML GENERADO POR EL EDITOR --- */
+  /* --- ESTILOS PARA EL CONTENIDO DEL ARTÍCULO --- */
   
   .noticia-content {
     font-size: 1rem;
     line-height: 1.7;
-    color: #4b5563; /* Gris suave igual al Home */
-    text-align: left; /* Alineado a la izquierda siempre */
-    max-width: 100%;
+    color: #4b5563; 
+    text-align: left !important; /* Alineación natural a la izquierda */
   }
 
-  /* REGLA MAESTRA: Prohíbe el corte de palabras y fuerza alineación a la izquierda */
+  /* SOLUCIÓN FINAL A PALABRAS CORTADAS */
   .noticia-content * {
     text-align: left !important;
     white-space: normal !important; 
-    word-break: normal !important;      /* EVITA romper palabras por la mitad */
-    overflow-wrap: break-word !important; /* Solo rompe si la palabra es más ancha que el contenedor móvil */
-    hyphens: none !important;           /* Desactiva los guiones de separación silábica */
-    max-width: 100%;
+    /* 'keep-all' impide que se rompan palabras como Cuestionario */
+    word-break: keep-all !important; 
+    overflow-wrap: break-word !important;
+    hyphens: none !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
-  /* Párrafos base */
   .noticia-content p {
     margin-bottom: 1.25rem;
+    display: block;
     width: 100%;
   }
 
-  /* Imágenes */
   .noticia-content img {
     display: block;
     margin: 2rem auto;
@@ -84,7 +84,6 @@ body {
     height: auto;
   }
 
-  /* Enlaces */
   .noticia-content a {
     color: var(--color-main-red);
     font-weight: bold;
@@ -96,7 +95,6 @@ body {
     color: var(--color-main-blue);
   }
 
-  /* Listas */
   .noticia-content ul {
     list-style-type: disc;
     padding-left: 2.5rem;
@@ -111,10 +109,9 @@ body {
 
   .noticia-content li {
     margin-bottom: 0.5rem;
-    width: 100%;
   }
 
-  /* Tablas responsivas con scroll independiente */
+  /* Tablas responsivas */
   .noticia-content table {
     display: block;
     width: 100%;
@@ -133,7 +130,7 @@ body {
     padding: 12px 16px;
     border: 1px solid #e5e7eb;
     min-width: 140px; 
-    word-break: normal !important;
+    word-break: normal !important; /* En tablas sí permitimos break normal si es muy angosto */
     text-align: left !important;
   }
 
