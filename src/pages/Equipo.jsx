@@ -71,62 +71,69 @@ export default function Equipo() {
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark"></div>
 
-        <div className="relative z-10 max-w-6xl mx-auto py-16 px-6">
-          
-          {presidente && (
-            <div className="mb-24">
-              <div className="flex flex-col md:flex-row items-start gap-10 md:gap-20">
-                <div className="w-full md:w-2/5 shrink-0">
-                  <div className="aspect-4/5 bg-gray-50 border border-gray-200 rounded-xl overflow-hidden shadow-md">
-                    <img 
-                      src={presidente.fotoUrl} 
-                      alt={presidente.nombre} 
-                      className="w-full h-full object-cover"
-                    />
+        {/* ESTRUCTURA DE FONDO BLANCO (Igual a QuienesSomos) */}
+        <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
+          <div className="max-w-7xl mx-auto bg-white overflow-hidden shadow-sm md:rounded-3xl border border-gray-50">
+            
+            <div className="px-8 md:px-12 lg:px-16 py-12 md:py-16 animate-fade-in-up">
+              
+              {/* SECCIÓN PRESIDENTE */}
+              {presidente && (
+                <div className="mb-24">
+                  <div className="flex flex-col md:flex-row items-start gap-10 md:gap-20">
+                    <div className="w-full md:w-2/5 shrink-0">
+                      <div className="aspect-4/5 bg-gray-50 border border-gray-200 rounded-xl overflow-hidden shadow-md">
+                        <img 
+                          src={presidente.fotoUrl} 
+                          alt={presidente.nombre} 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="w-full md:w-3/5 text-justify">
+                      <span className="text-xs font-black text-main-red uppercase tracking-[0.4em] mb-4 block">Alta Dirección</span>
+                      <h2 className="text-3xl md:text-5xl font-semibold text-main-blue mb-4 tracking-tighter uppercase leading-tight">
+                        {presidente.nombre}
+                      </h2>
+                      <p className="text-xl font-bold text-light-blue mb-8 italic">
+                        {presidente.cargo}
+                      </p>
+                      <p className="text-gray-600 font-light leading-relaxed text-lg">
+                        {presidente.bio}
+                      </p>
+                    </div>
                   </div>
                 </div>
-                
-                <div className="w-full md:w-3/5 text-justify">
-                  <span className="text-xs font-black text-main-red uppercase tracking-[0.4em] mb-4 block">Alta Dirección</span>
-                  {/* Nombre cambiado a semibold */}
-                  <h2 className="text-3xl md:text-5xl font-semibold text-main-blue mb-4 tracking-tighter uppercase leading-tight">
-                    {presidente.nombre}
-                  </h2>
-                  <p className="text-xl font-bold text-light-blue mb-8 italic">
-                    {presidente.cargo}
-                  </p>
-                  <p className="text-gray-600 font-light leading-relaxed text-lg">
-                    {presidente.bio}
-                  </p>
-                </div>
+              )}
+
+              {/* SECCIÓN STAFF */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
+                {staff.map((miembro) => (
+                  <div key={miembro.id} className="flex flex-col group">
+                    <div className="aspect-4/5 w-full mb-6 rounded-xl overflow-hidden bg-gray-50 border border-gray-200 shadow-sm transition-all duration-500 group-hover:shadow-lg">
+                      <img 
+                        src={miembro.fotoUrl} 
+                        alt={miembro.nombre} 
+                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
+                      />
+                    </div>
+                    <div className="px-2">
+                      <h3 className="text-xl font-semibold text-main-blue leading-tight mb-1 group-hover:text-main-red transition-colors uppercase tracking-tight">
+                        {miembro.nombre}
+                      </h3>
+                      <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                        {miembro.cargo}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
+
             </div>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
-            {staff.map((miembro) => (
-              <div key={miembro.id} className="flex flex-col group">
-                <div className="aspect-4/5 w-full mb-6 rounded-xl overflow-hidden bg-gray-50 border border-gray-200 shadow-sm transition-all duration-500 group-hover:shadow-lg">
-                  <img 
-                    src={miembro.fotoUrl} 
-                    alt={miembro.nombre} 
-                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
-                  />
-                </div>
-                <div className="px-2">
-                  {/* Nombre cambiado a semibold */}
-                  <h3 className="text-xl font-semibold text-main-blue leading-tight mb-1 group-hover:text-main-red transition-colors uppercase tracking-tight">
-                    {miembro.nombre}
-                  </h3>
-                  <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">
-                    {miembro.cargo}
-                  </p>
-                </div>
-              </div>
-            ))}
           </div>
+        </section>
 
-        </div>
       </div>
     </div>
   );
