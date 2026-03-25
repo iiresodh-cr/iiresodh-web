@@ -1,6 +1,6 @@
 // src/pages/NoticiaDetalle.jsx
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { doc, getDoc, collection, query, where, getDocs, limit } from "firebase/firestore";
 import { db } from "../firebase/config";
 
@@ -26,6 +26,8 @@ const formatearTextoConLinksYHashtags = (texto) => {
         const termino = hashtag.substring(1); 
         return `<a href="/buscar?q=${termino}" class="text-light-blue font-semibold">${hashtag}</a>`;
       });
+      // SOLUCIÓN INTEGRAL: Traduce los "Enter" del teclado en saltos de línea de HTML
+      parte = parte.replace(/\n/g, '<br />');
       partes[i] = parte;
     }
   }

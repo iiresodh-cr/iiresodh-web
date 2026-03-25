@@ -18,118 +18,6 @@ body {
   color: #1D3557;
 }
 
-/* =========================================================================
-   🔥 REGLAS MAESTRAS DEL CONTENIDO (FUERA DE TAILWIND) 🔥
-   Aplicadas globalmente para dominar cualquier texto pegado desde Word/PDF
-========================================================================= */
-
-.noticia-content {
-  font-size: 1rem;
-  line-height: 1.7;
-  color: #4b5563; 
-  text-align: left !important;
-  width: 100%;
-}
-
-/* 1. overflow-wrap: break-word -> Rompe cadenas largas de espacios invisibles (El error de la foto).
-  2. word-break: normal -> Mantiene unidas las palabras reales (Salva a "Cuestionario").
-  3. max-width: 100% -> Nada puede ser más ancho que la pantalla.
-*/
-.noticia-content,
-.noticia-content * {
-  overflow-wrap: break-word !important; 
-  word-wrap: break-word !important;
-  word-break: normal !important; 
-  white-space: normal !important;
-  line-break: auto !important;
-  hyphens: none !important;
-  -webkit-hyphens: none !important;
-}
-
-/* Escudo para elementos en bloque */
-.noticia-content p,
-.noticia-content div,
-.noticia-content span,
-.noticia-content a,
-.noticia-content img,
-.noticia-content ul,
-.noticia-content ol,
-.noticia-content li,
-.noticia-content strong,
-.noticia-content b {
-  max-width: 100% !important;
-}
-
-.noticia-content p {
-  margin-bottom: 1.25rem;
-  display: block;
-}
-
-.noticia-content img {
-  display: block;
-  margin: 2rem auto;
-  border-radius: 0.5rem;
-  height: auto;
-}
-
-.noticia-content a {
-  color: var(--color-main-red) !important;
-  font-weight: bold !important;
-  text-decoration: underline !important;
-  transition: color 0.3s;
-}
-
-.noticia-content a:hover {
-  color: var(--color-main-blue) !important;
-}
-
-.noticia-content ul {
-  list-style-type: disc;
-  padding-left: 2.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.noticia-content ol {
-  list-style-type: decimal;
-  padding-left: 2.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.noticia-content li {
-  margin-bottom: 0.5rem;
-}
-
-/* Tablas blindadas con scroll interno exclusivo */
-.noticia-content table {
-  display: block !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  overflow-x: auto !important;
-  -webkit-overflow-scrolling: touch;
-  border-collapse: collapse;
-  margin: 2.5rem 0;
-  font-size: 0.9rem;
-  background-color: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.noticia-content th, 
-.noticia-content td {
-  padding: 12px 16px;
-  border: 1px solid #e5e7eb;
-  min-width: 140px; 
-}
-
-.noticia-content th {
-  background-color: #f9fafb;
-  color: var(--color-main-blue);
-  font-weight: 700;
-}
-
-/* =========================================================================
-   UTILIDADES ESTÁNDAR
-========================================================================= */
 @layer utilities {
   .map-container-wrapper {
     position: relative;
@@ -159,6 +47,91 @@ body {
 
   .swiper-custom-pagination .swiper-pagination-bullets {
     bottom: 0 !important; 
+  }
+
+  /* --- ESTILOS PARA EL CONTENIDO HTML --- */
+  
+  .noticia-content {
+    text-align: justify;
+    /* Estándar profesional: Evita que cadenas largas rompan la caja, respetando las palabras */
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: normal;
+  }
+
+  /* Párrafos base */
+  .noticia-content p {
+    margin-bottom: 1.25rem;
+  }
+
+  /* Imágenes */
+  .noticia-content img {
+    display: block;
+    margin: 2rem auto;
+    border-radius: 0.5rem;
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Enlaces */
+  .noticia-content a {
+    color: var(--color-main-red);
+    font-weight: bold;
+    text-decoration: underline;
+    word-break: break-all; /* Única excepción: los enlaces sí pueden romperse a la mitad */
+    transition: color 0.3s;
+  }
+
+  .noticia-content a:hover {
+    color: var(--color-main-blue);
+  }
+
+  /* Listas */
+  .noticia-content ul {
+    list-style-type: disc;
+    padding-left: 2.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .noticia-content ol {
+    list-style-type: decimal;
+    padding-left: 2.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .noticia-content li {
+    margin-bottom: 0.5rem;
+  }
+
+  /* Tablas (Estilo Institucional) */
+  .noticia-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2.5rem 0;
+    font-size: 1rem;
+    background-color: white;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    /* Activa scroll horizontal solo en la tabla si esta es muy ancha */
+    display: block;
+    overflow-x: auto;
+  }
+
+  .noticia-content th {
+    background-color: #f1f5f9;
+    color: var(--color-main-blue);
+    font-weight: 700;
+    text-align: left;
+    padding: 1rem 1.5rem;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  .noticia-content td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f8fafc;
+    color: #334155;
+    vertical-align: top;
   }
 
   .animate-bounce-slow {

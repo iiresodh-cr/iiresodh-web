@@ -19,6 +19,8 @@ const formatearTextoConLinksYHashtags = (texto) => {
         const termino = hashtag.substring(1); 
         return `<a href="/buscar?q=${termino}" class="text-light-blue hover:text-main-red font-bold transition-colors pointer-events-auto">${hashtag}</a>`;
       });
+      // SOLUCIÓN INTEGRAL: Traduce los "Enter" del teclado en saltos de línea de HTML
+      parte = parte.replace(/\n/g, '<br />');
       partes[i] = parte;
     }
   }

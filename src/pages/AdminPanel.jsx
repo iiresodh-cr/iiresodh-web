@@ -42,6 +42,8 @@ const formatearTextoConLinksYHashtags = (texto) => {
         const termino = hashtag.substring(1); 
         return `<a href="/buscar?q=${termino}" class="text-light-blue hover:text-main-red font-bold transition-colors pointer-events-auto">${hashtag}</a>`;
       });
+      // SOLUCIÓN INTEGRAL: Traduce los "Enter" del teclado en saltos de línea de HTML
+      parte = parte.replace(/\n/g, '<br />');
       partes[i] = parte;
     }
   }
@@ -567,13 +569,14 @@ export default function AdminPanel() {
                     )}
                   </label>
                   
+                  {/* RESTAURADO A TEXTAREA SIMPLE */}
                   <textarea 
                     required 
                     value={contenido} 
                     onChange={(e) => setContenido(e.target.value)} 
                     className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-light-blue" 
                     rows="12" 
-                    placeholder="Escribe el contenido aquí..." 
+                    placeholder="Escribe el contenido aquí o pega el texto y tablas desde Word/Excel..." 
                   />
                   
                   {vistaActiva === "comunicaciones" && (
