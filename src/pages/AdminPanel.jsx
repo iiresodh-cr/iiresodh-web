@@ -27,31 +27,36 @@ const generarSlug = (texto) => {
   return baseSlug ? `${baseSlug}-${randomCode}` : `noticia-${randomCode}`;
 };
 
-// NUEVA FUNCIÓN: Detecta URLs y también Hashtags (#)
+// FUNCIÓN ACTUALIZADA: Ahora detecta formato Markdown [Texto Corto](URLLarga)
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
-  const partes = texto.split(/(<[^>]+>)/g);
+
+  // 1. Procesar enlaces estilo Markdown: [Texto visible](https://url-larga.com)
+  let procesado = texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<]+)\)/g, (match, textoEnlace, url) => {
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red hover:text-main-blue font-bold underline transition-colors pointer-events-auto">${textoEnlace}</a>`;
+  });
+
+  const partes = procesado.split(/(<[^>]+>)/g);
   for (let i = 0; i < partes.length; i++) {
     if (i % 2 === 0) {
-      // 1. Convertir URLs
-      let procesado = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
+      // 2. Convertir URLs sueltas
+      let parte = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
         return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red hover:text-main-blue font-bold underline transition-colors pointer-events-auto">${url}</a>`;
       });
-      // 2. Convertir Hashtags (#)
-      procesado = procesado.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
-        const termino = hashtag.substring(1); // Quita el '#' para la búsqueda
+      // 3. Convertir Hashtags (#)
+      parte = parte.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
+        const termino = hashtag.substring(1); 
         return `<a href="/buscar?q=${termino}" class="text-light-blue hover:text-main-red font-bold transition-colors pointer-events-auto">${hashtag}</a>`;
       });
-      partes[i] = procesado;
+      partes[i] = parte;
     }
   }
   return partes.join('');
 };
 
-// NUEVA FUNCIÓN: Convierte imágenes JPG/PNG a WebP en el navegador
+// Convierte imágenes JPG/PNG a WebP en el navegador
 const convertirAWebp = (file, calidad = 0.8) => {
   return new Promise((resolve, reject) => {
-    // Si ya es webp, gif o svg, no lo tocamos
     if (file.type === 'image/webp' || file.type === 'image/gif' || file.type === 'image/svg+xml') {
       resolve(file);
       return;
@@ -68,10 +73,8 @@ const convertirAWebp = (file, calidad = 0.8) => {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0);
         
-        // Exportar a WebP
         canvas.toBlob((blob) => {
           if (blob) {
-            // Cambiamos la extensión del nombre original a .webp
             const nuevoNombre = file.name.replace(/\.[^/.]+$/, "") + ".webp";
             const webpFile = new File([blob], nuevoNombre, { type: 'image/webp' });
             resolve(webpFile);
@@ -91,7 +94,6 @@ const convertirAWebp = (file, calidad = 0.8) => {
 export default function AdminPanel() {
   const navigate = useNavigate(); 
   
-  // ESTADO PARA CONTROLAR LA VISTA ACTUAL (inicio o comunicaciones)
   const [vistaActiva, setVistaActiva] = useState("inicio");
 
   const [titulo, setTitulo] = useState("");
@@ -106,6 +108,10 @@ export default function AdminPanel() {
   const [editandoId, setEditandoId] = useState(null);
   const [imagenPrincipalAnterior, setImagenPrincipalAnterior] = useState(null); 
   const [carruselExistente, setCarruselExistente] = useState([]); 
+
+  // NUEVOS ESTADOS PARA DOCUMENTOS
+  const [archivosAdjuntos, setArchivosAdjuntos] = useState([]);
+  const [subiendoArchivo, setSubiendoArchivo] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [generandoResumen, setGenerandoResumen] = useState(false);
@@ -139,22 +145,15 @@ export default function AdminPanel() {
       }
       return fileNameWithTimestamp;
     } catch (error) {
-      return "Imagen existente";
+      return "Archivo existente";
     }
   };
 
   const cargarNoticias = async () => {
     try {
-      const q = query(
-        collection(db, "noticias"), 
-        orderBy("fechaPublicacion", "desc"), 
-        limit(NOTICIAS_POR_PAGINA)
-      );
+      const q = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), limit(NOTICIAS_POR_PAGINA));
       const querySnapshot = await getDocs(q);
-      const noticiasData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const noticiasData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setListaNoticias(noticiasData);
 
       if (querySnapshot.docs.length > 0) {
@@ -172,17 +171,9 @@ export default function AdminPanel() {
     if (!ultimoDoc) return;
     setCargandoMas(true);
     try {
-      const q = query(
-        collection(db, "noticias"), 
-        orderBy("fechaPublicacion", "desc"), 
-        startAfter(ultimoDoc),
-        limit(NOTICIAS_POR_PAGINA)
-      );
+      const q = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), startAfter(ultimoDoc), limit(NOTICIAS_POR_PAGINA));
       const querySnapshot = await getDocs(q);
-      const noticiasData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const noticiasData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       
       setListaNoticias(prev => [...prev, ...noticiasData]);
       
@@ -266,10 +257,12 @@ export default function AdminPanel() {
     setMainImagePreviewUrl(noticia.imagenPrincipalUrl); 
     setCarruselExistente(noticia.imagenesCarruselUrls || []);
     setImagenesCarrusel([]); 
+    setArchivosAdjuntos([]);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const cancelarEdicion = () => {
+  // UNIFICADO: Limpia el formulario cancelando la edición o descartando la nueva noticia
+  const limpiarFormulario = () => {
     setEditandoId(null);
     setTitulo("");
     setResumen("");
@@ -280,6 +273,10 @@ export default function AdminPanel() {
     setImagenPrincipalAnterior(null);
     setCarruselExistente([]);
     setImagenesCarrusel([]);
+    setArchivosAdjuntos([]);
+    setMensaje("Operación cancelada. Formulario en blanco.");
+    setTimeout(() => setMensaje(""), 3000);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleBorrarNoticia = async (id, titulo) => {
@@ -293,7 +290,38 @@ export default function AdminPanel() {
     }
   };
 
-  // MANEJADOR ACTUALIZADO: Convierte a WebP antes de guardar en estado
+  // NUEVA FUNCIÓN: Subir documentos PDF, Word, Excel a Firebase Storage
+  const handleSubirDocumento = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setSubiendoArchivo(true);
+    setMensaje("Subiendo documento...");
+    try {
+      const refDoc = ref(storage, `documentos/${Date.now()}_${file.name}`);
+      await uploadBytes(refDoc, file);
+      const url = await getDownloadURL(refDoc);
+
+      setArchivosAdjuntos(prev => [...prev, { nombre: file.name, url }]);
+      setMensaje("¡Documento subido con éxito!");
+    } catch (error) {
+      console.error("Error al subir documento:", error);
+      setMensaje("Error al subir el documento.");
+    } finally {
+      setSubiendoArchivo(false);
+      e.target.value = ""; // Reset input
+      setTimeout(() => setMensaje(""), 4000);
+    }
+  };
+
+  // NUEVA FUNCIÓN: Copiar al portapapeles en formato Markdown
+  const copiarEnlaceDocumento = (nombre, url) => {
+    const snippet = `[📄 Ver anexo: ${nombre}](${url})`;
+    navigator.clipboard.writeText(snippet);
+    setMensaje("¡Enlace copiado! Pégalo en el contenido de la noticia.");
+    setTimeout(() => setMensaje(""), 4000);
+  };
+
   const handleSeleccionPrincipal = async (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -311,7 +339,6 @@ export default function AdminPanel() {
     }
   };
 
-  // MANEJADOR ACTUALIZADO: Convierte a WebP antes de guardar en estado
   const handleAgregarImagenes = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
@@ -383,7 +410,7 @@ export default function AdminPanel() {
         setMensaje("¡Noticia publicada!");
       }
 
-      cancelarEdicion();
+      limpiarFormulario();
       cargarNoticias(); 
     } catch (err) {
       console.error(err);
@@ -405,19 +432,13 @@ export default function AdminPanel() {
 
       <main className="p-8 max-w-6xl mx-auto">
         
-        {/* VISTA 1: DASHBOARD PRINCIPAL (Selección de Área) */}
         {vistaActiva === "inicio" && (
           <div className="bg-white p-8 md:p-12 rounded-lg shadow-md border-t-4 border-main-blue animate-fade-in-up">
             <h1 className="text-3xl md:text-4xl font-extrabold text-main-blue mb-4">Panel de Control Principal</h1>
             <p className="text-gray-600 mb-10 text-lg">Seleccione el área departamental que desea administrar. Las opciones disponibles dependen de sus permisos de usuario.</p>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              
-              {/* Botón Departamento de Comunicaciones */}
-              <button 
-                onClick={() => setVistaActiva("comunicaciones")} 
-                className="bg-gray-50 border border-gray-200 p-8 rounded-xl hover:shadow-lg hover:border-main-red transition-all flex flex-col items-center justify-center gap-4 group cursor-pointer"
-              >
+              <button onClick={() => setVistaActiva("comunicaciones")} className="bg-gray-50 border border-gray-200 p-8 rounded-xl hover:shadow-lg hover:border-main-red transition-all flex flex-col items-center justify-center gap-4 group cursor-pointer">
                 <svg className="w-14 h-14 text-main-blue group-hover:text-main-red transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 8h8M8 12h8M8 16h4"></path>
@@ -426,35 +447,27 @@ export default function AdminPanel() {
                 <p className="text-sm text-gray-500 text-center">Gestión y publicación de noticias institucionales</p>
               </button>
 
-              {/* Botones Deshabilitados (Para el futuro) */}
               <div className="bg-gray-50 border border-gray-200 p-8 rounded-xl opacity-60 flex flex-col items-center justify-center gap-4 cursor-not-allowed">
-                <svg className="w-14 h-14 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                </svg>
+                <svg className="w-14 h-14 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                 <h2 className="text-xl font-bold text-gray-500">Cursos / Académico</h2>
                 <p className="text-sm text-gray-400 text-center">Próximamente</p>
               </div>
 
               <div className="bg-gray-50 border border-gray-200 p-8 rounded-xl opacity-60 flex flex-col items-center justify-center gap-4 cursor-not-allowed">
-                <svg className="w-14 h-14 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path>
-                </svg>
+                <svg className="w-14 h-14 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
                 <h2 className="text-xl font-bold text-gray-500">Litigios Activos</h2>
                 <p className="text-sm text-gray-400 text-center">Próximamente</p>
               </div>
-
             </div>
           </div>
         )}
 
-        {/* VISTA 2: DEPARTAMENTO DE COMUNICACIONES (Gestión de Noticias) */}
         {vistaActiva === "comunicaciones" && (
           <div className="animate-fade-in-up">
             
-            {/* Botón para regresar al panel principal */}
             <button 
               onClick={() => {
-                cancelarEdicion();
+                limpiarFormulario();
                 setVistaActiva("inicio");
               }} 
               className="mb-6 flex items-center gap-2 text-main-blue font-bold hover:text-main-red transition-colors"
@@ -473,7 +486,6 @@ export default function AdminPanel() {
                 <h2 className={`text-2xl font-bold ${editandoId ? 'text-main-red' : 'text-main-blue'}`}>
                   {editandoId ? "Editar Noticia" : "Crear Nueva Noticia"}
                 </h2>
-                {editandoId && <button onClick={cancelarEdicion} className="text-sm bg-gray-200 px-3 py-1 rounded font-bold hover:bg-gray-300 transition-colors">Cancelar Edición</button>}
               </div>
               
               {mensaje && <div className={`p-4 rounded mb-6 font-bold ${mensaje.includes("¡") || mensaje.includes("PIDA") || mensaje.includes("Optimizando") ? "bg-green-100 text-green-700" : "bg-blue-100 text-main-blue"}`}>{mensaje}</div>}
@@ -500,11 +512,39 @@ export default function AdminPanel() {
                   <textarea required maxLength="250" value={resumen} onChange={(e) => setResumen(e.target.value)} className="w-full border border-gray-300 p-3 rounded" rows="2" />
                 </div>
 
+                {/* SECCIÓN NUEVA: GESTOR DE DOCUMENTOS ADJUNTOS */}
+                <div className="bg-gray-50 p-4 rounded border border-gray-200">
+                  <label className="flex items-center text-main-blue font-bold mb-2">
+                    📁 Generador de Enlaces para Documentos (PDF, DOCX, XLSX)
+                  </label>
+                  <p className="text-sm text-gray-500 mb-4">Sube un archivo aquí para obtener un enlace corto y pegarlo dentro de tu noticia.</p>
+                  
+                  <div className="flex flex-col sm:flex-row gap-4 items-center">
+                    <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" onChange={handleSubirDocumento} className="sr-only" id="input-doc" />
+                    <label htmlFor="input-doc" className={`bg-white border-2 border-main-blue text-main-blue px-6 py-2 rounded font-bold cursor-pointer inline-block hover:bg-main-blue hover:text-white transition-colors ${subiendoArchivo ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      {subiendoArchivo ? "Subiendo..." : "Subir Archivo"}
+                    </label>
+                  </div>
+
+                  {archivosAdjuntos.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      {archivosAdjuntos.map((archivo, index) => (
+                        <div key={index} className="flex justify-between items-center bg-white p-3 rounded border shadow-sm">
+                          <span className="text-sm font-medium text-gray-700 truncate mr-4">{archivo.nombre}</span>
+                          <button type="button" onClick={() => copiarEnlaceDocumento(archivo.nombre, archivo.url)} className="bg-light-blue hover:bg-main-blue text-white text-xs font-bold py-1.5 px-3 rounded transition-colors shrink-0">
+                            Copiar Enlace
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 <div>
                   <label className="flex items-center text-main-blue font-bold mb-2">
                     Contenido Completo 
                     <span className="text-xs font-normal text-light-blue ml-3 bg-blue-50 px-2 py-1 rounded">
-                      (Soporta Emojis 🚀, Enlaces 🔗 y Hashtags #)
+                      (Pega aquí los enlaces generados arriba 📁)
                     </span>
                   </label>
                   <textarea required value={contenido} onChange={(e) => setContenido(e.target.value)} className="w-full border border-gray-300 p-3 rounded" rows="12" />
@@ -565,9 +605,16 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <button type="submit" disabled={loading} className="w-full bg-main-blue hover:bg-light-blue text-white font-bold py-4 rounded uppercase tracking-widest transition-all shadow-lg">
-                  {loading ? "Procesando..." : (editandoId ? "Actualizar" : "Publicar")}
-                </button>
+                {/* BOTONES DE ACCIÓN: CANCELAR Y PUBLICAR/ACTUALIZAR */}
+                <div className="flex gap-4 pt-4 border-t border-gray-100">
+                  <button type="button" onClick={limpiarFormulario} className="w-1/3 bg-gray-200 hover:bg-gray-300 text-main-blue font-bold py-4 rounded uppercase tracking-widest transition-all">
+                    Cancelar
+                  </button>
+                  <button type="submit" disabled={loading} className="w-2/3 bg-main-blue hover:bg-light-blue text-white font-bold py-4 rounded uppercase tracking-widest transition-all shadow-lg">
+                    {loading ? "Procesando..." : (editandoId ? "Actualizar Noticia" : "Publicar Noticia")}
+                  </button>
+                </div>
+
               </form>
             </div>
 
