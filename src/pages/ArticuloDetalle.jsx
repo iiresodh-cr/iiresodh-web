@@ -4,7 +4,6 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
 
-// Reutilizamos tu función de formateo para que los enlaces se vean bien y funcionen
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
   let procesado = texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<]+)\)/g, (match, textoEnlace, url) => {
@@ -37,20 +36,17 @@ export default function ArticuloDetalle() {
     
     const fetchArticulo = async () => {
       try {
-        // 1. Intentamos buscar por slug
         const q = query(collection(db, "articulos_academicos"), where("slug", "==", slug));
         const querySnapshot = await getDocs(q);
         
         if (!querySnapshot.empty) {
           setArticulo({ id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() });
         } else {
-          // 2. Si no hay slug, intentamos buscar por ID directo (respaldo)
           const docRef = doc(db, "articulos_academicos", slug);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             setArticulo({ id: docSnap.id, ...docSnap.data() });
           } else {
-            // Si no existe, mandamos a la página de artículos
             navigate("/articulos-academicos");
             return;
           }
@@ -92,7 +88,6 @@ export default function ArticuloDetalle() {
         <section className="relative pt-12 md:pt-20 px-6 md:px-8 z-10">
           <div className="max-w-4xl mx-auto bg-white overflow-hidden shadow-sm md:rounded-3xl border border-gray-100">
             
-            {/* BOTÓN VOLVER */}
             <div className="px-8 pt-8 md:px-16 md:pt-12">
               <Link to="/articulos-academicos" className="inline-flex items-center gap-2 text-xs font-bold text-main-red uppercase tracking-widest hover:text-main-blue transition-colors">
                 <span className="text-lg leading-none">&larr;</span> Volver al repositorio
@@ -101,9 +96,8 @@ export default function ArticuloDetalle() {
 
             <div className="px-8 md:px-16 py-8 md:py-12 animate-fade-in-up">
               
-              {/* ENCABEZADO DEL ARTÍCULO */}
               <div className="mb-10 border-b border-gray-100 pb-10">
-                <span className="text-sm font-black text-gray-400 uppercase tracking-[0.2em] mb-4 block">
+                <span className="text-sm font-black text-gray-400 uppercase tracking-widest mb-4 block">
                   {formatearFecha(articulo.fechaPublicacion)}
                 </span>
                 <h1 className="text-3xl md:text-5xl font-semibold text-main-blue leading-tight mb-6">
@@ -111,18 +105,17 @@ export default function ArticuloDetalle() {
                 </h1>
               </div>
 
-              {/* IMAGEN PRINCIPAL (Si existe) */}
+              {/* CORREGIDO: max-h-125 nativo de Tailwind 4 */}
               {articulo.imagenPrincipalUrl && (
                 <div className="mb-12 w-full rounded-2xl overflow-hidden bg-gray-50 shadow-sm border border-gray-100">
                   <img 
                     src={articulo.imagenPrincipalUrl} 
                     alt={articulo.titulo} 
-                    className="w-full max-h-[500px] object-contain"
+                    className="w-full max-h-125 object-contain"
                   />
                 </div>
               )}
 
-              {/* CONTENIDO DEL ARTÍCULO */}
               <div 
                 className="text-gray-700 text-lg md:text-xl font-light leading-relaxed noticia-content text-justify space-y-6"
                 dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(articulo.contenido) }}
