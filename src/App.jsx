@@ -28,6 +28,7 @@ import CursosPasados from "./pages/CursosPasados";
 import LitigiosActivos from "./pages/LitigiosActivos";
 import Equipo from "./pages/Equipo";
 import ArticulosAcademicos from "./pages/ArticulosAcademicos";
+import ArticuloDetalle from "./pages/ArticuloDetalle";
 
 function PublicLayout() {
   return (
@@ -62,6 +63,7 @@ function App() {
           <Route path="/buscar" element={<ResultadosBusqueda />} />
           <Route path="/privacidad" element={<Privacidad />} />
           <Route path="/articulos-academicos" element={<ArticulosAcademicos />} />
+          <Route path="/articulos-academicos/:slug" element={<ArticuloDetalle />} />
           
           <Route path="*" element={<NotFound />} />
         </Route>

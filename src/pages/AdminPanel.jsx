@@ -29,11 +29,9 @@ const generarSlug = (texto) => {
 
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
-
   let procesado = texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<]+)\)/g, (match, textoEnlace, url) => {
     return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red hover:text-main-blue font-bold underline transition-colors pointer-events-auto">${textoEnlace}</a>`;
   });
-
   const partes = procesado.split(/(<[^>]+>)/g);
   for (let i = 0; i < partes.length; i++) {
     if (i % 2 === 0) {
@@ -56,7 +54,6 @@ const convertirAWebp = (file, calidad = 0.8) => {
       resolve(file);
       return;
     }
-
     const reader = new FileReader();
     reader.onload = (event) => {
       const img = new Image();
@@ -64,10 +61,8 @@ const convertirAWebp = (file, calidad = 0.8) => {
         const canvas = document.createElement('canvas');
         canvas.width = img.width;
         canvas.height = img.height;
-        
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0);
-        
         canvas.toBlob((blob) => {
           if (blob) {
             const nuevoNombre = file.name.replace(/\.[^/.]+$/, "") + ".webp";
@@ -78,7 +73,7 @@ const convertirAWebp = (file, calidad = 0.8) => {
           }
         }, 'image/webp', calidad);
       };
-      img.onerror = () => reject(new Error("Error al cargar la imagen para convertirla"));
+      img.onerror = () => reject(new Error("Error al cargar la imagen"));
       img.src = event.target.result;
     };
     reader.onerror = () => reject(new Error("Error al leer el archivo"));
@@ -145,7 +140,6 @@ export default function AdminPanel() {
     }
   };
 
-  // Función de carga dinámica que depende de la vistaActiva (noticias o articulos_academicos)
   const obtenerColeccionActiva = () => {
     return vistaActiva === "articulos" ? "articulos_academicos" : "noticias";
   };
@@ -195,7 +189,6 @@ export default function AdminPanel() {
     cargarItemsBatch(q, "ant");
   };
 
-  // Cargar items cada vez que el usuario cambia de sección (noticias a artículos, o viceversa)
   useEffect(() => {
     if (vistaActiva !== "inicio") {
       cargarItems();
@@ -226,14 +219,11 @@ export default function AdminPanel() {
       setTimeout(() => setMensaje(""), 3000);
       return;
     }
-
     setGenerandoResumen(true);
     setMensaje("Consultando a PIDA...");
-    
     try {
       const generarResumen = httpsCallable(functions, 'generarResumenGemini');
       const resultado = await generarResumen({ contenido });
-      
       if (resultado.data && resultado.data.resumen) {
         setResumen(resultado.data.resumen);
         setMensaje("✨ Resumen inteligente generado por PIDA.");
@@ -252,7 +242,7 @@ export default function AdminPanel() {
   const handleEditarItem = (item) => {
     setEditandoId(item.id);
     setTitulo(item.titulo);
-    setResumen(item.resumen);
+    setResumen(item.resumen || "");
     setContenido(item.contenido || "");
 
     if (item.fechaPublicacion) {
@@ -261,8 +251,8 @@ export default function AdminPanel() {
       setFechaPersonalizada(localISOTime);
     }
 
-    setImagenPrincipalAnterior(item.imagenPrincipalUrl);
-    setMainImagePreviewUrl(item.imagenPrincipalUrl); 
+    setImagenPrincipalAnterior(item.imagenPrincipalUrl || null);
+    setMainImagePreviewUrl(item.imagenPrincipalUrl || null); 
     setCarruselExistente(item.imagenesCarruselUrls || []);
     setImagenesCarrusel([]); 
     setArchivosAdjuntos([]);
@@ -314,7 +304,7 @@ export default function AdminPanel() {
       setMensaje("¡Documento subido con éxito!");
     } catch (error) {
       console.error("Error al subir documento:", error);
-      setMensaje("Error al subir el documento. Revisa la consola.");
+      setMensaje("Error al subir el documento.");
     } finally {
       setSubiendoArchivo(false);
       e.target.value = ""; 
@@ -333,7 +323,7 @@ export default function AdminPanel() {
     const file = e.target.files[0];
     if (file) {
       try {
-        setMensaje("Optimizando imagen principal...");
+        setMensaje("Optimizando imagen...");
         const webpFile = await convertirAWebp(file);
         setImagenPrincipal(webpFile);
         setMainImagePreviewUrl(URL.createObjectURL(webpFile));
@@ -392,12 +382,15 @@ export default function AdminPanel() {
         finalPrincipalUrl = await getDownloadURL(refImg);
       }
 
+      // Solo procesar carrusel si estamos en noticias
       const nuevasUrls = [];
-      for (const file of imagenesCarrusel) {
-        const refCar = ref(storage, `${carpeta}/carrusel/${Date.now()}_${file.name}`);
-        await uploadBytes(refCar, file);
-        const url = await getDownloadURL(refCar);
-        nuevasUrls.push(url);
+      if (vistaActiva === "comunicaciones") {
+        for (const file of imagenesCarrusel) {
+          const refCar = ref(storage, `${carpeta}/carrusel/${Date.now()}_${file.name}`);
+          await uploadBytes(refCar, file);
+          const url = await getDownloadURL(refCar);
+          nuevasUrls.push(url);
+        }
       }
       
       const slugGenerado = generarSlug(titulo);
@@ -405,11 +398,11 @@ export default function AdminPanel() {
 
       const datos = {
         titulo, 
-        resumen, 
+        resumen, // El resumen ahora se pasa tal cual para ambas colecciones
         contenido,
         slug: slugGenerado, 
-        imagenPrincipalUrl: finalPrincipalUrl,
-        imagenesCarruselUrls: [...carruselExistente, ...nuevasUrls],
+        imagenPrincipalUrl: finalPrincipalUrl || null,
+        imagenesCarruselUrls: vistaActiva === "comunicaciones" ? [...carruselExistente, ...nuevasUrls] : [],
         fechaPublicacion: fechaPersonalizada ? Timestamp.fromDate(new Date(fechaPersonalizada)) : serverTimestamp(),
         activa: true
       };
@@ -444,30 +437,29 @@ export default function AdminPanel() {
 
       <main className="p-8 max-w-6xl mx-auto">
         
+        {/* PANEL PRINCIPAL */}
         {vistaActiva === "inicio" && (
           <div className="bg-white p-8 md:p-12 rounded-lg shadow-md border-t-4 border-main-blue animate-fade-in-up">
             <h1 className="text-3xl md:text-4xl font-extrabold text-main-blue mb-4">Panel de Control Principal</h1>
-            <p className="text-gray-600 mb-10 text-lg">Seleccione el área departamental que desea administrar. Las opciones disponibles dependen de sus permisos de usuario.</p>
+            <p className="text-gray-600 mb-10 text-lg">Seleccione el área departamental que desea administrar.</p>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               
-              {/* BOTÓN 1: COMUNICACIONES / NOTICIAS */}
               <button onClick={() => setVistaActiva("comunicaciones")} className="bg-gray-50 border border-gray-200 p-8 rounded-xl hover:shadow-lg hover:border-main-red transition-all flex flex-col items-center justify-center gap-4 group cursor-pointer">
                 <svg className="w-14 h-14 text-main-blue group-hover:text-main-red transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 8h8M8 12h8M8 16h4"></path>
                 </svg>
                 <h2 className="text-xl font-bold text-main-blue group-hover:text-main-red transition-colors">Comunicaciones</h2>
-                <p className="text-sm text-gray-500 text-center">Gestión y publicación de noticias institucionales</p>
+                <p className="text-sm text-gray-500 text-center">Gestión de noticias y comunicados</p>
               </button>
 
-              {/* BOTÓN 2: ARTÍCULOS ACADÉMICOS */}
               <button onClick={() => setVistaActiva("articulos")} className="bg-gray-50 border border-gray-200 p-8 rounded-xl hover:shadow-lg hover:border-main-red transition-all flex flex-col items-center justify-center gap-4 group cursor-pointer">
                 <svg className="w-14 h-14 text-main-blue group-hover:text-main-red transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                 </svg>
                 <h2 className="text-xl font-bold text-main-blue group-hover:text-main-red transition-colors">Artículos Académicos</h2>
-                <p className="text-sm text-gray-500 text-center">Publicación de investigaciones, ensayos y revistas</p>
+                <p className="text-sm text-gray-500 text-center">Publicación de investigaciones y ensayos</p>
               </button>
 
               <div className="bg-gray-50 border border-gray-200 p-8 rounded-xl opacity-60 flex flex-col items-center justify-center gap-4 cursor-not-allowed">
@@ -479,6 +471,7 @@ export default function AdminPanel() {
           </div>
         )}
 
+        {/* VISTAS DE FORMULARIO (NOTICIAS O ARTÍCULOS) */}
         {(vistaActiva === "comunicaciones" || vistaActiva === "articulos") && (
           <div className="animate-fade-in-up">
             
@@ -500,7 +493,7 @@ export default function AdminPanel() {
               <p className="text-light-blue">
                 {editandoId 
                   ? "Modo Edición Activo" 
-                  : (vistaActiva === "comunicaciones" ? "Gestión de Noticias" : "Gestión de Artículos")}
+                  : (vistaActiva === "comunicaciones" ? "Gestión de Noticias" : "Publicación de Artículos")}
               </p>
             </div>
 
@@ -514,6 +507,8 @@ export default function AdminPanel() {
               {mensaje && <div className={`p-4 rounded mb-6 font-bold ${mensaje.includes("¡") || mensaje.includes("PIDA") || mensaje.includes("Optimizando") ? "bg-green-100 text-green-700" : "bg-blue-100 text-main-blue"}`}>{mensaje}</div>}
 
               <form onSubmit={handleSubmit} className="space-y-6">
+                
+                {/* TÍTULO Y FECHA */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="md:col-span-2">
                     <label className="block text-main-blue font-bold mb-2">
@@ -527,6 +522,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
+                {/* RESUMEN PARA PORTADA (AHORA VISIBLE EN AMBOS) */}
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <label className="font-bold text-main-blue">Resumen para Portada</label>
@@ -537,51 +533,73 @@ export default function AdminPanel() {
                   <textarea required maxLength="250" value={resumen} onChange={(e) => setResumen(e.target.value)} className="w-full border border-gray-300 p-3 rounded" rows="2" />
                 </div>
 
-                <div className="bg-gray-50 p-4 rounded border border-gray-200">
-                  <label className="flex items-center text-main-blue font-bold mb-2">
-                    📁 Generador de Enlaces para Documentos (PDF, DOCX, XLSX)
-                  </label>
-                  <p className="text-sm text-gray-500 mb-4">Sube un archivo aquí para obtener un enlace corto y pegarlo dentro de tu texto.</p>
-                  
-                  <div className="flex flex-col sm:flex-row gap-4 items-center">
-                    <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" onChange={handleSubirDocumento} className="sr-only" id="input-doc" />
-                    <label htmlFor="input-doc" className={`bg-white border-2 border-main-blue text-main-blue px-6 py-2 rounded font-bold cursor-pointer inline-block hover:bg-main-blue hover:text-white transition-colors ${subiendoArchivo ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                      {subiendoArchivo ? "Subiendo..." : "Subir Archivo"}
+                {/* BLOQUES EXCLUSIVOS DE NOTICIAS */}
+                {vistaActiva === "comunicaciones" && (
+                  <div className="bg-gray-50 p-4 rounded border border-gray-200">
+                    <label className="flex items-center text-main-blue font-bold mb-2">
+                      📁 Generador de Enlaces para Documentos (PDF, DOCX, XLSX)
                     </label>
-                  </div>
+                    <p className="text-sm text-gray-500 mb-4">Sube un archivo aquí para obtener un enlace corto y pegarlo dentro de tu texto.</p>
+                    
+                    <div className="flex flex-col sm:flex-row gap-4 items-center">
+                      <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" onChange={handleSubirDocumento} className="sr-only" id="input-doc" />
+                      <label htmlFor="input-doc" className={`bg-white border-2 border-main-blue text-main-blue px-6 py-2 rounded font-bold cursor-pointer inline-block hover:bg-main-blue hover:text-white transition-colors ${subiendoArchivo ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                        {subiendoArchivo ? "Subiendo..." : "Subir Archivo"}
+                      </label>
+                    </div>
 
-                  {archivosAdjuntos.length > 0 && (
-                    <div className="mt-4 space-y-2">
-                      {archivosAdjuntos.map((archivo, index) => (
-                        <div key={index} className="flex justify-between items-center bg-white p-3 rounded border shadow-sm">
-                          <span className="text-sm font-medium text-gray-700 truncate mr-4">{archivo.nombre}</span>
-                          <button type="button" onClick={() => copiarEnlaceDocumento(archivo.nombre, archivo.url)} className="bg-light-blue hover:bg-main-blue text-white text-xs font-bold py-1.5 px-3 rounded transition-colors shrink-0">
-                            Copiar Enlace
-                          </button>
-                        </div>
-                      ))}
+                    {archivosAdjuntos.length > 0 && (
+                      <div className="mt-4 space-y-2">
+                        {archivosAdjuntos.map((archivo, index) => (
+                          <div key={index} className="flex justify-between items-center bg-white p-3 rounded border shadow-sm">
+                            <span className="text-sm font-medium text-gray-700 truncate mr-4">{archivo.nombre}</span>
+                            <button type="button" onClick={() => copiarEnlaceDocumento(archivo.nombre, archivo.url)} className="bg-light-blue hover:bg-main-blue text-white text-xs font-bold py-1.5 px-3 rounded transition-colors shrink-0">
+                              Copiar Enlace
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* CONTENIDO PRINCIPAL (Común) */}
+                <div>
+                  <label className="flex items-center text-main-blue font-bold mb-2">
+                    Contenido Completo 
+                    {vistaActiva === "comunicaciones" && (
+                      <span className="text-xs font-normal text-light-blue ml-3 bg-blue-50 px-2 py-1 rounded">
+                        (Pega aquí los enlaces generados arriba 📁)
+                      </span>
+                    )}
+                  </label>
+                  <textarea required value={contenido} onChange={(e) => setContenido(e.target.value)} className="w-full border border-gray-300 p-3 rounded" rows="12" />
+                  
+                  {/* Simulación visual solo para Noticias */}
+                  {vistaActiva === "comunicaciones" && (
+                    <div className="mt-4 bg-gray-50 p-5 rounded border border-gray-200 shadow-inner">
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-3">Simulación en Portada</label>
+                      <div ref={contenidoPreviewRef} className="text-gray-600 text-lg font-light leading-relaxed noticia-content max-h-80 overflow-hidden bg-white p-5 rounded" dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(contenido) || "Vista previa..." }} />
+                      <div className="mt-4">{showReadMoreWarning ? <p className="text-main-red font-bold text-sm">⚠️ El texto superó el límite visible.</p> : <p className="text-green-600 font-bold text-sm">✓ El texto cabe perfectamente.</p>}</div>
                     </div>
                   )}
                 </div>
 
-                <div>
-                  <label className="flex items-center text-main-blue font-bold mb-2">
-                    Contenido Completo 
-                    <span className="text-xs font-normal text-light-blue ml-3 bg-blue-50 px-2 py-1 rounded">
-                      (Pega aquí los enlaces generados arriba 📁)
-                    </span>
-                  </label>
-                  <textarea required value={contenido} onChange={(e) => setContenido(e.target.value)} className="w-full border border-gray-300 p-3 rounded" rows="12" />
-                  <div className="mt-4 bg-gray-50 p-5 rounded border border-gray-200 shadow-inner">
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-3">Simulación en Portada</label>
-                    <div ref={contenidoPreviewRef} className="text-gray-600 text-lg font-light leading-relaxed noticia-content max-h-80 overflow-hidden bg-white p-5 rounded" dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(contenido) || "Vista previa..." }} />
-                    <div className="mt-4">{showReadMoreWarning ? <p className="text-main-red font-bold text-sm">⚠️ El texto superó el límite visible.</p> : <p className="text-green-600 font-bold text-sm">✓ El texto cabe perfectamente.</p>}</div>
-                  </div>
-                </div>
-
+                {/* GESTIÓN DE IMÁGENES */}
                 <div className="grid grid-cols-1 gap-6 bg-basic-beige p-6 rounded border-2 border-pale-blue">
-                  <input type="file" accept="image/*" required={!editandoId && !imagenPrincipalAnterior} onChange={handleSeleccionPrincipal} className="sr-only" id="input-p" />
-                  <label htmlFor="input-p" className="bg-main-blue text-white px-6 py-2 rounded font-bold cursor-pointer inline-block shadow-md hover:bg-light-blue transition-colors">Seleccionar Imagen Principal</label>
+                  
+                  {/* Imagen Principal (Opcional para Artículos, Requerida para Noticias nuevas) */}
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    required={vistaActiva === "comunicaciones" && !editandoId && !imagenPrincipalAnterior} 
+                    onChange={handleSeleccionPrincipal} 
+                    className="sr-only" 
+                    id="input-p" 
+                  />
+                  <label htmlFor="input-p" className="bg-main-blue text-white px-6 py-2 rounded font-bold cursor-pointer inline-block shadow-md hover:bg-light-blue transition-colors">
+                    {vistaActiva === "articulos" ? "Adjuntar Imagen (Opcional)" : "Seleccionar Imagen Principal"}
+                  </label>
                   
                   {mainImagePreviewUrl && (
                     <div className="mt-2 bg-white p-3 rounded border inline-block max-w-full">
@@ -592,41 +610,46 @@ export default function AdminPanel() {
                     </div>
                   )}
 
-                  <input type="file" accept="image/*" multiple onChange={handleAgregarImagenes} className="sr-only" id="input-c" />
-                  <label htmlFor="input-c" className="bg-light-blue text-white px-6 py-2 rounded font-bold cursor-pointer inline-block mt-4 shadow-md hover:bg-main-blue transition-colors">+ Cargar Carrusel (Múltiple)</label>
-                  
-                  <div className="grid gap-3">
-                    {carruselExistente.map((url, i) => (
-                      <div key={`old-${i}`} className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-3 rounded border gap-4">
-                        <div className="flex items-center gap-4 overflow-hidden w-full sm:w-auto">
-                          <img src={url} className="h-20 w-24 object-cover rounded shadow-sm shrink-0" alt="Existente" />
-                          <span className="text-sm font-medium text-gray-600 truncate" title={extraerNombreDesdeUrl(url)}>
-                            {extraerNombreDesdeUrl(url)}
-                          </span>
-                        </div>
-                        <div className="flex gap-2 w-full sm:w-auto justify-end shrink-0">
-                          <button type="button" onClick={() => moverImagenExistente(i, -1)} disabled={i === 0} className="px-3 py-1 bg-main-blue hover:bg-light-blue transition-colors text-white rounded disabled:opacity-50">↑</button>
-                          <button type="button" onClick={() => moverImagenExistente(i, 1)} disabled={i === carruselExistente.length - 1} className="px-3 py-1 bg-main-blue hover:bg-light-blue transition-colors text-white rounded disabled:opacity-50">↓</button>
-                          <button type="button" onClick={() => setCarruselExistente(prev => prev.filter((_, idx) => idx !== i))} className="px-3 py-1 bg-bright-red hover:bg-red-700 transition-colors text-white rounded">X</button>
-                        </div>
+                  {/* Carrusel (Solo para Noticias) */}
+                  {vistaActiva === "comunicaciones" && (
+                    <>
+                      <input type="file" accept="image/*" multiple onChange={handleAgregarImagenes} className="sr-only" id="input-c" />
+                      <label htmlFor="input-c" className="bg-light-blue text-white px-6 py-2 rounded font-bold cursor-pointer inline-block mt-4 shadow-md hover:bg-main-blue transition-colors">+ Cargar Carrusel (Múltiple)</label>
+                      
+                      <div className="grid gap-3">
+                        {carruselExistente.map((url, i) => (
+                          <div key={`old-${i}`} className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-3 rounded border gap-4">
+                            <div className="flex items-center gap-4 overflow-hidden w-full sm:w-auto">
+                              <img src={url} className="h-20 w-24 object-cover rounded shadow-sm shrink-0" alt="Existente" />
+                              <span className="text-sm font-medium text-gray-600 truncate" title={extraerNombreDesdeUrl(url)}>
+                                {extraerNombreDesdeUrl(url)}
+                              </span>
+                            </div>
+                            <div className="flex gap-2 w-full sm:w-auto justify-end shrink-0">
+                              <button type="button" onClick={() => moverImagenExistente(i, -1)} disabled={i === 0} className="px-3 py-1 bg-main-blue hover:bg-light-blue transition-colors text-white rounded disabled:opacity-50">↑</button>
+                              <button type="button" onClick={() => moverImagenExistente(i, 1)} disabled={i === carruselExistente.length - 1} className="px-3 py-1 bg-main-blue hover:bg-light-blue transition-colors text-white rounded disabled:opacity-50">↓</button>
+                              <button type="button" onClick={() => setCarruselExistente(prev => prev.filter((_, idx) => idx !== i))} className="px-3 py-1 bg-bright-red hover:bg-red-700 transition-colors text-white rounded">X</button>
+                            </div>
+                          </div>
+                        ))}
+                        {imagenesCarrusel.map((f, i) => (
+                          <div key={`new-${i}`} className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-green-50 p-3 rounded border border-green-200 gap-4">
+                            <div className="flex items-center gap-4 overflow-hidden w-full sm:w-auto">
+                              <img src={URL.createObjectURL(f)} className="h-20 w-24 object-cover rounded shadow-sm shrink-0" alt="Nueva" />
+                              <span className="text-sm font-medium text-green-700 truncate" title={f.name}>
+                                {f.name} <span className="text-xs text-green-600 ml-1 font-bold">(Nueva)</span>
+                              </span>
+                            </div>
+                            <div className="flex gap-2 w-full sm:w-auto justify-end shrink-0">
+                              <button type="button" onClick={() => moverImagenNueva(i, -1)} disabled={i === 0} className="px-3 py-1 bg-main-blue hover:bg-light-blue transition-colors text-white rounded disabled:opacity-50">↑</button>
+                              <button type="button" onClick={() => moverImagenNueva(i, 1)} disabled={i === imagenesCarrusel.length - 1} className="px-3 py-1 bg-main-blue hover:bg-light-blue transition-colors text-white rounded disabled:opacity-50">↓</button>
+                              <button type="button" onClick={() => setImagenesCarrusel(prev => prev.filter((_, idx) => idx !== i))} className="px-3 py-1 bg-bright-red hover:bg-red-700 transition-colors text-white rounded">X</button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                    {imagenesCarrusel.map((f, i) => (
-                      <div key={`new-${i}`} className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-green-50 p-3 rounded border border-green-200 gap-4">
-                        <div className="flex items-center gap-4 overflow-hidden w-full sm:w-auto">
-                          <img src={URL.createObjectURL(f)} className="h-20 w-24 object-cover rounded shadow-sm shrink-0" alt="Nueva" />
-                          <span className="text-sm font-medium text-green-700 truncate" title={f.name}>
-                            {f.name} <span className="text-xs text-green-600 ml-1 font-bold">(Nueva)</span>
-                          </span>
-                        </div>
-                        <div className="flex gap-2 w-full sm:w-auto justify-end shrink-0">
-                          <button type="button" onClick={() => moverImagenNueva(i, -1)} disabled={i === 0} className="px-3 py-1 bg-main-blue hover:bg-light-blue transition-colors text-white rounded disabled:opacity-50">↑</button>
-                          <button type="button" onClick={() => moverImagenNueva(i, 1)} disabled={i === imagenesCarrusel.length - 1} className="px-3 py-1 bg-main-blue hover:bg-light-blue transition-colors text-white rounded disabled:opacity-50">↓</button>
-                          <button type="button" onClick={() => setImagenesCarrusel(prev => prev.filter((_, idx) => idx !== i))} className="px-3 py-1 bg-bright-red hover:bg-red-700 transition-colors text-white rounded">X</button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                    </>
+                  )}
                 </div>
 
                 <div className="flex gap-4 pt-4 border-t border-gray-100">
@@ -652,11 +675,17 @@ export default function AdminPanel() {
                   listaItems.map((n) => (
                     <div key={n.id} className="flex items-center justify-between bg-gray-50 p-4 rounded border hover:bg-white transition-colors">
                       <div className="flex items-center gap-4">
-                        <img src={n.imagenPrincipalUrl} className="w-12 h-12 object-cover rounded shadow-sm" alt="Thumbnail" />
+                        {n.imagenPrincipalUrl ? (
+                          <img src={n.imagenPrincipalUrl} className="w-12 h-12 object-cover rounded shadow-sm shrink-0" alt="Thumbnail" />
+                        ) : (
+                          <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center shrink-0">
+                            <span className="text-gray-400 text-xs">TXT</span>
+                          </div>
+                        )}
                         <div className="flex flex-col">
                           <h3 className="font-bold text-main-blue line-clamp-1">{n.titulo}</h3>
                           <span className="text-xs text-light-blue font-medium mt-1">
-                            URL: /{vistaActiva === "articulos" ? "articulos" : "noticias"}/{n.slug || n.id}
+                            URL: /{vistaActiva === "articulos" ? "articulos-academicos" : "noticias"}/{n.slug || n.id}
                           </span>
                         </div>
                       </div>
