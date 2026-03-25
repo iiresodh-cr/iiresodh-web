@@ -13,14 +13,14 @@ import 'swiper/css/pagination';
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
   let procesado = texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<]+)\)/g, (match, textoEnlace, url) => {
-    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-semibold underline transition-colors pointer-events-auto wrap-break-word">${textoEnlace}</a>`;
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-semibold underline transition-colors pointer-events-auto break-all">${textoEnlace}</a>`;
   });
 
   const partes = procesado.split(/(<[^>]+>)/g);
   for (let i = 0; i < partes.length; i++) {
     if (i % 2 === 0) {
       let parte = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
-        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-semibold underline transition-colors pointer-events-auto wrap-break-word">${url}</a>`;
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-semibold underline transition-colors pointer-events-auto break-all">${url}</a>`;
       });
       parte = parte.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
         const termino = hashtag.substring(1); 
@@ -114,10 +114,9 @@ export default function NoticiaDetalle() {
               </Swiper>
             </div>
 
-            <div className="w-full lg:w-1/2 max-w-full overflow-x-hidden">
-              {/* Contenedor estrictamente delimitado al igual que en artículos */}
+            <div className="w-full lg:w-1/2">
               <div 
-                className="noticia-content"
+                className="text-gray-700 text-lg md:text-xl font-light leading-relaxed noticia-content text-justify space-y-6"
                 dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(noticia.contenido) }}
               />
               

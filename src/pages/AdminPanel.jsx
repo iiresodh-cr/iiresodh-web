@@ -6,8 +6,6 @@ import { auth, db, storage, functions } from "../firebase/config";
 import { collection, addDoc, updateDoc, serverTimestamp, doc, deleteDoc, getDocs, query, orderBy, Timestamp, limit, startAfter, endBefore, limitToLast } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { httpsCallable } from "firebase/functions";
-import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.snow.css';
 
 import logoColor from "../assets/Logo_Oficiale_200w-trim.png";
 
@@ -569,25 +567,14 @@ export default function AdminPanel() {
                     )}
                   </label>
                   
-                  {/* React Quill Editor */}
-                  <div className="bg-white rounded border border-gray-300">
-                    <ReactQuill 
-                      theme="snow"
-                      value={contenido} 
-                      onChange={setContenido}
-                      className="h-80 mb-12"
-                      modules={{
-                        toolbar: [
-                          [{ 'header': [1, 2, 3, false] }],
-                          ['bold', 'italic', 'underline', 'strike'],
-                          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                          ['link', 'image', 'video'],
-                          ['clean'] 
-                        ]
-                      }}
-                      placeholder="Escribe el contenido aquí o pega el texto y tablas desde Word/Excel..."
-                    />
-                  </div>
+                  <textarea 
+                    required 
+                    value={contenido} 
+                    onChange={(e) => setContenido(e.target.value)} 
+                    className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-light-blue" 
+                    rows="12" 
+                    placeholder="Escribe el contenido aquí..." 
+                  />
                   
                   {vistaActiva === "comunicaciones" && (
                     <div className="mt-4 bg-gray-50 p-5 rounded border border-gray-200 shadow-inner">

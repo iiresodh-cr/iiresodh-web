@@ -4,6 +4,27 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
 
+const formatearTextoConLinksYHashtags = (texto) => {
+  if (!texto) return "";
+  let procesado = texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<]+)\)/g, (match, textoEnlace, url) => {
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red hover:text-main-blue font-bold underline transition-colors pointer-events-auto break-all">${textoEnlace}</a>`;
+  });
+  const partes = procesado.split(/(<[^>]+>)/g);
+  for (let i = 0; i < partes.length; i++) {
+    if (i % 2 === 0) {
+      let parte = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red hover:text-main-blue font-bold underline transition-colors pointer-events-auto break-all">${url}</a>`;
+      });
+      parte = parte.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
+        const termino = hashtag.substring(1); 
+        return `<a href="/buscar?q=${termino}" class="text-light-blue hover:text-main-red font-bold transition-colors pointer-events-auto">${hashtag}</a>`;
+      });
+      partes[i] = parte;
+    }
+  }
+  return partes.join('');
+};
+
 export default function ArticuloDetalle() {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -65,7 +86,7 @@ export default function ArticuloDetalle() {
         <div className="bg-watermark"></div>
 
         <section className="relative pt-12 md:pt-20 px-6 md:px-8 z-10">
-          <div className="max-w-6xl mx-auto bg-white overflow-hidden shadow-sm md:rounded-3xl border border-gray-100">
+          <div className="max-w-4xl mx-auto bg-white overflow-hidden shadow-sm md:rounded-3xl border border-gray-100">
             
             <div className="px-8 pt-8 md:px-16 md:pt-12">
               <Link to="/articulos-academicos" className="inline-flex items-center gap-2 text-xs font-bold text-main-red uppercase tracking-widest hover:text-main-blue transition-colors">
@@ -94,13 +115,10 @@ export default function ArticuloDetalle() {
                 </div>
               )}
 
-              {/* Contenedor estrictamente delimitado para evitar fugas horizontales */}
-              <div className="w-full max-w-full overflow-x-hidden">
-                <div 
-                  className="noticia-content"
-                  dangerouslySetInnerHTML={{ __html: articulo.contenido }}
-                />
-              </div>
+              <div 
+                className="text-gray-700 text-lg md:text-xl font-light leading-relaxed noticia-content text-justify space-y-6"
+                dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(articulo.contenido) }}
+              />
 
             </div>
           </div>
