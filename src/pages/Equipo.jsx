@@ -6,6 +6,7 @@ import fotoPresidente from "../assets/victor.webp";
 import fotoDavid from "../assets/David_Urquilla-IIRE.webp";
 import fotoJIR from "../assets/Juan-Ignacio-Rodriguez.webp";
 import fotoRandall from "../assets/Randall.webp";
+import fotoRoxanne from "../assets/Roxanne-Cabrera.webp";
 
 export default function Equipo() {
   const [equipo, setEquipo] = useState([]);
@@ -53,6 +54,14 @@ export default function Equipo() {
         nombre: "Randall Quirós Soto",
         cargo: "Coordinador de Administración",
         fotoUrl: fotoRandall,
+        destacado: false,
+        orden: 4
+      },
+      {
+        id: "staff-3",
+        nombre: "Roxanne Cabrera Baptista",
+        cargo: "Coordinador de Cooperación Internacional y Abogada",
+        fotoUrl: fotoRoxanne,
         destacado: false,
         orden: 4
       }
