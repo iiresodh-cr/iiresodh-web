@@ -1,6 +1,7 @@
 // src/pages/Privacidad.jsx
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 export default function Privacidad() {
   const location = useLocation();
@@ -24,16 +25,11 @@ export default function Privacidad() {
   return (
     <div className="bg-white flex flex-col min-h-screen font-sans">
       
-      {/* ENCABEZADO: Franja Azul Sólida (Congruente con el resto del sitio) */}
-      <div className="bg-main-blue text-white py-14 px-6 text-center relative z-20">
-        <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter mb-3 uppercase">
-          Privacidad y Términos
-        </h1>
-        <p className="text-blue-100 max-w-3xl mx-auto font-medium opacity-90">
-          Transparencia y protección de datos para todos nuestros usuarios.
-        </p>
-        <div className="w-20 h-1.5 bg-main-red mx-auto mt-8 rounded-full"></div>
-      </div>
+      {/* ENCABEZADO Estandarizado */}
+      <PageHeader 
+        titulo="Privacidad y Términos" 
+        subtitulo="Transparencia y protección de datos para todos nuestros usuarios." 
+      />
 
       <div className="relative overflow-hidden grow pb-20">
         {/* Marca de agua institucional */}

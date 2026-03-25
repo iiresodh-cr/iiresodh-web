@@ -1,5 +1,6 @@
 // src/pages/Donaciones.jsx
 import { useEffect } from "react";
+import PageHeader from "../components/PageHeader";
 
 export default function Donaciones() {
   useEffect(() => { 
@@ -9,16 +10,11 @@ export default function Donaciones() {
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
       
-      {/* ENCABEZADO: Franja Azul Sólida Institucional */}
-      <div className="bg-main-blue text-white py-14 px-6 text-center relative z-20">
-        <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter mb-3 uppercase">
-          Donaciones
-        </h1>
-        <p className="text-blue-100 max-w-3xl mx-auto font-medium opacity-90">
-          Tu apoyo contribuye directamente a la promoción y defensa de los Derechos Humanos y la Responsabilidad Social.
-        </p>
-        <div className="w-20 h-1.5 bg-main-red mx-auto mt-8 rounded-full"></div>
-      </div>
+      {/* ENCABEZADO Estandarizado */}
+      <PageHeader 
+        titulo="Donaciones" 
+        subtitulo="Tu apoyo contribuye directamente a la promoción y defensa de los Derechos Humanos y la Responsabilidad Social." 
+      />
 
       <div className="relative overflow-hidden grow flex items-center justify-center p-8">
         {/* Marca de agua institucional */}

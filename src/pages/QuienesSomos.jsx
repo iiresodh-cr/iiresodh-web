@@ -1,6 +1,9 @@
 // src/pages/QuienesSomos.jsx
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
+// Importamos la imagen correcta
+import fotoPresidente from "../assets/victor.webp"; 
 
 export default function QuienesSomos() {
   const location = useLocation();
@@ -18,6 +21,21 @@ export default function QuienesSomos() {
       window.scrollTo(0, 0); 
     }
   }, [location]);
+
+  // Simulamos la biografía incorporada (separa párrafos para justificación limpia)
+  const bioPresidente = (
+    <div className="space-y-4">
+      <p>
+        El Dr. Víctor Rodríguez Rescia es un reconocido experto internacional en derechos humanos y derecho internacional. Su vasta trayectoria incluye roles fundamentales en el Sistema Interamericano de Derechos Humanos, donde se desempeñó como Secretario de la Corte Interamericana de Derechos Humanos y, posteriormente, como miembro y Presidente del Comité de Derechos Humanos de las Naciones Unidas.
+      </p>
+      <p>
+        Con una profunda vocación académica y de incidencia, ha dirigido múltiples proyectos de capacitación y litigio estratégico en América Latina y Europa. Es fundador del IIRESODH y del Instituto de Altos Estudios Universitarios (U-IIRESODH) en México, impulsando la formación especializada de miles de defensores de derechos humanos y funcionarios públicos.
+      </p>
+      <p>
+        Bajo su presidencia, el IIRESODH se ha consolidado como un referente regional en la articulación entre responsabilidad social empresarial y estándares internacionales de derechos humanos, promoviendo la democracia y el acceso a la justicia a través de alianzas estratégicas con organismos multilaterales y la sociedad civil.
+      </p>
+    </div>
+  );
 
   const principiosRectores = [
     {
@@ -49,14 +67,11 @@ export default function QuienesSomos() {
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
       
-      {/* ENCABEZADO: Franja Azul Sólida (Congruente con Equipo) */}
-      <div className="bg-main-blue text-white py-14 px-6 text-center relative z-20">
-        <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter mb-3 uppercase">¿Quiénes Somos?</h1>
-        <p className="text-blue-100 max-w-3xl mx-auto font-medium opacity-90">
-          Defendiendo la democracia y los derechos humanos desde Costa Rica para el mundo.
-        </p>
-        <div className="w-20 h-1.5 bg-main-red mx-auto mt-8 rounded-full"></div>
-      </div>
+      {/* ENCABEZADO Estandarizado */}
+      <PageHeader 
+        titulo="¿Quiénes Somos?" 
+        subtitulo="Defendiendo la democracia y los derechos humanos desde Costa Rica para el mundo." 
+      />
 
       <div className="relative overflow-hidden grow pb-20">
         {/* Marca de agua institucional */}
@@ -69,7 +84,7 @@ export default function QuienesSomos() {
             <div className="px-8 md:px-12 lg:px-16 pb-12 md:pb-16 animate-fade-in-up">
               
               {/* Párrafos centrados para lectura cómoda */}
-              <div className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify mb-16">
+              <div className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify mb-20 border-b border-gray-100 pb-16">
                 <p>
                   El <strong className="font-extrabold text-main-blue">IIRESODH</strong> nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
                 </p>
@@ -87,8 +102,37 @@ export default function QuienesSomos() {
                 </p>
               </div>
 
+              {/* SECCIÓN NUEVA: EL PRESIDENTE (Contenedor Flex para alineación superior) */}
+              <div id="presidente" className="scroll-mt-32 mb-20 bg-gray-50 p-8 md:p-12 rounded-2xl border border-gray-100 flex flex-col md:flex-row items-start gap-10 md:gap-16">
+                {/* Columna Imagen: shrink-0 para mantener ancho, items-start para pegar arriba */}
+                <div className="w-full md:w-2/5 shrink-0 flex justify-center md:justify-start">
+                   <div className="aspect-4/5 bg-white border-2 border-white rounded-2xl overflow-hidden shadow-lg w-full max-w-[320px] md:max-w-none">
+                      <img 
+                        src={fotoPresidente} 
+                        alt="Dr. Víctor Rodríguez Rescia" 
+                        className="w-full h-full object-cover"
+                      />
+                   </div>
+                </div>
+
+                {/* Columna Texto: grow para ocupar el resto, text-justify para párrafos */}
+                <div className="flex-1 space-y-4">
+                   <span className="text-xs font-black text-main-red uppercase tracking-[0.4em] mb-4 block">Alta Dirección</span>
+                   <h2 className="text-3xl md:text-5xl font-extrabold text-main-blue tracking-tighter uppercase mb-6 leading-tight">
+                      Dr. Víctor Rodríguez Rescia
+                   </h2>
+                   <p className="text-xl font-bold text-light-blue mb-8 italic">
+                      Presidente del IIRESODH
+                   </p>
+                   {/* Párrafos justificados dentro de la variable bioPresidente */}
+                   <div className="text-gray-600 font-light leading-relaxed text-base md:text-lg text-justify">
+                      {bioPresidente}
+                   </div>
+                </div>
+              </div>
+
               {/* SECCIÓN MISIÓN Y VISIÓN */}
-              <div id="mision-vision" className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 mb-16 scroll-mt-32">
+              <div id="mision-vision" className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 mb-16 scroll-mt-32 pt-16 border-t border-gray-100">
                 <div className="bg-gray-50 border-l-4 border-main-red p-8 md:p-10 rounded-r-xl shadow-sm">
                   <h2 className="text-2xl font-extrabold text-main-blue mb-4 uppercase tracking-wider flex items-center gap-3">
                     <span className="bg-main-red text-white w-8 h-8 flex items-center justify-center rounded-full text-lg font-black">M</span>
@@ -109,7 +153,7 @@ export default function QuienesSomos() {
                 </div>
               </div>
 
-              {/* SECCIÓN PRINCIPIOS RECTORES ACTUALIZADA */}
+              {/* SECCIÓN PRINCIPIOS RECTORES */}
               <div id="principios-rectores" className="pt-10 border-t border-gray-100 scroll-mt-32">
                 <h2 className="text-2xl md:text-3xl font-semibold text-main-blue text-center mb-10 uppercase">
                   Principios Rectores

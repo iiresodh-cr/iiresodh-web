@@ -15,7 +15,7 @@ export default function Equipo() {
         id: "pres-1",
         nombre: "Dr. Víctor Rodríguez Rescia",
         cargo: "Presidente del IIRESODH",
-        bio: "Reseña profesional aquí.",
+        bio: "Actual miembro del Mecanismo Internacional de Expertos Independientes para Promover la Justicia e Igualdad Racial en la Aplicación de la Ley. Ex miembro del Comité de Derechos Humanos de Naciones Unidas y su Relator Especial para seguimiento de cumplimiento de comunicaciones, ex Presidente del Subcomité para la Prevención de la Tortura de las Naciones Unidas, ex Secretario Adjunto de la Corte Interamericana de Derechos Humanos y ex Director del Centro de Derechos Humanos para las Américas, DePaul University, Chicago, U.S.A. Sede Costa Rica. Además, es miembro de la Asamblea General del Instituto Interamericano de Derechos Humanos, de la Asamblea de la Comisión Internacional de Juristas, Ginebra (ICJ) y profesor invitado en diversas universidades de América Latina y Europa, entre ellas Columbia University, New York, USA y Universidad de Verona, Italia. Ha realizado múltiples publicaciones en materia de derechos humanos, litigio estratégico, acceso a la justicia y responsabilidad social. Cuenta con vasta experiencia como consultor independiente y como evaluador de proyectos y programas de desarrollo y derechos humanos. Actualmente ocupa el cargo de Presidente del Centro de Derechos Civiles y Políticos con sede en Ginebra, Suiza y del Instituto Internacional de Responsabilidad Social y Derechos Humanos.",
         fotoUrl: fotoPresidente, // <-- Imagen actualizada
         destacado: true,
         orden: 1
