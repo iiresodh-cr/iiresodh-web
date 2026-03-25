@@ -4,6 +4,7 @@ import PageHeader from "../components/PageHeader";
 // Importamos las imágenes desde la carpeta assets
 import fotoPresidente from "../assets/victor.webp";
 import fotoDavid from "../assets/David_Urquilla-IIRE.webp";
+import fotoJIR from "../assets/Juan-Ignacio-Rodriguez.webp";
 
 export default function Equipo() {
   const [equipo, setEquipo] = useState([]);
@@ -40,9 +41,9 @@ export default function Equipo() {
       },
       {
         id: "staff-2",
-        nombre: "Nombre Staff",
-        cargo: "Asesoría Legal",
-        fotoUrl: "https://via.placeholder.com/400x500",
+        nombre: "Juan Ignacio Rodríguez",
+        cargo: "Coordinador de Litigio Estratégico",
+        fotoUrl: fotoJIR,
         destacado: false,
         orden: 4
       }
