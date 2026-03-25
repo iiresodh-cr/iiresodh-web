@@ -65,7 +65,6 @@ export default function ArticuloDetalle() {
         <div className="bg-watermark"></div>
 
         <section className="relative pt-12 md:pt-20 px-6 md:px-8 z-10">
-          {/* CORRECCIÓN 1: max-w-6xl en lugar de max-w-4xl para dar más ancho */}
           <div className="max-w-6xl mx-auto bg-white overflow-hidden shadow-sm md:rounded-3xl border border-gray-100">
             
             <div className="px-8 pt-8 md:px-16 md:pt-12">
@@ -95,13 +94,11 @@ export default function ArticuloDetalle() {
                 </div>
               )}
 
-              {/* CORRECCIÓN 2: overflow-x-auto para que las tablas no se salgan del contenedor blanco */}
-              <div className="w-full overflow-x-auto pb-4">
-                <div 
-                  className="text-gray-700 text-lg md:text-xl font-light leading-relaxed noticia-content text-justify space-y-6 min-w-full"
-                  dangerouslySetInnerHTML={{ __html: articulo.contenido }}
-                />
-              </div>
+              {/* AQUÍ ELIMINAMOS EL WRAPPER QUE HACÍA SCROLL Y NORMALIZAMOS LA FUENTE */}
+              <div 
+                className="text-gray-600 text-base font-normal leading-relaxed noticia-content text-justify"
+                dangerouslySetInnerHTML={{ __html: articulo.contenido }}
+              />
 
             </div>
           </div>
