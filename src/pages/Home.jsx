@@ -143,57 +143,60 @@ export default function Home() {
             </div>
           )}
 
-          {/* BLOQUE 2: NUESTRAS OFICINAS */}
+          {/* BLOQUE 2: TEXTO INSTITUCIONAL Y MAPA */}
           <div className="pt-4 bg-white">
-            <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue uppercase tracking-widest mb-12 text-center w-full bg-white">
-              Nuestras Oficinas
-            </h2>
-            
             <div className="grid grid-cols-1 md:grid-cols-10 gap-10 items-center overflow-visible bg-white min-h-125">
               
               {/* IZQUIERDA: TEXTO INSTITUCIONAL */}
-              <div className="md:col-span-4 flex flex-col justify-center space-y-4 bg-white pr-10">
+              <div className="md:col-span-4 flex flex-col justify-center space-y-4 bg-white pr-10 md:mt-12">
                 <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
-                  El <strong className="font-extrabold text-main-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
+                  El <strong className="font-extrabold text-main-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, es una asociación sin fines de lucro, con su sede principal en Costa Rica y oficinas en otros países como Canadá, Colombia, Guatemala, México, con el objetivo de fomentar el cumplimiento de los estándares internacionales de derechos humanos mediante un enfoque de participación ciudadana, gubernamental y corporativa.
                 </p>
                 <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
-                  Desde su creación fue una entidad con claridad en sus objetivos para el fortalecimiento, promoción y protección de los derechos humanos, y con ello incidir en una cultura donde el respeto sea asumido por las empresas e instituciones públicas como una forma de desarrollo directo.
+                  Realizamos labores de capacitación, litigio estratégico y empoderamiento de la sociedad civil con fondos privados y de la cooperación internacional. Participamos frecuentemente en los diferentes espacios de trabajos y audiencias de los sistemas de protección de derechos humanos, siendo una voz activa en la defensa de la democracia y los derechos humanos.
                 </p>
                 <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
-                  Fomenta el mejoramiento social, económico, cultural, educativo, organizativo y productivo por medio de la promoción de la responsabilidad social empresarial y la promoción y protección de los derechos humanos.
+                  Fomentamos el mejoramiento social, económico, cultural, educativo, organizativo y productivo por medio de la promoción de la responsabilidad social empresarial y la promoción y protección de los derechos humanos.
                 </p>
               </div>
 
-              {/* DERECHA: MAPA */}
-              <div ref={mapContainerRef} className="md:col-span-6 map-container-wrapper bg-white">
-                <ComposableMap projection="geoMercator" projectionConfig={{ scale: 280, center: [-85, 30] }} className="w-full h-full bg-white overflow-visible">
-                  <Geographies geography={geoUrl}>
-                    {({ geographies }) =>
-                      geographies.map((geo) => (
-                        <Geography key={geo.rsmKey} geography={geo} fill="#F3F4F6" stroke="#FFFFFF" strokeWidth={0.5} style={{ default: { outline: "none" }, hover: { fill: "#E5E7EB", outline: "none" } }} />
-                      ))
-                    }
-                  </Geographies>
+              {/* DERECHA: TÍTULO Y MAPA */}
+              <div className="md:col-span-6 flex flex-col items-center bg-white w-full">
+                {/* EL TÍTULO AHORA VIVE DENTRO DE LA COLUMNA DEL MAPA */}
+                <h2 className="text-2xl md:text-3xl font-semibold text-main-blue  mb-8 text-center w-full">
+                  Nuestras Oficinas
+                </h2>
+                
+                <div ref={mapContainerRef} className="map-container-wrapper bg-white w-full">
+                  <ComposableMap projection="geoMercator" projectionConfig={{ scale: 280, center: [-85, 30] }} className="w-full h-full bg-white overflow-visible">
+                    <Geographies geography={geoUrl}>
+                      {({ geographies }) =>
+                        geographies.map((geo) => (
+                          <Geography key={geo.rsmKey} geography={geo} fill="#F3F4F6" stroke="#FFFFFF" strokeWidth={0.5} style={{ default: { outline: "none" }, hover: { fill: "#E5E7EB", outline: "none" } }} />
+                        ))
+                      }
+                    </Geographies>
 
-                  {sedes.map((sede) => (
-                    <Marker key={sede.id} coordinates={sede.coords}>
-                      <circle r={20} fill="transparent" className="cursor-pointer" onMouseEnter={(e) => handleHover(sede, e)} onMouseLeave={() => setHoveredSede(null)} />
-                      <circle r={10} fill="#B92F32" fillOpacity={0.1} className="animate-pulse pointer-events-none" />
-                      <circle r={5} fill="#B92F32" stroke="#FFFFFF" strokeWidth={2} className="pointer-events-none" />
-                    </Marker>
-                  ))}
-                </ComposableMap>
+                    {sedes.map((sede) => (
+                      <Marker key={sede.id} coordinates={sede.coords}>
+                        <circle r={20} fill="transparent" className="cursor-pointer" onMouseEnter={(e) => handleHover(sede, e)} onMouseLeave={() => setHoveredSede(null)} />
+                        <circle r={10} fill="#B92F32" fillOpacity={0.1} className="animate-pulse pointer-events-none" />
+                        <circle r={5} fill="#B92F32" stroke="#FFFFFF" strokeWidth={2} className="pointer-events-none" />
+                      </Marker>
+                    ))}
+                  </ComposableMap>
 
-                {/* TARJETA FLOTANTE HTML */}
-                {hoveredSede && (
-                  <div 
-                    className="absolute z-50 bg-white p-6 rounded-2xl shadow-2xl border-t-8 border-main-red flex flex-col gap-3 pointer-events-none w-[320px] transition-opacity duration-150"
-                    style={{ top: `${tooltipPos.top}px`, left: `${tooltipPos.left}px` }}
-                  >
-                    <h3 className="text-xl font-extrabold text-main-blue uppercase tracking-tight border-b border-gray-100 pb-2">{hoveredSede.pais}</h3>
-                    <p className="text-sm text-gray-700 leading-relaxed font-medium">{hoveredSede.info}</p>
-                  </div>
-                )}
+                  {/* TARJETA FLOTANTE HTML */}
+                  {hoveredSede && (
+                    <div 
+                      className="absolute z-50 bg-white p-6 rounded-2xl shadow-2xl border-t-8 border-main-red flex flex-col gap-3 pointer-events-none w-[320px] transition-opacity duration-150"
+                      style={{ top: `${tooltipPos.top}px`, left: `${tooltipPos.left}px` }}
+                    >
+                      <h3 className="text-xl font-extrabold text-main-blue uppercase tracking-tight border-b border-gray-100 pb-2">{hoveredSede.pais}</h3>
+                      <p className="text-sm text-gray-700 leading-relaxed font-medium">{hoveredSede.info}</p>
+                    </div>
+                  )}
+                </div>
               </div>
 
             </div>
