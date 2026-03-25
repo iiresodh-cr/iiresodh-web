@@ -5,6 +5,7 @@ import PageHeader from "../components/PageHeader";
 import fotoPresidente from "../assets/victor.webp";
 import fotoDavid from "../assets/David_Urquilla-IIRE.webp";
 import fotoJIR from "../assets/Juan-Ignacio-Rodriguez.webp";
+import fotoRandall from "../assets/Randall.webp";
 
 export default function Equipo() {
   const [equipo, setEquipo] = useState([]);
@@ -44,6 +45,14 @@ export default function Equipo() {
         nombre: "Juan Ignacio Rodríguez",
         cargo: "Coordinador de Litigio Estratégico",
         fotoUrl: fotoJIR,
+        destacado: false,
+        orden: 4
+      }
+      {
+        id: "staff-3",
+        nombre: "Randall Quirós Soto",
+        cargo: "Coordinador de Administración",
+        fotoUrl: fotoRandall,
         destacado: false,
         orden: 4
       }
