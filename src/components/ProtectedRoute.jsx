@@ -16,7 +16,7 @@ export default function ProtectedRoute({ children }) {
     return () => unsubscribe(); // Limpieza al desmontar
   }, []);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-[#1D3557] font-bold">Cargando...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-main-blue font-bold">Cargando...</div>;
   
   // Doble capa de seguridad: Debe haber usuario y debe ser el autorizado
   if (!user || user.email !== "webmaster@iiresodh.org") {

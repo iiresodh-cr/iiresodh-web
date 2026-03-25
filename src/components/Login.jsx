@@ -28,25 +28,25 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F1FAEE]">
-      <div className="bg-white p-10 rounded-xl shadow-lg max-w-md w-full text-center border-t-4 border-[#B92F32]">
+    <div className="min-h-screen flex items-center justify-center bg-basic-beige">
+      <div className="bg-white p-10 rounded-xl shadow-lg max-w-md w-full text-center border-t-4 border-main-red">
         
-        <h1 className="text-4xl font-extrabold text-[#1D3557] mb-2 font-sans">
+        <h1 className="text-4xl font-extrabold text-main-blue mb-2 font-sans">
           IIRESODH
         </h1>
-        <p className="text-[#457B9D] mb-8 font-medium">
+        <p className="text-light-blue mb-8 font-medium">
           Panel de Administración
         </p>
 
         {error && (
-          <div className="bg-[#E63946] text-white p-3 rounded mb-4 text-sm font-bold">
+          <div className="bg-bright-red text-white p-3 rounded mb-4 text-sm font-bold">
             {error}
           </div>
         )}
 
         <button
           onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center gap-3 bg-[#1D3557] hover:bg-[#457B9D] text-white font-bold py-3 px-4 rounded transition-colors duration-300"
+          className="w-full flex items-center justify-center gap-3 bg-main-blue hover:bg-light-blue text-white font-bold py-3 px-4 rounded transition-colors duration-300"
         >
           {/* Ícono de Google SVG */}
           <svg className="w-5 h-5" viewBox="0 0 24 24">
