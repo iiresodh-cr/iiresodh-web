@@ -109,19 +109,19 @@ export default function Home() {
                   className="w-full swiper-custom-pagination"
                 >
                   <SwiperSlide className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex items-center justify-center">
-                    <img src={noticia.imagenPrincipalUrl} alt="" className="w-full aspect-[4/5] object-cover block" />
+                    <img src={noticia.imagenPrincipalUrl} alt="" className="w-full aspect-4/5 object-cover block" />
                   </SwiperSlide>
                   {noticia.imagenesCarruselUrls?.map((url, i) => (
                     <SwiperSlide key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex items-center justify-center">
-                      <img src={url} alt="" className="w-full aspect-[4/5] object-cover block" />
+                      <img src={url} alt="" className="w-full aspect-4/5 object-cover block" />
                     </SwiperSlide>
                   ))}
                 </Swiper>
               </div>
 
               <div className="w-full md:w-3/5 flex flex-col justify-start md:pl-12 overflow-hidden bg-white">
-                {/* TÍTULO: SEMIBOLD (600), FONDO AZUL, TEXTO BLANCO, REDONDEADO, PADDING VERTICAL Y HORIZONTAL */}
-                <h2 className="text-3xl md:text-5xl font-semibold bg-main-blue text-white mb-8 leading-tight tracking-tight py-6 md:py-8 px-6 md:px-10 rounded-lg">
+                {/* TÍTULO SIN HEADER, COLOR LIGHT BLUE Y PESO SEMIBOLD */}
+                <h2 className="text-3xl md:text-5xl font-semibold text-light-blue mb-8 leading-tight tracking-tight">
                   {noticia.titulo}
                 </h2>
                 <div ref={contentRef} className="text-gray-600 mb-6 text-base md:text-lg font-light leading-relaxed noticia-content text-justify overflow-hidden" dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(noticia.contenido) }} />
@@ -142,7 +142,6 @@ export default function Home() {
             
             <div className="grid grid-cols-1 md:grid-cols-10 gap-10 items-center overflow-visible bg-white min-h-125">
               
-              {/* IZQUIERDA: TEXTO INSTITUCIONAL */}
               <div className="md:col-span-4 flex flex-col justify-center space-y-4 bg-white pr-10">
                 <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
                   El <strong className="font-extrabold text-main-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
@@ -155,7 +154,6 @@ export default function Home() {
                 </p>
               </div>
 
-              {/* DERECHA: MAPA */}
               <div ref={mapContainerRef} className="md:col-span-6 map-container-wrapper bg-white">
                 <ComposableMap projection="geoMercator" projectionConfig={{ scale: 280, center: [-85, 30] }} className="w-full h-full bg-white overflow-visible">
                   <Geographies geography={geoUrl}>
@@ -175,7 +173,6 @@ export default function Home() {
                   ))}
                 </ComposableMap>
 
-                {/* TARJETA FLOTANTE HTML */}
                 {hoveredSede && (
                   <div 
                     className="absolute z-50 bg-white p-6 rounded-2xl shadow-2xl border-t-8 border-main-red flex flex-col gap-3 pointer-events-none w-[320px] transition-opacity duration-150"
