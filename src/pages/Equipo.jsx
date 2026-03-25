@@ -1,8 +1,9 @@
 // src/pages/Equipo.jsx
 import { useEffect, useState } from "react";
 import PageHeader from "../components/PageHeader";
-// Importamos la imagen desde la carpeta assets
+// Importamos las imágenes desde la carpeta assets
 import fotoPresidente from "../assets/victor.webp";
+import fotoDavid from "../assets/David_Urquilla-IIRE.webp";
 
 export default function Equipo() {
   const [equipo, setEquipo] = useState([]);
@@ -33,7 +34,7 @@ export default function Equipo() {
         id: "staff-1",
         nombre: "David Urquilla",
         cargo: "Coordinador de tecnología y Abogado",
-        fotoUrl: "https://via.placeholder.com/400x500",
+        fotoUrl: fotoDavid, // Imagen actualizada aquí
         destacado: false,
         orden: 3
       },
@@ -71,7 +72,6 @@ export default function Equipo() {
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark"></div>
 
-        {/* ESTRUCTURA DE FONDO BLANCO (Igual a QuienesSomos) */}
         <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
           <div className="max-w-7xl mx-auto bg-white overflow-hidden shadow-sm md:rounded-3xl border border-gray-50">
             
