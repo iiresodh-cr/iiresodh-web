@@ -1,7 +1,7 @@
 // src/pages/Equipo.jsx
 import { useEffect, useState } from "react";
 // Importamos la imagen desde la carpeta assets
-import fotoPresidente from "../assets/Victor-1-WEB.jpg";
+import fotoPresidente from "../assets/victor.webp";
 
 export default function Equipo() {
   const [equipo, setEquipo] = useState([]);
