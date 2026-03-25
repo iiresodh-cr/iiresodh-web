@@ -15,19 +15,28 @@ import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
+// FUNCIÓN ACTUALIZADA: Ahora detecta formato Markdown [Texto Corto](URLLarga)
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
-  const partes = texto.split(/(<[^>]+>)/g);
+
+  // 1. Procesar enlaces estilo Markdown: [Texto visible](https://url-larga.com)
+  let procesado = texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<]+)\)/g, (match, textoEnlace, url) => {
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-semibold underline transition-colors pointer-events-auto wrap-break-word">${textoEnlace}</a>`;
+  });
+
+  const partes = procesado.split(/(<[^>]+>)/g);
   for (let i = 0; i < partes.length; i++) {
     if (i % 2 === 0) {
-      let procesado = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
+      // 2. Convertir URLs sueltas
+      let parte = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
         return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-semibold underline transition-colors pointer-events-auto wrap-break-word">${url}</a>`;
       });
-      procesado = procesado.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
+      // 3. Convertir Hashtags (#)
+      parte = parte.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
         const termino = hashtag.substring(1); 
         return `<a href="/buscar?q=${termino}" class="text-light-blue font-semibold">${hashtag}</a>`;
       });
-      partes[i] = procesado;
+      partes[i] = parte;
     }
   }
   return partes.join('');
