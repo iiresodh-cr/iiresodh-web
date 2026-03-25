@@ -94,11 +94,13 @@ export default function ArticuloDetalle() {
                 </div>
               )}
 
-              {/* Se añadieron las clases nativas de Tailwind para blindar el texto */}
-              <div 
-                className="noticia-content break-normal whitespace-normal"
-                dangerouslySetInnerHTML={{ __html: articulo.contenido }}
-              />
+              {/* Contenedor estrictamente delimitado para evitar fugas horizontales */}
+              <div className="w-full max-w-full overflow-x-hidden">
+                <div 
+                  className="noticia-content"
+                  dangerouslySetInnerHTML={{ __html: articulo.contenido }}
+                />
+              </div>
 
             </div>
           </div>

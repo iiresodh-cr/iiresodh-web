@@ -19,9 +19,8 @@ body {
 }
 
 /* =========================================================================
-   🔥 ATENCIÓN: TODO ESTE BLOQUE HA SALIDO FUERA DE @layer utilities 🔥
-   Al colocarlo en la raíz global, obligamos al navegador a leerlo 
-   de forma nativa y evitamos que Tailwind lo ignore o lo modifique.
+   🔥 REGLAS MAESTRAS DEL CONTENIDO (FUERA DE TAILWIND) 🔥
+   Aplicadas globalmente para dominar cualquier texto pegado desde Word/PDF
 ========================================================================= */
 
 .noticia-content {
@@ -32,30 +31,44 @@ body {
   width: 100%;
 }
 
-/* REGLA DEFINITIVA PARA FLUJO DE TEXTO NORMAL SIN CORTES */
+/* 1. overflow-wrap: break-word -> Rompe cadenas largas de espacios invisibles (El error de la foto).
+  2. word-break: normal -> Mantiene unidas las palabras reales (Salva a "Cuestionario").
+  3. max-width: 100% -> Nada puede ser más ancho que la pantalla.
+*/
+.noticia-content,
 .noticia-content * {
+  overflow-wrap: break-word !important; 
+  word-wrap: break-word !important;
   word-break: normal !important; 
-  overflow-wrap: normal !important; 
-  word-wrap: normal !important;
   white-space: normal !important;
   line-break: auto !important;
   hyphens: none !important;
   -webkit-hyphens: none !important;
-  text-align: left !important;
+}
+
+/* Escudo para elementos en bloque */
+.noticia-content p,
+.noticia-content div,
+.noticia-content span,
+.noticia-content a,
+.noticia-content img,
+.noticia-content ul,
+.noticia-content ol,
+.noticia-content li,
+.noticia-content strong,
+.noticia-content b {
   max-width: 100% !important;
 }
 
 .noticia-content p {
   margin-bottom: 1.25rem;
   display: block;
-  width: 100%;
 }
 
 .noticia-content img {
   display: block;
   margin: 2rem auto;
   border-radius: 0.5rem;
-  max-width: 100%;
   height: auto;
 }
 
@@ -63,8 +76,6 @@ body {
   color: var(--color-main-red) !important;
   font-weight: bold !important;
   text-decoration: underline !important;
-  word-break: break-word !important; 
-  overflow-wrap: break-word !important; 
   transition: color 0.3s;
 }
 
@@ -88,10 +99,11 @@ body {
   margin-bottom: 0.5rem;
 }
 
-/* Tablas responsivas */
+/* Tablas blindadas con scroll interno exclusivo */
 .noticia-content table {
   display: block !important;
   width: 100% !important;
+  max-width: 100% !important;
   overflow-x: auto !important;
   -webkit-overflow-scrolling: touch;
   border-collapse: collapse;
@@ -107,8 +119,6 @@ body {
   padding: 12px 16px;
   border: 1px solid #e5e7eb;
   min-width: 140px; 
-  word-break: normal !important;
-  overflow-wrap: normal !important;
 }
 
 .noticia-content th {
@@ -117,9 +127,8 @@ body {
   font-weight: 700;
 }
 
-
 /* =========================================================================
-   AQUÍ SOLO DEJAMOS LAS UTILIDADES PURAS (COMO ESPERABA TAILWIND)
+   UTILIDADES ESTÁNDAR
 ========================================================================= */
 @layer utilities {
   .map-container-wrapper {
