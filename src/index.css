@@ -56,39 +56,32 @@ body {
     line-height: 1.7;
     color: #4b5563; 
     text-align: left; 
+    width: 100%;
   }
 
-  /* * LA SOLUCIÓN DEFINITIVA A LAS PALABRAS CORTADAS
-   * Se usa 'normal' en TODAS las propiedades de salto para prohibir los cortes a la mitad.
-   */
-  .noticia-content, 
+  /* Limpiamos basura del editor para que los elementos respeten el ancho */
   .noticia-content * {
-    text-align: left !important;
+    max-width: 100% !important;
+  }
+
+  /* * LA FÓRMULA PERFECTA: 
+   * 'white-space: normal' fuerza al texto a llegar al borde y bajar.
+   * 'word-break: normal' protege a las palabras de cortarse a la mitad.
+   * 'overflow-wrap: break-word' actúa solo como salvavidas para URLs o textos eternos sin espacios.
+   */
+  .noticia-content p, 
+  .noticia-content span, 
+  .noticia-content li,
+  .noticia-content b,
+  .noticia-content strong {
     white-space: normal !important; 
     word-break: normal !important; 
-    overflow-wrap: normal !important; 
-    word-wrap: normal !important;
+    overflow-wrap: break-word !important; 
     hyphens: none !important;
-  }
-
-  /* Los enlaces son los ÚNICOS que tienen permiso de cortarse si son URLs larguísimas */
-  .noticia-content a {
-    color: var(--color-main-red) !important;
-    font-weight: bold !important;
-    text-decoration: underline !important;
-    word-break: break-word !important;
-    overflow-wrap: break-word !important;
-    transition: color 0.3s;
-  }
-
-  .noticia-content a:hover {
-    color: var(--color-main-blue) !important;
   }
 
   .noticia-content p {
     margin-bottom: 1.25rem;
-    display: block;
-    width: 100%;
   }
 
   .noticia-content img {
@@ -97,6 +90,19 @@ body {
     border-radius: 0.5rem;
     max-width: 100%;
     height: auto;
+  }
+
+  /* Enlaces (Estos sí tienen permiso de romperse para evitar que una URL larga destruya el diseño) */
+  .noticia-content a {
+    color: var(--color-main-red) !important;
+    font-weight: bold !important;
+    text-decoration: underline !important;
+    word-break: break-word !important; 
+    transition: color 0.3s;
+  }
+
+  .noticia-content a:hover {
+    color: var(--color-main-blue) !important;
   }
 
   .noticia-content ul {
@@ -117,9 +123,9 @@ body {
 
   /* Tablas responsivas */
   .noticia-content table {
-    display: block;
-    width: 100%;
-    overflow-x: auto;
+    display: block !important;
+    width: 100% !important;
+    overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
     border-collapse: collapse;
     margin: 2.5rem 0;
@@ -134,6 +140,8 @@ body {
     padding: 12px 16px;
     border: 1px solid #e5e7eb;
     min-width: 140px; 
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
   }
 
   .noticia-content th {
