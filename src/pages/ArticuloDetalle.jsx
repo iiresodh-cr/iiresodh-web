@@ -94,8 +94,9 @@ export default function ArticuloDetalle() {
                 </div>
               )}
 
+              {/* Se añadieron las clases nativas de Tailwind para blindar el texto */}
               <div 
-                className="noticia-content"
+                className="noticia-content break-normal whitespace-normal"
                 dangerouslySetInnerHTML={{ __html: articulo.contenido }}
               />
 

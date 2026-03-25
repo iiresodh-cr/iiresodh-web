@@ -18,6 +18,109 @@ body {
   color: #1D3557;
 }
 
+/* =========================================================================
+   🔥 ATENCIÓN: TODO ESTE BLOQUE HA SALIDO FUERA DE @layer utilities 🔥
+   Al colocarlo en la raíz global, obligamos al navegador a leerlo 
+   de forma nativa y evitamos que Tailwind lo ignore o lo modifique.
+========================================================================= */
+
+.noticia-content {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #4b5563; 
+  text-align: left !important;
+  width: 100%;
+}
+
+/* REGLA DEFINITIVA PARA FLUJO DE TEXTO NORMAL SIN CORTES */
+.noticia-content * {
+  word-break: normal !important; 
+  overflow-wrap: normal !important; 
+  word-wrap: normal !important;
+  white-space: normal !important;
+  line-break: auto !important;
+  hyphens: none !important;
+  -webkit-hyphens: none !important;
+  text-align: left !important;
+  max-width: 100% !important;
+}
+
+.noticia-content p {
+  margin-bottom: 1.25rem;
+  display: block;
+  width: 100%;
+}
+
+.noticia-content img {
+  display: block;
+  margin: 2rem auto;
+  border-radius: 0.5rem;
+  max-width: 100%;
+  height: auto;
+}
+
+.noticia-content a {
+  color: var(--color-main-red) !important;
+  font-weight: bold !important;
+  text-decoration: underline !important;
+  word-break: break-word !important; 
+  overflow-wrap: break-word !important; 
+  transition: color 0.3s;
+}
+
+.noticia-content a:hover {
+  color: var(--color-main-blue) !important;
+}
+
+.noticia-content ul {
+  list-style-type: disc;
+  padding-left: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.noticia-content ol {
+  list-style-type: decimal;
+  padding-left: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.noticia-content li {
+  margin-bottom: 0.5rem;
+}
+
+/* Tablas responsivas */
+.noticia-content table {
+  display: block !important;
+  width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  border-collapse: collapse;
+  margin: 2.5rem 0;
+  font-size: 0.9rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.noticia-content th, 
+.noticia-content td {
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  min-width: 140px; 
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+}
+
+.noticia-content th {
+  background-color: #f9fafb;
+  color: var(--color-main-blue);
+  font-weight: 700;
+}
+
+
+/* =========================================================================
+   AQUÍ SOLO DEJAMOS LAS UTILIDADES PURAS (COMO ESPERABA TAILWIND)
+========================================================================= */
 @layer utilities {
   .map-container-wrapper {
     position: relative;
@@ -47,107 +150,6 @@ body {
 
   .swiper-custom-pagination .swiper-pagination-bullets {
     bottom: 0 !important; 
-  }
-
-  /* --- ESTILOS PARA EL CONTENIDO DEL ARTÍCULO --- */
-  
-  .noticia-content {
-    font-size: 1rem;
-    line-height: 1.7;
-    color: #4b5563; 
-    text-align: left; 
-    width: 100%;
-  }
-
-  /* Limpiamos basura del editor para que los elementos respeten el ancho */
-  .noticia-content * {
-    max-width: 100% !important;
-  }
-
-  /* * LA FÓRMULA PERFECTA: 
-   * 'white-space: normal' fuerza al texto a llegar al borde y bajar.
-   * 'word-break: normal' protege a las palabras de cortarse a la mitad.
-   * 'overflow-wrap: break-word' actúa solo como salvavidas para URLs o textos eternos sin espacios.
-   */
-  .noticia-content p, 
-  .noticia-content span, 
-  .noticia-content li,
-  .noticia-content b,
-  .noticia-content strong {
-    white-space: normal !important; 
-    word-break: normal !important; 
-    overflow-wrap: break-word !important; 
-    hyphens: none !important;
-  }
-
-  .noticia-content p {
-    margin-bottom: 1.25rem;
-  }
-
-  .noticia-content img {
-    display: block;
-    margin: 2rem auto;
-    border-radius: 0.5rem;
-    max-width: 100%;
-    height: auto;
-  }
-
-  /* Enlaces (Estos sí tienen permiso de romperse para evitar que una URL larga destruya el diseño) */
-  .noticia-content a {
-    color: var(--color-main-red) !important;
-    font-weight: bold !important;
-    text-decoration: underline !important;
-    word-break: break-word !important; 
-    transition: color 0.3s;
-  }
-
-  .noticia-content a:hover {
-    color: var(--color-main-blue) !important;
-  }
-
-  .noticia-content ul {
-    list-style-type: disc;
-    padding-left: 2.5rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .noticia-content ol {
-    list-style-type: decimal;
-    padding-left: 2.5rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .noticia-content li {
-    margin-bottom: 0.5rem;
-  }
-
-  /* Tablas responsivas */
-  .noticia-content table {
-    display: block !important;
-    width: 100% !important;
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch;
-    border-collapse: collapse;
-    margin: 2.5rem 0;
-    font-size: 0.9rem;
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  }
-
-  .noticia-content th, 
-  .noticia-content td {
-    padding: 12px 16px;
-    border: 1px solid #e5e7eb;
-    min-width: 140px; 
-    word-break: normal !important;
-    overflow-wrap: break-word !important;
-  }
-
-  .noticia-content th {
-    background-color: #f9fafb;
-    color: var(--color-main-blue);
-    font-weight: 700;
   }
 
   .animate-bounce-slow {
