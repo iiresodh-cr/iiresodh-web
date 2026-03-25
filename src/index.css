@@ -52,7 +52,6 @@ body {
   /* --- ESTILOS PARA EL CONTENIDO HTML GENERADO POR QUILL --- */
   
   .noticia-content {
-    /* ELIMINADO white-space: pre-line; */
     text-align: justify;
   }
 
@@ -100,16 +99,27 @@ body {
     margin-bottom: 0.5rem;
   }
 
-  /* Tablas (Estilo Institucional) */
+  /* Tablas (Estilo Institucional - Reducción Proporcional) */
   .noticia-content table {
     width: 100%;
+    table-layout: auto;
     border-collapse: collapse;
     margin: 2.5rem 0;
-    font-size: 1rem;
+    /* La fuente se escala dinámicamente entre 0.65rem y 1rem según la pantalla */
+    font-size: clamp(0.65rem, 1.2vw, 1rem); 
     background-color: white;
     border-radius: 0.5rem;
-    overflow: hidden;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  .noticia-content th,
+  .noticia-content td {
+    /* El padding también se reduce en pantallas pequeñas para ganar espacio */
+    padding: clamp(0.3rem, 1vw, 1rem); 
+    vertical-align: top;
+    word-wrap: normal;
+    word-break: normal;
+    overflow-wrap: normal;
   }
 
   .noticia-content th {
@@ -117,15 +127,12 @@ body {
     color: var(--color-main-blue);
     font-weight: 700;
     text-align: left;
-    padding: 1rem 1.5rem;
     border-bottom: 2px solid #e2e8f0;
   }
 
   .noticia-content td {
-    padding: 1rem 1.5rem;
     border-bottom: 1px solid #f8fafc;
     color: #334155;
-    vertical-align: top;
   }
 
   .animate-bounce-slow {
