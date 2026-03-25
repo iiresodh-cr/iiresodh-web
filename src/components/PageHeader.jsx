@@ -2,7 +2,7 @@
 export default function PageHeader({ titulo, subtitulo }) {
   return (
     <div className="bg-main-blue text-white py-14 px-6 text-center relative z-20">
-      <h1 className="text-3xl md:text-5xl font-bold tracking-tighter mb-3 uppercase">
+      <h1 className="text-3xl md:text-5xl font-semibold tracking-tighter mb-3 uppercase">
         {titulo}
       </h1>
       {subtitulo && (

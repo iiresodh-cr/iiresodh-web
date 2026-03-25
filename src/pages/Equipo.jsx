@@ -1,5 +1,6 @@
 // src/pages/Equipo.jsx
 import { useEffect, useState } from "react";
+import PageHeader from "../components/PageHeader";
 // Importamos la imagen desde la carpeta assets
 import fotoPresidente from "../assets/victor.webp";
 
@@ -16,7 +17,7 @@ export default function Equipo() {
         nombre: "Dr. Víctor Rodríguez Rescia",
         cargo: "Presidente del IIRESODH",
         bio: "Actual miembro del Mecanismo Internacional de Expertos Independientes para Promover la Justicia e Igualdad Racial en la Aplicación de la Ley. Ex miembro del Comité de Derechos Humanos de Naciones Unidas y su Relator Especial para seguimiento de cumplimiento de comunicaciones, ex Presidente del Subcomité para la Prevención de la Tortura de las Naciones Unidas, ex Secretario Adjunto de la Corte Interamericana de Derechos Humanos y ex Director del Centro de Derechos Humanos para las Américas, DePaul University, Chicago, U.S.A. Sede Costa Rica. Además, es miembro de la Asamblea General del Instituto Interamericano de Derechos Humanos, de la Asamblea de la Comisión Internacional de Juristas, Ginebra (ICJ) y profesor invitado en diversas universidades de América Latina y Europa, entre ellas Columbia University, New York, USA y Universidad de Verona, Italia. Ha realizado múltiples publicaciones en materia de derechos humanos, litigio estratégico, acceso a la justicia y responsabilidad social. Cuenta con vasta experiencia como consultor independiente y como evaluador de proyectos y programas de desarrollo y derechos humanos. Actualmente ocupa el cargo de Presidente del Centro de Derechos Civiles y Políticos con sede en Ginebra, Suiza y del Instituto Internacional de Responsabilidad Social y Derechos Humanos.",
-        fotoUrl: fotoPresidente, // <-- Imagen actualizada
+        fotoUrl: fotoPresidente,
         destacado: true,
         orden: 1
       },
@@ -62,13 +63,10 @@ export default function Equipo() {
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
       
-      <div className="bg-main-blue text-white py-14 px-6 text-center relative z-20">
-        <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter mb-3 uppercase">Equipo de Trabajo</h1>
-        <p className="text-blue-100 max-w-3xl mx-auto font-medium opacity-90">
-          El talento humano detrás de la promoción y protección de los derechos humanos.
-        </p>
-        <div className="w-20 h-1.5 bg-main-red mx-auto mt-8 rounded-full"></div>
-      </div>
+      <PageHeader 
+        titulo="Equipo de Trabajo" 
+        subtitulo="El talento humano detrás de la promoción y protección de los derechos humanos." 
+      />
 
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark"></div>
@@ -77,9 +75,9 @@ export default function Equipo() {
           
           {presidente && (
             <div className="mb-24">
-              <div className="flex flex-col md:flex-row items-center gap-10 md:gap-20">
+              <div className="flex flex-col md:flex-row items-start gap-10 md:gap-20">
                 <div className="w-full md:w-2/5 shrink-0">
-                  <div className="aspect-4/5 bg-gray-50 border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="aspect-4/5 bg-gray-50 border border-gray-200 rounded-xl overflow-hidden shadow-md">
                     <img 
                       src={presidente.fotoUrl} 
                       alt={presidente.nombre} 
@@ -88,9 +86,10 @@ export default function Equipo() {
                   </div>
                 </div>
                 
-                <div className="w-full md:w-3/5 text-justify md:text-left">
+                <div className="w-full md:w-3/5 text-justify">
                   <span className="text-xs font-black text-main-red uppercase tracking-[0.4em] mb-4 block">Alta Dirección</span>
-                  <h2 className="text-3xl md:text-5xl font-extrabold text-main-blue mb-4 tracking-tighter uppercase">
+                  {/* Nombre cambiado a semibold */}
+                  <h2 className="text-3xl md:text-5xl font-semibold text-main-blue mb-4 tracking-tighter uppercase leading-tight">
                     {presidente.nombre}
                   </h2>
                   <p className="text-xl font-bold text-light-blue mb-8 italic">
@@ -107,7 +106,7 @@ export default function Equipo() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
             {staff.map((miembro) => (
               <div key={miembro.id} className="flex flex-col group">
-                <div className="aspect-4/5 w-full mb-6 rounded-xl overflow-hidden bg-gray-50 border border-gray-200">
+                <div className="aspect-4/5 w-full mb-6 rounded-xl overflow-hidden bg-gray-50 border border-gray-200 shadow-sm transition-all duration-500 group-hover:shadow-lg">
                   <img 
                     src={miembro.fotoUrl} 
                     alt={miembro.nombre} 
@@ -115,7 +114,8 @@ export default function Equipo() {
                   />
                 </div>
                 <div className="px-2">
-                  <h3 className="text-xl font-extrabold text-main-blue leading-tight mb-1 group-hover:text-main-red transition-colors uppercase tracking-tight">
+                  {/* Nombre cambiado a semibold */}
+                  <h3 className="text-xl font-semibold text-main-blue leading-tight mb-1 group-hover:text-main-red transition-colors uppercase tracking-tight">
                     {miembro.nombre}
                   </h3>
                   <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">
