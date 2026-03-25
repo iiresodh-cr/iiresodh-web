@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../firebase/config";
+import PageHeader from "../components/PageHeader";
 
 const PAGINAS_ESTATICAS = [
   { 
@@ -50,21 +51,21 @@ const PAGINAS_ESTATICAS = [
   { 
     id: 'p4', 
     titulo: 'Litigio Estratégico', 
-    ruta: '/', 
+    ruta: '/litigio-estrategico', 
     descripcion: 'Nuestra área de trabajo enfocada en el litigio estratégico para la defensa de los derechos humanos.', 
     palabrasClave: ['litigio', 'estrategico', 'derechos', 'humanos', 'legal', 'corte', 'area', 'trabajo'] 
   },
   { 
     id: 'p5', 
     titulo: 'Cooperación Internacional', 
-    ruta: '/', 
+    ruta: '/cooperacion-internacional', 
     descripcion: 'Proyectos y alianzas de cooperación a nivel internacional.', 
     palabrasClave: ['cooperacion', 'internacional', 'alianzas', 'proyectos', 'global', 'area', 'trabajo'] 
   },
   { 
     id: 'p6', 
     titulo: 'Donaciones', 
-    ruta: '/', 
+    ruta: '/donaciones', 
     descripcion: 'Apoya nuestra causa y contribuye a la defensa de los derechos humanos.', 
     palabrasClave: ['donar', 'donaciones', 'apoyo', 'colaborar', 'aportar', 'ayuda'] 
   }
@@ -134,91 +135,101 @@ export default function ResultadosBusqueda() {
   const totalResultados = resultadosPaginas.length + resultadosNoticias.length;
 
   return (
-    <div className="bg-basic-beige min-h-screen py-12 px-6">
-      <div className="max-w-4xl mx-auto">
-        
-        <div className="mb-8 border-b border-gray-200 pb-6">
-          <h1 className="text-3xl font-extrabold text-main-blue mb-2">
-            Resultados de Búsqueda
-          </h1>
-          <p className="text-lg text-light-blue">
-            Buscando: <span className="font-bold text-main-red">"{terminoBusqueda}"</span>
-          </p>
-          {!loading && (
-            <p className="text-sm text-gray-500 mt-2">
-              Se encontraron {totalResultados} resultado{totalResultados !== 1 ? 's' : ''}.
-            </p>
-          )}
-        </div>
+    <div className="bg-white min-h-screen flex flex-col font-sans">
+      
+      {/* HEADER ESTANDARIZADO */}
+      <PageHeader 
+        titulo="Resultados de Búsqueda" 
+        subtitulo={`Mostrando resultados para: "${terminoBusqueda}"`} 
+      />
 
-        {loading ? (
-          <div className="flex justify-center items-center py-20">
-            <svg className="animate-spin h-10 w-10 text-main-blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span className="ml-3 text-main-blue font-bold text-lg">Buscando...</span>
-          </div>
-        ) : totalResultados === 0 ? (
-          <div className="bg-white p-10 rounded-xl shadow-sm text-center border border-gray-100">
-            <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            <h2 className="text-xl font-bold text-main-blue mb-2">No encontramos coincidencias</h2>
-            <p className="text-gray-500">Intenta utilizar otras palabras clave o términos más generales.</p>
-            <Link to="/" className="inline-block mt-6 text-main-red hover:text-bright-red font-bold transition-colors">
-              &larr; Volver al inicio
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-10">
+      <div className="relative overflow-hidden grow pb-20">
+        <div className="bg-watermark"></div>
+
+        {/* CONTENEDOR INSTITUCIONAL */}
+        <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
+          <div className="max-w-6xl mx-auto bg-white overflow-hidden shadow-sm md:rounded-3xl border border-gray-50">
             
-            {resultadosPaginas.length > 0 && (
-              <section>
-                <h2 className="text-xl font-bold text-main-blue mb-4 flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path></svg>
-                  Secciones del Sitio
-                </h2 >
-                <div className="grid gap-4">
-                  {resultadosPaginas.map(pagina => (
-                    <Link key={pagina.id} to={pagina.ruta} className="bg-white p-5 rounded-lg shadow-sm border border-gray-100 hover:shadow-md hover:border-pale-blue transition-all group">
-                      <h3 className="text-lg font-bold text-main-blue group-hover:text-light-blue transition-colors mb-1">{pagina.titulo}</h3>
-                      <p className="text-sm text-gray-600">{pagina.descripcion}</p>
-                    </Link>
-                  ))}
+            <div className="px-8 md:px-12 lg:px-16 py-12 md:py-16 animate-fade-in-up">
+              
+              {loading ? (
+                <div className="flex flex-col justify-center items-center py-20">
+                  <div className="w-16 h-16 border-4 border-pale-blue border-t-main-red rounded-full animate-spin mb-6"></div>
+                  <span className="text-main-blue font-bold text-lg uppercase tracking-widest">Buscando coincidencias...</span>
                 </div>
-              </section>
-            )}
-
-            {resultadosNoticias.length > 0 && (
-              <section>
-                <h2 className="text-xl font-bold text-main-blue mb-4 flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path></svg>
-                  Noticias Publicadas
-                </h2>
-                <div className="grid gap-4">
-                  {resultadosNoticias.map(noticia => (
-                    <Link key={noticia.id} to={`/noticias/${noticia.slug || noticia.id}`} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex flex-col sm:flex-row gap-5 hover:shadow-md hover:border-pale-blue transition-all group">
-                      <div className="w-full sm:w-40 shrink-0 aspect-video sm:aspect-square bg-gray-50 rounded overflow-hidden flex items-center justify-center">
-                        <img src={noticia.imagenPrincipalUrl} alt={noticia.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      </div>
-                      <div className="flex flex-col justify-center">
-                        <h3 className="text-lg font-bold text-main-blue group-hover:text-light-blue transition-colors mb-2 line-clamp-2">
-                          {noticia.titulo}
-                        </h3>
-                        <p className="text-sm text-gray-600 line-clamp-2 mb-3">
-                          {noticia.resumen}
-                        </p>
-                        <span className="text-xs font-bold text-main-red uppercase tracking-wider">
-                          Leer más &rarr;
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
+              ) : totalResultados === 0 ? (
+                <div className="text-center py-12">
+                  <svg className="w-20 h-20 text-gray-200 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  </svg>
+                  <h2 className="text-2xl font-semibold text-main-blue mb-4">No encontramos coincidencias para su búsqueda</h2>
+                  <p className="text-gray-500 font-light mb-8 max-w-md mx-auto">
+                    Intente utilizar palabras clave más generales o revise la ortografía del término ingresado.
+                  </p>
+                  <Link to="/" className="inline-block bg-main-blue text-white px-8 py-3 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-light-blue transition-colors shadow-md">
+                    &larr; Volver al inicio
+                  </Link>
                 </div>
-              </section>
-            )}
+              ) : (
+                <div className="space-y-16">
+                  
+                  {/* SECCIÓN: PÁGINAS ESTATÍSTICAS */}
+                  {resultadosPaginas.length > 0 && (
+                    <section>
+                      <h2 className="text-sm font-black text-main-red uppercase tracking-[0.3em] mb-8 flex items-center gap-4">
+                        Secciones Institucionales
+                        <div className="h-px bg-gray-100 grow"></div>
+                      </h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {resultadosPaginas.map(pagina => (
+                          <Link key={pagina.id} to={pagina.ruta} className="group bg-gray-50 p-6 rounded-2xl border border-transparent hover:border-pale-blue hover:bg-white hover:shadow-lg transition-all duration-300">
+                            <h3 className="text-lg font-semibold text-main-blue group-hover:text-light-blue transition-colors mb-2">{pagina.titulo}</h3>
+                            <p className="text-sm text-gray-600 font-light leading-relaxed">{pagina.descripcion}</p>
+                            <div className="mt-4 text-main-red text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                              Ir a la sección <span>&rarr;</span>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </section>
+                  )}
 
+                  {/* SECCIÓN: NOTICIAS */}
+                  {resultadosNoticias.length > 0 && (
+                    <section>
+                      <h2 className="text-sm font-black text-main-red uppercase tracking-[0.3em] mb-8 flex items-center gap-4">
+                        Noticias y Comunicados
+                        <div className="h-px bg-gray-100 grow"></div>
+                      </h2>
+                      <div className="flex flex-col gap-6">
+                        {resultadosNoticias.map(noticia => (
+                          <Link key={noticia.id} to={`/noticias/${noticia.slug || noticia.id}`} className="group bg-white p-4 rounded-2xl border border-gray-100 flex flex-col sm:flex-row gap-6 hover:shadow-xl hover:border-pale-blue transition-all duration-300">
+                            <div className="w-full sm:w-48 shrink-0 aspect-4/5 bg-gray-50 rounded-xl overflow-hidden shadow-sm">
+                              <img src={noticia.imagenPrincipalUrl} alt={noticia.titulo} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                            </div>
+                            <div className="flex flex-col justify-center grow">
+                              <h3 className="text-xl font-semibold text-main-blue group-hover:text-main-red transition-colors mb-3 line-clamp-2 leading-tight">
+                                {noticia.titulo}
+                              </h3>
+                              <p className="text-gray-500 font-light text-sm line-clamp-2 mb-4 leading-relaxed">
+                                {noticia.resumen}
+                              </p>
+                              <span className="text-xs font-black text-main-red uppercase tracking-[0.2em] flex items-center gap-2">
+                                Leer noticia completa <span className="text-lg">&rarr;</span>
+                              </span>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                </div>
+              )}
+
+            </div>
           </div>
-        )}
+        </section>
       </div>
     </div>
   );
