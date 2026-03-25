@@ -1,5 +1,7 @@
 // src/pages/Equipo.jsx
 import { useEffect, useState } from "react";
+// Importamos la imagen desde la carpeta assets
+import fotoPresidente from "../assets/Victor-1-WEB.jpg";
 
 export default function Equipo() {
   const [equipo, setEquipo] = useState([]);
@@ -14,7 +16,7 @@ export default function Equipo() {
         nombre: "Dr. Víctor Rodríguez Rescia",
         cargo: "Presidente del IIRESODH",
         bio: "Reseña profesional aquí.",
-        fotoUrl: "https://via.placeholder.com/600x750",
+        fotoUrl: fotoPresidente, // <-- Imagen actualizada
         destacado: true,
         orden: 1
       },
