@@ -31,7 +31,7 @@ export default function Equipo() {
       },
       {
         id: "staff-1",
-        nombre: "Nombre Staff",
+        nombre: "David Urquilla",
         cargo: "Coordinación Técnica",
         fotoUrl: "https://via.placeholder.com/400x500",
         destacado: false,
