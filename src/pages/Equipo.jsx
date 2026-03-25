@@ -60,7 +60,7 @@ export default function Equipo() {
       {
         id: "staff-3",
         nombre: "Roxanne Cabrera Baptista",
-        cargo: "Coordinador de Cooperación Internacional y Abogada",
+        cargo: "Coordinadora de Cooperación Internacional y Abogada",
         fotoUrl: fotoRoxanne,
         destacado: false,
         orden: 4
