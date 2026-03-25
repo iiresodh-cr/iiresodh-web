@@ -19,6 +19,33 @@ export default function QuienesSomos() {
     }
   }, [location]);
 
+  const principiosRectores = [
+    {
+      titulo: "Respeto a la dignidad humana",
+      texto: "La dignidad humana es el valor intrínseco e inalienable que posee cada persona por el simple hecho de serlo, sin distinción alguna de su origen, condición o capacidades. Este principio exige que los individuos sean tratados siempre como un fin en sí mismos y nunca meramente como un medio o herramienta para alcanzar otros objetivos. Implica reconocer la autonomía personal y garantizar que cada ser humano pueda vivir libre de humillaciones, maltratos o cualquier forma de degradación. Al colocar la dignidad en el centro de nuestras acciones, sentamos las bases para una convivencia basada en el reconocimiento mutuo y el valor sagrado de la vida."
+    },
+    {
+      titulo: "Defensa de los derechos humanos",
+      texto: "Defender los derechos humanos significa velar por el cumplimiento de las garantías fundamentales que permiten a las personas vivir con libertad, justicia y paz. Estos derechos son universales e interdependientes, actuando como un escudo protector frente al abuso de poder, la violencia y la discriminación sistemática. Su promoción no es solo una obligación legal de los Estados, sino un compromiso ético de la sociedad civil para erradicar la injusticia y proteger a los más vulnerables. Al garantizar estos derechos, aseguramos que la voz de cada individuo sea escuchada y que su integridad sea respetada en cualquier rincón del mundo."
+    },
+    {
+      titulo: "Equidad de género",
+      texto: "La equidad de género busca asegurar que todas las personas, independientemente de su sexo o identidad, tengan acceso a las mismas oportunidades, recursos y derechos fundamentales. No se trata simplemente de una igualdad numérica, sino de identificar y eliminar las barreras estructurales y los prejuicios históricos que han limitado históricamente el desarrollo de ciertos grupos. Fomentar la equidad permite que el talento y el esfuerzo se valoren por su capacidad real y no por estereotipos obsoletos que perpetúan la desigualdad. Es un paso indispensable para construir una sociedad más justa, donde el género no determine el límite de las aspiraciones de nadie."
+    },
+    {
+      titulo: "Respeto y protección al medio ambiente",
+      texto: "Este principio implica reconocer nuestra profunda interdependencia con la naturaleza y asumir la responsabilidad de preservar los recursos del planeta para las generaciones presentes y futuras. El respeto al entorno nos obliga a adoptar prácticas sostenibles que minimicen nuestra huella ecológica y promuevan la regeneración de los ecosistemas dañados por la actividad humana. No es una opción meramente estética o altruista, sino una necesidad vital para la supervivencia de la especie y el equilibrio climático global. Proteger el medio ambiente es, en última instancia, un acto de respeto hacia la vida en todas sus manifestaciones y una deuda con el futuro."
+    },
+    {
+      titulo: "Ética y transparencia laboral",
+      texto: "La ética y la transparencia son los pilares que sostienen la confianza dentro de cualquier organización y el sistema económico en su conjunto. Actuar con integridad en el trabajo significa tomar decisiones basadas en valores morales sólidos, evitando conflictos de intereses y combatiendo activamente cualquier forma de corrupción o favoritismo. La transparencia permite que los procesos sean claros y auditables, fomentando una cultura de rendición de cuentas donde la honestidad sea la norma y no la excepción. Un entorno laboral ético no solo mejora la productividad, sino que también dignifica el esfuerzo de los trabajadores y fortalece la reputación institucional."
+    },
+    {
+      titulo: "Inclusión social",
+      texto: "La inclusión social es el proceso proactivo de integrar a todos los individuos en la vida comunitaria, asegurando que aquellos en situación de vulnerabilidad o exclusión puedan participar plenamente. Esto requiere derribar barreras físicas, económicas y culturales que impiden el acceso equitativo a servicios básicos, empleo digno y participación ciudadana. Al valorar la diversidad como una riqueza y no como un problema, la inclusión fortalece el tejido social y reduce las brechas de desigualdad que suelen generar resentimiento y conflicto. Una sociedad verdaderamente inclusiva es aquella que se adapta para abrazar a todos sus miembros, garantizando que nadie se quede atrás."
+    }
+  ];
+
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
       
@@ -62,7 +89,7 @@ export default function QuienesSomos() {
 
               {/* SECCIÓN MISIÓN Y VISIÓN */}
               <div id="mision-vision" className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 mb-16 scroll-mt-32">
-                <div className="bg-gray-50 border-l-4 border-main-red p-8 md:p-10 rounded-r-xl">
+                <div className="bg-gray-50 border-l-4 border-main-red p-8 md:p-10 rounded-r-xl shadow-sm">
                   <h2 className="text-2xl font-extrabold text-main-blue mb-4 uppercase tracking-wider flex items-center gap-3">
                     <span className="bg-main-red text-white w-8 h-8 flex items-center justify-center rounded-full text-lg font-black">M</span>
                     Misión
@@ -71,7 +98,7 @@ export default function QuienesSomos() {
                     Promover el respeto y cumplimiento de los estándares internacionales en derechos humanos a través del litigio estratégico y proyectos de capacitación, brindando acompañamiento al sector público y privado en materia de responsabilidad social.
                   </p>
                 </div>
-                <div className="bg-pale-blue/10 border-l-4 border-light-blue p-8 md:p-10 rounded-r-xl">
+                <div className="bg-pale-blue/10 border-l-4 border-light-blue p-8 md:p-10 rounded-r-xl shadow-sm">
                   <h2 className="text-2xl font-extrabold text-main-blue mb-4 uppercase tracking-wider flex items-center gap-3">
                     <span className="bg-light-blue text-white w-8 h-8 flex items-center justify-center rounded-full text-lg font-black">V</span>
                     Visión
@@ -82,23 +109,21 @@ export default function QuienesSomos() {
                 </div>
               </div>
 
-              {/* SECCIÓN PRINCIPIOS RECTORES */}
+              {/* SECCIÓN PRINCIPIOS RECTORES ACTUALIZADA */}
               <div id="principios-rectores" className="pt-10 border-t border-gray-100 scroll-mt-32">
-                <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue text-center mb-10 uppercase tracking-widest">
+                <h2 className="text-2xl md:text-3xl font-semibold text-main-blue text-center mb-10 tracking-widest">
                   Principios Rectores
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {[
-                    "Respeto a la dignidad humana.",
-                    "Defensa de los derechos humanos.",
-                    "Equidad de género.",
-                    "Respeto y protección al medio ambiente.",
-                    "Ética y transparencia laboral.",
-                    "Inclusión social."
-                  ].map((principio, index) => (
-                    <div key={index} className="flex items-center gap-4 bg-gray-50 p-6 rounded-xl border border-gray-100">
-                      <div className="w-2.5 h-2.5 rounded-full bg-main-red shrink-0"></div>
-                      <p className="text-main-blue font-bold text-base md:text-lg">{principio}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {principiosRectores.map((principio, index) => (
+                    <div key={index} className="flex flex-col bg-gray-50 p-8 rounded-xl border-t-4 border-main-red shadow-sm hover:shadow-md transition-shadow">
+                      <h3 className="text-xl font-extrabold text-main-blue mb-4 flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full bg-main-red shrink-0"></div>
+                        {principio.titulo}
+                      </h3>
+                      <p className="text-gray-600 font-light leading-relaxed text-justify text-base">
+                        {principio.texto}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -114,7 +139,7 @@ export default function QuienesSomos() {
             <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-8 uppercase tracking-widest text-white">
               Organigrama y Estructura
             </h2>
-            <div className="text-base md:text-lg text-gray-200 leading-relaxed text-justify space-y-6 mb-16 font-light">
+            <div className="text-base md:text-lg text-gray-200 leading-relaxed text-justify space-y-6 mb-16 font-light max-w-4xl mx-auto">
               <p>
                 La estructura organizacional del IIRESODH tiene como máxima figura de autoridad formal a la Presidencia, a la cual están adscritas todas las unidades internas.
               </p>
