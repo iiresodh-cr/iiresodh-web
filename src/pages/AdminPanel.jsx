@@ -298,7 +298,9 @@ export default function AdminPanel() {
     setSubiendoArchivo(true);
     setMensaje("Subiendo documento...");
     try {
-      const refDoc = ref(storage, `documentos/${Date.now()}_${file.name}`);
+      // EL CAMBIO ESTÁ AQUÍ: Ahora lo guarda en "noticias/documentos/..." 
+      // para que Firebase Storage no bloquee la subida por las reglas de seguridad.
+      const refDoc = ref(storage, `noticias/documentos/${Date.now()}_${file.name}`);
       await uploadBytes(refDoc, file);
       const url = await getDownloadURL(refDoc);
 
@@ -306,7 +308,7 @@ export default function AdminPanel() {
       setMensaje("¡Documento subido con éxito!");
     } catch (error) {
       console.error("Error al subir documento:", error);
-      setMensaje("Error al subir el documento.");
+      setMensaje("Error al subir el documento. Revisa la consola.");
     } finally {
       setSubiendoArchivo(false);
       e.target.value = ""; // Reset input
