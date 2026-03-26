@@ -19,6 +19,7 @@ const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
 
+  // 1. Procesar enlaces estilo Markdown: [Texto visible](https://url-larga.com)
   let procesado = texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<]+)\)/g, (match, textoEnlace, url) => {
     return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-semibold underline transition-colors pointer-events-auto wrap-break-word">${textoEnlace}</a>`;
   });
@@ -26,9 +27,11 @@ const formatearTextoConLinksYHashtags = (texto) => {
   const partes = procesado.split(/(<[^>]+>)/g);
   for (let i = 0; i < partes.length; i++) {
     if (i % 2 === 0) {
+      // 2. Convertir URLs sueltas
       let parte = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
         return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-semibold underline transition-colors pointer-events-auto wrap-break-word">${url}</a>`;
       });
+      // 3. Convertir Hashtags (#)
       parte = parte.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
         const termino = hashtag.substring(1); 
         return `<a href="/buscar?q=${termino}" class="text-light-blue font-semibold">${hashtag}</a>`;
@@ -81,14 +84,26 @@ export default function Home() {
     return () => window.removeEventListener('resize', checkOverflow);
   }, [noticia]);
 
-  // Manejo de Tooltip mejorado para mouse y teclado
-  const showTooltip = (sede, clientX, clientY) => {
+  const handleHover = (sede, e) => {
     if (!mapContainerRef.current) return;
     const rect = mapContainerRef.current.getBoundingClientRect();
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
     
     const leftPos = x > rect.width / 2 ? x - 340 : x + 20;
+    const topPos = y < 150 ? y + 20 : y - 180;
+
+    setTooltipPos({ top: topPos, left: leftPos });
+    setHoveredSede(sede);
+  };
+
+  const showTooltipKeyboard = (sede, target) => {
+    const rect = target.getBoundingClientRect();
+    const mapRect = mapContainerRef.current.getBoundingClientRect();
+    const x = rect.left + rect.width / 2 - mapRect.left;
+    const y = rect.top + rect.height / 2 - mapRect.top;
+
+    const leftPos = x > mapRect.width / 2 ? x - 340 : x + 20;
     const topPos = y < 150 ? y + 20 : y - 180;
 
     setTooltipPos({ top: topPos, left: leftPos });
@@ -107,6 +122,7 @@ export default function Home() {
           {/* BLOQUE 1: NOTICIA DESTACADA */}
           {noticia && (
             <article className="flex flex-col md:flex-row gap-8 md:gap-12 items-start bg-white">
+              
               <div className="w-full md:w-2/5 shrink-0 mb-8 md:mb-0">
                 <Swiper 
                   modules={[Pagination, Autoplay]} 
@@ -115,19 +131,11 @@ export default function Home() {
                   className="w-full swiper-custom-pagination"
                 >
                   <SwiperSlide className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex items-center justify-center">
-                    <img 
-                      src={noticia.imagenPrincipalUrl} 
-                      alt={`Imagen principal de la noticia: ${noticia.titulo}`} 
-                      className="w-full aspect-4/5 object-cover block" 
-                    />
+                    <img src={noticia.imagenPrincipalUrl} alt={`Imagen principal: ${noticia.titulo}`} className="w-full aspect-4/5 object-cover block" />
                   </SwiperSlide>
                   {noticia.imagenesCarruselUrls?.map((url, i) => (
                     <SwiperSlide key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex items-center justify-center">
-                      <img 
-                        src={url} 
-                        alt={`Imagen ${i + 1} del carrusel de la noticia: ${noticia.titulo}`} 
-                        className="w-full aspect-4/5 object-cover block" 
-                      />
+                      <img src={url} alt={`Imagen ${i + 1} de carrusel: ${noticia.titulo}`} className="w-full aspect-4/5 object-cover block" />
                     </SwiperSlide>
                   ))}
                 </Swiper>
@@ -137,16 +145,12 @@ export default function Home() {
                 <h1 className="text-3xl md:text-5xl font-semibold text-main-blue mb-8 leading-tight tracking-tight">
                   {noticia.titulo}
                 </h1>
-                <div 
-                  ref={contentRef} 
-                  className="text-gray-600 mb-6 text-base md:text-lg font-light leading-relaxed noticia-content text-justify overflow-hidden" 
-                  dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(noticia.contenido) }} 
-                />
+                <div ref={contentRef} className="text-gray-600 mb-6 text-base md:text-lg font-light leading-relaxed noticia-content text-justify overflow-hidden" dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(noticia.contenido) }} />
                 {isOverflowing && (
                   <Link 
                     to={`/noticias/${noticia.slug || noticia.id}`} 
                     className="text-main-red font-bold hover:text-main-blue transition-colors mt-auto flex items-center gap-2 self-start uppercase tracking-wide text-sm"
-                    aria-label={`Leer la noticia completa: ${noticia.titulo}`}
+                    aria-label={`Leer noticia completa: ${noticia.titulo}`}
                   >
                     Leer noticia completa <span>&rarr;</span>
                   </Link>
@@ -156,18 +160,25 @@ export default function Home() {
           )}
 
           {/* BLOQUE 2: TEXTO INSTITUCIONAL Y MAPA */}
-          <section className="pt-4 bg-white" aria-labelledby="oficinas-title">
+          <div className="pt-4 bg-white">
             <div className="grid grid-cols-1 md:grid-cols-10 gap-10 items-center overflow-visible bg-white min-h-125">
               
+              {/* IZQUIERDA: TEXTO INSTITUCIONAL */}
               <div className="md:col-span-4 flex flex-col justify-center space-y-4 bg-white pr-10 md:mt-12">
                 <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
-                  El <strong className="font-semibold text-main-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, es una asociación sin fines de lucro...
+                  El <strong className="font-semibold text-main-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, es una asociación sin fines de lucro, con su sede principal en Costa Rica y oficinas en otros países como Canadá, Colombia, Guatemala, México, con el objetivo de fomentar el cumplimiento de los estándares internacionales de derechos humanos mediante un enfoque de participación ciudadana, gubernamental y corporativa.
                 </p>
-                {/* ... resto del texto institucional igual ... */}
+                <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
+                  Realizamos labores de capacitación, litigio estratégico y empoderamiento de la sociedad civil con fondos privados y de la cooperación internacional. Participamos frecuentemente en los diferentes espacios de trabajos y audiencias de los sistemas de protección de derechos humanos, siendo una voz activa en la defensa de la democracia y los derechos humanos.
+                </p>
+                <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
+                  Fomentamos el mejoramiento social, económico, cultural, educativo, organizativo y productivo por medio de la promoción de la responsabilidad social empresarial y la promoción y protección de los derechos humanos.
+                </p>
               </div>
 
-              <div className="md:col-span-6 flex flex-col items-center bg-white w-full">
-                <h2 id="oficinas-title" className="text-2xl md:text-3xl font-semibold text-main-blue mb-8 text-center w-full">
+              {/* DERECHA: TÍTULO Y MAPA */}
+              <section className="md:col-span-6 flex flex-col items-center bg-white w-full" aria-labelledby="map-title">
+                <h2 id="map-title" className="text-2xl md:text-3xl font-semibold text-main-blue mb-8 text-center w-full">
                   Nuestras Oficinas
                 </h2>
                 
@@ -176,7 +187,7 @@ export default function Home() {
                     projection="geoMercator" 
                     projectionConfig={{ scale: 300, center: [-85, 30] }} 
                     className="w-full h-full bg-white overflow-visible"
-                    aria-label="Mapa de sedes internacionales de IIRESODH"
+                    aria-label="Mapa interactivo de sedes internacionales"
                   >
                     <Geographies geography={geoUrl}>
                       {({ geographies }) =>
@@ -187,7 +198,6 @@ export default function Home() {
                             fill="#457B9D" 
                             stroke="#FFFFFF" 
                             strokeWidth={0.5} 
-                            tabIndex="-1"
                             style={{ default: { outline: "none" }, hover: { fill: "#1D3557", outline: "none" } }} 
                           />
                         ))
@@ -199,28 +209,26 @@ export default function Home() {
                         <g 
                           tabIndex="0" 
                           role="button" 
-                          aria-label={`Sede ${sede.pais}: ${sede.info}`}
-                          onMouseEnter={(e) => showTooltip(sede, e.clientX, e.clientY)}
+                          aria-label={`Sede en ${sede.pais}. Presiona para ver información.`}
+                          onMouseEnter={(e) => handleHover(sede, e)} 
                           onMouseLeave={() => setHoveredSede(null)}
-                          onFocus={(e) => {
-                            const rect = e.target.getBoundingClientRect();
-                            showTooltip(sede, rect.left + rect.width / 2, rect.top + rect.height / 2);
-                          }}
+                          onFocus={(e) => showTooltipKeyboard(sede, e.target)}
                           onBlur={() => setHoveredSede(null)}
-                          className="focus:outline-none group"
+                          className="focus:outline-none"
                         >
                           <circle r={20} fill="transparent" className="cursor-pointer" />
-                          <circle r={10} fill="#B92F32" fillOpacity={0.1} className="animate-pulse pointer-events-none group-focus:fill-opacity-30" />
+                          <circle r={10} fill="#B92F32" fillOpacity={0.1} className="animate-pulse pointer-events-none" />
                           <circle r={5} fill="#B92F32" stroke="#FFFFFF" strokeWidth={2} className="pointer-events-none" />
                         </g>
                       </Marker>
                     ))}
                   </ComposableMap>
 
+                  {/* TARJETA FLOTANTE HTML */}
                   {hoveredSede && (
                     <div 
                       role="tooltip"
-                      className="absolute z-50 bg-white p-6 rounded-2xl flex flex-col gap-3 pointer-events-none w-[320px] shadow-2xl border border-gray-100 transition-opacity duration-150"
+                      className="absolute z-50 bg-white p-6 rounded-2xl flex flex-col gap-3 pointer-events-none w-[320px] transition-opacity duration-150 shadow-xl border border-gray-100"
                       style={{ top: `${tooltipPos.top}px`, left: `${tooltipPos.left}px` }}
                     >
                       <h3 className="text-xl font-semibold text-main-red uppercase tracking-tight border-b border-gray-100 pb-2">{hoveredSede.pais}</h3>
@@ -228,9 +236,11 @@ export default function Home() {
                     </div>
                   )}
                 </div>
-              </div>
+              </section>
+
             </div>
-          </section>
+          </div>
+
         </div>
       </div>
     </main>
