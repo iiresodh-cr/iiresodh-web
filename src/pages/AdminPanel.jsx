@@ -27,27 +27,35 @@ const generarSlug = (texto) => {
   return baseSlug ? `${baseSlug}-${randomCode}` : `item-${randomCode}`;
 };
 
+// MOTOR ESTRUCTURAL PURO (Para sitios nuevos, sin deuda técnica)
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
-  let procesado = texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<]+)\)/g, (match, textoEnlace, url) => {
-    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red hover:text-main-blue font-bold underline transition-colors pointer-events-auto">${textoEnlace}</a>`;
+
+  // 1. Escapar caracteres HTML para evitar inyección XSS y conflictos
+  let seguro = texto.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+
+  // 2. Procesar enlaces Markdown: [Texto](URL)
+  seguro = seguro.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all">$1</a>');
+
+  // 3. Procesar URLs sueltas (que no estén ya procesadas)
+  seguro = seguro.replace(/(?<!href="|href=)(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all">$1</a>');
+
+  // 4. Procesar Hashtags
+  seguro = seguro.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
+    const termino = hashtag.substring(1); 
+    return `<a href="/buscar?q=${termino}" class="text-light-blue hover:text-main-red font-bold transition-colors pointer-events-auto">${hashtag}</a>`;
   });
-  const partes = procesado.split(/(<[^>]+>)/g);
-  for (let i = 0; i < partes.length; i++) {
-    if (i % 2 === 0) {
-      let parte = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
-        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red hover:text-main-blue font-bold underline transition-colors pointer-events-auto">${url}</a>`;
-      });
-      parte = parte.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
-        const termino = hashtag.substring(1); 
-        return `<a href="/buscar?q=${termino}" class="text-light-blue hover:text-main-red font-bold transition-colors pointer-events-auto">${hashtag}</a>`;
-      });
-      // SOLUCIÓN INTEGRAL: Traduce los "Enter" del teclado en saltos de línea de HTML
-      parte = parte.replace(/\n/g, '<br />');
-      partes[i] = parte;
-    }
-  }
-  return partes.join('');
+
+  // 5. Creación Semántica de Párrafos
+  // Divide el texto cuando hay 2 o más saltos de línea (Enter)
+  const parrafos = seguro.split(/\n\s*\n/);
+  
+  // Envuelve en <p> y cambia los saltos simples a <br />
+  const htmlFinal = parrafos.map(p => {
+    return `<p>${p.replace(/\n/g, '<br />')}</p>`;
+  }).join('');
+
+  return htmlFinal;
 };
 
 const convertirAWebp = (file, calidad = 0.8) => {
@@ -569,20 +577,19 @@ export default function AdminPanel() {
                     )}
                   </label>
                   
-                  {/* RESTAURADO A TEXTAREA SIMPLE */}
                   <textarea 
                     required 
                     value={contenido} 
                     onChange={(e) => setContenido(e.target.value)} 
                     className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-light-blue" 
                     rows="12" 
-                    placeholder="Escribe el contenido aquí o pega el texto y tablas desde Word/Excel..." 
+                    placeholder="Escribe el contenido aquí o pega el texto..." 
                   />
                   
                   {vistaActiva === "comunicaciones" && (
                     <div className="mt-4 bg-gray-50 p-5 rounded border border-gray-200 shadow-inner">
                       <label className="block text-xs font-bold text-gray-500 uppercase mb-3">Simulación en Portada</label>
-                      <div ref={contenidoPreviewRef} className="text-gray-600 text-lg font-light leading-relaxed noticia-content max-h-80 overflow-hidden bg-white p-5 rounded" dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(contenido) || "Vista previa..." }} />
+                      <div ref={contenidoPreviewRef} className="noticia-content max-h-80 overflow-hidden bg-white p-5 rounded border border-gray-100" dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(contenido) || "Vista previa..." }} />
                       <div className="mt-4">{showReadMoreWarning ? <p className="text-main-red font-bold text-sm">⚠️ El texto superó el límite visible.</p> : <p className="text-green-600 font-bold text-sm">✓ El texto cabe perfectamente.</p>}</div>
                     </div>
                   )}
