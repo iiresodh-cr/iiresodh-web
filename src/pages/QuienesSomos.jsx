@@ -2,8 +2,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
-// Importamos la imagen correcta
-import fotoPresidente from "../assets/victor.webp"; 
 
 export default function QuienesSomos() {
   const location = useLocation();
@@ -22,45 +20,30 @@ export default function QuienesSomos() {
     }
   }, [location]);
 
-  // Simulamos la biografía incorporada (separa párrafos para justificación limpia)
-  const bioPresidente = (
-    <div className="space-y-4">
-      <p>
-        El Dr. Víctor Rodríguez Rescia es un reconocido experto internacional en derechos humanos y derecho internacional. Su vasta trayectoria incluye roles fundamentales en el Sistema Interamericano de Derechos Humanos, donde se desempeñó como Secretario de la Corte Interamericana de Derechos Humanos y, posteriormente, como miembro y Presidente del Comité de Derechos Humanos de las Naciones Unidas.
-      </p>
-      <p>
-        Con una profunda vocación académica y de incidencia, ha dirigido múltiples proyectos de capacitación y litigio estratégico en América Latina y Europa. Es fundador del IIRESODH y del Instituto de Altos Estudios Universitarios (U-IIRESODH) en México, impulsando la formación especializada de miles de defensores de derechos humanos y funcionarios públicos.
-      </p>
-      <p>
-        Bajo su presidencia, el IIRESODH se ha consolidado como un referente regional en la articulación entre responsabilidad social empresarial y estándares internacionales de derechos humanos, promoviendo la democracia y el acceso a la justicia a través de alianzas estratégicas con organismos multilaterales y la sociedad civil.
-      </p>
-    </div>
-  );
-
   const principiosRectores = [
     {
       titulo: "Respeto a la dignidad humana",
-      texto: "La dignidad humana es el valor intrínseco e inalienable que posee cada persona por el simple hecho de serlo, sin distinción alguna de su origen, condición o capacidades. Este principio exige que los individuos sean tratados siempre como un fin en sí mismos y nunca meramente como un medio o herramienta para alcanzar otros objetivos. Implica reconocer la autonomía personal y garantizar que cada ser humano pueda vivir libre de humillaciones, maltratos o cualquier forma de degradación. Al colocar la dignidad en el centro de nuestras acciones, sentamos las bases para una convivencia basada en el reconocimiento mutuo y el valor sagrado de la vida."
+      texto: "La dignidad humana es el valor intrínseco e inalienable que posee cada persona por el simple hecho de serlo, sin distinción alguna de su origen, condición o capacidades. Este principio exige que los individuos sean tratados siempre como un fin en sí mismos y nunca meramente como un medio o herramienta para alcanzar otros objetivos."
     },
     {
       titulo: "Defensa de los derechos humanos",
-      texto: "Defender los derechos humanos significa velar por el cumplimiento de las garantías fundamentales que permiten a las personas vivir con libertad, justicia y paz. Estos derechos son universales e interdependientes, actuando como un escudo protector frente al abuso de poder, la violencia y la discriminación sistemática. Su promoción no es solo una obligación legal de los Estados, sino un compromiso ético de la sociedad civil para erradicar la injusticia y proteger a los más vulnerables. Al garantizar estos derechos, aseguramos que la voz de cada individuo sea escuchada y que su integridad sea respetada en cualquier rincón del mundo."
+      texto: "Defender los derechos humanos significa velar por el cumplimiento de las garantías fundamentales que permiten a las personas vivir con libertad, justicia y paz. Estos derechos son universales e interdependientes, actuando como un escudo protector frente al abuso de poder, la violencia y la discriminación sistemática."
     },
     {
       titulo: "Equidad de género",
-      texto: "La equidad de género busca asegurar que todas las personas, independientemente de su sexo o identidad, tengan acceso a las mismas oportunidades, recursos y derechos fundamentales. No se trata simplemente de una igualdad numérica, sino de identificar y eliminar las barreras estructurales y los prejuicios históricos que han limitado históricamente el desarrollo de ciertos grupos. Fomentar la equidad permite que el talento y el esfuerzo se valoren por su capacidad real y no por estereotipos obsoletos que perpetúan la desigualdad. Es un paso indispensable para construir una sociedad más justa, donde el género no determine el límite de las aspiraciones de nadie."
+      texto: "La equidad de género busca asegurar que todas las personas, independientemente de su sexo o identidad, tengan acceso a las mismas oportunidades, recursos y derechos fundamentales. No se trata simplemente de una igualdad numérica, sino de identificar y eliminar las barreras estructurales."
     },
     {
       titulo: "Respeto y protección al medio ambiente",
-      texto: "Este principio implica reconocer nuestra profunda interdependencia con la naturaleza y asumir la responsabilidad de preservar los recursos del planeta para las generaciones presentes y futuras. El respeto al entorno nos obliga a adoptar prácticas sostenibles que minimicen nuestra huella ecológica y promuevan la regeneración de los ecosistemas dañados por la actividad humana. No es una opción meramente estética o altruista, sino una necesidad vital para la supervivencia de la especie y el equilibrio climático global. Proteger el medio ambiente es, en última instancia, un acto de respeto hacia la vida en todas sus manifestaciones y una deuda con el futuro."
+      texto: "Este principio implica reconocer nuestra profunda interdependencia con la naturaleza y asumir la responsabilidad de preservar los recursos del planeta para las generaciones presentes y futuras. El respeto al entorno nos obliga a adoptar prácticas sostenibles que minimicen nuestra huella ecológica."
     },
     {
       titulo: "Ética y transparencia laboral",
-      texto: "La ética y la transparencia son los pilares que sostienen la confianza dentro de cualquier organización y el sistema económico en su conjunto. Actuar con integridad en el trabajo significa tomar decisiones basadas en valores morales sólidos, evitando conflictos de intereses y combatiendo activamente cualquier forma de corrupción o favoritismo. La transparencia permite que los procesos sean claros y auditables, fomentando una cultura de rendición de cuentas donde la honestidad sea la norma y no la excepción. Un entorno laboral ético no solo mejora la productividad, sino que también dignifica el esfuerzo de los trabajadores y fortalece la reputación institucional."
+      texto: "La ética y la transparencia son los pilares que sostienen la confianza dentro de cualquier organización y el sistema económico en su conjunto. Actuar con integridad en el trabajo significa tomar decisiones basadas en valores morales sólidos, evitando conflictos de intereses y combatiendo la corrupción."
     },
     {
       titulo: "Inclusión social",
-      texto: "La inclusión social es el proceso proactivo de integrar a todos los individuos en la vida comunitaria, asegurando que aquellos en situación de vulnerabilidad o exclusión puedan participar plenamente. Esto requiere derribar barreras físicas, económicas y culturales que impiden el acceso equitativo a servicios básicos, empleo digno y participación ciudadana. Al valorar la diversidad como una riqueza y no como un problema, la inclusión fortalece el tejido social y reduce las brechas de desigualdad que suelen generar resentimiento y conflicto. Una sociedad verdaderamente inclusiva es aquella que se adapta para abrazar a todos sus miembros, garantizando que nadie se quede atrás."
+      texto: "La inclusión social es el proceso proactivo de integrar a todos los individuos en la vida comunitaria, asegurando que aquellos en situación de vulnerabilidad o exclusión puedan participar plenamente. Esto requiere derribar barreras físicas, económicas y culturales."
     }
   ];
 
@@ -83,8 +66,8 @@ export default function QuienesSomos() {
             {/* CONTENIDO PRINCIPAL */}
             <div className="px-8 md:px-12 lg:px-16 pb-12 md:pb-16 animate-fade-in-up">
               
-              {/* Párrafos centrados para lectura cómoda */}
-              <div className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify mb-20 border-b border-gray-100 pb-16">
+              {/* Párrafos centrados para lectura cómoda - Sin líneas ni sombras */}
+              <div className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify mb-20 pb-16">
                 <p>
                   El <strong className="font-extrabold text-main-blue">IIRESODH</strong> nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
                 </p>
@@ -102,38 +85,9 @@ export default function QuienesSomos() {
                 </p>
               </div>
 
-              {/* SECCIÓN NUEVA: EL PRESIDENTE (Contenedor Flex para alineación superior) */}
-              <div id="presidente" className="scroll-mt-32 mb-20 bg-gray-50 p-8 md:p-12 rounded-2xl border border-gray-100 flex flex-col md:flex-row items-start gap-10 md:gap-16">
-                {/* Columna Imagen: shrink-0 para mantener ancho, items-start para pegar arriba */}
-                <div className="w-full md:w-2/5 shrink-0 flex justify-center md:justify-start">
-                   <div className="aspect-4/5 bg-white border-2 border-white rounded-2xl overflow-hidden shadow-lg w-full max-w-[320px] md:max-w-none">
-                      <img 
-                        src={fotoPresidente} 
-                        alt="Dr. Víctor Rodríguez Rescia" 
-                        className="w-full h-full object-cover"
-                      />
-                   </div>
-                </div>
-
-                {/* Columna Texto: grow para ocupar el resto, text-justify para párrafos */}
-                <div className="flex-1 space-y-4">
-                   <span className="text-xs font-black text-main-red uppercase tracking-[0.4em] mb-4 block">Alta Dirección</span>
-                   <h2 className="text-3xl md:text-5xl font-extrabold text-main-blue tracking-tighter uppercase mb-6 leading-tight">
-                      Dr. Víctor Rodríguez Rescia
-                   </h2>
-                   <p className="text-xl font-bold text-light-blue mb-8 italic">
-                      Presidente del IIRESODH
-                   </p>
-                   {/* Párrafos justificados dentro de la variable bioPresidente */}
-                   <div className="text-gray-600 font-light leading-relaxed text-base md:text-lg text-justify">
-                      {bioPresidente}
-                   </div>
-                </div>
-              </div>
-
-              {/* SECCIÓN MISIÓN Y VISIÓN */}
+              {/* SECCIÓN MISIÓN Y VISIÓN - Sin sombras */}
               <div id="mision-vision" className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 mb-16 scroll-mt-32 pt-16 border-t border-gray-100">
-                <div className="bg-gray-50 border-l-4 border-main-red p-8 md:p-10 rounded-r-xl shadow-sm">
+                <div className="bg-gray-50 border-l-4 border-main-red p-8 md:p-10 rounded-r-xl">
                   <h2 className="text-2xl font-extrabold text-main-blue mb-4 uppercase tracking-wider flex items-center gap-3">
                     <span className="bg-main-red text-white w-8 h-8 flex items-center justify-center rounded-full text-lg font-black">M</span>
                     Misión
@@ -142,7 +96,7 @@ export default function QuienesSomos() {
                     Promover el respeto y cumplimiento de los estándares internacionales en derechos humanos a través del litigio estratégico y proyectos de capacitación, brindando acompañamiento al sector público y privado en materia de responsabilidad social.
                   </p>
                 </div>
-                <div className="bg-pale-blue/10 border-l-4 border-light-blue p-8 md:p-10 rounded-r-xl shadow-sm">
+                <div className="bg-pale-blue/10 border-l-4 border-light-blue p-8 md:p-10 rounded-r-xl">
                   <h2 className="text-2xl font-extrabold text-main-blue mb-4 uppercase tracking-wider flex items-center gap-3">
                     <span className="bg-light-blue text-white w-8 h-8 flex items-center justify-center rounded-full text-lg font-black">V</span>
                     Visión
@@ -153,14 +107,14 @@ export default function QuienesSomos() {
                 </div>
               </div>
 
-              {/* SECCIÓN PRINCIPIOS RECTORES */}
+              {/* SECCIÓN PRINCIPIOS RECTORES - Sin sombras */}
               <div id="principios-rectores" className="pt-10 border-t border-gray-100 scroll-mt-32">
                 <h2 className="text-2xl md:text-3xl font-semibold text-main-blue text-center mb-10 uppercase">
                   Principios Rectores
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {principiosRectores.map((principio, index) => (
-                    <div key={index} className="flex flex-col bg-gray-50 p-8 rounded-xl border-t-4 border-main-red shadow-sm hover:shadow-md transition-shadow">
+                    <div key={index} className="flex flex-col bg-gray-50 p-8 rounded-xl border-t-4 border-main-red transition-colors">
                       <h3 className="text-xl font-extrabold text-main-blue mb-4 flex items-center gap-3">
                         <div className="w-3 h-3 rounded-full bg-main-red shrink-0"></div>
                         {principio.titulo}
@@ -177,7 +131,7 @@ export default function QuienesSomos() {
           </div>
         </section>
 
-        {/* SECCIÓN ORGANIGRAMA */}
+        {/* SECCIÓN ORGANIGRAMA - Diseño Plano */}
         <section id="organigrama" className="bg-main-blue text-white py-16 md:py-20 px-6 relative z-20 scroll-mt-32 mt-8">
           <div className="max-w-5xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-semibold text-center mb-8 uppercase text-white">
@@ -187,12 +141,9 @@ export default function QuienesSomos() {
               <p>
                 La estructura organizacional del IIRESODH tiene como máxima figura de autoridad formal a la Presidencia, a la cual están adscritas todas las unidades internas.
               </p>
-              <p>
-                Se aplica un criterio funcional para las unidades estructurales y un criterio territorial para reflejar nuestras oficinas en distintos países del mundo, ambas subordinadas a la Presidencia.
-              </p>
             </div>
 
-            <div className="bg-white p-8 md:p-12 rounded-xl overflow-x-auto shadow-inner">
+            <div className="bg-white p-8 md:p-12 rounded-xl overflow-x-auto">
               <div className="min-w-175 flex flex-col items-center">
                 <div className="bg-main-red text-white font-bold py-3 px-10 rounded-lg border-b-4 border-red-900 z-10 relative">
                   PRESIDENCIA
