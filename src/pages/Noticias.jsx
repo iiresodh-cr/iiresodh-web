@@ -48,34 +48,14 @@ export default function Noticias() {
     }
   };
 
-  // Carga inicial: Salta la primera noticia (la de la portada)
+  // Carga inicial
   useEffect(() => {
-    const iniciarCentroNoticias = async () => {
-      try {
-        // 1. Obtenemos solo la noticia más reciente para usarla como punto de partida
-        const qCursor = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), limit(1));
-        const snapCursor = await getDocs(qCursor);
-        
-        if (!snapCursor.empty) {
-          // 2. Iniciamos la carga normal saltando esa primera noticia (startAfter)
-          const q = query(
-            collection(db, "noticias"),
-            orderBy("fechaPublicacion", "desc"),
-            startAfter(snapCursor.docs[0]),
-            limit(NOTICIAS_POR_PAGINA)
-          );
-          fetchNoticias(q);
-        } else {
-          // Si no hay ninguna noticia
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error("Error en carga inicial:", error);
-        setLoading(false);
-      }
-    };
-
-    iniciarCentroNoticias();
+    const q = query(
+      collection(db, "noticias"),
+      orderBy("fechaPublicacion", "desc"),
+      limit(NOTICIAS_POR_PAGINA)
+    );
+    fetchNoticias(q);
   }, []);
 
   const paginaSiguiente = () => {

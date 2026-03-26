@@ -15,41 +15,35 @@ import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-// FUNCIÓN DE FORMATEO: Detecta Markdown y Hashtags
+// FUNCIÓN DE FORMATEO: Pura e intacta, idéntica a ArticuloDetalle
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
 
-  // 1. Procesar enlaces estilo Markdown: [Texto visible](https://url-larga.com)
-  let procesado = texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<]+)\)/g, (match, textoEnlace, url) => {
-    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-semibold underline transition-colors pointer-events-auto wrap-break-word">${textoEnlace}</a>`;
+  let seguro = texto.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+
+  seguro = seguro.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all">$1</a>');
+
+  seguro = seguro.replace(/(?<!href="|href=)(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all">$1</a>');
+
+  seguro = seguro.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
+    const termino = hashtag.substring(1); 
+    return `<a href="/buscar?q=${termino}" class="text-light-blue font-semibold hover:text-main-red transition-colors">${hashtag}</a>`;
   });
 
-  const partes = procesado.split(/(<[^>]+>)/g);
-  for (let i = 0; i < partes.length; i++) {
-    if (i % 2 === 0) {
-      // 2. Convertir URLs sueltas
-      let parte = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
-        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-semibold underline transition-colors pointer-events-auto wrap-break-word">${url}</a>`;
-      });
-      // 3. Convertir Hashtags (#)
-      parte = parte.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
-        const termino = hashtag.substring(1); 
-        return `<a href="/buscar?q=${termino}" class="text-light-blue font-semibold">${hashtag}</a>`;
-      });
-      partes[i] = parte;
-    }
-  }
-  return partes.join('');
+  const parrafos = seguro.split(/\n\s*\n/);
+  const htmlFinal = parrafos.map(p => {
+    return `<p>${p.replace(/\n/g, '<br />')}</p>`;
+  }).join('');
+
+  return htmlFinal;
 };
 
 export default function Home() {
-  const [noticia, setNoticia] = useState(null);
+  const [noticias, setNoticias] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isOverflowing, setIsOverflowing] = useState(false);
   const [hoveredSede, setHoveredSede] = useState(null);
   const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
   
-  const contentRef = useRef(null);
   const mapContainerRef = useRef(null);
 
   const sedes = [
@@ -61,28 +55,18 @@ export default function Home() {
   ];
 
   useEffect(() => {
-    const fetchNoticia = async () => {
+    const fetchNoticias = async () => {
       try {
-        const q = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), limit(1));
+        const q = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), limit(3));
         const snap = await getDocs(q);
-        if (!snap.empty) setNoticia({ id: snap.docs[0].id, ...snap.docs[0].data() });
+        if (!snap.empty) {
+          setNoticias(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        }
       } catch (e) { console.error(e); }
       finally { setLoading(false); }
     };
-    fetchNoticia();
+    fetchNoticias();
   }, []);
-
-  useEffect(() => {
-    const checkOverflow = () => {
-      if (contentRef.current) {
-        const { scrollHeight, clientHeight } = contentRef.current;
-        setIsOverflowing(scrollHeight > clientHeight + 2);
-      }
-    };
-    checkOverflow();
-    window.addEventListener('resize', checkOverflow);
-    return () => window.removeEventListener('resize', checkOverflow);
-  }, [noticia]);
 
   const handleHover = (sede, e) => {
     if (!mapContainerRef.current) return;
@@ -119,52 +103,57 @@ export default function Home() {
 
         <div className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-8 md:pt-12 pb-16 flex flex-col gap-8 md:gap-10 overflow-hidden">
           
-          {/* BLOQUE 1: NOTICIA DESTACADA */}
-          {noticia && (
-            <article className="flex flex-col md:flex-row gap-8 md:gap-12 items-start bg-white">
-              
-              <div className="w-full md:w-2/5 shrink-0 mb-8 md:mb-0">
-                <Swiper 
-                  modules={[Pagination, Autoplay]} 
-                  pagination={{ clickable: true }} 
-                  autoplay={{ delay: 4000 }} 
-                  className="w-full swiper-custom-pagination"
-                >
-                  <SwiperSlide className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex items-center justify-center">
-                    <img src={noticia.imagenPrincipalUrl} alt={`Imagen principal: ${noticia.titulo}`} className="w-full aspect-4/5 object-cover block" />
-                  </SwiperSlide>
-                  {noticia.imagenesCarruselUrls?.map((url, i) => (
-                    <SwiperSlide key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex items-center justify-center">
-                      <img src={url} alt={`Imagen ${i + 1} de carrusel: ${noticia.titulo}`} className="w-full aspect-4/5 object-cover block" />
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-              </div>
+          {/* BLOQUE 1: NOTICIAS DESTACADAS (CARRUSEL) */}
+          {noticias.length > 0 && (
+            <Swiper 
+              modules={[Pagination, Autoplay]} 
+              pagination={{ clickable: true }} 
+              autoplay={{ delay: 5000 }} 
+              spaceBetween={40}
+              className="w-full swiper-custom-pagination pb-12"
+            >
+              {noticias.map((noticia) => (
+                <SwiperSlide key={noticia.id}>
+                  {/* ESTRUCTURA PERFECTA: Grid de 10 columnas, idéntico a la sección de abajo. Sin desbordamientos matemáticos. */}
+                  <article className="grid grid-cols-1 md:grid-cols-10 gap-10 items-start bg-white w-full">
+                    
+                    <div className="md:col-span-4 mb-8 md:mb-0">
+                      <div className="bg-white rounded-xl shadow-sm overflow-hidden flex items-center justify-center">
+                        <img src={noticia.imagenPrincipalUrl} alt={`Imagen principal: ${noticia.titulo}`} className="w-full aspect-4/5 object-cover block" />
+                      </div>
+                    </div>
 
-              <div className="w-full md:w-3/5 flex flex-col justify-start md:pl-12 overflow-hidden bg-white">
-                <h1 className="text-3xl md:text-5xl font-semibold text-main-blue mb-8 leading-tight tracking-tight">
-                  {noticia.titulo}
-                </h1>
-                <div ref={contentRef} className="text-gray-600 mb-6 text-base md:text-lg font-light leading-relaxed noticia-content text-justify overflow-hidden" dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(noticia.contenido) }} />
-                {isOverflowing && (
-                  <Link 
-                    to={`/noticias/${noticia.slug || noticia.id}`} 
-                    className="text-main-red font-bold hover:text-main-blue transition-colors mt-auto flex items-center gap-2 self-start uppercase tracking-wide text-sm"
-                    aria-label={`Leer noticia completa: ${noticia.titulo}`}
-                  >
-                    Leer noticia completa <span>&rarr;</span>
-                  </Link>
-                )}
-              </div>
-            </article>
+                    <div className="md:col-span-6 flex flex-col justify-start bg-white w-full">
+                      <h1 className="text-3xl md:text-5xl font-semibold text-main-blue mb-8 leading-tight tracking-tight">
+                        {noticia.titulo}
+                      </h1>
+                      
+                      <div 
+                        className="text-gray-600 mb-6 text-base md:text-lg font-light leading-relaxed noticia-content text-justify overflow-hidden line-clamp-6" 
+                        dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(noticia.contenido) }} 
+                      />
+                      
+                      <Link 
+                        to={`/noticias/${noticia.slug || noticia.id}`} 
+                        className="text-main-red font-bold hover:text-main-blue transition-colors mt-auto flex items-center gap-2 self-start uppercase tracking-wide text-sm"
+                        aria-label={`Leer noticia completa: ${noticia.titulo}`}
+                      >
+                        Leer noticia completa <span>&rarr;</span>
+                      </Link>
+                    </div>
+                  </article>
+                </SwiperSlide>
+              ))}
+            </Swiper>
           )}
 
           {/* BLOQUE 2: TEXTO INSTITUCIONAL Y MAPA */}
           <div className="pt-4 bg-white">
+            {/* Grid 10: 4 a la izquierda, 6 a la derecha. Margen derecho idéntico al de las noticias */}
             <div className="grid grid-cols-1 md:grid-cols-10 gap-10 items-center overflow-visible bg-white min-h-125">
               
               {/* IZQUIERDA: TEXTO INSTITUCIONAL */}
-              <div className="md:col-span-4 flex flex-col justify-center space-y-4 bg-white pr-10 md:mt-12">
+              <div className="md:col-span-4 flex flex-col justify-center space-y-4 bg-white md:mt-12">
                 <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
                   El <strong className="font-semibold text-main-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, es una asociación sin fines de lucro, con su sede principal en Costa Rica y oficinas en otros países como Canadá, Colombia, Guatemala, México, con el objetivo de fomentar el cumplimiento de los estándares internacionales de derechos humanos mediante un enfoque de participación ciudadana, gubernamental y corporativa.
                 </p>
