@@ -63,8 +63,8 @@ export default function ArticuloDetalle() {
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark"></div>
         
-        {/* CONTENEDOR HOMOLOGADO CON EL HOME (max-w-7xl) */}
         <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
+          {/* CONTENEDOR INSTITUCIONAL PLANO (Sin sombra) */}
           <div className="max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl border border-gray-100">
             
             <div className="px-8 pt-8 md:px-12 lg:px-16 md:pt-12">
@@ -84,7 +84,8 @@ export default function ArticuloDetalle() {
               </div>
               
               {articulo.imagenPrincipalUrl && (
-                <div className="mb-12 w-full rounded-2xl overflow-hidden bg-gray-50 border border-gray-100">
+                {/* TARJETA DE IMAGEN CON SOMBRA (shadow-sm) */}
+                <div className="mb-12 w-full rounded-2xl overflow-hidden bg-gray-50 shadow-sm border border-gray-100">
                   <img src={articulo.imagenPrincipalUrl} alt="" className="w-full max-h-150 object-contain" />
                 </div>
               )}

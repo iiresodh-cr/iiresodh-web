@@ -48,9 +48,9 @@ export default function ArticulosAcademicos() {
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark"></div>
 
-        {/* CONTENEDOR INSTITUCIONAL */}
         <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
-          <div className={`max-w-7xl mx-auto bg-white overflow-hidden shadow-sm md:rounded-3xl border border-gray-100 ${articulos.length === 0 ? 'min-h-100 flex items-center justify-center' : ''}`}>
+          {/* CONTENEDOR INSTITUCIONAL PLANO (Sin sombra) */}
+          <div className={`max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl border border-gray-100 ${articulos.length === 0 ? 'min-h-100 flex items-center justify-center' : ''}`}>
             
             <div className="px-8 md:px-12 lg:px-16 py-12 md:py-16 animate-fade-in-up w-full">
               
@@ -72,6 +72,7 @@ export default function ArticulosAcademicos() {
                 /* GRID DE TARJETAS DE ARTÍCULOS */
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {articulos.map((articulo) => (
+                    /* TARJETAS CON SOMBRA INTERACTIVA (hover:shadow-xl) */
                     <div key={articulo.id} className="bg-gray-50 rounded-2xl overflow-hidden border border-gray-200 hover:shadow-xl hover:border-pale-blue transition-all duration-300 flex flex-col group">
                       
                       {articulo.imagenPrincipalUrl && (

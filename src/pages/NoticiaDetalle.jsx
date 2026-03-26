@@ -96,6 +96,7 @@ export default function NoticiaDetalle() {
         <div className="bg-watermark"></div>
 
         <article className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
+          {/* CONTENEDOR INSTITUCIONAL PLANO (Sin sombra) */}
           <div className="max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl border border-gray-100">
             <div className="px-8 md:px-12 lg:px-16 py-12 md:py-16">
               
@@ -109,7 +110,8 @@ export default function NoticiaDetalle() {
                     className="w-full swiper-custom-pagination"
                   >
                     {todasLasImagenes.map((url, i) => (
-                      <SwiperSlide key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                      {/* TARJETA DE IMAGEN CON SOMBRA (shadow-sm) */}
+                      <SwiperSlide key={i} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                         <img src={url} alt="" className="w-full aspect-4/5 object-cover block" />
                       </SwiperSlide>
                     ))}
