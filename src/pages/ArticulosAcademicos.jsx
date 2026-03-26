@@ -101,10 +101,10 @@ export default function ArticulosAcademicos() {
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
       
-      {/* HEADER ESTANDARIZADO */}
+      {/* HEADER ESTANDARIZADO - Subtítulo ajustado a una sola línea */}
       <PageHeader 
         titulo="Artículos Académicos" 
-        subtitulo="Investigación, análisis y publicaciones especializadas en Derechos Humanos y Responsabilidad Social." 
+        subtitulo="Investigación y análisis especializado en Derechos Humanos." 
       />
 
       <div className="relative overflow-hidden grow pb-20">
@@ -131,7 +131,7 @@ export default function ArticulosAcademicos() {
                   {/* GRID DE TARJETAS DE ARTÍCULOS */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {articulos.map((articulo) => (
-                      /* TODA LA TARJETA ES AHORA UN LINK */
+                      /* TODA LA TARJETA ES UN LINK */
                       <Link 
                         key={articulo.id} 
                         to={`/articulos-academicos/${articulo.slug || articulo.id}`}
@@ -161,7 +161,7 @@ export default function ArticulosAcademicos() {
                             {articulo.resumen}
                           </p>
                           
-                          {/* Cambiado a div para evitar enlaces anidados, mantiene el estilo visual */}
+                          {/* Div con estilo visual de botón */}
                           <div className="inline-flex items-center gap-2 text-xs font-bold text-main-blue uppercase tracking-widest group-hover:text-main-red transition-colors mt-auto">
                             Leer artículo <span className="text-lg leading-none">&rarr;</span>
                           </div>

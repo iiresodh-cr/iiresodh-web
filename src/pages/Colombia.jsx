@@ -8,10 +8,10 @@ export default function Colombia() {
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
       
-      {/* ENCABEZADO Estandarizado */}
+      {/* ENCABEZADO Estandarizado - Subtítulo ajustado a una sola línea */}
       <PageHeader 
         titulo="IIRESODH Colombia" 
-        subtitulo="Sede regional dedicada a la defensa y promoción de los Derechos Humanos en territorio colombiano." 
+        subtitulo="Defensa y promoción de los Derechos Humanos en territorio colombiano." 
       />
 
       <div className="relative overflow-hidden grow flex items-center justify-center p-8">
