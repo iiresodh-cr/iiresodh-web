@@ -10,13 +10,16 @@ import { Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
-// MOTOR DE RENDERIZADO ESTRUCTURAL
-const formatearTextoEstructural = (texto) => {
+// MOTOR ESTRUCTURAL PURO
+const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
 
   let seguro = texto.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-  seguro = seguro.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-  seguro = seguro.replace(/(?<!href="|href=)(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+
+  seguro = seguro.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all">$1</a>');
+
+  seguro = seguro.replace(/(?<!href="|href=)(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all">$1</a>');
+
   seguro = seguro.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
     const termino = hashtag.substring(1); 
     return `<a href="/buscar?q=${termino}" class="text-light-blue font-semibold hover:text-main-red transition-colors">${hashtag}</a>`;
@@ -96,12 +99,10 @@ export default function NoticiaDetalle() {
         <div className="bg-watermark"></div>
 
         <article className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
-          {/* CONTENEDOR INSTITUCIONAL PLANO (Sin sombra) */}
           <div className="max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl border border-gray-100">
             <div className="px-8 md:px-12 lg:px-16 py-12 md:py-16">
               
               <div className="flex flex-col lg:flex-row gap-12 items-start">
-                
                 <div className="w-full lg:w-1/2 shrink-0">
                   <Swiper 
                     modules={[Pagination, Autoplay]} 
@@ -110,7 +111,6 @@ export default function NoticiaDetalle() {
                     className="w-full swiper-custom-pagination"
                   >
                     {todasLasImagenes.map((url, i) => (
-                      {/* TARJETA DE IMAGEN CON SOMBRA (shadow-sm) */}
                       <SwiperSlide key={i} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                         <img src={url} alt="" className="w-full aspect-4/5 object-cover block" />
                       </SwiperSlide>
@@ -121,7 +121,7 @@ export default function NoticiaDetalle() {
                 <div className="w-full lg:w-1/2">
                   <div 
                     className="noticia-content"
-                    dangerouslySetInnerHTML={{ __html: formatearTextoEstructural(noticia.contenido) }}
+                    dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(noticia.contenido) }}
                   />
                   
                   <div className="mt-12 pt-8 border-t border-gray-100">
