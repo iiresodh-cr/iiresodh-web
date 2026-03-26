@@ -36,13 +36,14 @@ export default function Privacidad() {
         <div className="bg-watermark"></div>
 
         <section className="relative py-12 md:py-16 px-0 md:px-8 z-10">
-          <div className="max-w-6xl mx-auto">
+          {/* Ancho homologado a max-w-7xl como en el resto del sitio */}
+          <div className="max-w-7xl mx-auto">
             
-            {/* Pestañas de Navegación alineadas al contenedor */}
-            <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 mb-8 px-6 md:px-0">
+            {/* Pestañas de Navegación alineadas al contenedor - Sombras eliminadas */}
+            <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 mb-12 px-6 md:px-0">
               <button
                 onClick={() => setActiveTab("general")}
-                className={`py-3 px-8 rounded-full font-bold uppercase tracking-widest text-sm transition-all shadow-md cursor-pointer ${
+                className={`py-3 px-8 rounded-full font-bold uppercase tracking-widest text-sm transition-all cursor-pointer ${
                   activeTab === "general"
                     ? "bg-main-blue text-white"
                     : "bg-white text-main-blue border border-gray-200 hover:bg-pale-blue hover:text-main-blue"
@@ -52,7 +53,7 @@ export default function Privacidad() {
               </button>
               <button
                 onClick={() => setActiveTab("mexico")}
-                className={`py-3 px-8 rounded-full font-bold uppercase tracking-widest text-sm transition-all shadow-md cursor-pointer ${
+                className={`py-3 px-8 rounded-full font-bold uppercase tracking-widest text-sm transition-all cursor-pointer ${
                   activeTab === "mexico"
                     ? "bg-main-red text-white"
                     : "bg-white text-main-red border border-gray-200 hover:bg-red-50 hover:border-main-red"
@@ -62,7 +63,7 @@ export default function Privacidad() {
               </button>
               <button
                 onClick={() => setActiveTab("terminos")}
-                className={`py-3 px-8 rounded-full font-bold uppercase tracking-widest text-sm transition-all shadow-md cursor-pointer ${
+                className={`py-3 px-8 rounded-full font-bold uppercase tracking-widest text-sm transition-all cursor-pointer ${
                   activeTab === "terminos"
                     ? "bg-main-blue text-white"
                     : "bg-white text-main-blue border border-gray-200 hover:bg-pale-blue hover:text-main-blue"
@@ -72,8 +73,8 @@ export default function Privacidad() {
               </button>
             </div>
 
-            {/* Contenedor Legal */}
-            <div className="bg-white md:rounded-3xl shadow-2xl border-y md:border border-gray-100 p-8 md:p-12 lg:p-16">
+            {/* Contenedor Legal - DISEÑO PLANO: Sin sombras ni bordes grises */}
+            <div className="bg-white md:rounded-3xl p-8 md:p-12 lg:p-16">
               
               {/* =========================================
                   CONTENIDO: POLÍTICA GENERAL
@@ -81,16 +82,16 @@ export default function Privacidad() {
               {activeTab === "general" && (
                 <div className={legalTextClass}>
                   <div className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-2">Política de Privacidad de IIRESODH</h2>
+                    <h2 className="text-2xl md:text-4xl font-bold text-main-blue mb-2">Política de Privacidad de IIRESODH</h2>
                     <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 14 de marzo de 2026</p>
                   </div>
 
                   <div>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">1. Introducción y Alcance</h3>
                     <p className="mb-3">Bienvenido a la Política de Privacidad del Instituto Internacional de Responsabilidad Social y Derechos Humanos (en adelante, “IIRESODH”, “nosotros” o “nuestro”).</p>
-                    <p className="mb-3">Esta política describe cómo recopilamos, utilizamos, protegemos y compartimos su información personal cuando visita nuestro sitio web institucional (<a href="https://iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">https://iiresodh.org</a>) y se comunica con nosotros.</p>
-                    <div className="bg-pale-blue/30 p-4 rounded-xl border border-pale-blue mt-6">
-                      <p className="text-sm font-medium text-main-blue">
+                    <p className="mb-3">Esta política describe cómo recopilamos, utilizamos, protegemos y compartimos su información personal cuando visita nuestro sitio web institucional (<a href="https://iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors font-semibold">https://iiresodh.org</a>) y se comunica con nosotros.</p>
+                    <div className="bg-pale-blue/20 p-6 rounded-2xl mt-6">
+                      <p className="text-sm font-medium text-main-blue leading-relaxed">
                         <strong>Nota sobre servicios externos:</strong> El servicio tecnológico asociado PIDA-AI (<a href="https://pida-ai.com" target="_blank" rel="noopener noreferrer" className="text-light-blue hover:text-main-blue transition-colors">https://pida-ai.com</a>) es gestionado por una entidad jurídica independiente y se rige estrictamente por su propia Política de Privacidad, disponible en su respectivo sitio web.
                       </p>
                     </div>
@@ -150,8 +151,8 @@ export default function Privacidad() {
 
                   <div>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">10. Contacto</h3>
-                    <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm mt-4 text-left not-italic font-normal text-sm md:text-base">
-                      <p className="font-bold text-main-blue mb-1">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</p>
+                    <div className="bg-gray-50 p-8 rounded-2xl mt-4 text-left not-italic font-normal text-sm md:text-base border border-gray-100">
+                      <p className="font-bold text-main-blue mb-1 uppercase tracking-tight">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</p>
                       <p className="mb-1"><strong>Correo electrónico:</strong> <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">contacto@iiresodh.org</a></p>
                       <p><strong>Dirección Sede Central:</strong> Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica.</p>
                     </div>
@@ -165,15 +166,15 @@ export default function Privacidad() {
               {activeTab === "mexico" && (
                 <div className={legalTextClass}>
                   <div className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-2">Aviso de Privacidad (MÉXICO)</h2>
+                    <h2 className="text-2xl md:text-4xl font-bold text-main-blue mb-2">Aviso de Privacidad (MÉXICO)</h2>
                     <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 14 de marzo de 2026</p>
                   </div>
 
                   <div>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">1. Introducción y Marco Legal</h3>
-                    <p className="mb-3">En estricto cumplimiento a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP) aplicable en los Estados Unidos Mexicanos, se emite el presente Aviso de Privacidad para informar a los usuarios (en adelante, el “Titular”) sobre el tratamiento de sus datos en el sitio web institucional: <a href="https://iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">https://iiresodh.org</a>.</p>
-                    <div className="bg-pale-blue/30 p-4 rounded-xl border border-pale-blue mt-6">
-                      <p className="text-sm font-medium text-main-blue">
+                    <p className="mb-3">En estricto cumplimiento a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP) aplicable en los Estados Unidos Mexicanos, se emite el presente Aviso de Privacidad para informar a los usuarios (en adelante, el “Titular”) sobre el tratamiento de sus datos en el sitio web institucional: <a href="https://iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors font-semibold">https://iiresodh.org</a>.</p>
+                    <div className="bg-pale-blue/20 p-6 rounded-2xl mt-6">
+                      <p className="text-sm font-medium text-main-blue leading-relaxed">
                         <strong>Importante:</strong> Este Aviso no cubre el servicio tecnológico PIDA-AI, el cual cuenta con su propio Responsable jurídico y Aviso de Privacidad independiente en <a href="https://pida-ai.com" target="_blank" rel="noopener noreferrer" className="text-light-blue hover:text-main-blue transition-colors">https://pida-ai.com</a>.
                       </p>
                     </div>
@@ -191,20 +192,20 @@ export default function Privacidad() {
                       <li><strong>Datos de Identificación y Contacto:</strong> Nombre completo, correo electrónico, institución a la que pertenece y país.</li>
                       <li><strong>Datos de Navegación:</strong> Dirección IP, cookies y datos analíticos de uso del portal web.</li>
                     </ul>
-                    <p className="mt-4 text-main-red font-bold">Datos Personales Sensibles:</p>
+                    <p className="mt-6 text-main-red font-bold uppercase tracking-wider text-sm">Datos Personales Sensibles:</p>
                     <p>El IIRESODH <strong>no recaba ni trata</strong> datos personales sensibles para la operación de este portal. Le rogamos abstenerse de enviar información clasificada como sensible a través de nuestros formularios de contacto general.</p>
                   </div>
 
                   <div>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">4. Finalidades del Tratamiento</h3>
-                    <p className="font-bold mb-2 text-main-blue">Finalidades Primarias (necesarias para la relación jurídica):</p>
+                    <p className="font-bold mb-2 text-main-blue uppercase text-xs tracking-widest">Finalidades Primarias:</p>
                     <ul className="list-disc pl-6 mb-4 space-y-1">
                       <li>Proveer la información solicitada respecto a nuestras actividades y defensa de derechos humanos.</li>
                       <li>Contactar al Titular en respuesta a sus mensajes, dudas o comentarios.</li>
                       <li>Gestionar la inscripción a eventos, foros o programas académicos dictados por el IIRESODH.</li>
                     </ul>
 
-                    <p className="font-bold mb-2 text-main-blue">Finalidades Secundarias:</p>
+                    <p className="font-bold mb-2 text-main-blue uppercase text-xs tracking-widest">Finalidades Secundarias:</p>
                     <ul className="list-disc pl-6 space-y-1">
                       <li>Envío de boletines informativos institucionales.</li>
                       <li>Análisis estadístico del uso del sitio web para mejora continua.</li>
@@ -241,8 +242,8 @@ export default function Privacidad() {
 
                   <div>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">9. Contacto</h3>
-                    <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm mt-4 text-left not-italic font-normal text-sm md:text-base">
-                      <p className="font-bold text-main-blue mb-1">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</p>
+                    <div className="bg-gray-50 p-8 rounded-2xl mt-4 text-left not-italic font-normal text-sm md:text-base border border-gray-100">
+                      <p className="font-bold text-main-blue mb-1 uppercase tracking-tight">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</p>
                       <p className="mb-1"><strong>Correo electrónico:</strong> <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">contacto@iiresodh.org</a></p>
                       <p><strong>Domicilio:</strong> Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica.</p>
                     </div>
@@ -256,7 +257,7 @@ export default function Privacidad() {
               {activeTab === "terminos" && (
                 <div className={legalTextClass}>
                   <div className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-2">Términos y Condiciones del Sitio Web</h2>
+                    <h2 className="text-2xl md:text-4xl font-bold text-main-blue mb-2">Términos y Condiciones del Sitio Web</h2>
                     <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 14 de marzo de 2026</p>
                   </div>
 
@@ -297,7 +298,7 @@ export default function Privacidad() {
                   <div>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">6. Uso Responsable</h3>
                     <p className="mb-3">Al visitar nuestro Sitio Web, usted se compromete a utilizarlo únicamente para los fines previstos y conforme a lo permitido por estos Términos, los contratos adicionales que tenga con nosotros, las leyes y regulaciones aplicables, así como las practices en línea generalmente aceptadas y las directrices del sector.</p>
-                    <p className="font-bold text-main-red mb-2">Queda estrictamente prohibido:</p>
+                    <p className="font-bold text-main-red mb-2 uppercase text-xs tracking-widest">Queda estrictamente prohibido:</p>
                     <ul className="list-disc pl-6 space-y-2">
                       <li>Usar nuestro Sitio Web o servicios para utilizar, publicar o distribuir cualquier material que contenga o esté vinculado a software malicioso (malware).</li>
                       <li>Utilizar los datos recogidos en nuestro Sitio Web para cualquier actividad de marketing directo.</li>
@@ -331,7 +332,7 @@ export default function Privacidad() {
                   <div>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">11. Garantías y Responsabilidad</h3>
                     <p className="mb-3">Este Sitio Web y todo su contenido se proporcionan “tal cual” y “según disponibilidad” y pueden contener imprecisiones o errores tipográficos. Renunciamos expresamente a toda garantía, ya sea expresa o implícita, en cuanto a la disponibilidad, exactitud o integridad del Contenido.</p>
-                    <p className="font-bold text-main-blue mb-2">No garantizamos que:</p>
+                    <p className="font-bold text-main-blue mb-2 uppercase text-xs tracking-widest">No garantizamos que:</p>
                     <ul className="list-disc pl-6 mb-4 space-y-2">
                       <li>Este Sitio Web, o nuestros productos y servicios, satisfagan sus requisitos específicos.</li>
                       <li>El acceso al Sitio Web sea ininterrumpido, oportuno, seguro o libre de errores.</li>
@@ -400,9 +401,9 @@ export default function Privacidad() {
                   <div>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">23. Información de Contacto</h3>
                     <p className="mb-4">Este Sitio Web es propiedad y está gestionado por el IIRESODH. Puede contactarnos en relación con estos Términos y Condiciones escribiéndonos a la siguiente dirección de correo electrónico o postal:</p>
-                    <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm mt-4 text-left not-italic font-normal text-sm md:text-base">
-                      <p className="font-bold text-main-blue mb-1">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</p>
-                      <p className="mb-1"><strong>Correo electrónico:</strong> <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">contacto@iiresodh.org</a></p>
+                    <div className="bg-gray-50 p-8 rounded-2xl mt-4 text-left not-italic font-normal text-sm md:text-base border border-gray-100">
+                      <p className="font-bold text-main-blue mb-1 uppercase tracking-tight">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</p>
+                      <p className="mb-1"><strong>Correo electrónico:</strong> <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors font-bold">contacto@iiresodh.org</a></p>
                       <p><strong>Dirección postal:</strong> Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica.</p>
                     </div>
                   </div>
