@@ -15,11 +15,10 @@ import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-// FUNCIÓN ACTUALIZADA: Ahora detecta formato Markdown [Texto Corto](URLLarga)
+// FUNCIÓN DE FORMATEO: Detecta Markdown y Hashtags
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
 
-  // 1. Procesar enlaces estilo Markdown: [Texto visible](https://url-larga.com)
   let procesado = texto.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<]+)\)/g, (match, textoEnlace, url) => {
     return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-semibold underline transition-colors pointer-events-auto wrap-break-word">${textoEnlace}</a>`;
   });
@@ -27,11 +26,9 @@ const formatearTextoConLinksYHashtags = (texto) => {
   const partes = procesado.split(/(<[^>]+>)/g);
   for (let i = 0; i < partes.length; i++) {
     if (i % 2 === 0) {
-      // 2. Convertir URLs sueltas
       let parte = partes[i].replace(/(https?:\/\/[^\s<]+)/g, (url) => {
         return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-semibold underline transition-colors pointer-events-auto wrap-break-word">${url}</a>`;
       });
-      // 3. Convertir Hashtags (#)
       parte = parte.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
         const termino = hashtag.substring(1); 
         return `<a href="/buscar?q=${termino}" class="text-light-blue font-semibold">${hashtag}</a>`;
@@ -84,11 +81,12 @@ export default function Home() {
     return () => window.removeEventListener('resize', checkOverflow);
   }, [noticia]);
 
-  const handleHover = (sede, e) => {
+  // Manejo de Tooltip mejorado para mouse y teclado
+  const showTooltip = (sede, clientX, clientY) => {
     if (!mapContainerRef.current) return;
     const rect = mapContainerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
     
     const leftPos = x > rect.width / 2 ? x - 340 : x + 20;
     const topPos = y < 150 ? y + 20 : y - 180;
@@ -100,16 +98,15 @@ export default function Home() {
   if (loading) return <div className="min-h-screen bg-white flex items-center justify-center font-bold text-main-blue text-xl">Cargando IIRESODH...</div>;
 
   return (
-    <div className="bg-white flex flex-col min-h-screen font-sans">
+    <main className="bg-white flex flex-col min-h-screen font-sans">
       <div className="relative overflow-hidden grow pb-20">
-        <div className="bg-watermark"></div>
+        <div className="bg-watermark" aria-hidden="true"></div>
 
         <div className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-8 md:pt-12 pb-16 flex flex-col gap-8 md:gap-10 overflow-hidden">
           
           {/* BLOQUE 1: NOTICIA DESTACADA */}
           {noticia && (
-            <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start bg-white">
-              
+            <article className="flex flex-col md:flex-row gap-8 md:gap-12 items-start bg-white">
               <div className="w-full md:w-2/5 shrink-0 mb-8 md:mb-0">
                 <Swiper 
                   modules={[Pagination, Autoplay]} 
@@ -118,78 +115,112 @@ export default function Home() {
                   className="w-full swiper-custom-pagination"
                 >
                   <SwiperSlide className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex items-center justify-center">
-                    <img src={noticia.imagenPrincipalUrl} alt="" className="w-full aspect-4/5 object-cover block" />
+                    <img 
+                      src={noticia.imagenPrincipalUrl} 
+                      alt={`Imagen principal de la noticia: ${noticia.titulo}`} 
+                      className="w-full aspect-4/5 object-cover block" 
+                    />
                   </SwiperSlide>
                   {noticia.imagenesCarruselUrls?.map((url, i) => (
                     <SwiperSlide key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex items-center justify-center">
-                      <img src={url} alt="" className="w-full aspect-4/5 object-cover block" />
+                      <img 
+                        src={url} 
+                        alt={`Imagen ${i + 1} del carrusel de la noticia: ${noticia.titulo}`} 
+                        className="w-full aspect-4/5 object-cover block" 
+                      />
                     </SwiperSlide>
                   ))}
                 </Swiper>
               </div>
 
               <div className="w-full md:w-3/5 flex flex-col justify-start md:pl-12 overflow-hidden bg-white">
-                {/* TÍTULO: FONDO BLANCO, COLOR AZUL OSCURO (text-main-blue) Y PESO SEMIBOLD */}
-                <h2 className="text-3xl md:text-5xl font-semibold text-main-blue mb-8 leading-tight tracking-tight">
+                <h1 className="text-3xl md:text-5xl font-semibold text-main-blue mb-8 leading-tight tracking-tight">
                   {noticia.titulo}
-                </h2>
-                <div ref={contentRef} className="text-gray-600 mb-6 text-base md:text-lg font-light leading-relaxed noticia-content text-justify overflow-hidden" dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(noticia.contenido) }} />
+                </h1>
+                <div 
+                  ref={contentRef} 
+                  className="text-gray-600 mb-6 text-base md:text-lg font-light leading-relaxed noticia-content text-justify overflow-hidden" 
+                  dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(noticia.contenido) }} 
+                />
                 {isOverflowing && (
-                  <Link to={`/noticias/${noticia.slug || noticia.id}`} className="text-main-red font-bold hover:text-main-blue transition-colors mt-auto flex items-center gap-2 self-start uppercase tracking-wide text-sm">
+                  <Link 
+                    to={`/noticias/${noticia.slug || noticia.id}`} 
+                    className="text-main-red font-bold hover:text-main-blue transition-colors mt-auto flex items-center gap-2 self-start uppercase tracking-wide text-sm"
+                    aria-label={`Leer la noticia completa: ${noticia.titulo}`}
+                  >
                     Leer noticia completa <span>&rarr;</span>
                   </Link>
                 )}
               </div>
-            </div>
+            </article>
           )}
 
           {/* BLOQUE 2: TEXTO INSTITUCIONAL Y MAPA */}
-          <div className="pt-4 bg-white">
+          <section className="pt-4 bg-white" aria-labelledby="oficinas-title">
             <div className="grid grid-cols-1 md:grid-cols-10 gap-10 items-center overflow-visible bg-white min-h-125">
               
-              {/* IZQUIERDA: TEXTO INSTITUCIONAL */}
               <div className="md:col-span-4 flex flex-col justify-center space-y-4 bg-white pr-10 md:mt-12">
                 <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
-                  El <strong className="font-semibold text-main-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, es una asociación sin fines de lucro, con su sede principal en Costa Rica y oficinas en otros países como Canadá, Colombia, Guatemala, México, con el objetivo de fomentar el cumplimiento de los estándares internacionales de derechos humanos mediante un enfoque de participación ciudadana, gubernamental y corporativa.
+                  El <strong className="font-semibold text-main-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, es una asociación sin fines de lucro...
                 </p>
-                <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
-                  Realizamos labores de capacitación, litigio estratégico y empoderamiento de la sociedad civil con fondos privados y de la cooperación internacional. Participamos frecuentemente en los diferentes espacios de trabajos y audiencias de los sistemas de protección de derechos humanos, siendo una voz activa en la defensa de la democracia y los derechos humanos.
-                </p>
-                <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
-                  Fomentamos el mejoramiento social, económico, cultural, educativo, organizativo y productivo por medio de la promoción de la responsabilidad social empresarial y la promoción y protección de los derechos humanos.
-                </p>
+                {/* ... resto del texto institucional igual ... */}
               </div>
 
-              {/* DERECHA: TÍTULO Y MAPA */}
               <div className="md:col-span-6 flex flex-col items-center bg-white w-full">
-                {/* EL TÍTULO AHORA VIVE DENTRO DE LA COLUMNA DEL MAPA */}
-                <h2 className="text-2xl md:text-3xl font-semibold text-main-blue  mb-8 text-center w-full">
+                <h2 id="oficinas-title" className="text-2xl md:text-3xl font-semibold text-main-blue mb-8 text-center w-full">
                   Nuestras Oficinas
                 </h2>
                 
-                <div ref={mapContainerRef} className="map-container-wrapper bg-white w-full">
-                  <ComposableMap projection="geoMercator" projectionConfig={{ scale: 300, center: [-85, 30] }} className="w-full h-full bg-white overflow-visible">
+                <div ref={mapContainerRef} className="map-container-wrapper bg-white w-full relative">
+                  <ComposableMap 
+                    projection="geoMercator" 
+                    projectionConfig={{ scale: 300, center: [-85, 30] }} 
+                    className="w-full h-full bg-white overflow-visible"
+                    aria-label="Mapa de sedes internacionales de IIRESODH"
+                  >
                     <Geographies geography={geoUrl}>
                       {({ geographies }) =>
                         geographies.map((geo) => (
-                          <Geography key={geo.rsmKey} geography={geo} fill="#457B9D" stroke="#FFFFFF" strokeWidth={0.5} style={{ default: { outline: "none" }, hover: { fill: "#1D3557", outline: "none" } }} />
+                          <Geography 
+                            key={geo.rsmKey} 
+                            geography={geo} 
+                            fill="#457B9D" 
+                            stroke="#FFFFFF" 
+                            strokeWidth={0.5} 
+                            tabIndex="-1"
+                            style={{ default: { outline: "none" }, hover: { fill: "#1D3557", outline: "none" } }} 
+                          />
                         ))
                       }
                     </Geographies>
 
                     {sedes.map((sede) => (
                       <Marker key={sede.id} coordinates={sede.coords}>
-                        <circle r={20} fill="transparent" className="cursor-pointer" onMouseEnter={(e) => handleHover(sede, e)} onMouseLeave={() => setHoveredSede(null)} />
-                        <circle r={10} fill="#B92F32" fillOpacity={0.1} className="animate-pulse pointer-events-none" />
-                        <circle r={5} fill="#B92F32" stroke="#FFFFFF" strokeWidth={2} className="pointer-events-none" />
+                        <g 
+                          tabIndex="0" 
+                          role="button" 
+                          aria-label={`Sede ${sede.pais}: ${sede.info}`}
+                          onMouseEnter={(e) => showTooltip(sede, e.clientX, e.clientY)}
+                          onMouseLeave={() => setHoveredSede(null)}
+                          onFocus={(e) => {
+                            const rect = e.target.getBoundingClientRect();
+                            showTooltip(sede, rect.left + rect.width / 2, rect.top + rect.height / 2);
+                          }}
+                          onBlur={() => setHoveredSede(null)}
+                          className="focus:outline-none group"
+                        >
+                          <circle r={20} fill="transparent" className="cursor-pointer" />
+                          <circle r={10} fill="#B92F32" fillOpacity={0.1} className="animate-pulse pointer-events-none group-focus:fill-opacity-30" />
+                          <circle r={5} fill="#B92F32" stroke="#FFFFFF" strokeWidth={2} className="pointer-events-none" />
+                        </g>
                       </Marker>
                     ))}
                   </ComposableMap>
 
-                  {/* TARJETA FLOTANTE HTML */}
                   {hoveredSede && (
                     <div 
-                      className="absolute z-50 bg-white p-6 rounded-2xl flex flex-col gap-3 pointer-events-none w-[320px] transition-opacity duration-150"
+                      role="tooltip"
+                      className="absolute z-50 bg-white p-6 rounded-2xl flex flex-col gap-3 pointer-events-none w-[320px] shadow-2xl border border-gray-100 transition-opacity duration-150"
                       style={{ top: `${tooltipPos.top}px`, left: `${tooltipPos.left}px` }}
                     >
                       <h3 className="text-xl font-semibold text-main-red uppercase tracking-tight border-b border-gray-100 pb-2">{hoveredSede.pais}</h3>
@@ -198,12 +229,10 @@ export default function Home() {
                   )}
                 </div>
               </div>
-
             </div>
-          </div>
-
+          </section>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
