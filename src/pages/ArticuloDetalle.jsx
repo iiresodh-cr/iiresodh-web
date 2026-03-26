@@ -73,8 +73,8 @@ export default function ArticuloDetalle() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center pt-20">
-        <div className="w-16 h-16 border-4 border-pale-blue border-t-main-red rounded-full animate-spin mb-6"></div>
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center pt-20" role="status">
+        <div className="w-16 h-16 border-4 border-pale-blue border-t-main-red rounded-full animate-spin mb-6" aria-hidden="true"></div>
         <span className="text-main-blue font-bold text-lg uppercase tracking-widest">Cargando artículo...</span>
       </div>
     );
@@ -83,36 +83,35 @@ export default function ArticuloDetalle() {
   if (!articulo) return null;
 
   return (
-    <div className="bg-white min-h-screen flex flex-col font-sans">
+    <main className="bg-white min-h-screen flex flex-col font-sans">
       <div className="relative overflow-hidden grow pb-20">
-        <div className="bg-watermark"></div>
+        <div className="bg-watermark" aria-hidden="true"></div>
 
         <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
-          {/* CONTENEDOR PLANO: Sin sombras ni bordes */}
-          <div className="max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl">
+          <article className="max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl">
             
             <div className="px-8 pt-8 md:px-12 lg:px-16 md:pt-12">
-              <Link to="/articulos-academicos" className="inline-flex items-center gap-2 text-xs font-bold text-main-red uppercase tracking-widest hover:text-main-blue transition-colors">
-                <span className="text-lg leading-none">&larr;</span> Volver al repositorio
+              <Link to="/articulos-academicos" className="inline-flex items-center gap-2 text-xs font-bold text-main-red uppercase tracking-widest hover:text-main-blue transition-colors" aria-label="Regresar al repositorio de artículos">
+                <span className="text-lg leading-none" aria-hidden="true">&larr;</span> Volver al repositorio
               </Link>
             </div>
 
             <div className="px-8 md:px-12 lg:px-16 py-8 md:py-12 animate-fade-in-up">
               
-              <div className="mb-10 border-b border-gray-100 pb-10">
+              <header className="mb-10 border-b border-gray-100 pb-10">
                 <span className="text-sm font-black text-gray-400 uppercase tracking-widest mb-4 block">
                   {formatearFecha(articulo.fechaPublicacion)}
                 </span>
                 <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold text-main-blue leading-tight mb-6">
                   {articulo.titulo}
                 </h1>
-              </div>
+              </header>
 
               {articulo.imagenPrincipalUrl && (
                 <div className="mb-12 w-full rounded-2xl overflow-hidden bg-gray-50">
                   <img 
                     src={articulo.imagenPrincipalUrl} 
-                    alt={articulo.titulo} 
+                    alt={`Imagen ilustrativa del artículo: ${articulo.titulo}`} 
                     className="w-full max-h-150 object-contain"
                   />
                 </div>
@@ -124,9 +123,9 @@ export default function ArticuloDetalle() {
               />
 
             </div>
-          </div>
+          </article>
         </section>
       </div>
-    </div>
+    </main>
   );
 }

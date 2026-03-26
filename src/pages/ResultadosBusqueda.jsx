@@ -135,38 +135,37 @@ export default function ResultadosBusqueda() {
   const totalResultados = resultadosPaginas.length + resultadosNoticias.length;
 
   return (
-    <div className="bg-white min-h-screen flex flex-col font-sans">
+    <main className="bg-white min-h-screen flex flex-col font-sans">
       
-      {/* HEADER ESTANDARIZADO */}
       <PageHeader 
         titulo="Resultados de Búsqueda" 
         subtitulo={`Mostrando resultados para: "${terminoBusqueda}"`} 
       />
 
       <div className="relative overflow-hidden grow pb-20">
-        <div className="bg-watermark"></div>
+        <div className="bg-watermark" aria-hidden="true"></div>
 
         {/* CONTENEDOR INSTITUCIONAL */}
-        <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
+        <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10" aria-label="Resultados encontrados">
           <div className="max-w-6xl mx-auto bg-white overflow-hidden shadow-sm md:rounded-3xl border border-gray-50">
             
             <div className="px-8 md:px-12 lg:px-16 py-12 md:py-16 animate-fade-in-up">
               
               {loading ? (
-                <div className="flex flex-col justify-center items-center py-20">
-                  <div className="w-16 h-16 border-4 border-pale-blue border-t-main-red rounded-full animate-spin mb-6"></div>
+                <div className="flex flex-col justify-center items-center py-20" role="status">
+                  <div className="w-16 h-16 border-4 border-pale-blue border-t-main-red rounded-full animate-spin mb-6" aria-hidden="true"></div>
                   <span className="text-main-blue font-bold text-lg uppercase tracking-widest">Buscando coincidencias...</span>
                 </div>
               ) : totalResultados === 0 ? (
-                <div className="text-center py-12">
-                  <svg className="w-20 h-20 text-gray-200 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="text-center py-12" role="alert">
+                  <svg className="w-20 h-20 text-gray-200 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                   </svg>
                   <h2 className="text-2xl font-semibold text-main-blue mb-4">No encontramos coincidencias para su búsqueda</h2>
                   <p className="text-gray-500 font-light mb-8 max-w-md mx-auto">
                     Intente utilizar palabras clave más generales o revise la ortografía del término ingresado.
                   </p>
-                  <Link to="/" className="inline-block bg-main-blue text-white px-8 py-3 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-light-blue transition-colors shadow-md">
+                  <Link to="/" className="inline-block bg-main-blue text-white px-8 py-3 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-light-blue transition-colors shadow-md" aria-label="Regresar a la página de inicio">
                     &larr; Volver al inicio
                   </Link>
                 </div>
@@ -175,20 +174,22 @@ export default function ResultadosBusqueda() {
                   
                   {/* SECCIÓN: PÁGINAS ESTATÍSTICAS */}
                   {resultadosPaginas.length > 0 && (
-                    <section>
-                      <h2 className="text-sm font-black text-main-red uppercase tracking-[0.3em] mb-8 flex items-center gap-4">
+                    <section aria-labelledby="static-results-title">
+                      <h2 id="static-results-title" className="text-sm font-black text-main-red uppercase tracking-[0.3em] mb-8 flex items-center gap-4">
                         Secciones Institucionales
-                        <div className="h-px bg-gray-100 grow"></div>
+                        <div className="h-px bg-gray-100 grow" aria-hidden="true"></div>
                       </h2>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6" role="list">
                         {resultadosPaginas.map(pagina => (
-                          <Link key={pagina.id} to={pagina.ruta} className="group bg-gray-50 p-6 rounded-2xl border border-transparent hover:border-pale-blue hover:bg-white hover:shadow-lg transition-all duration-300">
-                            <h3 className="text-lg font-semibold text-main-blue group-hover:text-light-blue transition-colors mb-2">{pagina.titulo}</h3>
-                            <p className="text-sm text-gray-600 font-light leading-relaxed">{pagina.descripcion}</p>
-                            <div className="mt-4 text-main-red text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                              Ir a la sección <span>&rarr;</span>
-                            </div>
-                          </Link>
+                          <article key={pagina.id} role="listitem">
+                            <Link to={pagina.ruta} className="group bg-gray-50 p-6 rounded-2xl border border-transparent hover:border-pale-blue hover:bg-white hover:shadow-lg transition-all duration-300 block h-full" aria-label={`Ir a sección: ${pagina.titulo}`}>
+                              <h3 className="text-lg font-semibold text-main-blue group-hover:text-light-blue transition-colors mb-2">{pagina.titulo}</h3>
+                              <p className="text-sm text-gray-600 font-light leading-relaxed">{pagina.descripcion}</p>
+                              <div className="mt-4 text-main-red text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                Ir a la sección <span aria-hidden="true">&rarr;</span>
+                              </div>
+                            </Link>
+                          </article>
                         ))}
                       </div>
                     </section>
@@ -196,29 +197,31 @@ export default function ResultadosBusqueda() {
 
                   {/* SECCIÓN: NOTICIAS */}
                   {resultadosNoticias.length > 0 && (
-                    <section>
-                      <h2 className="text-sm font-black text-main-red uppercase tracking-[0.3em] mb-8 flex items-center gap-4">
+                    <section aria-labelledby="news-results-title">
+                      <h2 id="news-results-title" className="text-sm font-black text-main-red uppercase tracking-[0.3em] mb-8 flex items-center gap-4">
                         Noticias y Comunicados
-                        <div className="h-px bg-gray-100 grow"></div>
+                        <div className="h-px bg-gray-100 grow" aria-hidden="true"></div>
                       </h2>
-                      <div className="flex flex-col gap-6">
+                      <div className="flex flex-col gap-6" role="list">
                         {resultadosNoticias.map(noticia => (
-                          <Link key={noticia.id} to={`/noticias/${noticia.slug || noticia.id}`} className="group bg-white p-4 rounded-2xl border border-gray-100 flex flex-col sm:flex-row gap-6 hover:shadow-xl hover:border-pale-blue transition-all duration-300">
-                            <div className="w-full sm:w-48 shrink-0 aspect-4/5 bg-gray-50 rounded-xl overflow-hidden shadow-sm">
-                              <img src={noticia.imagenPrincipalUrl} alt={noticia.titulo} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                            </div>
-                            <div className="flex flex-col justify-center grow">
-                              <h3 className="text-xl font-semibold text-main-blue group-hover:text-main-red transition-colors mb-3 line-clamp-2 leading-tight">
-                                {noticia.titulo}
-                              </h3>
-                              <p className="text-gray-500 font-light text-sm line-clamp-2 mb-4 leading-relaxed">
-                                {noticia.resumen}
-                              </p>
-                              <span className="text-xs font-black text-main-red uppercase tracking-[0.2em] flex items-center gap-2">
-                                Leer noticia completa <span className="text-lg">&rarr;</span>
-                              </span>
-                            </div>
-                          </Link>
+                          <article key={noticia.id} role="listitem">
+                            <Link to={`/noticias/${noticia.slug || noticia.id}`} className="group bg-white p-4 rounded-2xl border border-gray-100 flex flex-col sm:flex-row gap-6 hover:shadow-xl hover:border-pale-blue transition-all duration-300 block" aria-label={`Leer noticia: ${noticia.titulo}`}>
+                              <div className="w-full sm:w-48 shrink-0 aspect-4/5 bg-gray-50 rounded-xl overflow-hidden shadow-sm">
+                                <img src={noticia.imagenPrincipalUrl} alt="" aria-hidden="true" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                              </div>
+                              <div className="flex flex-col justify-center grow">
+                                <h3 className="text-xl font-semibold text-main-blue group-hover:text-main-red transition-colors mb-3 line-clamp-2 leading-tight">
+                                  {noticia.titulo}
+                                </h3>
+                                <p className="text-gray-500 font-light text-sm line-clamp-2 mb-4 leading-relaxed">
+                                  {noticia.resumen}
+                                </p>
+                                <span className="text-xs font-black text-main-red uppercase tracking-[0.2em] flex items-center gap-2">
+                                  Leer noticia completa <span className="text-lg" aria-hidden="true">&rarr;</span>
+                                </span>
+                              </div>
+                            </Link>
+                          </article>
                         ))}
                       </div>
                     </section>
@@ -231,6 +234,6 @@ export default function ResultadosBusqueda() {
           </div>
         </section>
       </div>
-    </div>
+    </main>
   );
 }

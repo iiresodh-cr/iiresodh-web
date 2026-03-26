@@ -91,8 +91,8 @@ export default function Equipo() {
   }, []);
 
   if (loading) return (
-    <div className="min-h-screen bg-white flex items-center justify-center text-main-blue font-bold uppercase tracking-widest">
-      Cargando...
+    <div className="min-h-screen bg-white flex items-center justify-center text-main-blue font-bold uppercase tracking-widest" role="status">
+      <span>Cargando...</span>
     </div>
   );
 
@@ -100,7 +100,7 @@ export default function Equipo() {
   const staff = equipo.filter(m => !m.destacado).sort((a, b) => a.orden - b.orden);
 
   return (
-    <div className="bg-white min-h-screen flex flex-col font-sans">
+    <main className="bg-white min-h-screen flex flex-col font-sans">
       
       <PageHeader 
         titulo="Equipo de Trabajo" 
@@ -108,7 +108,7 @@ export default function Equipo() {
       />
 
       <div className="relative overflow-hidden grow pb-20">
-        <div className="bg-watermark"></div>
+        <div className="bg-watermark" aria-hidden="true"></div>
 
         <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
           <div className="max-w-7xl mx-auto bg-white overflow-hidden shadow-sm md:rounded-3xl border border-gray-50">
@@ -117,13 +117,13 @@ export default function Equipo() {
               
               {/* SECCIÓN PRESIDENTE */}
               {presidente && (
-                <div className="mb-24">
+                <section className="mb-24" aria-labelledby="presidente-nombre">
                   <div className="flex flex-col md:flex-row items-start gap-10 md:gap-20">
                     <div className="w-full md:w-2/5 shrink-0">
                       <div className="aspect-4/5 bg-gray-50 border border-gray-200 rounded-xl overflow-hidden shadow-md">
                         <img 
                           src={presidente.fotoUrl} 
-                          alt={presidente.nombre} 
+                          alt={`Retrato de ${presidente.nombre}`} 
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -131,7 +131,7 @@ export default function Equipo() {
                     
                     <div className="w-full md:w-3/5 text-justify">
                       <span className="text-xs font-black text-main-red uppercase tracking-[0.4em] mb-4 block">Alta Dirección</span>
-                      <h2 className="text-3xl md:text-5xl font-semibold text-main-blue mb-4 tracking-tighter uppercase leading-tight">
+                      <h2 id="presidente-nombre" className="text-3xl md:text-5xl font-semibold text-main-blue mb-4 tracking-tighter uppercase leading-tight">
                         {presidente.nombre}
                       </h2>
                       <p className="text-xl font-bold text-light-blue mb-8 italic">
@@ -142,37 +142,39 @@ export default function Equipo() {
                       </p>
                     </div>
                   </div>
-                </div>
+                </section>
               )}
 
               {/* SECCIÓN STAFF */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
-                {staff.map((miembro) => (
-                  <div key={miembro.id} className="flex flex-col group">
-                    <div className="aspect-4/5 w-full mb-6 rounded-xl overflow-hidden bg-gray-50 border border-gray-200 shadow-sm transition-all duration-500 group-hover:shadow-lg">
-                      <img 
-                        src={miembro.fotoUrl} 
-                        alt={miembro.nombre} 
-                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
-                      />
-                    </div>
-                    <div className="px-2">
-                      <h3 className="text-xl font-semibold text-main-blue leading-tight mb-1 group-hover:text-main-red transition-colors uppercase tracking-tight">
-                        {miembro.nombre}
-                      </h3>
-                      <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">
-                        {miembro.cargo}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <section aria-label="Miembros del equipo">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
+                  {staff.map((miembro) => (
+                    <article key={miembro.id} className="flex flex-col group">
+                      <div className="aspect-4/5 w-full mb-6 rounded-xl overflow-hidden bg-gray-50 border border-gray-200 shadow-sm transition-all duration-500 group-hover:shadow-lg">
+                        <img 
+                          src={miembro.fotoUrl} 
+                          alt={`Retrato de ${miembro.nombre}`} 
+                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
+                        />
+                      </div>
+                      <div className="px-2">
+                        <h3 className="text-xl font-semibold text-main-blue leading-tight mb-1 group-hover:text-main-red transition-colors uppercase tracking-tight">
+                          {miembro.nombre}
+                        </h3>
+                        <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                          {miembro.cargo}
+                        </p>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </section>
 
             </div>
           </div>
         </section>
 
       </div>
-    </div>
+    </main>
   );
 }

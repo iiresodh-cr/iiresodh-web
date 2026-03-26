@@ -57,12 +57,12 @@ export default function QuienesSomos() {
       <div className="relative overflow-hidden grow pb-10">
         <div className="bg-watermark" aria-hidden="true"></div>
 
-        <section className="relative pt-8 md:pt-12 px-0 md:px-8 z-10" aria-labelledby="historia-titulo">
+        <section className="relative pt-8 md:pt-12 px-0 md:px-8 z-10" aria-labelledby="historia-section">
           <div className="max-w-7xl mx-auto bg-white overflow-hidden">
 
             <div className="px-8 md:px-12 lg:px-16 pb-8 animate-fade-in-up w-full">
               
-              <div id="historia-titulo" className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify mb-12">
+              <div id="historia-section" className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify mb-12">
                 <p>
                   El <strong className="font-extrabold text-main-blue">IIRESODH</strong> nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
                 </p>
@@ -105,9 +105,9 @@ export default function QuienesSomos() {
                 <h2 id="principios-titulo" className="text-2xl md:text-3xl font-semibold text-main-blue text-center mb-10 uppercase">
                   Principios Rectores
                 </h2>
-                <ul className="grid grid-cols-1 md:grid-cols-2 gap-6 list-none p-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6" role="list">
                   {principiosRectores.map((principio, index) => (
-                    <li key={index} className="flex flex-col bg-gray-50 p-8 rounded-xl border-t-4 border-main-red">
+                    <div key={index} className="flex flex-col bg-gray-50 p-8 rounded-xl border-t-4 border-main-red" role="listitem">
                       <h3 className="text-xl font-extrabold text-main-blue mb-3 flex items-center gap-3">
                         <div className="w-3 h-3 rounded-full bg-main-red shrink-0" aria-hidden="true"></div>
                         {principio.titulo}
@@ -115,9 +115,9 @@ export default function QuienesSomos() {
                       <p className="text-gray-600 font-light leading-relaxed text-justify text-base">
                         {principio.texto}
                       </p>
-                    </li>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </section>
 
             </div>
@@ -138,7 +138,7 @@ export default function QuienesSomos() {
               </p>
             </div>
             
-            <div className="bg-white p-8 md:p-12 rounded-xl overflow-x-auto" role="region" aria-label="Diagrama de estructura organizacional">
+            <div className="bg-white p-8 md:p-12 rounded-xl overflow-x-auto" role="img" aria-label="Diagrama de flujo que muestra la estructura del organigrama institucional">
               <div className="min-w-175 flex flex-col items-center">
                 <div className="bg-main-red text-white font-bold py-3 px-10 rounded-lg z-10 relative">
                   PRESIDENCIA

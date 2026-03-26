@@ -104,15 +104,15 @@ export default function Noticias() {
 
   if (loading && noticias.length === 0) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center pt-20">
-        <div className="w-16 h-16 border-4 border-pale-blue border-t-main-red rounded-full animate-spin mb-6"></div>
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center pt-20" role="status">
+        <div className="w-16 h-16 border-4 border-pale-blue border-t-main-red rounded-full animate-spin mb-6" aria-hidden="true"></div>
         <span className="text-main-blue font-bold text-lg uppercase tracking-widest">Cargando Noticias...</span>
       </div>
     );
   }
 
   return (
-    <div className="bg-white min-h-screen flex flex-col font-sans">
+    <main className="bg-white min-h-screen flex flex-col font-sans">
       
       {/* HEADER ESTANDARIZADO */}
       <PageHeader 
@@ -121,9 +121,9 @@ export default function Noticias() {
       />
 
       <div className="relative overflow-hidden grow pb-20">
-        <div className="bg-watermark"></div>
+        <div className="bg-watermark" aria-hidden="true"></div>
 
-        {/* CONTENEDOR INSTITUCIONAL HOMOLOGADO (max-w-7xl y plano) */}
+        {/* CONTENEDOR INSTITUCIONAL HOMOLOGADO */}
         <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
           <div className={`max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl ${noticias.length === 0 ? 'min-h-100 flex items-center justify-center' : ''}`}>
             
@@ -139,47 +139,50 @@ export default function Noticias() {
                   </p>
                 </div>
               ) : (
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-6" role="list">
                   {noticias.map((noticia) => (
-                    <Link 
-                      key={noticia.id} 
-                      to={`/noticias/${noticia.slug || noticia.id}`} 
-                      className="group bg-white border border-gray-100 rounded-2xl p-4 flex flex-col md:flex-row items-center gap-6 md:gap-8 hover:shadow-xl transition-all duration-300"
-                    >
-                      {/* Miniatura Izquierda */}
-                      <div className="w-full md:w-48 h-48 shrink-0 rounded-xl overflow-hidden bg-gray-50 border border-gray-50">
-                        <img 
-                          src={noticia.imagenPrincipalUrl} 
-                          alt="" 
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                        />
-                      </div>
-
-                      {/* Contenido Derecha */}
-                      <div className="flex flex-col grow min-w-0">
-                        <span className="text-xs font-black text-main-red uppercase tracking-widest mb-2">
-                          {noticia.fechaPublicacion?.toDate ? 
-                            new Date(noticia.fechaPublicacion.toDate()).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }) 
-                            : 'Reciente'}
-                        </span>
-                        <h2 className="text-xl md:text-2xl font-bold text-main-blue mb-3 line-clamp-2 leading-tight group-hover:text-light-blue transition-colors uppercase tracking-tight">
-                          {noticia.titulo}
-                        </h2>
-                        <p className="text-gray-600 text-sm md:text-base line-clamp-2 font-light leading-relaxed mb-4">
-                          {noticia.resumen}
-                        </p>
-                        <div className="text-main-red text-xs font-black uppercase flex items-center gap-2 mt-auto">
-                          Leer noticia completa <span className="text-lg leading-none">&rarr;</span>
+                    <article key={noticia.id} role="listitem">
+                      <Link 
+                        to={`/noticias/${noticia.slug || noticia.id}`} 
+                        className="group bg-white border border-gray-100 rounded-2xl p-4 flex flex-col md:flex-row items-center gap-6 md:gap-8 hover:shadow-xl transition-all duration-300"
+                        aria-label={`Leer noticia: ${noticia.titulo}`}
+                      >
+                        {/* Miniatura Izquierda */}
+                        <div className="w-full md:w-48 h-48 shrink-0 rounded-xl overflow-hidden bg-gray-50 border border-gray-50">
+                          <img 
+                            src={noticia.imagenPrincipalUrl} 
+                            alt="" 
+                            aria-hidden="true"
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                          />
                         </div>
-                      </div>
-                    </Link>
+
+                        {/* Contenido Derecha */}
+                        <div className="flex flex-col grow min-w-0">
+                          <span className="text-xs font-black text-main-red uppercase tracking-widest mb-2">
+                            {noticia.fechaPublicacion?.toDate ? 
+                              new Date(noticia.fechaPublicacion.toDate()).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }) 
+                              : 'Reciente'}
+                          </span>
+                          <h2 className="text-xl md:text-2xl font-bold text-main-blue mb-3 line-clamp-1 leading-tight group-hover:text-light-blue transition-colors uppercase tracking-tight">
+                            {noticia.titulo}
+                          </h2>
+                          <p className="text-gray-600 text-sm md:text-base line-clamp-2 font-light leading-relaxed mb-4">
+                            {noticia.resumen}
+                          </p>
+                          <div className="text-main-red text-xs font-black uppercase flex items-center gap-2 mt-auto">
+                            Leer noticia completa <span className="text-lg leading-none" aria-hidden="true">&rarr;</span>
+                          </div>
+                        </div>
+                      </Link>
+                    </article>
                   ))}
                 </div>
               )}
 
-              {/* Controles de Paginación dentro del lienzo blanco */}
+              {/* Controles de Paginación */}
               {noticias.length > 0 && (
-                <div className="mt-16 flex items-center justify-center gap-8 border-t border-gray-100 pt-10">
+                <nav className="mt-16 flex items-center justify-center gap-8 border-t border-gray-100 pt-10" aria-label="Navegación de noticias">
                   <button 
                     onClick={paginaAnterior}
                     disabled={pagina === 1 || loading}
@@ -188,12 +191,13 @@ export default function Noticias() {
                       ? 'text-gray-300 cursor-not-allowed border border-gray-200' 
                       : 'text-main-blue hover:bg-main-blue hover:text-white border border-main-blue cursor-pointer'
                     }`}
+                    aria-label="Ir a la página anterior de noticias"
                   >
                     &larr; Anterior
                   </button>
 
-                  <span className="text-main-blue font-black text-xl">
-                    {pagina}
+                  <span className="text-main-blue font-black text-xl" aria-current="page">
+                    <span className="sr-only">Página actual:</span> {pagina}
                   </span>
 
                   <button 
@@ -204,10 +208,11 @@ export default function Noticias() {
                       ? 'text-gray-300 cursor-not-allowed border border-gray-200' 
                       : 'text-main-blue hover:bg-main-blue hover:text-white border border-main-blue cursor-pointer'
                     }`}
+                    aria-label="Ir a la página siguiente de noticias"
                   >
                     Siguiente &rarr;
                   </button>
-                </div>
+                </nav>
               )}
 
             </div>
@@ -215,6 +220,6 @@ export default function Noticias() {
         </section>
 
       </div>
-    </div>
+    </main>
   );
 }
