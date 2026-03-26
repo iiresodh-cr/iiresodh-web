@@ -99,10 +99,12 @@ export default function NoticiaDetalle() {
         <div className="bg-watermark"></div>
 
         <article className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
-          <div className="max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl border border-gray-100">
+          {/* CONTENEDOR PLANO: Sin sombras ni bordes */}
+          <div className="max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl">
             <div className="px-8 md:px-12 lg:px-16 py-12 md:py-16">
               
               <div className="flex flex-col lg:flex-row gap-12 items-start">
+                
                 <div className="w-full lg:w-1/2 shrink-0">
                   <Swiper 
                     modules={[Pagination, Autoplay]} 
@@ -111,8 +113,12 @@ export default function NoticiaDetalle() {
                     className="w-full swiper-custom-pagination"
                   >
                     {todasLasImagenes.map((url, i) => (
-                      <SwiperSlide key={i} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                        <img src={url} alt="" className="w-full aspect-4/5 object-cover block" />
+                      <SwiperSlide key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                        <img 
+                          src={url} 
+                          alt="" 
+                          className="w-full aspect-4/5 object-cover block" 
+                        />
                       </SwiperSlide>
                     ))}
                   </Swiper>

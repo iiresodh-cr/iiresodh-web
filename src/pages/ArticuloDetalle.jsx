@@ -88,7 +88,8 @@ export default function ArticuloDetalle() {
         <div className="bg-watermark"></div>
 
         <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
-          <div className="max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl border border-gray-100">
+          {/* CONTENEDOR PLANO: Sin sombras ni bordes */}
+          <div className="max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl">
             
             <div className="px-8 pt-8 md:px-12 lg:px-16 md:pt-12">
               <Link to="/articulos-academicos" className="inline-flex items-center gap-2 text-xs font-bold text-main-red uppercase tracking-widest hover:text-main-blue transition-colors">
@@ -108,7 +109,7 @@ export default function ArticuloDetalle() {
               </div>
 
               {articulo.imagenPrincipalUrl && (
-                <div className="mb-12 w-full rounded-2xl overflow-hidden bg-gray-50 border border-gray-100">
+                <div className="mb-12 w-full rounded-2xl overflow-hidden bg-gray-50">
                   <img 
                     src={articulo.imagenPrincipalUrl} 
                     alt={articulo.titulo} 
