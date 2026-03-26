@@ -589,7 +589,7 @@ export default function AdminPanel() {
                   {vistaActiva === "comunicaciones" && (
                     <div className="mt-4 bg-gray-50 p-5 rounded border border-gray-200 shadow-inner">
                       <label className="block text-xs font-bold text-gray-500 uppercase mb-3">Simulación en Portada</label>
-                      <div ref={contenidoPreviewRef} className="noticia-content max-h-80 overflow-hidden bg-white p-5 rounded border border-gray-100" dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(contenido) || "Vista previa..." }} />
+                      <div ref={contenidoPreviewRef} className="text-gray-600 text-lg font-light leading-relaxed noticia-content max-h-80 overflow-hidden bg-white p-5 rounded border border-gray-100" dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(contenido) || "Vista previa..." }} />
                       <div className="mt-4">{showReadMoreWarning ? <p className="text-main-red font-bold text-sm">⚠️ El texto superó el límite visible.</p> : <p className="text-green-600 font-bold text-sm">✓ El texto cabe perfectamente.</p>}</div>
                     </div>
                   )}
