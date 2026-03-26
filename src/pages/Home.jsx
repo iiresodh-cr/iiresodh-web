@@ -150,7 +150,7 @@ export default function Home() {
               {/* IZQUIERDA: TEXTO INSTITUCIONAL */}
               <div className="md:col-span-4 flex flex-col justify-center space-y-4 bg-white pr-10 md:mt-12">
                 <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
-                  El <strong className="font-extrabold text-main-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, es una asociación sin fines de lucro, con su sede principal en Costa Rica y oficinas en otros países como Canadá, Colombia, Guatemala, México, con el objetivo de fomentar el cumplimiento de los estándares internacionales de derechos humanos mediante un enfoque de participación ciudadana, gubernamental y corporativa.
+                  El <strong className="font-semibold text-main-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, es una asociación sin fines de lucro, con su sede principal en Costa Rica y oficinas en otros países como Canadá, Colombia, Guatemala, México, con el objetivo de fomentar el cumplimiento de los estándares internacionales de derechos humanos mediante un enfoque de participación ciudadana, gubernamental y corporativa.
                 </p>
                 <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
                   Realizamos labores de capacitación, litigio estratégico y empoderamiento de la sociedad civil con fondos privados y de la cooperación internacional. Participamos frecuentemente en los diferentes espacios de trabajos y audiencias de los sistemas de protección de derechos humanos, siendo una voz activa en la defensa de la democracia y los derechos humanos.
@@ -168,11 +168,11 @@ export default function Home() {
                 </h2>
                 
                 <div ref={mapContainerRef} className="map-container-wrapper bg-white w-full">
-                  <ComposableMap projection="geoMercator" projectionConfig={{ scale: 280, center: [-85, 30] }} className="w-full h-full bg-white overflow-visible">
+                  <ComposableMap projection="geoMercator" projectionConfig={{ scale: 300, center: [-85, 30] }} className="w-full h-full bg-white overflow-visible">
                     <Geographies geography={geoUrl}>
                       {({ geographies }) =>
                         geographies.map((geo) => (
-                          <Geography key={geo.rsmKey} geography={geo} fill="#F3F4F6" stroke="#FFFFFF" strokeWidth={0.5} style={{ default: { outline: "none" }, hover: { fill: "#E5E7EB", outline: "none" } }} />
+                          <Geography key={geo.rsmKey} geography={geo} fill="#457B9D" stroke="#FFFFFF" strokeWidth={0.5} style={{ default: { outline: "none" }, hover: { fill: "#1D3557", outline: "none" } }} />
                         ))
                       }
                     </Geographies>
@@ -189,10 +189,10 @@ export default function Home() {
                   {/* TARJETA FLOTANTE HTML */}
                   {hoveredSede && (
                     <div 
-                      className="absolute z-50 bg-white p-6 rounded-2xl shadow-2xl border-t-8 border-main-red flex flex-col gap-3 pointer-events-none w-[320px] transition-opacity duration-150"
+                      className="absolute z-50 bg-white p-6 rounded-2xl flex flex-col gap-3 pointer-events-none w-[320px] transition-opacity duration-150"
                       style={{ top: `${tooltipPos.top}px`, left: `${tooltipPos.left}px` }}
                     >
-                      <h3 className="text-xl font-extrabold text-main-blue uppercase tracking-tight border-b border-gray-100 pb-2">{hoveredSede.pais}</h3>
+                      <h3 className="text-xl font-semibold text-main-red uppercase tracking-tight border-b border-gray-100 pb-2">{hoveredSede.pais}</h3>
                       <p className="text-sm text-gray-700 leading-relaxed font-medium">{hoveredSede.info}</p>
                     </div>
                   )}
