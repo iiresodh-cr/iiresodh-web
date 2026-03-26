@@ -47,7 +47,7 @@ export default function QuienesSomos() {
   ];
 
   return (
-    <div className="bg-white min-h-screen flex flex-col font-sans">
+    <main className="bg-white min-h-screen flex flex-col font-sans">
       
       <PageHeader 
         titulo="¿Quiénes Somos?" 
@@ -55,14 +55,14 @@ export default function QuienesSomos() {
       />
 
       <div className="relative overflow-hidden grow pb-10">
-        <div className="bg-watermark"></div>
+        <div className="bg-watermark" aria-hidden="true"></div>
 
-        <section className="relative pt-8 md:pt-12 px-0 md:px-8 z-10">
+        <section className="relative pt-8 md:pt-12 px-0 md:px-8 z-10" aria-labelledby="historia-titulo">
           <div className="max-w-7xl mx-auto bg-white overflow-hidden">
 
             <div className="px-8 md:px-12 lg:px-16 pb-8 animate-fade-in-up w-full">
               
-              <div className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify mb-12">
+              <div id="historia-titulo" className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify mb-12">
                 <p>
                   El <strong className="font-extrabold text-main-blue">IIRESODH</strong> nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
                 </p>
@@ -81,52 +81,52 @@ export default function QuienesSomos() {
               </div>
 
               <div id="mision-vision" className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 scroll-mt-32">
-                <div className="bg-gray-50 border-l-4 border-main-red p-8 md:p-10 rounded-r-xl">
+                <article className="bg-gray-50 border-l-4 border-main-red p-8 md:p-10 rounded-r-xl">
                   <h2 className="text-2xl font-extrabold text-main-blue mb-4 uppercase tracking-wider flex items-center gap-3">
-                    <span className="bg-main-red text-white w-8 h-8 flex items-center justify-center rounded-full text-lg font-black">M</span>
+                    <span className="bg-main-red text-white w-8 h-8 flex items-center justify-center rounded-full text-lg font-black" aria-hidden="true">M</span>
                     Misión
                   </h2>
                   <p className="text-gray-700 text-base md:text-lg font-light leading-relaxed text-justify">
                     Promover el respeto y cumplimiento de los estándares internacionales en derechos humanos a través del litigio estratégico y proyectos de capacitación, brindando acompañamiento al sector público y privado en materia de responsabilidad social.
                   </p>
-                </div>
-                <div className="bg-pale-blue/10 border-l-4 border-light-blue p-8 md:p-10 rounded-r-xl">
+                </article>
+                <article className="bg-pale-blue/10 border-l-4 border-light-blue p-8 md:p-10 rounded-r-xl">
                   <h2 className="text-2xl font-extrabold text-main-blue mb-4 uppercase tracking-wider flex items-center gap-3">
-                    <span className="bg-light-blue text-white w-8 h-8 flex items-center justify-center rounded-full text-lg font-black">V</span>
+                    <span className="bg-light-blue text-white w-8 h-8 flex items-center justify-center rounded-full text-lg font-black" aria-hidden="true">V</span>
                     Visión
                   </h2>
                   <p className="text-gray-700 text-base md:text-lg font-light leading-relaxed text-justify">
                     Ser una institución que impulse el respeto y la inclusión de los derechos humanos mediante estrategias de defensa y capacitación, con la finalidad de construir una sociedad democrática y participativa.
                   </p>
-                </div>
+                </article>
               </div>
 
-              <div id="principios-rectores" className="scroll-mt-32">
-                <h2 className="text-2xl md:text-3xl font-semibold text-main-blue text-center mb-10 uppercase">
+              <section id="principios-rectores" className="scroll-mt-32" aria-labelledby="principios-titulo">
+                <h2 id="principios-titulo" className="text-2xl md:text-3xl font-semibold text-main-blue text-center mb-10 uppercase">
                   Principios Rectores
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-6 list-none p-0">
                   {principiosRectores.map((principio, index) => (
-                    <div key={index} className="flex flex-col bg-gray-50 p-8 rounded-xl border-t-4 border-main-red">
+                    <li key={index} className="flex flex-col bg-gray-50 p-8 rounded-xl border-t-4 border-main-red">
                       <h3 className="text-xl font-extrabold text-main-blue mb-3 flex items-center gap-3">
-                        <div className="w-3 h-3 rounded-full bg-main-red shrink-0"></div>
+                        <div className="w-3 h-3 rounded-full bg-main-red shrink-0" aria-hidden="true"></div>
                         {principio.titulo}
                       </h3>
                       <p className="text-gray-600 font-light leading-relaxed text-justify text-base">
                         {principio.texto}
                       </p>
-                    </div>
+                    </li>
                   ))}
-                </div>
-              </div>
+                </ul>
+              </section>
 
             </div>
           </div>
         </section>
 
-        <section id="organigrama" className="bg-main-blue text-white py-14 px-6 relative z-20 scroll-mt-32 mt-6">
+        <section id="organigrama" className="bg-main-blue text-white py-14 px-6 relative z-20 scroll-mt-32 mt-6" aria-labelledby="organigrama-titulo">
           <div className="max-w-5xl mx-auto">
-            <h2 className="text-3xl font-semibold text-center mb-10 uppercase">
+            <h2 id="organigrama-titulo" className="text-3xl font-semibold text-center mb-10 uppercase">
               Organigrama y Estructura
             </h2>
             <div className="text-base md:text-lg text-gray-200 leading-relaxed text-justify space-y-6 mb-16 font-light max-w-4xl mx-auto">
@@ -138,14 +138,14 @@ export default function QuienesSomos() {
               </p>
             </div>
             
-            <div className="bg-white p-8 md:p-12 rounded-xl overflow-x-auto">
+            <div className="bg-white p-8 md:p-12 rounded-xl overflow-x-auto" role="region" aria-label="Diagrama de estructura organizacional">
               <div className="min-w-175 flex flex-col items-center">
                 <div className="bg-main-red text-white font-bold py-3 px-10 rounded-lg z-10 relative">
                   PRESIDENCIA
                 </div>
-                <div className="w-1 h-8 bg-light-blue"></div>
-                <div className="w-3/4 h-1 bg-light-blue"></div>
-                <div className="flex justify-between w-3/4 mt-0">
+                <div className="w-1 h-8 bg-light-blue" aria-hidden="true"></div>
+                <div className="w-3/4 h-1 bg-light-blue" aria-hidden="true"></div>
+                <div className="flex justify-between w-3/4 mt-0" aria-hidden="true">
                   <div className="w-1 h-8 bg-light-blue"></div>
                   <div className="w-1 h-8 bg-light-blue"></div>
                   <div className="w-1 h-8 bg-light-blue"></div>
@@ -178,6 +178,6 @@ export default function QuienesSomos() {
         </section>
 
       </div>
-    </div>
+    </main>
   );
 }

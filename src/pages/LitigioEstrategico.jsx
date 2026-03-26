@@ -8,7 +8,7 @@ export default function LitigioEstrategico() {
   }, []);
 
   return (
-    <div className="bg-white min-h-screen flex flex-col font-sans">
+    <main className="bg-white min-h-screen flex flex-col font-sans">
       
       {/* ENCABEZADO Estandarizado */}
       <PageHeader 
@@ -17,13 +17,13 @@ export default function LitigioEstrategico() {
       />
 
       <div className="relative overflow-hidden grow pb-20">
-        <div className="bg-watermark"></div>
+        <div className="bg-watermark" aria-hidden="true"></div>
 
-        <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
+        <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10" aria-labelledby="intro-litigio">
           <div className="max-w-7xl mx-auto bg-white overflow-hidden">
             <div className="px-8 md:px-12 lg:px-16 pb-12 md:pb-16 animate-fade-in-up">
               
-              <div className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify mb-12">
+              <div id="intro-litigio" className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify mb-12">
                 <p>
                   <strong className="font-extrabold text-main-blue">IIRESODH</strong> fomenta activamente el litigio estratégico internacional en materia de derechos humanos. Capacitamos a ONGs, defensores de derechos humanos y otras organizaciones de la sociedad civil, con el fin de que hagan uso de los mecanismos judiciales y cuasi-judiciales que ofrecen los sistemas universales y regionales de protección. 
                 </p>
@@ -32,8 +32,8 @@ export default function LitigioEstrategico() {
                 </p>
               </div>
 
-              <div className="bg-gray-50 border-l-4 border-l-main-red p-8 md:p-10 rounded-r-xl mb-12 border-y border-r border-gray-100">
-                <h3 className="text-xl md:text-2xl font-extrabold text-main-blue mb-4">
+              <section className="bg-gray-50 border-l-4 border-l-main-red p-8 md:p-10 rounded-r-xl mb-12 border-y border-r border-gray-100" aria-labelledby="certificacion-titulo">
+                <h3 id="certificacion-titulo" className="text-xl md:text-2xl font-extrabold text-main-blue mb-4">
                   Certificación en Litigio Estratégico Internacional
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify">
@@ -44,21 +44,21 @@ export default function LitigioEstrategico() {
                     Impartimos también una <strong className="text-main-red font-bold">Certificación de Litigio que se lleva a cabo en Europa</strong>, que profundiza en los mandatos de la Corte Internacional de Justicia, la Corte Penal Internacional y el Tribunal Europeo de Derechos Humanos.
                   </p>
                 </div>
-              </div>
+              </section>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 items-center pt-6">
-                <div>
-                  <h3 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-6 tracking-tight uppercase">
+                <section aria-labelledby="impacto-titulo">
+                  <h3 id="impacto-titulo" className="text-2xl md:text-3xl font-extrabold text-main-blue mb-6 tracking-tight uppercase">
                     Nuestro Impacto Global
                   </h3>
                   <p className="text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify">
                     El trabajo del IIRESODH en el litigio estratégico ha tenido un impacto positivo en México, Panamá, Costa Rica, El Salvador, Colombia, Guatemala, Argentina y Nicaragua, así como en algunos países de África y Europa.
                   </p>
-                </div>
+                </section>
                 
-                <div className="bg-pale-blue/10 p-8 md:p-10 rounded-2xl h-full flex flex-col justify-center border border-pale-blue/20">
-                  <h4 className="text-xl font-extrabold text-main-blue mb-4 flex items-center gap-3 uppercase tracking-tight">
-                    <svg className="w-8 h-8 text-main-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <section className="bg-pale-blue/10 p-8 md:p-10 rounded-2xl h-full flex flex-col justify-center border border-pale-blue/20" aria-labelledby="accion-nacional-titulo">
+                  <h4 id="accion-nacional-titulo" className="text-xl font-extrabold text-main-blue mb-4 flex items-center gap-3 uppercase tracking-tight">
+                    <svg className="w-8 h-8 text-main-red" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path>
                     </svg>
                     Acción a Nivel Nacional
@@ -66,13 +66,13 @@ export default function LitigioEstrategico() {
                   <p className="text-base md:text-lg font-light text-gray-700 leading-relaxed">
                     Además, en <strong className="text-main-blue font-bold">México, Costa Rica y El Salvador</strong> realizamos litigios y asesorías en materia constitucional y afines.
                   </p>
-                </div>
+                </section>
               </div>
 
             </div>
           </div>
         </section>
       </div>
-    </div>
+    </main>
   );
 }
