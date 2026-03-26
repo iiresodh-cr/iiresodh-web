@@ -27,34 +27,20 @@ const generarSlug = (texto) => {
   return baseSlug ? `${baseSlug}-${randomCode}` : `item-${randomCode}`;
 };
 
-// MOTOR ESTRUCTURAL PURO (Para sitios nuevos, sin deuda técnica)
+// MOTOR ESTRUCTURAL PURO
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
-
-  // 1. Escapar caracteres HTML para evitar inyección XSS y conflictos
   let seguro = texto.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-
-  // 2. Procesar enlaces Markdown: [Texto](URL)
   seguro = seguro.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all">$1</a>');
-
-  // 3. Procesar URLs sueltas (que no estén ya procesadas)
   seguro = seguro.replace(/(?<!href="|href=)(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all">$1</a>');
-
-  // 4. Procesar Hashtags
   seguro = seguro.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
     const termino = hashtag.substring(1); 
     return `<a href="/buscar?q=${termino}" class="text-light-blue hover:text-main-red font-bold transition-colors pointer-events-auto">${hashtag}</a>`;
   });
-
-  // 5. Creación Semántica de Párrafos
-  // Divide el texto cuando hay 2 o más saltos de línea (Enter)
   const parrafos = seguro.split(/\n\s*\n/);
-  
-  // Envuelve en <p> y cambia los saltos simples a <br />
   const htmlFinal = parrafos.map(p => {
     return `<p>${p.replace(/\n/g, '<br />')}</p>`;
   }).join('');
-
   return htmlFinal;
 };
 
@@ -436,25 +422,29 @@ export default function AdminPanel() {
   };
 
   return (
-    <div className="min-h-screen bg-basic-beige">
+    <main className="min-h-screen bg-basic-beige">
       <header className="bg-white p-5 shadow-sm border-b border-gray-200 flex justify-between items-center px-8">
-        <img src={logoColor} alt="Logo IIRESODH" className="h-12 md:h-14 w-auto object-contain" />
-        <button onClick={handleLogout} className="bg-main-red hover:bg-bright-red text-white px-6 py-2 rounded-full font-bold shadow-sm transition-colors">
+        <img src={logoColor} alt="Logo de IIRESODH" className="h-12 md:h-14 w-auto object-contain" />
+        <button onClick={handleLogout} className="bg-main-red hover:bg-bright-red text-white px-6 py-2 rounded-full font-bold shadow-sm transition-colors cursor-pointer">
           Cerrar Sesión
         </button>
       </header>
 
-      <main className="p-8 max-w-6xl mx-auto">
+      <div className="p-8 max-w-6xl mx-auto">
         
         {vistaActiva === "inicio" && (
-          <div className="bg-white p-8 md:p-12 rounded-lg shadow-md border-t-4 border-main-blue animate-fade-in-up">
-            <h1 className="text-3xl md:text-4xl font-extrabold text-main-blue mb-4">Panel de Control Principal</h1>
+          <section className="bg-white p-8 md:p-12 rounded-lg shadow-md border-t-4 border-main-blue animate-fade-in-up" aria-labelledby="admin-title">
+            <h1 id="admin-title" className="text-3xl md:text-4xl font-extrabold text-main-blue mb-4">Panel de Control Principal</h1>
             <p className="text-gray-600 mb-10 text-lg">Seleccione el área departamental que desea administrar.</p>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <nav className="grid grid-cols-1 md:grid-cols-3 gap-6" aria-label="Departamentos administrativos">
               
-              <button onClick={() => setVistaActiva("comunicaciones")} className="bg-gray-50 border border-gray-200 p-8 rounded-xl hover:shadow-lg hover:border-main-red transition-all flex flex-col items-center justify-center gap-4 group cursor-pointer">
-                <svg className="w-14 h-14 text-main-blue group-hover:text-main-red transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button 
+                onClick={() => setVistaActiva("comunicaciones")} 
+                aria-label="Administrar departamento de Comunicaciones"
+                className="bg-gray-50 border border-gray-200 p-8 rounded-xl hover:shadow-lg hover:border-main-red transition-all flex flex-col items-center justify-center gap-4 group cursor-pointer"
+              >
+                <svg className="w-14 h-14 text-main-blue group-hover:text-main-red transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 8h8M8 12h8M8 16h4"></path>
                 </svg>
@@ -462,8 +452,12 @@ export default function AdminPanel() {
                 <p className="text-sm text-gray-500 text-center">Gestión de noticias y comunicados</p>
               </button>
 
-              <button onClick={() => setVistaActiva("articulos")} className="bg-gray-50 border border-gray-200 p-8 rounded-xl hover:shadow-lg hover:border-main-red transition-all flex flex-col items-center justify-center gap-4 group cursor-pointer">
-                <svg className="w-14 h-14 text-main-blue group-hover:text-main-red transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button 
+                onClick={() => setVistaActiva("articulos")} 
+                aria-label="Administrar departamento de Artículos Académicos"
+                className="bg-gray-50 border border-gray-200 p-8 rounded-xl hover:shadow-lg hover:border-main-red transition-all flex flex-col items-center justify-center gap-4 group cursor-pointer"
+              >
+                <svg className="w-14 h-14 text-main-blue group-hover:text-main-red transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                 </svg>
                 <h2 className="text-xl font-bold text-main-blue group-hover:text-main-red transition-colors">Artículos Académicos</h2>
@@ -471,12 +465,12 @@ export default function AdminPanel() {
               </button>
 
               <div className="bg-gray-50 border border-gray-200 p-8 rounded-xl opacity-60 flex flex-col items-center justify-center gap-4 cursor-not-allowed">
-                <svg className="w-14 h-14 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
+                <svg className="w-14 h-14 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
                 <h2 className="text-xl font-bold text-gray-500">Litigios Activos</h2>
                 <p className="text-sm text-gray-400 text-center">Próximamente</p>
               </div>
-            </div>
-          </div>
+            </nav>
+          </section>
         )}
 
         {(vistaActiva === "comunicaciones" || vistaActiva === "articulos") && (
@@ -487,9 +481,9 @@ export default function AdminPanel() {
                 limpiarFormulario();
                 setVistaActiva("inicio");
               }} 
-              className="mb-6 flex items-center gap-2 text-main-blue font-bold hover:text-main-red transition-colors"
+              className="mb-6 flex items-center gap-2 text-main-blue font-bold hover:text-main-red transition-colors cursor-pointer"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
               Volver al Panel Principal
             </button>
 
@@ -504,45 +498,45 @@ export default function AdminPanel() {
               </p>
             </div>
 
-            <div className="bg-white p-8 rounded-lg shadow-md mb-12 border-t-4 border-gray-100">
+            <section className="bg-white p-8 rounded-lg shadow-md mb-12 border-t-4 border-gray-100" aria-labelledby="form-title">
               <div className="flex justify-between items-center mb-6 border-b pb-2">
-                <h2 className={`text-2xl font-bold ${editandoId ? 'text-main-red' : 'text-main-blue'}`}>
+                <h2 id="form-title" className={`text-2xl font-bold ${editandoId ? 'text-main-red' : 'text-main-blue'}`}>
                   {editandoId ? "Editar Contenido" : "Crear Nueva Entrada"}
                 </h2>
               </div>
               
-              {mensaje && <div className={`p-4 rounded mb-6 font-bold ${mensaje.includes("¡") || mensaje.includes("PIDA") || mensaje.includes("Optimizando") ? "bg-green-100 text-green-700" : "bg-blue-100 text-main-blue"}`}>{mensaje}</div>}
+              {mensaje && <div role="status" className={`p-4 rounded mb-6 font-bold ${mensaje.includes("¡") || mensaje.includes("PIDA") || mensaje.includes("Optimizando") ? "bg-green-100 text-green-700" : "bg-blue-100 text-main-blue"}`}>{mensaje}</div>}
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="md:col-span-2">
-                    <label className="block text-main-blue font-bold mb-2">
+                    <label htmlFor="input-titulo" className="block text-main-blue font-bold mb-2">
                       {vistaActiva === "articulos" ? "Título del Artículo" : "Título de la Noticia"}
                     </label>
-                    <input type="text" required value={titulo} onChange={(e) => setTitulo(e.target.value)} className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-light-blue" />
+                    <input id="input-titulo" type="text" required value={titulo} onChange={(e) => setTitulo(e.target.value)} className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-light-blue" />
                   </div>
                   <div className="md:col-span-2 bg-basic-beige p-4 rounded border border-pale-blue">
-                    <label className="block text-main-blue font-bold mb-1">Fecha de Publicación (Opcional)</label>
-                    <input type="datetime-local" value={fechaPersonalizada} onChange={(e) => setFechaPersonalizada(e.target.value)} className="w-full md:w-1/2 border border-gray-300 p-3 rounded bg-white" />
+                    <label htmlFor="input-fecha" className="block text-main-blue font-bold mb-1">Fecha de Publicación (Opcional)</label>
+                    <input id="input-fecha" type="datetime-local" value={fechaPersonalizada} onChange={(e) => setFechaPersonalizada(e.target.value)} className="w-full md:w-1/2 border border-gray-300 p-3 rounded bg-white" />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <label className="font-bold text-main-blue">Resumen para Portada</label>
-                    <button type="button" onClick={handleAutoResumen} disabled={generandoResumen} className="text-xs bg-main-blue text-white hover:bg-light-blue font-bold py-2 px-4 rounded-full disabled:opacity-50 transition-colors">
+                    <label htmlFor="input-resumen" className="font-bold text-main-blue">Resumen para Portada</label>
+                    <button type="button" onClick={handleAutoResumen} disabled={generandoResumen} className="text-xs bg-main-blue text-white hover:bg-light-blue font-bold py-2 px-4 rounded-full disabled:opacity-50 transition-colors cursor-pointer">
                       {generandoResumen ? "Consultando a PIDA..." : "✨ Generar con PIDA"}
                     </button>
                   </div>
-                  <textarea required maxLength="250" value={resumen} onChange={(e) => setResumen(e.target.value)} className="w-full border border-gray-300 p-3 rounded" rows="2" />
+                  <textarea id="input-resumen" required maxLength="250" value={resumen} onChange={(e) => setResumen(e.target.value)} className="w-full border border-gray-300 p-3 rounded" rows="2" />
                 </div>
 
                 {vistaActiva === "comunicaciones" && (
                   <div className="bg-gray-50 p-4 rounded border border-gray-200">
-                    <label className="flex items-center text-main-blue font-bold mb-2">
+                    <h3 className="flex items-center text-main-blue font-bold mb-2">
                       📁 Generador de Enlaces para Documentos (PDF, DOCX, XLSX)
-                    </label>
+                    </h3>
                     <p className="text-sm text-gray-500 mb-4">Sube un archivo aquí para obtener un enlace corto y pegarlo dentro de tu texto.</p>
                     
                     <div className="flex flex-col sm:flex-row gap-4 items-center">
@@ -553,22 +547,22 @@ export default function AdminPanel() {
                     </div>
 
                     {archivosAdjuntos.length > 0 && (
-                      <div className="mt-4 space-y-2">
+                      <ul className="mt-4 space-y-2" aria-label="Documentos adjuntados">
                         {archivosAdjuntos.map((archivo, index) => (
-                          <div key={index} className="flex justify-between items-center bg-white p-3 rounded border shadow-sm">
+                          <li key={index} className="flex justify-between items-center bg-white p-3 rounded border shadow-sm">
                             <span className="text-sm font-medium text-gray-700 truncate mr-4">{archivo.nombre}</span>
-                            <button type="button" onClick={() => copiarEnlaceDocumento(archivo.nombre, archivo.url)} className="bg-light-blue hover:bg-main-blue text-white text-xs font-bold py-1.5 px-3 rounded transition-colors shrink-0">
+                            <button type="button" onClick={() => copiarEnlaceDocumento(archivo.nombre, archivo.url)} className="bg-light-blue hover:bg-main-blue text-white text-xs font-bold py-1.5 px-3 rounded transition-colors shrink-0 cursor-pointer">
                               Copiar Enlace
                             </button>
-                          </div>
+                          </li>
                         ))}
-                      </div>
+                      </ul>
                     )}
                   </div>
                 )}
 
                 <div>
-                  <label className="flex items-center text-main-blue font-bold mb-2">
+                  <label htmlFor="input-contenido" className="flex items-center text-main-blue font-bold mb-2">
                     Contenido Completo 
                     {vistaActiva === "comunicaciones" && (
                       <span className="text-xs font-normal text-light-blue ml-3 bg-blue-50 px-2 py-1 rounded">
@@ -578,6 +572,7 @@ export default function AdminPanel() {
                   </label>
                   
                   <textarea 
+                    id="input-contenido"
                     required 
                     value={contenido} 
                     onChange={(e) => setContenido(e.target.value)} 
@@ -588,9 +583,9 @@ export default function AdminPanel() {
                   
                   {vistaActiva === "comunicaciones" && (
                     <div className="mt-4 bg-gray-50 p-5 rounded border border-gray-200 shadow-inner">
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-3">Simulación en Portada</label>
+                      <p className="block text-xs font-bold text-gray-500 uppercase mb-3">Simulación en Portada</p>
                       <div ref={contenidoPreviewRef} className="text-gray-600 text-lg font-light leading-relaxed noticia-content max-h-80 overflow-hidden bg-white p-5 rounded border border-gray-100" dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(contenido) || "Vista previa..." }} />
-                      <div className="mt-4">{showReadMoreWarning ? <p className="text-main-red font-bold text-sm">⚠️ El texto superó el límite visible.</p> : <p className="text-green-600 font-bold text-sm">✓ El texto cabe perfectamente.</p>}</div>
+                      <div className="mt-4" role="status">{showReadMoreWarning ? <p className="text-main-red font-bold text-sm">⚠️ El texto superó el límite visible.</p> : <p className="text-green-600 font-bold text-sm">✓ El texto cabe perfectamente.</p>}</div>
                     </div>
                   )}
                 </div>
@@ -599,6 +594,7 @@ export default function AdminPanel() {
                   
                   <input 
                     type="file" 
+                    // id="input-p" // YA ESTABA SR-ONLY ABAJO
                     accept="image/*" 
                     required={vistaActiva === "comunicaciones" && !editandoId && !imagenPrincipalAnterior} 
                     onChange={handleSeleccionPrincipal} 
@@ -611,7 +607,7 @@ export default function AdminPanel() {
                   
                   {mainImagePreviewUrl && (
                     <div className="mt-2 bg-white p-3 rounded border inline-block max-w-full">
-                      <img src={mainImagePreviewUrl} alt="Preview" className="max-h-60 rounded shadow-sm block object-contain mx-auto" />
+                      <img src={mainImagePreviewUrl} alt="Vista previa de imagen principal" className="max-h-60 rounded shadow-sm block object-contain mx-auto" />
                       <p className="text-sm text-gray-600 font-medium text-center mt-3 truncate px-2" title={imagenPrincipal ? imagenPrincipal.name : extraerNombreDesdeUrl(mainImagePreviewUrl)}>
                         {imagenPrincipal ? imagenPrincipal.name : extraerNombreDesdeUrl(mainImagePreviewUrl)}
                       </p>
@@ -623,34 +619,34 @@ export default function AdminPanel() {
                       <input type="file" accept="image/*" multiple onChange={handleAgregarImagenes} className="sr-only" id="input-c" />
                       <label htmlFor="input-c" className="bg-light-blue text-white px-6 py-2 rounded font-bold cursor-pointer inline-block mt-4 shadow-md hover:bg-main-blue transition-colors">+ Cargar Carrusel (Múltiple)</label>
                       
-                      <div className="grid gap-3">
+                      <div className="grid gap-3" role="list" aria-label="Imágenes del carrusel">
                         {carruselExistente.map((url, i) => (
-                          <div key={`old-${i}`} className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-3 rounded border gap-4">
+                          <div key={`old-${i}`} role="listitem" className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-3 rounded border gap-4">
                             <div className="flex items-center gap-4 overflow-hidden w-full sm:w-auto">
-                              <img src={url} className="h-20 w-24 object-cover rounded shadow-sm shrink-0" alt="Existente" />
+                              <img src={url} className="h-20 w-24 object-cover rounded shadow-sm shrink-0" alt="Imagen existente" />
                               <span className="text-sm font-medium text-gray-600 truncate" title={extraerNombreDesdeUrl(url)}>
                                 {extraerNombreDesdeUrl(url)}
                               </span>
                             </div>
                             <div className="flex gap-2 w-full sm:w-auto justify-end shrink-0">
-                              <button type="button" onClick={() => moverImagenExistente(i, -1)} disabled={i === 0} className="px-3 py-1 bg-main-blue hover:bg-light-blue transition-colors text-white rounded disabled:opacity-50">↑</button>
-                              <button type="button" onClick={() => moverImagenExistente(i, 1)} disabled={i === carruselExistente.length - 1} className="px-3 py-1 bg-main-blue hover:bg-light-blue transition-colors text-white rounded disabled:opacity-50">↓</button>
-                              <button type="button" onClick={() => setCarruselExistente(prev => prev.filter((_, idx) => idx !== i))} className="px-3 py-1 bg-bright-red hover:bg-red-700 transition-colors text-white rounded">X</button>
+                              <button type="button" onClick={() => moverImagenExistente(i, -1)} disabled={i === 0} aria-label="Subir posición" className="px-3 py-1 bg-main-blue hover:bg-light-blue transition-colors text-white rounded disabled:opacity-50 cursor-pointer">↑</button>
+                              <button type="button" onClick={() => moverImagenExistente(i, 1)} disabled={i === carruselExistente.length - 1} aria-label="Bajar posición" className="px-3 py-1 bg-main-blue hover:bg-light-blue transition-colors text-white rounded disabled:opacity-50 cursor-pointer">↓</button>
+                              <button type="button" onClick={() => setCarruselExistente(prev => prev.filter((_, idx) => idx !== i))} aria-label="Eliminar imagen" className="px-3 py-1 bg-bright-red hover:bg-red-700 transition-colors text-white rounded cursor-pointer">X</button>
                             </div>
                           </div>
                         ))}
                         {imagenesCarrusel.map((f, i) => (
-                          <div key={`new-${i}`} className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-green-50 p-3 rounded border border-green-200 gap-4">
+                          <div key={`new-${i}`} role="listitem" className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-green-50 p-3 rounded border border-green-200 gap-4">
                             <div className="flex items-center gap-4 overflow-hidden w-full sm:w-auto">
-                              <img src={URL.createObjectURL(f)} className="h-20 w-24 object-cover rounded shadow-sm shrink-0" alt="Nueva" />
+                              <img src={URL.createObjectURL(f)} className="h-20 w-24 object-cover rounded shadow-sm shrink-0" alt="Nueva imagen para cargar" />
                               <span className="text-sm font-medium text-green-700 truncate" title={f.name}>
                                 {f.name} <span className="text-xs text-green-600 ml-1 font-bold">(Nueva)</span>
                               </span>
                             </div>
                             <div className="flex gap-2 w-full sm:w-auto justify-end shrink-0">
-                              <button type="button" onClick={() => moverImagenNueva(i, -1)} disabled={i === 0} className="px-3 py-1 bg-main-blue hover:bg-light-blue transition-colors text-white rounded disabled:opacity-50">↑</button>
-                              <button type="button" onClick={() => moverImagenNueva(i, 1)} disabled={i === imagenesCarrusel.length - 1} className="px-3 py-1 bg-main-blue hover:bg-light-blue transition-colors text-white rounded disabled:opacity-50">↓</button>
-                              <button type="button" onClick={() => setImagenesCarrusel(prev => prev.filter((_, idx) => idx !== i))} className="px-3 py-1 bg-bright-red hover:bg-red-700 transition-colors text-white rounded">X</button>
+                              <button type="button" onClick={() => moverImagenNueva(i, -1)} disabled={i === 0} aria-label="Subir posición nueva" className="px-3 py-1 bg-main-blue hover:bg-light-blue transition-colors text-white rounded disabled:opacity-50 cursor-pointer">↑</button>
+                              <button type="button" onClick={() => moverImagenNueva(i, 1)} disabled={i === imagenesCarrusel.length - 1} aria-label="Bajar posición nueva" className="px-3 py-1 bg-main-blue hover:bg-light-blue transition-colors text-white rounded disabled:opacity-50 cursor-pointer">↓</button>
+                              <button type="button" onClick={() => setImagenesCarrusel(prev => prev.filter((_, idx) => idx !== i))} aria-label="Eliminar imagen nueva" className="px-3 py-1 bg-bright-red hover:bg-red-700 transition-colors text-white rounded cursor-pointer">X</button>
                             </div>
                           </div>
                         ))}
@@ -660,32 +656,32 @@ export default function AdminPanel() {
                 </div>
 
                 <div className="flex gap-4 pt-4 border-t border-gray-100">
-                  <button type="button" onClick={limpiarFormulario} className="w-1/3 bg-gray-200 hover:bg-gray-300 text-main-blue font-bold py-4 rounded uppercase tracking-widest transition-all">
+                  <button type="button" onClick={limpiarFormulario} className="w-1/3 bg-gray-200 hover:bg-gray-300 text-main-blue font-bold py-4 rounded uppercase tracking-widest transition-all cursor-pointer">
                     Cancelar
                   </button>
-                  <button type="submit" disabled={loading} className="w-2/3 bg-main-blue hover:bg-light-blue text-white font-bold py-4 rounded uppercase tracking-widest transition-all shadow-lg">
+                  <button type="submit" disabled={loading} className="w-2/3 bg-main-blue hover:bg-light-blue text-white font-bold py-4 rounded uppercase tracking-widest transition-all shadow-lg cursor-pointer">
                     {loading ? "Procesando..." : (editandoId ? "Actualizar Contenido" : "Publicar Contenido")}
                   </button>
                 </div>
 
               </form>
-            </div>
+            </section>
 
-            <div className="bg-white p-8 rounded-lg shadow-md border-t-4 border-main-blue">
-              <h2 className="text-2xl font-bold text-main-blue mb-6 border-b pb-2">
+            <section className="bg-white p-8 rounded-lg shadow-md border-t-4 border-main-blue" aria-labelledby="list-title">
+              <h2 id="list-title" className="text-2xl font-bold text-main-blue mb-6 border-b pb-2">
                 Gestionar {vistaActiva === "comunicaciones" ? "Noticias" : "Artículos"} Publicados
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-4" role="list">
                 {listaItems.length === 0 ? (
                   <p className="text-gray-500 text-center py-4">No hay contenido publicado en esta sección.</p>
                 ) : (
                   listaItems.map((n) => (
-                    <div key={n.id} className="flex items-center justify-between bg-gray-50 p-4 rounded border hover:bg-white transition-colors">
+                    <article key={n.id} role="listitem" className="flex items-center justify-between bg-gray-50 p-4 rounded border hover:bg-white transition-colors">
                       <div className="flex items-center gap-4">
                         {n.imagenPrincipalUrl ? (
-                          <img src={n.imagenPrincipalUrl} className="w-12 h-12 object-cover rounded shadow-sm shrink-0" alt="Thumbnail" />
+                          <img src={n.imagenPrincipalUrl} className="w-12 h-12 object-cover rounded shadow-sm shrink-0" alt={`Miniatura de ${n.titulo}`} />
                         ) : (
-                          <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center shrink-0">
+                          <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center shrink-0" aria-hidden="true">
                             <span className="text-gray-400 text-xs">TXT</span>
                           </div>
                         )}
@@ -697,19 +693,20 @@ export default function AdminPanel() {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <button onClick={() => handleEditarItem(n)} className="border-2 border-main-blue text-main-blue px-4 py-1 rounded font-bold text-sm hover:bg-main-blue hover:text-white transition-all">Editar</button>
-                        <button onClick={() => handleBorrarItem(n.id, n.titulo)} className="border-2 border-bright-red text-bright-red px-4 py-1 rounded font-bold text-sm hover:bg-bright-red hover:text-white transition-all">Borrar</button>
+                        <button onClick={() => handleEditarItem(n)} aria-label={`Editar contenido: ${n.titulo}`} className="border-2 border-main-blue text-main-blue px-4 py-1 rounded font-bold text-sm hover:bg-main-blue hover:text-white transition-all cursor-pointer">Editar</button>
+                        <button onClick={() => handleBorrarItem(n.id, n.titulo)} aria-label={`Borrar contenido: ${n.titulo}`} className="border-2 border-bright-red text-bright-red px-4 py-1 rounded font-bold text-sm hover:bg-bright-red hover:text-white transition-all cursor-pointer">Borrar</button>
                       </div>
-                    </div>
+                    </article>
                   ))
                 )}
               </div>
               
               {listaItems.length > 0 && (
-                <div className="mt-12 flex items-center justify-center gap-8">
+                <nav className="mt-12 flex items-center justify-center gap-8" aria-label="Navegación de lista administrativa">
                   <button 
                     onClick={paginaAnterior}
                     disabled={paginaActual === 1 || loading}
+                    aria-label="Ir a página anterior de la lista"
                     className={`px-6 py-2 rounded-full font-bold text-sm uppercase tracking-widest transition-all ${
                       paginaActual === 1 || loading 
                       ? 'text-gray-300 cursor-not-allowed border border-gray-200' 
@@ -719,13 +716,14 @@ export default function AdminPanel() {
                     &larr; Anterior
                   </button>
 
-                  <span className="text-main-blue font-black text-lg">
-                    {paginaActual}
+                  <span className="text-main-blue font-black text-lg" aria-current="page">
+                    <span className="sr-only">Página administrativa actual:</span> {paginaActual}
                   </span>
 
                   <button 
                     onClick={paginaSiguiente}
                     disabled={!hayMas || loading}
+                    aria-label="Ir a página siguiente de la lista"
                     className={`px-6 py-2 rounded-full font-bold text-sm uppercase tracking-widest transition-all ${
                       !hayMas || loading 
                       ? 'text-gray-300 cursor-not-allowed border border-gray-200' 
@@ -734,12 +732,12 @@ export default function AdminPanel() {
                   >
                     Siguiente &rarr;
                   </button>
-                </div>
+                </nav>
               )}
-            </div>
+            </section>
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }

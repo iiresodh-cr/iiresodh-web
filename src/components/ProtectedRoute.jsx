@@ -27,7 +27,14 @@ export default function ProtectedRoute({ children }) {
     return () => unsubscribe();
   }, []);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-main-blue font-bold tracking-widest uppercase">Verificando Credenciales...</div>;
+  if (loading) return (
+    <div 
+      className="min-h-screen flex items-center justify-center text-main-blue font-bold tracking-widest uppercase"
+      role="status"
+    >
+      Verificando Credenciales...
+    </div>
+  );
   
   // Si no hay usuario (o si fue expulsado arriba), redirige de inmediato
   if (!user) return <Navigate to="/login" replace />;

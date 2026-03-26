@@ -205,7 +205,8 @@ export default function ResultadosBusqueda() {
                       <div className="flex flex-col gap-6" role="list">
                         {resultadosNoticias.map(noticia => (
                           <article key={noticia.id} role="listitem">
-                            <Link to={`/noticias/${noticia.slug || noticia.id}`} className="group bg-white p-4 rounded-2xl border border-gray-100 flex flex-col sm:flex-row gap-6 hover:shadow-xl hover:border-pale-blue transition-all duration-300 block" aria-label={`Leer noticia: ${noticia.titulo}`}>
+                            {/* SE ELIMINÓ LA PALABRA 'block' AL FINAL DE className */}
+                            <Link to={`/noticias/${noticia.slug || noticia.id}`} className="group bg-white p-4 rounded-2xl border border-gray-100 flex flex-col sm:flex-row gap-6 hover:shadow-xl hover:border-pale-blue transition-all duration-300" aria-label={`Leer noticia: ${noticia.titulo}`}>
                               <div className="w-full sm:w-48 shrink-0 aspect-4/5 bg-gray-50 rounded-xl overflow-hidden shadow-sm">
                                 <img src={noticia.imagenPrincipalUrl} alt="" aria-hidden="true" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                               </div>
