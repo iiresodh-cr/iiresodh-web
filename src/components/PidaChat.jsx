@@ -4,15 +4,30 @@ import pidaImg from "../assets/PIDA_bot.webp";
 import { functions } from "../firebase/config";
 import { httpsCallable } from "firebase/functions";
 
+const MENSAJE_INICIAL = { 
+  text: "¡Hola! Soy PIDA, el asistente virtual de IIRESODH. ¿En qué te puedo ayudar hoy?", 
+  isBot: true 
+};
+
 export default function PidaChat() {
   const [isOpen, setIsOpen] = useState(false);
-  const [mensajes, setMensajes] = useState([
-    { text: "¡Hola! Soy PIDA, el asistente virtual de IIRESODH. ¿En qué te puedo ayudar hoy?", isBot: true }
-  ]);
+  
+  // 1. MEMORIA: Inicializamos leyendo de sessionStorage (o usamos el mensaje por defecto)
+  const [mensajes, setMensajes] = useState(() => {
+    const chatGuardado = sessionStorage.getItem("pidaChatHistorial");
+    return chatGuardado ? JSON.parse(chatGuardado) : [MENSAJE_INICIAL];
+  });
+  
   const [input, setInput] = useState("");
   const [escribiendo, setEscribiendo] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // 2. MEMORIA: Guardamos cada actualización del chat en sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem("pidaChatHistorial", JSON.stringify(mensajes));
+  }, [mensajes]);
+
+  // Auto-scroll al fondo
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -21,18 +36,23 @@ export default function PidaChat() {
 
   const toggleChat = () => setIsOpen(!isOpen);
 
+  // 3. REINICIO: Función para limpiar el chat
+  const limpiarChat = () => {
+    if (window.confirm("¿Deseas reiniciar la conversación con PIDA?")) {
+      setMensajes([MENSAJE_INICIAL]);
+      sessionStorage.removeItem("pidaChatHistorial");
+    }
+  };
+
   // Función para convertir los **asteriscos** de Gemini en texto en Negrita
   const formatearMensaje = (texto) => {
     if (!texto) return "";
-    // Cortamos el texto exactamente donde hay asteriscos dobles
     const partes = texto.split(/(\*\*.*?\*\*)/g);
     
     return partes.map((parte, i) => {
-      // Si la parte tiene los asteriscos, se los quitamos y la ponemos en <strong>
       if (parte.startsWith('**') && parte.endsWith('**')) {
         return <strong key={i} className="font-bold text-gray-900">{parte.slice(2, -2)}</strong>;
       }
-      // Si es texto normal, lo dejamos tal cual
       return <span key={i}>{parte}</span>;
     });
   };
@@ -43,16 +63,14 @@ export default function PidaChat() {
 
     const textoUsuario = input.trim();
     
-    // 1. Clonamos el historial actual sin el saludo inicial para no confundir a la IA
+    // Clonamos el historial actual sin el saludo inicial para no confundir a la IA
     const historialParaEnviar = mensajes.slice(1);
 
-    // 2. Agregamos el mensaje del usuario a la pantalla
     const nuevoMensaje = { text: textoUsuario, isBot: false };
     setMensajes((prev) => [...prev, nuevoMensaje]);
     setInput("");
     setEscribiendo(true);
 
-    // 3. CONEXIÓN REAL CON PIDA (FIREBASE -> GEMINI)
     try {
       const charlarConPida = httpsCallable(functions, 'chatPida');
       const resultado = await charlarConPida({ 
@@ -94,9 +112,17 @@ export default function PidaChat() {
                 <p className="text-xs text-white/80">Asistente Virtual IIRESODH</p>
               </div>
             </div>
-            <button onClick={toggleChat} className="text-white hover:bg-white/20 p-1.5 rounded-lg transition-colors cursor-pointer" aria-label="Cerrar chat">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
+            
+            {/* NUEVO: Botones de Limpiar y Cerrar */}
+            <div className="flex items-center gap-1">
+              <button onClick={limpiarChat} title="Reiniciar conversación" className="text-white/80 hover:text-white hover:bg-white/20 p-1.5 rounded-lg transition-colors cursor-pointer" aria-label="Reiniciar chat">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              </button>
+              
+              <button onClick={toggleChat} className="text-white hover:bg-white/20 p-1.5 rounded-lg transition-colors cursor-pointer" aria-label="Cerrar chat">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </button>
+            </div>
           </div>
 
           <div className="flex-1 p-4 overflow-y-auto bg-gray-50 flex flex-col gap-3 min-h-75 custom-scrollbar">
@@ -107,7 +133,6 @@ export default function PidaChat() {
                     ? 'bg-white border border-gray-100 text-gray-700 rounded-tl-sm leading-relaxed' 
                     : 'bg-main-blue text-white rounded-tr-sm leading-relaxed'
                 }`}>
-                  {/* AQUÍ APLICAMOS LA FUNCIÓN TRADUCTORA */}
                   {formatearMensaje(msg.text)}
                 </div>
               </div>
