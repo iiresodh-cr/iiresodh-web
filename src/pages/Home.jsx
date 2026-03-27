@@ -176,7 +176,7 @@ export default function Home() {
               {/* IZQUIERDA: QUIÉNES SOMOS + TEXTO */}
               <div className="md:col-span-6 flex flex-col items-center md:items-start bg-white relative z-10 w-full">
                 <h2 className="text-2xl md:text-3xl font-semibold text-main-blue mb-8 text-center md:text-center w-full">
-                  Quiénes Somos
+                  ¿Quiénes Somos?
                 </h2>
                 <div className="space-y-4 w-full mb-8">
                   <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
@@ -194,7 +194,7 @@ export default function Home() {
               {/* DERECHA: MAPA */}
               <section className="md:col-span-4 flex flex-col items-center bg-white w-full z-0" aria-labelledby="map-title">
                 <h2 id="map-title" className="text-2xl md:text-3xl font-semibold text-main-blue mb-8 text-center w-full">
-                  Dónde Estamos
+                  ¿Dónde Estamos?
                 </h2>
                 <div ref={mapContainerRef} className="map-container-wrapper bg-white w-full relative">
                   <ComposableMap 
