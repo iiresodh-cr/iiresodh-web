@@ -175,7 +175,7 @@ export default function Home() {
               
               {/* IZQUIERDA: QUIÉNES SOMOS + TEXTO */}
               <div className="md:col-span-6 flex flex-col items-center md:items-start bg-white relative z-10 w-full">
-                <h2 className="text-2xl md:text-3xl font-semibold text-main-blue mb-8 text-center md:text-left w-full">
+                <h2 className="text-2xl md:text-3xl font-semibold text-main-blue mb-8 text-center md:text-center w-full">
                   Quiénes Somos
                 </h2>
                 <div className="space-y-4 w-full mb-8">
