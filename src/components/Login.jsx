@@ -4,6 +4,9 @@ import { auth } from "../firebase/config";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+// Usamos el isotipo a color para la pantalla de login
+import isotipo from "../assets/Isotipo-color-512.png";
+
 export default function Login() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -34,26 +37,46 @@ export default function Login() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-basic-beige">
-      <div className="bg-white p-10 rounded-xl shadow-lg max-w-md w-full text-center border-t-4 border-main-red">
-        
-        <h1 className="text-4xl font-extrabold text-main-blue mb-2 font-sans">
-          IIRESODH
-        </h1>
-        <p className="text-light-blue mb-8 font-medium">
-          Panel de Administración
-        </p>
+    <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4 font-sans relative overflow-hidden">
+      {/* Fondo decorativo sutil (opcional, si usas la clase bg-watermark en tu CSS global) */}
+      <div className="absolute inset-0 z-0 bg-watermark opacity-10 pointer-events-none" aria-hidden="true"></div>
 
+      <div className="bg-white p-8 md:p-10 rounded-2xl shadow-xl max-w-md w-full relative z-10 border border-gray-100">
+        
+        {/* Logo Institucional */}
+        <div className="flex justify-center mb-6">
+          <img 
+            src={isotipo} 
+            alt="Isotipo IIRESODH" 
+            className="w-20 h-20 md:w-24 md:h-24 object-contain drop-shadow-sm"
+          />
+        </div>
+
+        {/* Textos y Contexto */}
+        <div className="text-center mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-main-blue mb-3 tracking-tight">
+            Acceso Administrativo
+          </h1>
+          <p className="text-gray-500 text-sm md:text-base leading-relaxed px-2">
+            Para acceder al panel, por favor ingresa exclusivamente con tu cuenta institucional <strong className="text-main-blue font-semibold">@iiresodh.org</strong>
+          </p>
+        </div>
+
+        {/* Alerta de Error Mejorada */}
         {error && (
-          <div role="alert" className="bg-bright-red text-white p-4 rounded mb-6 text-sm font-bold shadow-md animate-fade-in-up">
-            {error}
+          <div role="alert" className="bg-red-50 border border-red-200 text-main-red p-4 rounded-lg mb-6 text-sm text-center flex flex-col items-center gap-2 animate-fade-in-up">
+            <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <span>{error}</span>
           </div>
         )}
 
+        {/* Botón de Google Estilo Corporativo */}
         <button
           onClick={handleGoogleLogin}
-          aria-label="Ingresar al sistema con tu cuenta de Google"
-          className="w-full flex items-center justify-center gap-3 bg-main-blue hover:bg-light-blue text-white font-bold py-3 px-4 rounded transition-colors duration-300 cursor-pointer"
+          aria-label="Ingresar al sistema con cuenta institucional de Google"
+          className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 hover:bg-gray-50 hover:shadow-sm text-gray-700 font-semibold py-3.5 px-4 rounded-xl transition-all duration-200 cursor-pointer"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
             <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -61,8 +84,14 @@ export default function Login() {
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
           </svg>
-          Ingresar con Google
+          Ingresar con cuenta @iiresodh.org
         </button>
+
+        {/* Pie de página pequeño */}
+        <div className="mt-8 text-center text-xs text-gray-400 font-light">
+          <p>Sitio protegido. Todo intento de acceso</p>
+          <p>no autorizado será registrado.</p>
+        </div>
       </div>
     </main>
   );
