@@ -58,7 +58,7 @@ export default function PidaChat() {
           <img src={pidaImg} alt="PIDA Bot" className="w-12 h-12 object-contain mt-1 drop-shadow-sm" />
           
           {/* EFECTO DE LUZ AL PASAR EL CURSOR (Para UX de botón) */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-main-red/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="absolute inset-0 bg-linear-to-tr from-main-red/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           
           {/* ELIMINADO: <span className="absolute top-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></span> */}
         </button>
@@ -89,7 +89,7 @@ export default function PidaChat() {
           </div>
 
           {/* Área de Mensajes (Scrolleable) */}
-          <div className="flex-1 p-4 overflow-y-auto bg-gray-50 flex flex-col gap-3 min-h-[300px] custom-scrollbar">
+          <div className="flex-1 p-4 overflow-y-auto bg-gray-50 flex flex-col gap-3 min-h-75 custom-scrollbar">
             {mensajes.map((msg, index) => (
               <div key={index} className={`flex ${msg.isBot ? 'justify-start' : 'justify-end'}`}>
                 <div className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm ${
@@ -129,7 +129,7 @@ export default function PidaChat() {
             <button 
               type="submit"
               disabled={!input.trim() || escribiendo}
-              className="bg-main-red text-white p-2.5 rounded-xl hover:bg-red-700 hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none cursor-pointer flex items-center justify-center flex-shrink-0"
+              className="bg-main-red text-white p-2.5 rounded-xl hover:bg-red-700 hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none cursor-pointer flex items-center justify-center shrink-0"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
             </button>
