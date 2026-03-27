@@ -12,7 +12,7 @@ const MENSAJE_INICIAL = {
 export default function PidaChat() {
   const [isOpen, setIsOpen] = useState(false);
   
-  // 1. MEMORIA: Inicializamos leyendo de sessionStorage (o usamos el mensaje por defecto)
+  // MEMORIA: Inicializamos leyendo de sessionStorage
   const [mensajes, setMensajes] = useState(() => {
     const chatGuardado = sessionStorage.getItem("pidaChatHistorial");
     return chatGuardado ? JSON.parse(chatGuardado) : [MENSAJE_INICIAL];
@@ -20,9 +20,10 @@ export default function PidaChat() {
   
   const [input, setInput] = useState("");
   const [escribiendo, setEscribiendo] = useState(false);
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
   const messagesEndRef = useRef(null);
 
-  // 2. MEMORIA: Guardamos cada actualización del chat en sessionStorage
+  // Guardamos cada actualización del chat
   useEffect(() => {
     sessionStorage.setItem("pidaChatHistorial", JSON.stringify(mensajes));
   }, [mensajes]);
@@ -36,15 +37,18 @@ export default function PidaChat() {
 
   const toggleChat = () => setIsOpen(!isOpen);
 
-  // 3. REINICIO: Función para limpiar el chat
-  const limpiarChat = () => {
-    if (window.confirm("¿Deseas reiniciar la conversación con PIDA?")) {
-      setMensajes([MENSAJE_INICIAL]);
-      sessionStorage.removeItem("pidaChatHistorial");
-    }
+  // Funciones para el Modal Interno
+  const solicitarReinicio = () => setMostrarConfirmacion(true);
+  
+  const confirmarReinicio = () => {
+    setMensajes([MENSAJE_INICIAL]);
+    sessionStorage.removeItem("pidaChatHistorial");
+    setMostrarConfirmacion(false);
   };
 
-  // Función para convertir los **asteriscos** de Gemini en texto en Negrita
+  const cancelarReinicio = () => setMostrarConfirmacion(false);
+
+  // Formatear Negritas
   const formatearMensaje = (texto) => {
     if (!texto) return "";
     const partes = texto.split(/(\*\*.*?\*\*)/g);
@@ -62,8 +66,6 @@ export default function PidaChat() {
     if (!input.trim()) return;
 
     const textoUsuario = input.trim();
-    
-    // Clonamos el historial actual sin el saludo inicial para no confundir a la IA
     const historialParaEnviar = mensajes.slice(1);
 
     const nuevoMensaje = { text: textoUsuario, isBot: false };
@@ -101,7 +103,28 @@ export default function PidaChat() {
       )}
 
       {isOpen && (
-        <div className="flex flex-col w-80 sm:w-96 max-h-[75vh] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-fade-in-up">
+        <div className="relative flex flex-col w-80 sm:w-96 max-h-[75vh] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-fade-in-up">
+          
+          {mostrarConfirmacion && (
+            <div className="absolute inset-0 z-20 bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center">
+              <div className="w-16 h-16 bg-blue-50 text-main-blue rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              </div>
+              <h3 className="text-lg font-bold text-gray-800 mb-2">¿Empezar de cero?</h3>
+              <p className="text-sm text-gray-500 mb-6">
+                PIDA olvidará la conversación actual y comenzarán una nueva.
+              </p>
+              <div className="flex gap-3 w-full">
+                <button onClick={cancelarReinicio} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2.5 rounded-xl transition-colors cursor-pointer">
+                  Cancelar
+                </button>
+                <button onClick={confirmarReinicio} className="flex-1 bg-main-blue hover:bg-light-blue text-white font-semibold py-2.5 rounded-xl transition-colors shadow-sm cursor-pointer">
+                  Sí, reiniciar
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="bg-main-red p-4 flex items-center justify-between text-white shadow-md z-10 border-b border-white/10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center overflow-hidden border border-white/20">
@@ -113,9 +136,8 @@ export default function PidaChat() {
               </div>
             </div>
             
-            {/* NUEVO: Botones de Limpiar y Cerrar */}
             <div className="flex items-center gap-1">
-              <button onClick={limpiarChat} title="Reiniciar conversación" className="text-white/80 hover:text-white hover:bg-white/20 p-1.5 rounded-lg transition-colors cursor-pointer" aria-label="Reiniciar chat">
+              <button onClick={solicitarReinicio} title="Reiniciar conversación" className="text-white/80 hover:text-white hover:bg-white/20 p-1.5 rounded-lg transition-colors cursor-pointer" aria-label="Reiniciar chat">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               </button>
               
