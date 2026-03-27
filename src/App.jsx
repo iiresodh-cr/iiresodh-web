@@ -6,6 +6,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Login from "./components/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PidaChat from "./components/PidaChat"; // <-- 1. Importamos a PIDA
 
 // Páginas Actuales
 import Home from "./pages/Home";
@@ -32,12 +33,15 @@ import ArticuloDetalle from "./pages/ArticuloDetalle";
 
 function PublicLayout() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen relative">
       <Navbar />
       <div className="grow">
         <Outlet />
       </div>
       <Footer />
+      
+      {/* <-- 2. Colocamos a PIDA aquí para que solo salga en el lado público --> */}
+      <PidaChat />
     </div>
   );
 }

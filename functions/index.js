@@ -207,3 +207,55 @@ exports.enviarFormularioContacto = onCall({
     throw new HttpsError("internal", "No se pudo enviar el correo electrónico.");
   }
 });
+
+// ============================================================================
+// 4. FUNCIÓN CHATBOT PIDA (GEMINI)
+// ============================================================================
+exports.chatPida = onCall({ 
+  secrets: [geminiApiKey], 
+  region: "us-central1",
+  cors: [
+    /iiresodh-web\.web\.app$/, 
+    /iiresodh-web\.firebaseapp\.com$/, 
+    "http://localhost:5173"
+  ]
+}, async (request) => {
+  
+  const { mensaje, historial = [] } = request.data;
+  
+  if (!mensaje) {
+    throw new HttpsError("invalid-argument", "El mensaje está vacío.");
+  }
+
+  try {
+    const apiKey = geminiApiKey.value();
+    const genAI = new GoogleGenerativeAI(apiKey);
+    
+    // Aquí le damos su "alma" básica a PIDA (La mejoraremos en la Fase 3)
+    const model = genAI.getGenerativeModel({ 
+        model: "gemini-2.5-flash",
+        systemInstruction: "Eres PIDA, el asistente virtual amable, profesional y experto del Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH). Tus respuestas deben ser cortas, claras y siempre en español, a menos que te hablen en otro idioma."
+    });
+
+    // Traducimos el historial del frontend al formato que entiende Gemini
+    const historialFormateado = historial.map(msg => ({
+      role: msg.isBot ? "model" : "user",
+      parts: [{ text: msg.text }]
+    }));
+
+    // Iniciamos el chat con memoria
+    const chat = model.startChat({
+      history: historialFormateado,
+    });
+
+    // Enviamos el nuevo mensaje
+    const result = await chat.sendMessage(mensaje);
+    const respuestaTexto = result.response.text();
+
+    return { respuesta: respuestaTexto };
+
+  } catch (error) {
+    console.error("Error en el cerebro de PIDA:", error);
+    throw new HttpsError("internal", "Error procesando la respuesta con PIDA.");
+  }
+});
