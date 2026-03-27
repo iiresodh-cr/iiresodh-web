@@ -1,16 +1,22 @@
 // functions/index.js
-const { onCall, HttpsError } = require("firebase-functions/v2/https");
-const { onRequest } = require("firebase-functions/v2/https");
+const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const admin = require("firebase-admin");
+const nodemailer = require("nodemailer");
 
 // Inicializamos Firebase Admin
 if (!admin.apps.length) {
   admin.initializeApp();
 }
 
+// ============================================================================
+// DECLARACIÓN DE SECRETOS GLOBALES
+// ============================================================================
 const geminiApiKey = defineSecret("GEMINI_API_KEY");
+const GMAIL_CLIENT_ID = defineSecret("GMAIL_CLIENT_ID");
+const GMAIL_CLIENT_SECRET = defineSecret("GMAIL_CLIENT_SECRET");
+const GMAIL_REFRESH_TOKEN = defineSecret("GMAIL_REFRESH_TOKEN");
 
 // ============================================================================
 // 1. FUNCIÓN DE INTELIGENCIA ARTIFICIAL (GEMINI)
@@ -116,7 +122,6 @@ exports.noticiaMeta = onRequest({ region: "us-central1" }, async (req, res) => {
     let html = await response.text();
 
     // 🚨 EL TRUCO PARA FACEBOOK: ELIMINAR LOS META TAGS ORIGINALES 🚨
-    // Buscamos y borramos las etiquetas genéricas para que solo queden las de la noticia
     html = html.replace(/<title>.*?<\/title>/gi, '');
     html = html.replace(/<meta[^>]*property="og:[^>]*>/gi, '');
     html = html.replace(/<meta[^>]*name="twitter:[^>]*>/gi, '');
@@ -150,20 +155,11 @@ exports.noticiaMeta = onRequest({ region: "us-central1" }, async (req, res) => {
 });
 
 
-const nodemailer = require('nodemailer');
-const { onCall, HttpsError } = require("firebase-functions/v2/https");
-const { defineSecret } = require('firebase-functions/params');
-
-// Declaramos los 3 secretos necesarios para OAuth2
-const clientId = defineSecret("GMAIL_CLIENT_ID");
-const clientSecret = defineSecret("GMAIL_CLIENT_SECRET");
-const refreshToken = defineSecret("GMAIL_REFRESH_TOKEN");
-
 // ============================================================================
-// FUNCIÓN PARA ENVIAR FORMULARIO DE CONTACTO (VÍA OAUTH2)
+// 3. FUNCIÓN PARA ENVIAR FORMULARIO DE CONTACTO (VÍA OAUTH2)
 // ============================================================================
 exports.enviarFormularioContacto = onCall({ 
-  secrets: [clientId, clientSecret, refreshToken], 
+  secrets: [GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN], 
   region: "us-central1"
 }, async (request) => {
   
@@ -180,9 +176,9 @@ exports.enviarFormularioContacto = onCall({
       auth: {
         type: 'OAuth2',
         user: 'contacto@iiresodh.org',
-        clientId: clientId.value(),
-        clientSecret: clientSecret.value(),
-        refreshToken: refreshToken.value()
+        clientId: GMAIL_CLIENT_ID.value(),
+        clientSecret: GMAIL_CLIENT_SECRET.value(),
+        refreshToken: GMAIL_REFRESH_TOKEN.value()
       }
     });
 
