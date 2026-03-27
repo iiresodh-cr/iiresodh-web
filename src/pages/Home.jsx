@@ -1,7 +1,8 @@
 // src/pages/Home.jsx
 import { useEffect, useState, useRef } from "react";
 import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
-import { db } from "../firebase/config";
+import { db, functions } from "../firebase/config";
+import { httpsCallable } from "firebase/functions";
 import { Link } from "react-router-dom";
 
 // Swiper
@@ -13,9 +14,12 @@ import 'swiper/css/pagination';
 // Mapa
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 
+// Imagen para portada de video
+import posterVideo from "../assets/Isotipo-color-512.png";
+
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-// FUNCIÓN DE FORMATEO: Pura e intacta, idéntica a ArticuloDetalle
+// FUNCIÓN DE FORMATEO
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
 
@@ -44,6 +48,10 @@ export default function Home() {
   const [hoveredSede, setHoveredSede] = useState(null);
   const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
   
+  // Estados para el formulario de contacto
+  const [contacto, setContacto] = useState({ nombre: "", correo: "", mensaje: "" });
+  const [estadoEnvio, setEstadoEnvio] = useState("idle");
+
   const mapContainerRef = useRef(null);
 
   const sedes = [
@@ -74,8 +82,8 @@ export default function Home() {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
-    const leftPos = x > rect.width / 2 ? x - 340 : x + 20;
-    const topPos = y < 150 ? y + 20 : y - 180;
+    const leftPos = x > rect.width / 2 ? x - 260 : x + 20;
+    const topPos = y < 150 ? y + 20 : y - 140;
 
     setTooltipPos({ top: topPos, left: leftPos });
     setHoveredSede(sede);
@@ -87,11 +95,27 @@ export default function Home() {
     const x = rect.left + rect.width / 2 - mapRect.left;
     const y = rect.top + rect.height / 2 - mapRect.top;
 
-    const leftPos = x > mapRect.width / 2 ? x - 340 : x + 20;
-    const topPos = y < 150 ? y + 20 : y - 180;
+    const leftPos = x > mapRect.width / 2 ? x - 260 : x + 20;
+    const topPos = y < 150 ? y + 20 : y - 140;
 
     setTooltipPos({ top: topPos, left: leftPos });
     setHoveredSede(sede);
+  };
+
+  const handleEnviarContacto = async (e) => {
+    e.preventDefault();
+    setEstadoEnvio("enviando");
+    try {
+      const enviarCorreo = httpsCallable(functions, 'enviarFormularioContacto');
+      await enviarCorreo(contacto);
+      setEstadoEnvio("exito");
+      setContacto({ nombre: "", correo: "", mensaje: "" });
+      setTimeout(() => setEstadoEnvio("idle"), 5000);
+    } catch (error) {
+      console.error("Error enviando correo:", error);
+      setEstadoEnvio("error");
+      setTimeout(() => setEstadoEnvio("idle"), 5000);
+    }
   };
 
   if (loading) return <div className="min-h-screen bg-white flex items-center justify-center font-bold text-main-blue text-xl">Cargando IIRESODH...</div>;
@@ -114,7 +138,6 @@ export default function Home() {
             >
               {noticias.map((noticia) => (
                 <SwiperSlide key={noticia.id}>
-                  {/* ESTRUCTURA PERFECTA: Grid de 10 columnas, idéntico a la sección de abajo. Sin desbordamientos matemáticos. */}
                   <article className="grid grid-cols-1 md:grid-cols-10 gap-10 items-start bg-white w-full">
                     
                     <div className="md:col-span-4 mb-8 md:mb-0">
@@ -129,14 +152,13 @@ export default function Home() {
                       </h1>
                       
                       <div 
-                        className="text-gray-600 mb-6 text-base md:text-lg font-light leading-relaxed noticia-content text-justify overflow-hidden line-clamp-6" 
+                        className="text-gray-600 mb-6 text-base md:text-lg font-light leading-relaxed noticia-content text-justify overflow-hidden line-clamp-6 pr-0.5" 
                         dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(noticia.contenido) }} 
                       />
                       
                       <Link 
                         to={`/noticias/${noticia.slug || noticia.id}`} 
                         className="text-main-red font-bold hover:text-main-blue transition-colors mt-auto flex items-center gap-2 self-start uppercase tracking-wide text-sm"
-                        aria-label={`Leer noticia completa: ${noticia.titulo}`}
                       >
                         Leer noticia completa <span>&rarr;</span>
                       </Link>
@@ -147,30 +169,33 @@ export default function Home() {
             </Swiper>
           )}
 
-          {/* BLOQUE 2: TEXTO INSTITUCIONAL Y MAPA */}
+          {/* BLOQUE 2: QUIÉNES SOMOS (6) Y MAPA (4) */}
           <div className="pt-4 bg-white">
-            {/* Grid 10: 4 a la izquierda, 6 a la derecha. Margen derecho idéntico al de las noticias */}
-            <div className="grid grid-cols-1 md:grid-cols-10 gap-10 items-center overflow-visible bg-white min-h-125">
+            <div className="grid grid-cols-1 md:grid-cols-10 gap-10 items-start overflow-visible bg-white min-h-125">
               
-              {/* IZQUIERDA: TEXTO INSTITUCIONAL */}
-              <div className="md:col-span-4 flex flex-col justify-center space-y-4 bg-white md:mt-12">
-                <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
-                  El <strong className="font-semibold text-main-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, es una asociación sin fines de lucro, con su sede principal en Costa Rica y oficinas en otros países como Canadá, Colombia, Guatemala, México, con el objetivo de fomentar el cumplimiento de los estándares internacionales de derechos humanos mediante un enfoque de participación ciudadana, gubernamental y corporativa.
-                </p>
-                <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
-                  Realizamos labores de capacitación, litigio estratégico y empoderamiento de la sociedad civil con fondos privados y de la cooperación internacional. Participamos frecuentemente en los diferentes espacios de trabajos y audiencias de los sistemas de protección de derechos humanos, siendo una voz activa en la defensa de la democracia y los derechos humanos.
-                </p>
-                <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
-                  Fomentamos el mejoramiento social, económico, cultural, educativo, organizativo y productivo por medio de la promoción de la responsabilidad social empresarial y la promoción y protección de los derechos humanos.
-                </p>
+              {/* IZQUIERDA: QUIÉNES SOMOS + TEXTO */}
+              <div className="md:col-span-6 flex flex-col items-center md:items-start bg-white relative z-10 w-full">
+                <h2 className="text-2xl md:text-3xl font-semibold text-main-blue mb-8 text-center md:text-left w-full">
+                  Quiénes Somos
+                </h2>
+                <div className="space-y-4 w-full mb-8">
+                  <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
+                    El <strong className="font-semibold text-main-blue">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</strong>, es una asociación sin fines de lucro, con su sede principal en Costa Rica y oficinas en otros países como Canadá, Colombia, Guatemala, México, con el objetivo de fomentar el cumplimiento de los estándares internacionales de derechos humanos mediante un enfoque de participación ciudadana, gubernamental y corporativa.
+                  </p>
+                  <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
+                    Realizamos labores de capacitación, litigio estratégico y empoderamiento de la sociedad civil con fondos privados y de la cooperación internacional. Participamos frecuentemente en los diferentes espacios de trabajos y audiencias de los sistemas de protección de derechos humanos, siendo una voz activa en la defensa de la democracia y los derechos humanos.
+                  </p>
+                  <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
+                    Fomentamos el mejoramiento social, económico, cultural, educativo, organizativo y productivo por medio de la promoción de la responsabilidad social empresarial y la promoción y protección de los derechos humanos.
+                  </p>
+                </div>
               </div>
 
-              {/* DERECHA: TÍTULO Y MAPA */}
-              <section className="md:col-span-6 flex flex-col items-center bg-white w-full" aria-labelledby="map-title">
+              {/* DERECHA: MAPA */}
+              <section className="md:col-span-4 flex flex-col items-center bg-white w-full z-0" aria-labelledby="map-title">
                 <h2 id="map-title" className="text-2xl md:text-3xl font-semibold text-main-blue mb-8 text-center w-full">
-                  Nuestras Oficinas
+                  Dónde Estamos
                 </h2>
-                
                 <div ref={mapContainerRef} className="map-container-wrapper bg-white w-full relative">
                   <ComposableMap 
                     projection="geoMercator" 
@@ -205,27 +230,121 @@ export default function Home() {
                           onBlur={() => setHoveredSede(null)}
                           className="focus:outline-none"
                         >
-                          <circle r={20} fill="transparent" className="cursor-pointer" />
-                          <circle r={10} fill="#B92F32" fillOpacity={0.1} className="animate-pulse pointer-events-none" />
-                          <circle r={5} fill="#B92F32" stroke="#FFFFFF" strokeWidth={2} className="pointer-events-none" />
+                          <circle r={25} fill="transparent" className="cursor-pointer" />
+                          <circle r={25} fill="#B92F32" fillOpacity={0.1} className="animate-pulse pointer-events-none" />
+                          <circle r={10} fill="#B92F32" stroke="#FFFFFF" strokeWidth={2} className="pointer-events-none" />
                         </g>
                       </Marker>
                     ))}
                   </ComposableMap>
 
-                  {/* TARJETA FLOTANTE HTML */}
                   {hoveredSede && (
                     <div 
                       role="tooltip"
-                      className="absolute z-50 bg-white p-6 rounded-2xl flex flex-col gap-3 pointer-events-none w-[320px] transition-opacity duration-150 shadow-xl border border-gray-100"
+                      className="absolute z-50 bg-white p-4 rounded-xl flex flex-col gap-2 pointer-events-none w-60 transition-opacity duration-150 shadow-xl border border-gray-100"
                       style={{ top: `${tooltipPos.top}px`, left: `${tooltipPos.left}px` }}
                     >
-                      <h3 className="text-xl font-semibold text-main-red uppercase tracking-tight border-b border-gray-100 pb-2">{hoveredSede.pais}</h3>
-                      <p className="text-sm text-gray-700 leading-relaxed font-medium">{hoveredSede.info}</p>
+                      <h3 className="text-lg font-semibold text-main-red uppercase tracking-tight border-b border-gray-100 pb-2">{hoveredSede.pais}</h3>
+                      <p className="text-xs text-gray-700 leading-relaxed font-medium">{hoveredSede.info}</p>
                     </div>
                   )}
                 </div>
               </section>
+
+            </div>
+          </div>
+
+          {/* BLOQUE 3: NUEVA SECCIÓN - VIDEO (5) Y FORMULARIO (5) */}
+          <div className="pt-6 mt-0 border-t border-gray-100 bg-white">
+            <div className="grid grid-cols-1 md:grid-cols-10 gap-10 items-stretch bg-white w-full">
+              
+              {/* IZQUIERDA: VIDEO INSTITUCIONAL */}
+              <div className="md:col-span-5 flex flex-col w-full">
+                <div className="rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-white w-full aspect-video flex items-center justify-center h-full">
+                  <video 
+                    src="https://storage.googleapis.com/videos-iire/IIRESODH.webm" 
+                    controls 
+                    className="w-full h-full object-contain bg-white"
+                    playsInline
+                    preload="metadata"
+                    poster={posterVideo}
+                  >
+                    Tu navegador no soporta la reproducción de video.
+                  </video>
+                </div>
+              </div>
+
+              {/* DERECHA: FORMULARIO DE CONTACTO */}
+              <div className="md:col-span-5 flex flex-col w-full h-full">
+                <div className="w-full h-full bg-gray-50 rounded-2xl p-8 md:p-10 border border-gray-100 shadow-sm flex flex-col justify-center">
+                  <h3 className="text-2xl font-semibold text-main-blue mb-3 text-center">
+                    Escríbenos un mensaje
+                  </h3>
+                  <p className="text-center text-gray-600 font-light mb-6 text-sm md:text-base">
+                    ¿Tienes alguna consulta o deseas colaborar con nosotros?
+                  </p>
+                  
+                  <form onSubmit={handleEnviarContacto} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <input 
+                          type="text" 
+                          required 
+                          value={contacto.nombre}
+                          onChange={(e) => setContacto({...contacto, nombre: e.target.value})}
+                          className="w-full border border-gray-300 p-3.5 text-base rounded-lg focus:outline-none focus:ring-2 focus:ring-light-blue bg-white"
+                          placeholder="Tu nombre"
+                          aria-label="Tu nombre"
+                        />
+                      </div>
+                      <div>
+                        <input 
+                          type="email" 
+                          required 
+                          value={contacto.correo}
+                          onChange={(e) => setContacto({...contacto, correo: e.target.value})}
+                          className="w-full border border-gray-300 p-3.5 text-base rounded-lg focus:outline-none focus:ring-2 focus:ring-light-blue bg-white"
+                          placeholder="tu@correo.com"
+                          aria-label="Tu correo electrónico"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <textarea 
+                        required 
+                        rows="4"
+                        value={contacto.mensaje}
+                        onChange={(e) => setContacto({...contacto, mensaje: e.target.value})}
+                        className="w-full border border-gray-300 p-3.5 text-base rounded-lg focus:outline-none focus:ring-2 focus:ring-light-blue bg-white resize-none"
+                        placeholder="¿En qué te podemos ayudar?"
+                        aria-label="Tu mensaje"
+                      ></textarea>
+                    </div>
+
+                    {estadoEnvio === "exito" && (
+                      <div className="bg-green-50 text-green-700 p-3 rounded-lg font-bold text-sm text-center border border-green-200">
+                        ¡Mensaje enviado con éxito! Nos pondremos en contacto pronto.
+                      </div>
+                    )}
+                    
+                    {estadoEnvio === "error" && (
+                      <div className="bg-red-50 text-main-red p-3 rounded-lg font-bold text-sm text-center border border-red-200">
+                        Error. Escríbenos a contacto@iiresodh.org
+                      </div>
+                    )}
+
+                    <div className="text-center pt-2">
+                      <button 
+                        type="submit" 
+                        disabled={estadoEnvio === "enviando"}
+                        className="w-full md:w-auto md:px-12 bg-main-red hover:bg-main-blue text-white font-bold py-3.5 rounded-lg transition-colors duration-300 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider text-sm"
+                      >
+                        {estadoEnvio === "enviando" ? "Enviando..." : "Enviar Mensaje"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
 
             </div>
           </div>
