@@ -21,6 +21,22 @@ export default function PidaChat() {
 
   const toggleChat = () => setIsOpen(!isOpen);
 
+  // Función para convertir los **asteriscos** de Gemini en texto en Negrita
+  const formatearMensaje = (texto) => {
+    if (!texto) return "";
+    // Cortamos el texto exactamente donde hay asteriscos dobles
+    const partes = texto.split(/(\*\*.*?\*\*)/g);
+    
+    return partes.map((parte, i) => {
+      // Si la parte tiene los asteriscos, se los quitamos y la ponemos en <strong>
+      if (parte.startsWith('**') && parte.endsWith('**')) {
+        return <strong key={i} className="font-bold text-gray-900">{parte.slice(2, -2)}</strong>;
+      }
+      // Si es texto normal, lo dejamos tal cual
+      return <span key={i}>{parte}</span>;
+    });
+  };
+
   const handleEnviar = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -88,10 +104,11 @@ export default function PidaChat() {
               <div key={index} className={`flex ${msg.isBot ? 'justify-start' : 'justify-end'}`}>
                 <div className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm whitespace-pre-line ${
                   msg.isBot 
-                    ? 'bg-white border border-gray-100 text-gray-700 rounded-tl-sm' 
-                    : 'bg-main-blue text-white rounded-tr-sm'
+                    ? 'bg-white border border-gray-100 text-gray-700 rounded-tl-sm leading-relaxed' 
+                    : 'bg-main-blue text-white rounded-tr-sm leading-relaxed'
                 }`}>
-                  {msg.text}
+                  {/* AQUÍ APLICAMOS LA FUNCIÓN TRADUCTORA */}
+                  {formatearMensaje(msg.text)}
                 </div>
               </div>
             ))}
