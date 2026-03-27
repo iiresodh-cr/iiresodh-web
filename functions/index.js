@@ -148,3 +148,66 @@ exports.noticiaMeta = onRequest({ region: "us-central1" }, async (req, res) => {
     res.redirect(302, "/");
   }
 });
+
+
+const nodemailer = require('nodemailer');
+const { onCall, HttpsError } = require("firebase-functions/v2/https");
+const { defineSecret } = require('firebase-functions/params');
+
+// Declaramos los 3 secretos necesarios para OAuth2
+const clientId = defineSecret("GMAIL_CLIENT_ID");
+const clientSecret = defineSecret("GMAIL_CLIENT_SECRET");
+const refreshToken = defineSecret("GMAIL_REFRESH_TOKEN");
+
+// ============================================================================
+// FUNCIÓN PARA ENVIAR FORMULARIO DE CONTACTO (VÍA OAUTH2)
+// ============================================================================
+exports.enviarFormularioContacto = onCall({ 
+  secrets: [clientId, clientSecret, refreshToken], 
+  region: "us-central1"
+}, async (request) => {
+  
+  const { nombre, correo, mensaje } = request.data;
+
+  if (!nombre || !correo || !mensaje) {
+    throw new HttpsError("invalid-argument", "Faltan campos obligatorios.");
+  }
+
+  try {
+    // Configuración de Nodemailer usando OAuth2
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        type: 'OAuth2',
+        user: 'contacto@iiresodh.org',
+        clientId: clientId.value(),
+        clientSecret: clientSecret.value(),
+        refreshToken: refreshToken.value()
+      }
+    });
+
+    const mailOptions = {
+      from: `"Web IIRESODH" <contacto@iiresodh.org>`,
+      to: 'contacto@iiresodh.org', // Correo destino
+      replyTo: correo, // Para poder darle "Responder" al usuario
+      subject: `Nuevo mensaje web de: ${nombre}`,
+      text: `Nombre: ${nombre}\nCorreo: ${correo}\n\nMensaje:\n${mensaje}`,
+      html: `
+        <h2 style="color: #1D3557;">Nuevo contacto desde la web</h2>
+        <p><strong>Nombre:</strong> ${nombre}</p>
+        <p><strong>Correo:</strong> ${correo}</p>
+        <p><strong>Mensaje:</strong></p>
+        <blockquote style="border-left: 4px solid #B92F32; padding-left: 10px; color: #555;">
+          ${mensaje.replace(/\n/g, '<br>')}
+        </blockquote>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+    return { success: true, message: "Correo enviado" };
+
+  } catch (error) {
+    console.error("Error enviando correo con OAuth2:", error);
+    throw new HttpsError("internal", "No se pudo enviar el correo electrónico.");
+  }
+});
