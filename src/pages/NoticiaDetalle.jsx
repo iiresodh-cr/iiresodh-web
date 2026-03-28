@@ -117,9 +117,17 @@ export default function NoticiaDetalle() {
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark" aria-hidden="true"></div>
 
-        <article className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
-          <div className="max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl">
-            <div className="px-8 md:px-12 lg:px-16 py-12 md:py-16">
+        <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
+          <article className="max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl">
+            
+            {/* BOTÓN DE VOLVER AÑADIDO AQUÍ */}
+            <div className="px-8 pt-8 md:px-12 lg:px-16 md:pt-12 pb-6">
+              <Link to="/noticias" className="inline-flex items-center gap-2 text-xs font-bold text-main-red uppercase tracking-widest hover:text-main-blue transition-colors" aria-label="Regresar a las noticias">
+                <span className="text-lg leading-none" aria-hidden="true">&larr;</span> Volver al repositorio
+              </Link>
+            </div>
+
+            <div className="px-8 md:px-12 lg:px-16 pb-12 md:pb-16 animate-fade-in-up">
               
               <div className="flex flex-col lg:flex-row gap-12 items-start">
                 
@@ -172,8 +180,8 @@ export default function NoticiaDetalle() {
               </div>
 
             </div>
-          </div>
-        </article>
+          </article>
+        </section>
 
       </div>
     </main>
