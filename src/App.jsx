@@ -30,6 +30,7 @@ import LitigiosActivos from "./pages/LitigiosActivos";
 import Equipo from "./pages/Equipo";
 import ArticulosAcademicos from "./pages/ArticulosAcademicos";
 import ArticuloDetalle from "./pages/ArticuloDetalle";
+import ComprarLibro from "./pages/ComprarLibro"; // <-- NUEVA IMPORTACIÓN
 
 function PublicLayout() {
   return (
@@ -68,6 +69,9 @@ function App() {
           <Route path="/privacidad" element={<Privacidad />} />
           <Route path="/articulos-academicos" element={<ArticulosAcademicos />} />
           <Route path="/articulos-academicos/:slug" element={<ArticuloDetalle />} />
+          
+          {/* NUEVA RUTA PARA LA TIENDA */}
+          <Route path="/comprar-libro" element={<ComprarLibro />} />
           
           <Route path="*" element={<NotFound />} />
         </Route>

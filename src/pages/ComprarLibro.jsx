@@ -16,6 +16,10 @@ const FormularioPago = ({ libroId }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [exito, setExito] = useState(false);
+  
+  // NUEVO: Estado para guardar el correo del cliente
+  const [email, setEmail] = useState("");
+  const [nombre, setNombre] = useState("");
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -29,15 +33,16 @@ const FormularioPago = ({ libroId }) => {
       const crearIntento = httpsCallable(functions, 'crearIntentoPago');
       const { data } = await crearIntento({ libroId });
 
-      // 2. Confirmamos el pago directamente en el navegador con la tarjeta ingresada
+      // 2. Confirmamos el pago y le pasamos el correo a Stripe
       const resultadoPago = await stripe.confirmCardPayment(data.clientSecret, {
         payment_method: {
           card: elements.getElement(CardElement),
           billing_details: {
-            // Aquí podrías agregar el nombre y correo si tienes inputs para ello
-            name: 'Cliente Web',
+            name: nombre || 'Cliente Web',
+            email: email, // Adjuntamos el correo al método de pago
           },
         },
+        receipt_email: email, // STRIPE ENVIARÁ UN RECIBO AQUÍ Y EL WEBHOOK LO LEERÁ
       });
 
       if (resultadoPago.error) {
@@ -53,16 +58,15 @@ const FormularioPago = ({ libroId }) => {
     }
   };
 
-  // Estilos personalizados para que el campo de tarjeta coincida con tu diseño
   const cardElementOptions = {
     style: {
       base: {
         fontSize: '16px',
-        color: '#1D3557', // Tu main-blue
+        color: '#1D3557',
         fontFamily: '"Work Sans", sans-serif',
         '::placeholder': { color: '#aab7c4' },
       },
-      invalid: { color: '#B92F32' }, // Tu main-red
+      invalid: { color: '#B92F32' },
     },
   };
 
@@ -70,18 +74,42 @@ const FormularioPago = ({ libroId }) => {
     return (
       <div className="bg-green-50 text-green-700 p-6 rounded-xl text-center border border-green-200">
         <h3 className="text-xl font-bold mb-2">¡Pago Exitoso!</h3>
-        <p>Gracias por tu compra. Te hemos enviado un correo con los detalles para acceder a tu libro.</p>
+        <p>Gracias por tu compra. Te hemos enviado un correo a <strong>{email}</strong> con los detalles para acceder a tu libro.</p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* NUEVO: Campos de Nombre y Correo */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-1">Nombre Completo</label>
+        <input 
+          type="text" 
+          required
+          value={nombre}
+          onChange={(e) => setNombre(e.target.value)}
+          placeholder="Ej. Juan Pérez"
+          className="w-full bg-gray-50 border border-gray-200 p-3 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-main-blue/20 focus:border-main-blue transition-all"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-1">Correo Electrónico (Para envío del PDF)</label>
+        <input 
+          type="email" 
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="tu@correo.com"
+          className="w-full bg-gray-50 border border-gray-200 p-3 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-main-blue/20 focus:border-main-blue transition-all"
+        />
+      </div>
+
+      <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl mt-2">
         <label className="block text-sm font-semibold text-gray-700 mb-3">
           Datos de la Tarjeta
         </label>
-        {/* Este es el campo seguro inyectado por Stripe */}
         <div className="bg-white p-3 rounded-lg border border-gray-300">
           <CardElement options={cardElementOptions} />
         </div>
@@ -96,7 +124,7 @@ const FormularioPago = ({ libroId }) => {
       <button 
         type="submit" 
         disabled={!stripe || loading}
-        className="w-full bg-main-red hover:bg-red-700 text-white font-bold py-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider text-sm"
+        className="w-full bg-main-red hover:bg-red-700 text-white font-bold py-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider text-sm mt-4"
       >
         {loading ? "Procesando pago..." : "Pagar $25.00 USD"}
       </button>
