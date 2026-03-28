@@ -57,6 +57,8 @@ const FormularioPago = ({ libroId, precio, titulo }) => {
   };
 
   const cardElementOptions = {
+    // 🛡️ AQUÍ SE OCULTA EL CÓDIGO POSTAL
+    hidePostalCode: true,
     style: {
       base: {
         fontSize: '16px',
@@ -136,14 +138,12 @@ export default function ComprarLibro() {
       setLoading(true);
       try {
         if (slug) {
-          // CASO A: Mostrar un libro específico para comprar
           const q = query(collection(db, "libros"), where("slug", "==", slug), limit(1));
           const snap = await getDocs(q);
           if (!snap.empty) {
             setLibro({ id: snap.docs[0].id, ...snap.docs[0].data() });
           }
         } else {
-          // CASO B: Mostrar catálogo (cuando vienen del Navbar)
           const q = query(collection(db, "libros"), orderBy("fechaPublicacion", "desc"));
           const snap = await getDocs(q);
           setListaLibros(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -159,7 +159,6 @@ export default function ComprarLibro() {
 
   if (loading) return <div className="min-h-screen flex items-center justify-center font-bold text-main-blue uppercase tracking-widest">Cargando Tienda...</div>;
 
-  // RENDER DE CATÁLOGO (Si no hay slug)
   if (!slug) {
     return (
       <main className="bg-white min-h-screen flex flex-col font-sans">
@@ -192,7 +191,6 @@ export default function ComprarLibro() {
     );
   }
 
-  // RENDER DE COMPRA (Si hay slug)
   if (!libro) return <div className="min-h-screen flex items-center justify-center font-bold text-main-red uppercase">Publicación no encontrada</div>;
 
   return (
