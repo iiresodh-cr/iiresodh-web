@@ -19,27 +19,44 @@ import posterVideo from "../assets/Isotipo-color-512.png";
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-// FUNCIÓN DE FORMATEO
-const formatearTextoConLinksYHashtags = (texto) => {
+// ==========================================
+// NUEVO MOTOR DE LINKS (INFALIBLE)
+// ==========================================
+export const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
+  
+  // 1. Escapar < y > por seguridad, pero NO TOCAR el & para no romper URLs
+  let procesado = texto.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-  let seguro = texto.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  const linksGuardados = []; // Caja fuerte temporal
 
-  seguro = seguro.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all">$1</a>');
-
-  seguro = seguro.replace(/(?<!href="|href=)(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all">$1</a>');
-
-  seguro = seguro.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
-    const termino = hashtag.substring(1); 
-    return `<a href="/buscar?q=${termino}" class="text-light-blue font-semibold hover:text-main-red transition-colors">${hashtag}</a>`;
+  // 2. Extraer Markdown (Por si alguien decide usarlo manualmente: [Texto](URL))
+  procesado = procesado.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, label, url) => {
+    linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline wrap-break-words">${label}</a>`);
+    return `__LINK_${linksGuardados.length - 1}__`; 
   });
 
-  const parrafos = seguro.split(/\n\s*\n/);
-  const htmlFinal = parrafos.map(p => {
-    return `<p>${p.replace(/\n/g, '<br />')}</p>`;
-  }).join('');
+  // 3. LA MAGIA AUTOMÁTICA: Extraer URLs crudas pegadas y convertirlas en "haciendo clic aquí"
+  procesado = procesado.replace(/(https?:\/\/[^\s]+)/g, (match, url) => {
+    if (url.includes("__LINK_")) return match; // Evitar procesar los que ya guardamos
+    
+    const textoFijo = "haciendo clic aquí";
+    linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline wrap-break-words">${textoFijo}</a>`);
+    return `__LINK_${linksGuardados.length - 1}__`; 
+  });
 
-  return htmlFinal;
+  // 4. Procesar Hashtags
+  procesado = procesado.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (match) => {
+    const term = match.substring(1);
+    return `<a href="/buscar?q=${term}" class="text-light-blue hover:text-main-red font-bold">${match}</a>`;
+  });
+
+  // 5. Restaurar Links desde la caja fuerte
+  procesado = procesado.replace(/__LINK_(\d+)__/g, (match, i) => linksGuardados[i]);
+
+  // 6. Convertir saltos de línea a párrafos
+  const parrafos = procesado.split(/\n\s*\n/);
+  return parrafos.map(p => `<p>${p.replace(/\n/g, '<br />')}</p>`).join('');
 };
 
 export default function Home() {
@@ -138,7 +155,8 @@ export default function Home() {
             >
               {noticias.map((noticia) => (
                 <SwiperSlide key={noticia.id}>
-                  <article className="grid grid-cols-1 md:grid-cols-10 gap-10 items-start bg-white w-full">
+                  {/* Cambio clave aquí: items-center para centrado vertical */}
+                  <article className="grid grid-cols-1 md:grid-cols-10 gap-10 items-center bg-white w-full min-h-100">
                     
                     <div className="md:col-span-4 mb-8 md:mb-0">
                       <div className="bg-white rounded-xl shadow-sm overflow-hidden flex items-center justify-center">
@@ -146,19 +164,20 @@ export default function Home() {
                       </div>
                     </div>
 
-                    <div className="md:col-span-6 flex flex-col justify-start bg-white w-full">
-                      <h1 className="text-3xl md:text-5xl font-semibold text-main-blue mb-8 leading-tight tracking-tight">
+                    {/* Cambio clave aquí: flex-col y justify-center para que el texto flote en el medio */}
+                    <div className="md:col-span-6 flex flex-col justify-center bg-white w-full h-full py-4">
+                      <h1 className="text-3xl md:text-5xl font-semibold text-main-blue mb-6 leading-tight tracking-tight">
                         {noticia.titulo}
                       </h1>
                       
-                      <div 
-                        className="text-gray-600 mb-6 text-base md:text-lg font-light leading-relaxed noticia-content text-justify overflow-hidden line-clamp-6 pr-0.5" 
-                        dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(noticia.contenido) }} 
-                      />
+                      {/* En lugar de noticia.contenido, ahora mostramos noticia.resumen */}
+                      <p className="text-gray-600 mb-8 text-base md:text-lg font-light leading-relaxed text-justify pr-0.5">
+                        {noticia.resumen || "Haz clic a continuación para leer los detalles de este comunicado."}
+                      </p>
                       
                       <Link 
                         to={`/noticias/${noticia.slug || noticia.id}`} 
-                        className="text-main-red font-bold hover:text-main-blue transition-colors mt-auto flex items-center gap-2 self-start uppercase tracking-wide text-sm"
+                        className="text-main-red font-bold hover:text-main-blue transition-colors flex items-center gap-2 self-start uppercase tracking-wide text-sm"
                       >
                         Leer noticia completa <span>&rarr;</span>
                       </Link>
