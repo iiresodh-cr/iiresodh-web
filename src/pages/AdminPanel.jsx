@@ -437,7 +437,7 @@ export default function AdminPanel() {
 
   return (
     <main className="min-h-screen bg-gray-50/50 font-sans relative overflow-hidden">
-      <div className="absolute inset-0 z-0 bg-watermark opacity-5 pointer-events-none fixed" aria-hidden="true"></div>
+      <div className="inset-0 z-0 bg-watermark opacity-5 pointer-events-none fixed" aria-hidden="true"></div>
 
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-50 p-4 shadow-sm border-b border-gray-100 flex justify-between items-center px-6 md:px-10">
         <div className="flex items-center gap-4">
@@ -632,7 +632,7 @@ export default function AdminPanel() {
                     {/* RESTAURADO: Caja de Simulación con OVERFLOW-HIDDEN y altura 80 para simular la tarjeta real */}
                     {vistaActiva === "comunicaciones" && contenido.length > 0 && (
                       <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 shadow-inner">
-                        <p className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <p className="flex text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 items-center gap-2">
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                           Simulación en Portada (Espacio Visible)
                         </p>
@@ -665,7 +665,7 @@ export default function AdminPanel() {
                                 </button>
                               </div>
                               {/* RESTAURADO: Nombres de las imágenes principales */}
-                              <span className="text-xs text-gray-500 font-medium truncate max-w-[10rem] text-center" title={imagenPrincipal ? imagenPrincipal.name : extraerNombreDesdeUrl(mainImagePreviewUrl)}>
+                              <span className="text-xs text-gray-500 font-medium truncate max-w-40 text-center" title={imagenPrincipal ? imagenPrincipal.name : extraerNombreDesdeUrl(mainImagePreviewUrl)}>
                                 {imagenPrincipal ? imagenPrincipal.name : extraerNombreDesdeUrl(mainImagePreviewUrl)}
                               </span>
                             </div>
