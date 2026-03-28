@@ -165,7 +165,7 @@ export default function Home() {
                         <img 
                           src={noticia.imagenPrincipalUrl} 
                           alt={`Imagen principal: ${noticia.titulo}`} 
-                          className="w-full aspect-[4/5] object-cover object-top block" 
+                          className="w-full aspect-4/5 object-cover object-top block" 
                         />
                       </div>
                     </div>
