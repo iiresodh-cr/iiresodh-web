@@ -30,29 +30,39 @@ const generarSlug = (texto) => {
 // MOTOR ESTRUCTURAL PURO
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
+  
+  // 1. Escapamos HTML para seguridad, pero dejamos una marca temporal para los links
   let seguro = texto.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-  
-  // Enlaces tipo Markdown: [Texto](URL)
-  seguro = seguro.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all">$1</a>');
-  
-  // Enlaces crudos (raw): Se acortan visualmente a 40 caracteres para no romper el diseño
-  seguro = seguro.replace(/(?<!href="|href=)(https?:\/\/[^\s<]+)/g, (url) => {
-    const shortUrl = url.length > 40 ? url.substring(0, 37) + "..." : url;
-    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all" title="${url}">${shortUrl}</a>`;
+
+  // 2. Procesar enlaces formato Markdown: [Texto o Link](URL)
+  seguro = seguro.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<)]+)\)/g, (match, label, url) => {
+    const urlLimpia = url.replace(/&amp;/g, "&"); // Restauramos el link real
+    // Si la etiqueta visible es un link larguísimo, lo acortamos a 40 caracteres
+    const etiquetaCorta = (label.startsWith('http') && label.length > 40) 
+      ? label.substring(0, 37) + "..." 
+      : label;
+    return `<a href="${urlLimpia}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all" title="${urlLimpia}">${etiquetaCorta}</a>`;
   });
-  
-  // Hashtags
+
+  // 3. Procesar enlaces crudos (raw) pegados directamente
+  seguro = seguro.replace(/(?<!href="|href=)(https?:\/\/[^\s<]+)/g, (url) => {
+    const urlLimpia = url.replace(/&amp;/g, "&"); // Restauramos el link real
+    // Acortamos visualmente a 40 caracteres
+    const shortUrl = urlLimpia.length > 40 ? urlLimpia.substring(0, 37) + "..." : urlLimpia;
+    return `<a href="${urlLimpia}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all" title="${urlLimpia}">${shortUrl}</a>`;
+  });
+
+  // 4. Procesar Hashtags
   seguro = seguro.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
     const termino = hashtag.substring(1); 
     return `<a href="/buscar?q=${termino}" class="text-light-blue hover:text-main-red font-bold transition-colors pointer-events-auto">${hashtag}</a>`;
   });
-  
+
+  // 5. Generar párrafos HTML
   const parrafos = seguro.split(/\n\s*\n/);
-  const htmlFinal = parrafos.map(p => {
+  return parrafos.map(p => {
     return `<p>${p.replace(/\n/g, '<br />')}</p>`;
   }).join('');
-  
-  return htmlFinal;
 };
 
 const convertirAWebp = (file, calidad = 0.8) => {
