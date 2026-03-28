@@ -234,6 +234,7 @@ exports.chatPida = onCall({
     const apiKey = geminiApiKey.value();
     const genAI = new GoogleGenerativeAI(apiKey);
     
+    // EL NUEVO CEREBRO INSTITUCIONAL DE PIDA:
     const model = genAI.getGenerativeModel({ 
         model: "gemini-2.5-flash",
         systemInstruction: `Eres PIDA, el asistente virtual oficial del Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH).
@@ -254,15 +255,18 @@ exports.chatPida = onCall({
         7. HONESTIDAD: Si te preguntan algo fuera de tu conocimiento sobre la institución, di amablemente que no tienes el dato exacto y sugiere que usen el formulario de contacto.`
     });
 
+    // Traducimos el historial del frontend al formato que entiende Gemini
     const historialFormateado = historial.map(msg => ({
       role: msg.isBot ? "model" : "user",
       parts: [{ text: msg.text }]
     }));
 
+    // Iniciamos el chat con memoria
     const chat = model.startChat({
       history: historialFormateado,
     });
 
+    // Enviamos el nuevo mensaje
     const result = await chat.sendMessage(mensaje);
     const respuestaTexto = result.response.text();
 
@@ -276,7 +280,7 @@ exports.chatPida = onCall({
 
 
 // ============================================================================
-// 5. FUNCIÓN PARA CREAR INTENTO DE PAGO (STRIPE ELEMENTS)
+// 5. FUNCIÓN PARA CREAR INTENTO DE PAGO (STRIPE ELEMENTS - DINÁMICO)
 // ============================================================================
 exports.crearIntentoPago = onCall({ 
   secrets: [STRIPE_SECRET_KEY], 
@@ -285,16 +289,27 @@ exports.crearIntentoPago = onCall({
   const { libroId } = request.data;
 
   try {
-    // Inicializamos Stripe de forma local usando el Secreto extraído
+    const db = admin.firestore();
+    const libroDoc = await db.collection("libros").doc(libroId).get();
+    
+    if (!libroDoc.exists) {
+      throw new HttpsError("not-found", "El libro no existe.");
+    }
+
+    const libroData = libroDoc.data();
+    // Convertimos el precio a centavos (Stripe: 25.00 -> 2500)
+    const montoFinal = Math.round(libroData.precio * 100);
+
     const stripe = new Stripe(STRIPE_SECRET_KEY.value());
-    const precioUnitario = 2500; // $25.00 USD en centavos
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: precioUnitario,
+      amount: montoFinal,
       currency: "usd",
       metadata: {
-        libroId: libroId
+        libroId: libroId,
+        titulo: libroData.titulo
       },
+      // Desactivamos redirecciones para forzar Stripe Elements puro
       automatic_payment_methods: { enabled: true, allow_redirects: 'never' },
     });
 
@@ -309,7 +324,6 @@ exports.crearIntentoPago = onCall({
 // 6. WEBHOOK DE STRIPE: CONFIRMA PAGO, RESTA INVENTARIO Y ENVÍA CORREO
 // ============================================================================
 exports.stripeWebhook = onRequest({ 
-  // ¡NUEVO! Le damos permiso de usar tus credenciales de Gmail
   secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN], 
   region: "us-central1" 
 }, async (req, res) => {
@@ -335,23 +349,28 @@ exports.stripeWebhook = onRequest({
     try {
       const db = admin.firestore();
       
-      // 1. Guardamos la compra
+      // 1. Buscamos los datos reales del libro para obtener el PDF
+      const libroDoc = await db.collection("libros").doc(libroId).get();
+      if (!libroDoc.exists) return res.status(404).send("Libro no encontrado");
+      const libroData = libroDoc.data();
+
+      // 2. Guardamos la compra
       await db.collection("compras").add({
         libroId: libroId,
+        titulo: libroData.titulo,
         email: emailCliente,
         paymentIntentId: paymentIntent.id,
         fecha: admin.firestore.FieldValue.serverTimestamp(),
         estado: 'pagado'
       });
 
-      // 2. Descontamos el inventario
-      const libroRef = db.collection("libros").doc(libroId);
-      await libroRef.update({
+      // 3. Descontamos el inventario
+      await db.collection("libros").doc(libroId).update({
         stock: admin.firestore.FieldValue.increment(-1)
       });
 
-      // 3. ¡NUEVO! ENVIAMOS EL CORREO CON EL LIBRO USANDO NODEMAILER
-      if (emailCliente !== "cliente@anonimo.com") {
+      // 4. Enviamos el correo con el enlace real del PDF
+      if (emailCliente !== "cliente@anonimo.com" && libroData.archivoLibroUrl) {
         const transporter = nodemailer.createTransport({
           service: 'gmail',
           auth: {
@@ -370,9 +389,10 @@ exports.stripeWebhook = onRequest({
           html: `
             <h2 style="color: #1D3557;">¡Pago procesado con éxito!</h2>
             <p>Hola,</p>
-            <p>Hemos recibido tu pago correctamente. Puedes descargar tu copia digital del manual en el siguiente enlace:</p>
+            <p>Hemos recibido tu pago por el manual: <strong>${libroData.titulo}</strong>.</p>
+            <p>Puedes descargar tu copia digital en el siguiente enlace:</p>
             <br>
-            <a href="https://URL_DE_TU_PDF_EN_FIREBASE_STORAGE" style="background-color: #B92F32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+            <a href="${libroData.archivoLibroUrl}" style="background-color: #B92F32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
               ⬇ Descargar Libro (PDF)
             </a>
             <br><br>
@@ -381,10 +401,7 @@ exports.stripeWebhook = onRequest({
         };
 
         await transporter.sendMail(mailOptions);
-        console.log(`Correo con el libro enviado a: ${emailCliente}`);
       }
-
-      console.log(`¡Éxito! Inventario descontado para el libro ${libroId}.`);
     } catch (error) {
       console.error("Error en el proceso post-pago:", error);
     }
