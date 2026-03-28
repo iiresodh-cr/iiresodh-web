@@ -30,7 +30,7 @@ const FormularioPago = ({ libroId, precio, titulo }) => {
 
     try {
       const crearIntento = httpsCallable(functions, 'crearIntentoPago');
-      const { data } = await crearIntento({ libroId });
+      const { data } = await crearIntento({ libroId, emailUsuario: email });
 
       const resultadoPago = await stripe.confirmCardPayment(data.clientSecret, {
         payment_method: {
@@ -200,11 +200,18 @@ export default function ComprarLibro() {
         <div className="bg-watermark" aria-hidden="true"></div>
         <section className="relative pt-12 px-6 md:px-8 z-10 max-w-5xl mx-auto">
           <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden flex flex-col md:flex-row">
-            <div className="md:w-1/2 bg-gray-50 p-8 flex items-center justify-center border-r border-gray-100">
-              <div className="w-64 h-80 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
-                {libro.imagenPrincipalUrl ? <img src={libro.imagenPrincipalUrl} alt={libro.titulo} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-main-blue font-bold p-4 text-center">{libro.titulo}</div>}
+            
+            {/* AQUÍ ESTÁ EL AJUSTE VISUAL PARA LA PORTADA (Contenedor más limpio, imagen sin recortes) */}
+            <div className="md:w-1/2 bg-gray-50/50 p-8 flex items-center justify-center border-r border-gray-100">
+              <div className="w-full max-w-sm flex items-center justify-center">
+                {libro.imagenPrincipalUrl ? (
+                  <img src={libro.imagenPrincipalUrl} alt={libro.titulo} className="max-w-full max-h-[400px] object-contain rounded-lg shadow-md" />
+                ) : (
+                  <div className="w-64 h-80 bg-white rounded-lg shadow-sm border border-gray-200 flex items-center justify-center text-main-blue font-bold p-4 text-center">{libro.titulo}</div>
+                )}
               </div>
             </div>
+
             <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
               <span className="text-xs font-black text-main-red uppercase tracking-widest mb-2 block">Publicación Digital</span>
               <h2 className="text-2xl font-extrabold text-main-blue mb-6 leading-tight">{libro.titulo}</h2>

@@ -4,7 +4,7 @@ const { defineSecret } = require("firebase-functions/params");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
-const Stripe = require("stripe"); // IMPORTACIÓN CORREGIDA (SIN INICIALIZAR AQUÍ)
+const Stripe = require("stripe"); 
 
 // Inicializamos Firebase Admin
 if (!admin.apps.length) {
@@ -18,8 +18,8 @@ const geminiApiKey = defineSecret("GEMINI_API_KEY");
 const GMAIL_CLIENT_ID = defineSecret("GMAIL_CLIENT_ID");
 const GMAIL_CLIENT_SECRET = defineSecret("GMAIL_CLIENT_SECRET");
 const GMAIL_REFRESH_TOKEN = defineSecret("GMAIL_REFRESH_TOKEN");
-const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY"); // NUEVO
-const STRIPE_WEBHOOK_SECRET = defineSecret("STRIPE_WEBHOOK_SECRET"); // NUEVO
+const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY"); 
+const STRIPE_WEBHOOK_SECRET = defineSecret("STRIPE_WEBHOOK_SECRET"); 
 
 // ============================================================================
 // 1. FUNCIÓN DE INTELIGENCIA ARTIFICIAL (GEMINI)
@@ -157,7 +157,6 @@ exports.noticiaMeta = onRequest({ region: "us-central1" }, async (req, res) => {
   }
 });
 
-
 // ============================================================================
 // 3. FUNCIÓN PARA ENVIAR FORMULARIO DE CONTACTO (VÍA OAUTH2)
 // ============================================================================
@@ -278,7 +277,6 @@ exports.chatPida = onCall({
   }
 });
 
-
 // ============================================================================
 // 5. FUNCIÓN PARA CREAR INTENTO DE PAGO (STRIPE ELEMENTS - DINÁMICO)
 // ============================================================================
@@ -286,7 +284,7 @@ exports.crearIntentoPago = onCall({
   secrets: [STRIPE_SECRET_KEY], 
   region: "us-central1"
 }, async (request) => {
-  const { libroId } = request.data;
+  const { libroId, emailUsuario } = request.data;
 
   try {
     const db = admin.firestore();
@@ -305,9 +303,11 @@ exports.crearIntentoPago = onCall({
     const paymentIntent = await stripe.paymentIntents.create({
       amount: montoFinal,
       currency: "usd",
+      receipt_email: emailUsuario || undefined,
       metadata: {
         libroId: libroId,
-        titulo: libroData.titulo
+        titulo: libroData.titulo,
+        emailCliente: emailUsuario || "cliente@anonimo.com"
       },
       // Desactivamos redirecciones para forzar Stripe Elements puro
       automatic_payment_methods: { enabled: true, allow_redirects: 'never' },
@@ -344,14 +344,28 @@ exports.stripeWebhook = onRequest({
   if (event.type === 'payment_intent.succeeded') {
     const paymentIntent = event.data.object;
     const libroId = paymentIntent.metadata.libroId;
-    const emailCliente = paymentIntent.receipt_email || "cliente@anonimo.com";
+    const emailCliente = paymentIntent.receipt_email || paymentIntent.metadata.emailCliente || "cliente@anonimo.com";
 
     try {
       const db = admin.firestore();
+
+      // --- PROTECCIÓN DE IDEMPOTENCIA ---
+      const comprasRef = db.collection("compras");
+      const compraExistente = await comprasRef.where("paymentIntentId", "==", paymentIntent.id).get();
       
-      // 1. Buscamos los datos reales del libro para obtener el PDF
+      if (!compraExistente.empty) {
+        console.log(`El pago ${paymentIntent.id} ya fue procesado. Ignorando evento duplicado.`);
+        res.json({ received: true });
+        return; 
+      }
+      
+      // 1. Buscamos los datos reales del libro
       const libroDoc = await db.collection("libros").doc(libroId).get();
-      if (!libroDoc.exists) return res.status(404).send("Libro no encontrado");
+      if (!libroDoc.exists) {
+        console.error(`Error: Se pagó el libro ${libroId} pero no existe en Firestore.`);
+        res.status(404).send("Libro no encontrado");
+        return;
+      }
       const libroData = libroDoc.data();
 
       // 2. Guardamos la compra
@@ -369,8 +383,23 @@ exports.stripeWebhook = onRequest({
         stock: admin.firestore.FieldValue.increment(-1)
       });
 
-      // 4. Enviamos el correo con el enlace real del PDF
-      if (emailCliente !== "cliente@anonimo.com" && libroData.archivoLibroUrl) {
+      // 4. GENERAR URL TEMPORAL ESTRICTA Y ENVIAR CORREO
+      if (emailCliente !== "cliente@anonimo.com") {
+        
+        // REGLA ESTRICTA DE SEGURIDAD: Sin ruta, no hay correo
+        if (!libroData.rutaStorage) {
+          console.error(`CRÍTICO: El libro ${libroId} no tiene 'rutaStorage' configurado. No se generó enlace para evitar brecha de seguridad.`);
+          return res.json({ received: true, error: "Missing rutaStorage" });
+        }
+
+        const bucket = admin.storage().bucket();
+        const file = bucket.file(libroData.rutaStorage);
+        
+        const [urlTemporal] = await file.getSignedUrl({
+          action: 'read',
+          expires: Date.now() + 1000 * 60 * 60 * 48, // Caduca exactamente en 48 horas (milisegundos)
+        });
+
         const transporter = nodemailer.createTransport({
           service: 'gmail',
           auth: {
@@ -390,9 +419,9 @@ exports.stripeWebhook = onRequest({
             <h2 style="color: #1D3557;">¡Pago procesado con éxito!</h2>
             <p>Hola,</p>
             <p>Hemos recibido tu pago por el manual: <strong>${libroData.titulo}</strong>.</p>
-            <p>Puedes descargar tu copia digital en el siguiente enlace:</p>
+            <p>Puedes descargar tu copia digital en el siguiente enlace. <strong>Nota importante: Este enlace es único y caducará en 48 horas por motivos de seguridad.</strong> Por favor, descarga y guarda el archivo en tu dispositivo.</p>
             <br>
-            <a href="${libroData.archivoLibroUrl}" style="background-color: #B92F32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+            <a href="${urlTemporal}" style="background-color: #B92F32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
               ⬇ Descargar Libro (PDF)
             </a>
             <br><br>

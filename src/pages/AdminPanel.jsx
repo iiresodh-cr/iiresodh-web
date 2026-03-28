@@ -107,6 +107,7 @@ export default function AdminPanel() {
   const [archivoLibro, setArchivoLibro] = useState(null);
   const [archivoLibroNombre, setArchivoLibroNombre] = useState("");
   const [archivoLibroAnterior, setArchivoLibroAnterior] = useState(null);
+  const [rutaStorageAnterior, setRutaStorageAnterior] = useState(null); // <-- NUEVO ESTADO AGREGADO
   
   const [imagenPrincipal, setImagenPrincipal] = useState(null);
   const [mainImagePreviewUrl, setMainImagePreviewUrl] = useState(null);
@@ -274,6 +275,7 @@ export default function AdminPanel() {
     if (vistaActiva === "libros") {
       setPrecio(item.precio || "");
       setArchivoLibroAnterior(item.archivoLibroUrl || null);
+      setRutaStorageAnterior(item.rutaStorage || null); // <-- NUEVA LÍNEA AGREGADA
     }
 
     setImagenPrincipalAnterior(item.imagenPrincipalUrl || null);
@@ -300,6 +302,7 @@ export default function AdminPanel() {
     setArchivoLibro(null);
     setArchivoLibroNombre("");
     setArchivoLibroAnterior(null);
+    setRutaStorageAnterior(null); // <-- NUEVA LÍNEA AGREGADA
     setMensaje("Operación cancelada. Formulario en blanco.");
     setTimeout(() => setMensaje(""), 3000);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -409,10 +412,14 @@ export default function AdminPanel() {
 
       // 2. Subir Archivo PDF del Libro (Privado y seguro, sin sistema Link)
       let finalArchivoLibroUrl = archivoLibroAnterior;
+      let rutaStorageLibro = null; 
+
       if (vistaActiva === "libros" && archivoLibro) {
-        const refLibro = ref(storage, `${carpeta}/archivos/${Date.now()}_${archivoLibro.name}`);
+        const rutaCompleta = `${carpeta}/archivos/${Date.now()}_${archivoLibro.name}`; 
+        const refLibro = ref(storage, rutaCompleta);
         await uploadBytes(refLibro, archivoLibro);
         finalArchivoLibroUrl = await getDownloadURL(refLibro);
+        rutaStorageLibro = rutaCompleta; 
       }
 
       const nuevasUrls = [];
@@ -443,6 +450,13 @@ export default function AdminPanel() {
       } else if (vistaActiva === "libros") {
         datos.precio = parseFloat(precio) || 0;
         datos.archivoLibroUrl = finalArchivoLibroUrl;
+        
+        // <-- NUEVA LÓGICA DE SEGURIDAD PARA LA RUTA STORAGE INTEGRADA AQUÍ -->
+        if (rutaStorageLibro) {
+          datos.rutaStorage = rutaStorageLibro; // Si se subió un PDF nuevo en este momento
+        } else if (rutaStorageAnterior) {
+          datos.rutaStorage = rutaStorageAnterior; // Si no se subió PDF, conservamos la ruta que ya existía
+        }
       }
 
       if (editandoId) {
@@ -523,7 +537,7 @@ export default function AdminPanel() {
               
               <button onClick={() => setVistaActiva("articulos")} className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-main-red/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center">
                 <div className="p-4 bg-red-50 text-main-red rounded-2xl group-hover:bg-main-red group-hover:text-white transition-colors duration-300">
-                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-gray-800 mb-1">Artículos Académicos</h2>
