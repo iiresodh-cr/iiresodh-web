@@ -27,20 +27,31 @@ const generarSlug = (texto) => {
   return baseSlug ? `${baseSlug}-${randomCode}` : `item-${randomCode}`;
 };
 
-// MOTOR ESTRUCTURAL PURO
+// MOTOR ESTRUCTURAL PURO RESTAURADO
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
   let seguro = texto.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  
+  // Enlaces tipo Markdown: [Texto](URL)
   seguro = seguro.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all">$1</a>');
-  seguro = seguro.replace(/(?<!href="|href=)(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all">$1</a>');
+  
+  // Enlaces crudos (raw): Se acortan visualmente a 40 caracteres para no romper el diseño
+  seguro = seguro.replace(/(?<!href="|href=)(https?:\/\/[^\s<]+)/g, (url) => {
+    const shortUrl = url.length > 40 ? url.substring(0, 37) + "..." : url;
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all" title="${url}">${shortUrl}</a>`;
+  });
+  
+  // Hashtags
   seguro = seguro.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
     const termino = hashtag.substring(1); 
     return `<a href="/buscar?q=${termino}" class="text-light-blue hover:text-main-red font-bold transition-colors pointer-events-auto">${hashtag}</a>`;
   });
+  
   const parrafos = seguro.split(/\n\s*\n/);
   const htmlFinal = parrafos.map(p => {
     return `<p>${p.replace(/\n/g, '<br />')}</p>`;
   }).join('');
+  
   return htmlFinal;
 };
 
@@ -199,6 +210,7 @@ export default function AdminPanel() {
     };
   }, [mainImagePreviewUrl]);
 
+  // RESTAURADA LOGICA DE SCROLL Y ADVERTENCIA
   useEffect(() => {
     const checkOverflow = () => {
       if (contenidoPreviewRef.current) {
@@ -421,15 +433,12 @@ export default function AdminPanel() {
     }
   };
 
-  // ESTILOS COMPARTIDOS PARA INPUTS
   const inputEstilos = "w-full border border-gray-200 bg-gray-50 p-3.5 text-base rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-main-blue/20 focus:border-main-blue transition-all duration-200";
 
   return (
     <main className="min-h-screen bg-gray-50/50 font-sans relative overflow-hidden">
-      {/* Patrón de marca de agua sutil en el fondo */}
-      <div className="inset-0 z-0 bg-watermark opacity-5 pointer-events-none fixed" aria-hidden="true"></div>
+      <div className="absolute inset-0 z-0 bg-watermark opacity-5 pointer-events-none fixed" aria-hidden="true"></div>
 
-      {/* Cabecera / Navbar */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-50 p-4 shadow-sm border-b border-gray-100 flex justify-between items-center px-6 md:px-10">
         <div className="flex items-center gap-4">
           <img src={logoColor} alt="Logo de IIRESODH" className="h-10 md:h-12 w-auto object-contain" />
@@ -448,9 +457,6 @@ export default function AdminPanel() {
 
       <div className="p-6 md:p-10 max-w-7xl mx-auto relative z-10">
         
-        {/* =======================================================
-            VISTA: INICIO (MENÚ DE DEPARTAMENTOS)
-        ======================================================= */}
         {vistaActiva === "inicio" && (
           <section className="animate-fade-in-up" aria-labelledby="admin-title">
             <div className="mb-10 text-center md:text-left">
@@ -459,8 +465,6 @@ export default function AdminPanel() {
             </div>
             
             <nav className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8" aria-label="Departamentos administrativos">
-              
-              {/* Tarjeta Comunicaciones */}
               <button 
                 onClick={() => setVistaActiva("comunicaciones")} 
                 className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-main-blue/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center"
@@ -474,7 +478,6 @@ export default function AdminPanel() {
                 </div>
               </button>
 
-              {/* Tarjeta Artículos */}
               <button 
                 onClick={() => setVistaActiva("articulos")} 
                 className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-main-red/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center"
@@ -488,7 +491,6 @@ export default function AdminPanel() {
                 </div>
               </button>
 
-              {/* Tarjeta Próximamente */}
               <div className="bg-gray-50/50 border border-gray-100 p-10 rounded-3xl flex flex-col items-center justify-center gap-5 text-center cursor-not-allowed">
                 <div className="p-4 bg-gray-100 text-gray-400 rounded-2xl">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
@@ -498,18 +500,13 @@ export default function AdminPanel() {
                   <p className="text-sm text-gray-400 font-medium bg-white px-3 py-1 rounded-full border border-gray-100 inline-block mt-1">Próximamente</p>
                 </div>
               </div>
-
             </nav>
           </section>
         )}
 
-        {/* =======================================================
-            VISTA: GESTIÓN DE CONTENIDO (FORMULARIO Y LISTA)
-        ======================================================= */}
         {(vistaActiva === "comunicaciones" || vistaActiva === "articulos") && (
           <div className="animate-fade-in-up">
             
-            {/* Botón Volver */}
             <button 
               onClick={() => {
                 limpiarFormulario();
@@ -523,7 +520,6 @@ export default function AdminPanel() {
               Regresar al menú
             </button>
 
-            {/* Alerta Global Flotante */}
             {mensaje && (
               <div className={`fixed top-24 right-6 z-50 p-4 rounded-xl shadow-lg font-medium flex items-center gap-3 animate-fade-in-up border max-w-sm
                 ${mensaje.includes("Error") ? "bg-white border-red-200 text-main-red" : "bg-white border-green-200 text-green-700"}
@@ -540,9 +536,7 @@ export default function AdminPanel() {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               
-              {/* COLUMNA IZQUIERDA: FORMULARIO */}
               <div className="lg:col-span-8 space-y-8">
-                
                 <section className="bg-white p-8 md:p-10 rounded-2xl shadow-sm border border-gray-100" aria-labelledby="form-title">
                   <header className="mb-8 flex items-center justify-between">
                     <div>
@@ -562,7 +556,6 @@ export default function AdminPanel() {
 
                   <form onSubmit={handleSubmit} className="space-y-6">
                     
-                    {/* Título y Fecha */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div className="md:col-span-2">
                         <label htmlFor="input-titulo" className="block text-sm font-semibold text-gray-700 mb-1.5">
@@ -576,7 +569,6 @@ export default function AdminPanel() {
                       </div>
                     </div>
 
-                    {/* Resumen e IA */}
                     <div>
                       <div className="flex justify-between items-end mb-1.5">
                         <label htmlFor="input-resumen" className="block text-sm font-semibold text-gray-700">Resumen corto *</label>
@@ -587,7 +579,6 @@ export default function AdminPanel() {
                       <textarea id="input-resumen" required maxLength="250" value={resumen} onChange={(e) => setResumen(e.target.value)} className={inputEstilos} rows="2" placeholder="Un párrafo breve para atraer al lector..." />
                     </div>
 
-                    {/* Enlaces a Documentos */}
                     {vistaActiva === "comunicaciones" && (
                       <div className="bg-gray-50/80 p-5 rounded-xl border border-dashed border-gray-300">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-3">
@@ -623,7 +614,6 @@ export default function AdminPanel() {
                       </div>
                     )}
 
-                    {/* Contenido Principal */}
                     <div>
                       <label htmlFor="input-contenido" className="block text-sm font-semibold text-gray-700 mb-1.5">
                         Cuerpo del texto *
@@ -639,32 +629,45 @@ export default function AdminPanel() {
                       />
                     </div>
 
-                    {/* Vista Previa (Solo Noticias) */}
+                    {/* RESTAURADO: Caja de Simulación con OVERFLOW-HIDDEN y altura 80 para simular la tarjeta real */}
                     {vistaActiva === "comunicaciones" && contenido.length > 0 && (
-                      <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 shadow-inner">
+                        <p className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                          Previsualización en diseño web
+                          Simulación en Portada (Espacio Visible)
                         </p>
-                        <div ref={contenidoPreviewRef} className="text-gray-600 text-sm md:text-base font-light leading-relaxed noticia-content max-h-64 overflow-y-auto bg-white p-5 rounded-lg border border-gray-100 custom-scrollbar" dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(contenido) }} />
-                        {showReadMoreWarning && <p className="text-xs text-main-blue font-medium mt-2 text-right">El texto completo será visible al hacer scroll.</p>}
+                        <div 
+                          ref={contenidoPreviewRef} 
+                          className="text-gray-600 text-sm md:text-base font-light leading-relaxed noticia-content max-h-80 overflow-hidden bg-white p-5 rounded-lg border border-gray-100" 
+                          dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(contenido) }} 
+                        />
+                        <div className="mt-3" role="status">
+                          {showReadMoreWarning 
+                            ? <p className="text-main-red font-bold text-sm">⚠️ El texto superó el límite visible de la tarjeta. Verán "Leer más".</p> 
+                            : <p className="text-green-600 font-bold text-sm">✓ El texto cabe perfectamente en la tarjeta inicial.</p>
+                          }
+                        </div>
                       </div>
                     )}
 
-                    {/* Sección de Imágenes */}
                     <div className="bg-white border border-gray-200 rounded-xl p-6">
                       <h3 className="text-sm font-semibold text-gray-800 mb-4 border-b border-gray-100 pb-2">Archivos Multimedia</h3>
                       
-                      {/* Imagen Principal */}
                       <div className="mb-6">
                         <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Portada principal</label>
                         <div className="flex flex-col sm:flex-row items-start gap-4">
                           {mainImagePreviewUrl ? (
-                            <div className="relative group">
-                              <img src={mainImagePreviewUrl} alt="Vista previa" className="h-28 w-40 object-cover rounded-lg shadow-sm border border-gray-100" />
-                              <button type="button" onClick={() => { setImagenPrincipal(null); setMainImagePreviewUrl(imagenPrincipalAnterior); }} className="absolute -top-2 -right-2 bg-white text-gray-700 rounded-full p-1 shadow hover:bg-red-50 hover:text-main-red opacity-0 group-hover:opacity-100 transition-opacity">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                              </button>
+                            <div className="flex flex-col items-center gap-2">
+                              <div className="relative group inline-block">
+                                <img src={mainImagePreviewUrl} alt="Vista previa" className="h-28 w-40 object-cover rounded-lg shadow-sm border border-gray-100 block mx-auto" />
+                                <button type="button" onClick={() => { setImagenPrincipal(null); setMainImagePreviewUrl(imagenPrincipalAnterior); }} className="absolute -top-2 -right-2 bg-white text-gray-700 rounded-full p-1 shadow hover:bg-red-50 hover:text-main-red opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                              </div>
+                              {/* RESTAURADO: Nombres de las imágenes principales */}
+                              <span className="text-xs text-gray-500 font-medium truncate max-w-[10rem] text-center" title={imagenPrincipal ? imagenPrincipal.name : extraerNombreDesdeUrl(mainImagePreviewUrl)}>
+                                {imagenPrincipal ? imagenPrincipal.name : extraerNombreDesdeUrl(mainImagePreviewUrl)}
+                              </span>
                             </div>
                           ) : (
                             <div className="h-28 w-40 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center">
@@ -676,12 +679,11 @@ export default function AdminPanel() {
                             <label htmlFor="input-p" className="text-sm bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium cursor-pointer inline-block hover:bg-gray-50 transition-colors">
                               Examinar archivos...
                             </label>
-                            <p className="text-xs text-gray-400 mt-2">Formatos recomendados: JPG, PNG. Se optimizará automáticamente a WebP.</p>
+                            <p className="text-xs text-gray-400 mt-2">Formatos recomendados: JPG, PNG. Se optimizará a WebP.</p>
                           </div>
                         </div>
                       </div>
 
-                      {/* Carrusel */}
                       {vistaActiva === "comunicaciones" && (
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Galería / Carrusel</label>
@@ -691,27 +693,37 @@ export default function AdminPanel() {
                           </label>
                           
                           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                            {/* Imágenes Existentes */}
+                            {/* RESTAURADO: Nombres de imágenes existentes en carrusel */}
                             {carruselExistente.map((url, i) => (
-                              <div key={`old-${i}`} className="relative group rounded-lg overflow-hidden border border-gray-100 aspect-square">
-                                <img src={url} className="w-full h-full object-cover" alt="Carrusel" />
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                  <button type="button" onClick={() => moverImagenExistente(i, -1)} disabled={i === 0} className="text-white hover:text-light-blue disabled:opacity-30"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg></button>
-                                  <button type="button" onClick={() => setCarruselExistente(prev => prev.filter((_, idx) => idx !== i))} className="text-white hover:text-main-red"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                                  <button type="button" onClick={() => moverImagenExistente(i, 1)} disabled={i === carruselExistente.length - 1} className="text-white hover:text-light-blue disabled:opacity-30"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg></button>
+                              <div key={`old-${i}`} className="flex flex-col bg-white p-2 rounded-lg border border-gray-100 shadow-sm gap-2">
+                                <div className="relative group w-full h-24 rounded overflow-hidden">
+                                  <img src={url} className="w-full h-full object-cover" alt="Carrusel" />
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                    <button type="button" onClick={() => moverImagenExistente(i, -1)} disabled={i === 0} className="text-white hover:text-light-blue disabled:opacity-30"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg></button>
+                                    <button type="button" onClick={() => setCarruselExistente(prev => prev.filter((_, idx) => idx !== i))} className="text-white hover:text-main-red"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                                    <button type="button" onClick={() => moverImagenExistente(i, 1)} disabled={i === carruselExistente.length - 1} className="text-white hover:text-light-blue disabled:opacity-30"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg></button>
+                                  </div>
                                 </div>
+                                <span className="text-[10px] font-medium text-gray-500 truncate text-center" title={extraerNombreDesdeUrl(url)}>
+                                  {extraerNombreDesdeUrl(url)}
+                                </span>
                               </div>
                             ))}
-                            {/* Imágenes Nuevas */}
+                            {/* RESTAURADO: Nombres de nuevas imágenes en carrusel */}
                             {imagenesCarrusel.map((f, i) => (
-                              <div key={`new-${i}`} className="relative group rounded-lg overflow-hidden border-2 border-green-200 aspect-square">
-                                <img src={URL.createObjectURL(f)} className="w-full h-full object-cover" alt="Nueva carrusel" />
-                                <span className="absolute top-1 left-1 bg-green-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded uppercase">Nueva</span>
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                  <button type="button" onClick={() => moverImagenNueva(i, -1)} disabled={i === 0} className="text-white hover:text-light-blue disabled:opacity-30"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg></button>
-                                  <button type="button" onClick={() => setImagenesCarrusel(prev => prev.filter((_, idx) => idx !== i))} className="text-white hover:text-main-red"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                                  <button type="button" onClick={() => moverImagenNueva(i, 1)} disabled={i === imagenesCarrusel.length - 1} className="text-white hover:text-light-blue disabled:opacity-30"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg></button>
+                              <div key={`new-${i}`} className="flex flex-col bg-green-50 p-2 rounded-lg border border-green-200 shadow-sm gap-2">
+                                <div className="relative group w-full h-24 rounded overflow-hidden">
+                                  <img src={URL.createObjectURL(f)} className="w-full h-full object-cover" alt="Nueva carrusel" />
+                                  <span className="absolute top-1 left-1 bg-green-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded uppercase">Nueva</span>
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                    <button type="button" onClick={() => moverImagenNueva(i, -1)} disabled={i === 0} className="text-white hover:text-light-blue disabled:opacity-30"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg></button>
+                                    <button type="button" onClick={() => setImagenesCarrusel(prev => prev.filter((_, idx) => idx !== i))} className="text-white hover:text-main-red"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                                    <button type="button" onClick={() => moverImagenNueva(i, 1)} disabled={i === imagenesCarrusel.length - 1} className="text-white hover:text-light-blue disabled:opacity-30"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg></button>
+                                  </div>
                                 </div>
+                                <span className="text-[10px] font-medium text-green-700 truncate text-center" title={f.name}>
+                                  {f.name}
+                                </span>
                               </div>
                             ))}
                           </div>
@@ -719,7 +731,6 @@ export default function AdminPanel() {
                       )}
                     </div>
 
-                    {/* Botones de Acción */}
                     <div className="flex flex-col-reverse sm:flex-row gap-4 pt-4">
                       <button type="button" onClick={limpiarFormulario} className="w-full sm:w-1/3 text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 font-semibold py-3.5 rounded-xl transition-colors cursor-pointer border border-transparent">
                         Cancelar
@@ -737,7 +748,6 @@ export default function AdminPanel() {
                 </section>
               </div>
 
-              {/* COLUMNA DERECHA: LISTA DE PUBLICACIONES */}
               <div className="lg:col-span-4">
                 <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:sticky lg:top-24">
                   <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -766,8 +776,9 @@ export default function AdminPanel() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <h3 className="font-semibold text-sm text-gray-800 line-clamp-2 leading-snug" title={n.titulo}>{n.titulo}</h3>
+                              {/* RESTAURADA: La ruta original de la URL en la lista */}
                               <p className="text-[10px] text-gray-400 mt-1 truncate">
-                                /{vistaActiva === "articulos" ? "articulos" : "noticias"}/{n.slug || n.id}
+                                /{vistaActiva === "articulos" ? "articulos-academicos" : "noticias"}/{n.slug || n.id}
                               </p>
                             </div>
                           </div>
@@ -784,7 +795,6 @@ export default function AdminPanel() {
                     )}
                   </div>
                   
-                  {/* Paginación */}
                   {listaItems.length > 0 && (
                     <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
                       <button onClick={paginaAnterior} disabled={paginaActual === 1 || loading} className="text-gray-500 hover:text-main-blue disabled:opacity-30 disabled:hover:text-gray-500 p-2">
