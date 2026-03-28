@@ -21,34 +21,27 @@ export const formatearTextoConLinksYHashtags = (texto) => {
 
   const linksGuardados = []; // Caja fuerte temporal
 
-  // 2. Extraer Markdown: [Texto visible](URL)
+  // 2. Extraer Markdown (Por si alguien decide usarlo manualmente: [Texto](URL))
   procesado = procesado.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, label, url) => {
-    let visible = label;
-    // Si la etiqueta visible es muy larga, la acortamos a 45 caracteres
-    if (visible.length > 45) {
-      visible = visible.substring(0, 42) + "...";
-    }
-    linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline break-all">${visible}</a>`);
-    return `__LINK_${linksGuardados.length - 1}__`; // Dejamos marcador
+    linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline wrap-break-words">${label}</a>`);
+    return `__LINK_${linksGuardados.length - 1}__`; 
   });
 
-  // 3. Extraer URLs crudas pegadas directamente
+  // 3. LA MAGIA AUTOMÁTICA: Extraer URLs crudas pegadas y convertirlas en "haciendo clic aquí"
   procesado = procesado.replace(/(https?:\/\/[^\s]+)/g, (match, url) => {
-    if (url.includes("__LINK_")) return match; // Evitar procesar los marcadores
+    if (url.includes("__LINK_")) return match; // Evitar procesar los que ya guardamos
     
-    let visible = url;
-    // Acortar visualmente la URL a 45 caracteres
-    if (visible.length > 45) {
-      visible = visible.substring(0, 42) + "...";
-    }
-    linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline break-all">${visible}</a>`);
-    return `__LINK_${linksGuardados.length - 1}__`; // Dejamos marcador
+    // AQUÍ ESTÁ EL CAMBIO: Todo link crudo se disfraza automáticamente
+    const textoFijo = "haciendo clic aquí";
+    
+    linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline wrap-break-words">${textoFijo}</a>`);
+    return `__LINK_${linksGuardados.length - 1}__`; 
   });
 
   // 4. Procesar Hashtags
   procesado = procesado.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (match) => {
     const term = match.substring(1);
-    return `<a href="/buscar?q=${term}" class="text-light-blue font-semibold hover:text-main-red transition-colors">${match}</a>`;
+    return `<a href="/buscar?q=${term}" class="text-light-blue hover:text-main-red font-bold">${match}</a>`;
   });
 
   // 5. Restaurar Links desde la caja fuerte
