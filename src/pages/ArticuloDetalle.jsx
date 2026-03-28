@@ -108,39 +108,45 @@ export default function ArticuloDetalle() {
 
   return (
     <main className="bg-white min-h-screen flex flex-col font-sans">
+      
+      {/* CABECERA AZUL (FRANJA) AL ESTILO DE NOTICIAS */}
+      <header className="bg-main-blue text-white py-14 px-6 text-center relative z-20">
+        <span className="text-xs font-black text-main-red uppercase tracking-widest mb-4 block">
+          {formatearFecha(articulo.fechaPublicacion) || 'Artículo Académico'}
+        </span>
+        <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-8 max-w-5xl mx-auto leading-tight">
+          {articulo.titulo}
+        </h1>
+        <div className="w-24 h-1.5 bg-main-red mx-auto rounded-full" aria-hidden="true"></div>
+      </header>
+
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark" aria-hidden="true"></div>
 
         <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
           <article className="max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl">
             
-            <div className="px-8 pt-8 md:px-12 lg:px-16 md:pt-12">
+            {/* BOTÓN DE VOLVER */}
+            <div className="px-8 pt-8 md:px-12 lg:px-16 md:pt-12 pb-6">
               <Link to="/articulos-academicos" className="inline-flex items-center gap-2 text-xs font-bold text-main-red uppercase tracking-widest hover:text-main-blue transition-colors" aria-label="Regresar al repositorio de artículos">
                 <span className="text-lg leading-none" aria-hidden="true">&larr;</span> Volver al repositorio
               </Link>
             </div>
 
-            <div className="px-8 md:px-12 lg:px-16 py-8 md:py-12 animate-fade-in-up">
-              
-              <header className="mb-10 border-b border-gray-100 pb-10">
-                <span className="text-sm font-black text-gray-400 uppercase tracking-widest mb-4 block">
-                  {formatearFecha(articulo.fechaPublicacion)}
-                </span>
-                <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold text-main-blue leading-tight mb-6">
-                  {articulo.titulo}
-                </h1>
-              </header>
+            <div className="px-8 md:px-12 lg:px-16 pb-12 md:pb-16 animate-fade-in-up">
 
+              {/* IMAGEN PRINCIPAL (SI EXISTE) */}
               {articulo.imagenPrincipalUrl && (
-                <div className="mb-12 w-full rounded-2xl overflow-hidden bg-gray-50">
+                <div className="mb-12 w-full rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center">
                   <img 
                     src={articulo.imagenPrincipalUrl} 
                     alt={`Imagen ilustrativa del artículo: ${articulo.titulo}`} 
-                    className="w-full max-h-150 object-contain"
+                    className="w-full max-h-150 object-contain block"
                   />
                 </div>
               )}
 
+              {/* CONTENIDO DEL ARTÍCULO */}
               <div 
                 className="noticia-content"
                 dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(articulo.contenido) }}
