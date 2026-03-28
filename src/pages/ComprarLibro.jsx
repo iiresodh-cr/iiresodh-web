@@ -7,7 +7,7 @@ import { httpsCallable } from "firebase/functions";
 import PageHeader from "../components/PageHeader";
 
 // 🔴 REEMPLAZA CON TU CLAVE PÚBLICA DE STRIPE
-const stripePromise = loadStripe("pk_test_TU_CLAVE_PUBLICA_AQUI");
+const stripePromise = loadStripe("pk_test_51TG3Ix2cAGUeJe5mZ8VfsyNf1qmd7EYcncADyttNU7oZPLxpgi8VfjCWTVjOdluNcgeiyleaPgWmR1FQtZbwLj9E00RTW4N4Qs");
 
 // --- COMPONENTE DEL FORMULARIO DE PAGO ---
 const FormularioPago = ({ libroId }) => {
