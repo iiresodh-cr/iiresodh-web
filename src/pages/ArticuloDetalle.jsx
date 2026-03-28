@@ -8,34 +8,53 @@ import { db } from "../firebase/config";
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
   
-  // 1. Escapamos HTML para seguridad, pero dejamos una marca temporal para los links
-  let seguro = texto.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  // 1. Escapar HTML para seguridad
+  let seguro = texto
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 
-  // 2. Procesar enlaces formato Markdown: [Texto o Link](URL)
+  const linksGuardados = []; // Caja fuerte temporal para evitar doble procesamiento
+
+  // 2. Procesar Markdown: [Texto visible](URL)
   seguro = seguro.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<)]+)\)/g, (match, label, url) => {
-    const urlLimpia = url.replace(/&amp;/g, "&"); // Restauramos el link real
-    // Si la etiqueta visible es un link larguísimo, lo acortamos a 40 caracteres
-    const etiquetaCorta = (label.startsWith('http') && label.length > 40) 
-      ? label.substring(0, 37) + "..." 
-      : label;
-    return `<a href="${urlLimpia}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all" title="${urlLimpia}">${etiquetaCorta}</a>`;
+    const urlLimpia = url.replace(/&amp;/g, "&"); // Restauramos &
+    let etiqueta = label;
+    
+    // Si la etiqueta es un link largo (ej. pegado por error), lo acortamos a 40 caracteres
+    if (etiqueta.startsWith('http') && etiqueta.length > 40) {
+      etiqueta = etiqueta.substring(0, 37) + "...";
+    }
+    
+    linksGuardados.push(`<a href="${urlLimpia}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all" title="${urlLimpia}">${etiqueta}</a>`);
+    return `__LINK_${linksGuardados.length - 1}__`; // Dejamos el marcador
   });
 
   // 3. Procesar enlaces crudos (raw) pegados directamente
-  seguro = seguro.replace(/(?<!href="|href=)(https?:\/\/[^\s<]+)/g, (url) => {
-    const urlLimpia = url.replace(/&amp;/g, "&"); // Restauramos el link real
-    // Acortamos visualmente a 40 caracteres
+  seguro = seguro.replace(/(https?:\/\/[^\s<]+)/g, (url) => {
+    const urlLimpia = url.replace(/&amp;/g, "&"); // Restauramos &
+    
+    // Acortamos la vista a 40 caracteres con "..."
     const shortUrl = urlLimpia.length > 40 ? urlLimpia.substring(0, 37) + "..." : urlLimpia;
-    return `<a href="${urlLimpia}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all" title="${urlLimpia}">${shortUrl}</a>`;
+    
+    linksGuardados.push(`<a href="${urlLimpia}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all" title="${urlLimpia}">${shortUrl}</a>`);
+    return `__LINK_${linksGuardados.length - 1}__`; // Dejamos el marcador
   });
 
-  // 4. Procesar Hashtags
+  // 4. Restaurar los enlaces desde la caja fuerte a sus marcadores
+  seguro = seguro.replace(/__LINK_(\d+)__/g, (match, index) => {
+    return linksGuardados[index];
+  });
+
+  // 5. Procesar Hashtags
   seguro = seguro.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
     const termino = hashtag.substring(1); 
     return `<a href="/buscar?q=${termino}" class="text-light-blue hover:text-main-red font-bold transition-colors pointer-events-auto">${hashtag}</a>`;
   });
 
-  // 5. Generar párrafos HTML
+  // 6. Respetar los saltos de línea creando párrafos
   const parrafos = seguro.split(/\n\s*\n/);
   return parrafos.map(p => {
     return `<p>${p.replace(/\n/g, '<br />')}</p>`;
