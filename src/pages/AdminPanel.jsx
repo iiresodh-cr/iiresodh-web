@@ -27,61 +27,53 @@ const generarSlug = (texto) => {
   return baseSlug ? `${baseSlug}-${randomCode}` : `item-${randomCode}`;
 };
 
-// MOTOR ESTRUCTURAL PURO
-const formatearTextoConLinksYHashtags = (texto) => {
+// ==========================================
+// NUEVO MOTOR DE LINKS (INFALIBLE)
+// ==========================================
+export const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
   
-  // 1. Escapar HTML para seguridad
-  let seguro = texto
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  // 1. Escapar < y > por seguridad, pero NO TOCAR el & para no romper URLs
+  let procesado = texto.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-  const linksGuardados = []; // Caja fuerte temporal para evitar doble procesamiento
+  const linksGuardados = []; // Caja fuerte temporal
 
-  // 2. Procesar Markdown: [Texto visible](URL)
-  seguro = seguro.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<)]+)\)/g, (match, label, url) => {
-    const urlLimpia = url.replace(/&amp;/g, "&"); // Restauramos &
-    let etiqueta = label;
-    
-    // Si la etiqueta es un link largo (ej. pegado por error), lo acortamos a 40 caracteres
-    if (etiqueta.startsWith('http') && etiqueta.length > 40) {
-      etiqueta = etiqueta.substring(0, 37) + "...";
+  // 2. Extraer Markdown: [Texto visible](URL)
+  procesado = procesado.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, label, url) => {
+    let visible = label;
+    // Si la etiqueta visible es muy larga, la acortamos a 45 caracteres
+    if (visible.length > 45) {
+      visible = visible.substring(0, 42) + "...";
     }
+    linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline break-all">${visible}</a>`);
+    return `__LINK_${linksGuardados.length - 1}__`; // Dejamos marcador
+  });
+
+  // 3. Extraer URLs crudas pegadas directamente
+  procesado = procesado.replace(/(https?:\/\/[^\s]+)/g, (match, url) => {
+    if (url.includes("__LINK_")) return match; // Evitar procesar los marcadores
     
-    linksGuardados.push(`<a href="${urlLimpia}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all" title="${urlLimpia}">${etiqueta}</a>`);
-    return `__LINK_${linksGuardados.length - 1}__`; // Dejamos el marcador
+    let visible = url;
+    // Acortar visualmente la URL a 45 caracteres
+    if (visible.length > 45) {
+      visible = visible.substring(0, 42) + "...";
+    }
+    linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline break-all">${visible}</a>`);
+    return `__LINK_${linksGuardados.length - 1}__`; // Dejamos marcador
   });
 
-  // 3. Procesar enlaces crudos (raw) pegados directamente
-  seguro = seguro.replace(/(https?:\/\/[^\s<]+)/g, (url) => {
-    const urlLimpia = url.replace(/&amp;/g, "&"); // Restauramos &
-    
-    // Acortamos la vista a 40 caracteres con "..."
-    const shortUrl = urlLimpia.length > 40 ? urlLimpia.substring(0, 37) + "..." : urlLimpia;
-    
-    linksGuardados.push(`<a href="${urlLimpia}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all" title="${urlLimpia}">${shortUrl}</a>`);
-    return `__LINK_${linksGuardados.length - 1}__`; // Dejamos el marcador
+  // 4. Procesar Hashtags
+  procesado = procesado.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (match) => {
+    const term = match.substring(1);
+    return `<a href="/buscar?q=${term}" class="text-light-blue hover:text-main-red font-bold">${match}</a>`;
   });
 
-  // 4. Restaurar los enlaces desde la caja fuerte a sus marcadores
-  seguro = seguro.replace(/__LINK_(\d+)__/g, (match, index) => {
-    return linksGuardados[index];
-  });
+  // 5. Restaurar Links desde la caja fuerte
+  procesado = procesado.replace(/__LINK_(\d+)__/g, (match, i) => linksGuardados[i]);
 
-  // 5. Procesar Hashtags
-  seguro = seguro.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
-    const termino = hashtag.substring(1); 
-    return `<a href="/buscar?q=${termino}" class="text-light-blue hover:text-main-red font-bold transition-colors pointer-events-auto">${hashtag}</a>`;
-  });
-
-  // 6. Respetar los saltos de línea creando párrafos
-  const parrafos = seguro.split(/\n\s*\n/);
-  return parrafos.map(p => {
-    return `<p>${p.replace(/\n/g, '<br />')}</p>`;
-  }).join('');
+  // 6. Convertir saltos de línea a párrafos
+  const parrafos = procesado.split(/\n\s*\n/);
+  return parrafos.map(p => `<p>${p.replace(/\n/g, '<br />')}</p>`).join('');
 };
 
 const convertirAWebp = (file, calidad = 0.8) => {
@@ -143,10 +135,8 @@ export default function AdminPanel() {
   const [mensaje, setMensaje] = useState("");
   const [listaItems, setListaItems] = useState([]);
 
-  // ESTADO PARA EL MODAL DE BORRADO ELEGANTE
   const [modalBorrar, setModalBorrar] = useState({ isOpen: false, id: null, titulo: "" });
 
-  // PAGINACIÓN
   const [primerDoc, setPrimerDoc] = useState(null);
   const [ultimoDoc, setUltimoDoc] = useState(null);
   const [paginaActual, setPaginaActual] = useState(1);
@@ -315,14 +305,12 @@ export default function AdminPanel() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // NUEVAS FUNCIONES PARA EL MODAL DE BORRADO
   const pedirConfirmacionBorrado = (id, tituloItem) => {
     setModalBorrar({ isOpen: true, id, titulo: tituloItem });
   };
 
   const ejecutarBorrado = async () => {
     if (!modalBorrar.id) return;
-    
     try {
       const coleccion = obtenerColeccionActiva();
       await deleteDoc(doc(db, coleccion, modalBorrar.id));
@@ -386,7 +374,9 @@ export default function AdminPanel() {
   };
 
   const handleAgregarImagenes = async (e) => {
-    const files = Array.from(e.target.files);
+    // SE SOLUCIONÓ EL ORDEN: Ordenamos los archivos alfabéticamente antes de procesarlos
+    const files = Array.from(e.target.files).sort((a, b) => a.name.localeCompare(b.name));
+    
     if (files.length > 0) {
       try {
         setMensaje("Optimizando imágenes para el carrusel...");
@@ -400,20 +390,6 @@ export default function AdminPanel() {
         setTimeout(() => setMensaje(""), 3000);
       }
     }
-  };
-
-  const moverImagenNueva = (index, direccion) => {
-    const nuevas = [...imagenesCarrusel];
-    if (direccion === -1 && index > 0) [nuevas[index], nuevas[index - 1]] = [nuevas[index - 1], nuevas[index]];
-    else if (direccion === 1 && index < nuevas.length - 1) [nuevas[index], nuevas[index + 1]] = [nuevas[index + 1], nuevas[index]];
-    setImagenesCarrusel(nuevas);
-  };
-
-  const moverImagenExistente = (index, direccion) => {
-    const existentes = [...carruselExistente];
-    if (direccion === -1 && index > 0) [existentes[index], existentes[index - 1]] = [existentes[index - 1], existentes[index]];
-    else if (direccion === 1 && index < existentes.length - 1) [existentes[index], existentes[index + 1]] = [existentes[index + 1], existentes[index]];
-    setCarruselExistente(existentes);
   };
 
   const handleSubmit = async (e) => {
@@ -479,68 +455,49 @@ export default function AdminPanel() {
   return (
     <main className="min-h-screen bg-gray-50/50 font-sans relative overflow-hidden">
       
-      {/* MODAL DE CONFIRMACIÓN DE BORRADO */}
       {modalBorrar.isOpen && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 animate-fade-in-up">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 animate-fade-in-up">
           <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-md w-full border border-gray-100 text-center relative overflow-hidden">
-            {/* Elemento decorativo superior */}
             <div className="absolute top-0 left-0 w-full h-2 bg-main-red"></div>
-            
             <div className="w-16 h-16 bg-red-50 text-main-red rounded-full flex items-center justify-center mx-auto mb-4 mt-2">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
             </div>
-            
             <h3 className="text-xl font-bold text-gray-800 mb-2">¿Eliminar publicación?</h3>
             <p className="text-sm text-gray-500 mb-6 leading-relaxed px-2">
               Estás a punto de borrar permanentemente:<br/>
               <strong className="text-gray-800 font-bold block mt-2 text-base line-clamp-2">"{modalBorrar.titulo}"</strong>
               <span className="block mt-4 text-xs font-semibold text-main-red uppercase tracking-wider">Esta acción no se puede deshacer</span>
             </p>
-            
             <div className="flex gap-3 w-full">
-              <button onClick={() => setModalBorrar({ isOpen: false, id: null, titulo: "" })} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl transition-colors cursor-pointer">
-                Cancelar
-              </button>
-              <button onClick={ejecutarBorrado} className="flex-1 bg-main-red hover:bg-red-700 text-white font-semibold py-3 rounded-xl transition-colors shadow-sm cursor-pointer">
-                Sí, eliminar
-              </button>
+              <button onClick={() => setModalBorrar({ isOpen: false, id: null, titulo: "" })} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl transition-colors cursor-pointer">Cancelar</button>
+              <button onClick={ejecutarBorrado} className="flex-1 bg-main-red hover:bg-red-700 text-white font-semibold py-3 rounded-xl transition-colors shadow-sm cursor-pointer">Sí, eliminar</button>
             </div>
           </div>
         </div>
       )}
 
-      <div className="inset-0 z-0 bg-watermark opacity-5 pointer-events-none fixed" aria-hidden="true"></div>
+      <div className="fixed inset-0 z-0 bg-watermark opacity-5 pointer-events-none" aria-hidden="true"></div>
 
-      <header className="bg-white/80 backdrop-blur-md sticky top-0 z-50 p-4 shadow-sm border-b border-gray-100 flex justify-between items-center px-6 md:px-10">
+      <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 p-4 shadow-sm border-b border-gray-100 flex justify-between items-center px-6 md:px-10">
         <div className="flex items-center gap-4">
           <img src={logoColor} alt="Logo de IIRESODH" className="h-10 md:h-12 w-auto object-contain" />
-          <span className="hidden md:inline-block border-l-2 border-gray-200 pl-4 text-gray-500 font-medium tracking-tight">
-            Panel de Control
-          </span>
+          <span className="hidden md:inline-block border-l-2 border-gray-200 pl-4 text-gray-500 font-medium tracking-tight">Panel de Control</span>
         </div>
-        <button 
-          onClick={handleLogout} 
-          className="text-sm md:text-base bg-white border border-gray-200 text-gray-700 hover:text-main-red hover:border-main-red hover:bg-red-50 px-5 py-2.5 rounded-full font-semibold shadow-sm transition-all duration-200 cursor-pointer flex items-center gap-2"
-        >
+        <button onClick={handleLogout} className="text-sm md:text-base bg-white border border-gray-200 text-gray-700 hover:text-main-red hover:border-main-red hover:bg-red-50 px-5 py-2.5 rounded-full font-semibold shadow-sm transition-all duration-200 cursor-pointer flex items-center gap-2">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
           Salir
         </button>
       </header>
 
       <div className="p-6 md:p-10 max-w-7xl mx-auto relative z-10">
-        
         {vistaActiva === "inicio" && (
           <section className="animate-fade-in-up" aria-labelledby="admin-title">
             <div className="mb-10 text-center md:text-left">
               <h1 id="admin-title" className="text-3xl md:text-4xl font-bold text-main-blue tracking-tight mb-2">Bienvenido al Panel</h1>
               <p className="text-gray-500 text-lg">Selecciona el módulo que deseas administrar hoy.</p>
             </div>
-            
             <nav className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8" aria-label="Departamentos administrativos">
-              <button 
-                onClick={() => setVistaActiva("comunicaciones")} 
-                className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-main-blue/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center"
-              >
+              <button onClick={() => setVistaActiva("comunicaciones")} className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-main-blue/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center">
                 <div className="p-4 bg-blue-50 text-main-blue rounded-2xl group-hover:bg-main-blue group-hover:text-white transition-colors duration-300">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 8h8M8 12h8M8 16h4"></path></svg>
                 </div>
@@ -549,11 +506,7 @@ export default function AdminPanel() {
                   <p className="text-sm text-gray-500">Gestión de noticias y comunicados</p>
                 </div>
               </button>
-
-              <button 
-                onClick={() => setVistaActiva("articulos")} 
-                className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-main-red/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center"
-              >
+              <button onClick={() => setVistaActiva("articulos")} className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-main-red/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center">
                 <div className="p-4 bg-red-50 text-main-red rounded-2xl group-hover:bg-main-red group-hover:text-white transition-colors duration-300">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                 </div>
@@ -562,7 +515,6 @@ export default function AdminPanel() {
                   <p className="text-sm text-gray-500">Publicación de investigaciones</p>
                 </div>
               </button>
-
               <div className="bg-gray-50/50 border border-gray-100 p-10 rounded-3xl flex flex-col items-center justify-center gap-5 text-center cursor-not-allowed">
                 <div className="p-4 bg-gray-100 text-gray-400 rounded-2xl">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
@@ -578,14 +530,7 @@ export default function AdminPanel() {
 
         {(vistaActiva === "comunicaciones" || vistaActiva === "articulos") && (
           <div className="animate-fade-in-up">
-            
-            <button 
-              onClick={() => {
-                limpiarFormulario();
-                setVistaActiva("inicio");
-              }} 
-              className="mb-8 flex items-center gap-2 text-gray-500 font-medium hover:text-main-blue transition-colors cursor-pointer group"
-            >
+            <button onClick={() => { limpiarFormulario(); setVistaActiva("inicio"); }} className="mb-8 flex items-center gap-2 text-gray-500 font-medium hover:text-main-blue transition-colors cursor-pointer group">
               <div className="bg-white p-1.5 rounded-full shadow-sm group-hover:shadow border border-gray-100 transition-all">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7"></path></svg>
               </div>
@@ -593,9 +538,7 @@ export default function AdminPanel() {
             </button>
 
             {mensaje && (
-              <div className={`fixed top-24 right-6 z-50 p-4 rounded-xl shadow-lg font-medium flex items-center gap-3 animate-fade-in-up border max-w-sm
-                ${mensaje.includes("Error") ? "bg-white border-red-200 text-main-red" : "bg-white border-green-200 text-green-700"}
-              `}>
+              <div className={`fixed top-24 right-6 z-40 p-4 rounded-xl shadow-lg font-medium flex items-center gap-3 animate-fade-in-up border max-w-sm ${mensaje.includes("Error") ? "bg-white border-red-200 text-main-red" : "bg-white border-green-200 text-green-700"}`}>
                 <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   {mensaje.includes("Error") 
                     ? <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
@@ -607,7 +550,6 @@ export default function AdminPanel() {
             )}
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              
               <div className="lg:col-span-8 space-y-8">
                 <section className="bg-white p-8 md:p-10 rounded-2xl shadow-sm border border-gray-100" aria-labelledby="form-title">
                   <header className="mb-8 flex items-center justify-between">
@@ -615,24 +557,15 @@ export default function AdminPanel() {
                       <h2 id="form-title" className={`text-2xl md:text-3xl font-bold tracking-tight ${editandoId ? 'text-main-red' : 'text-gray-800'}`}>
                         {editandoId ? "Editando Publicación" : "Crear Nueva Publicación"}
                       </h2>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Módulo: {vistaActiva === "comunicaciones" ? "Noticias institucionales" : "Artículos de investigación"}
-                      </p>
+                      <p className="text-sm text-gray-500 mt-1">Módulo: {vistaActiva === "comunicaciones" ? "Noticias institucionales" : "Artículos de investigación"}</p>
                     </div>
-                    {editandoId && (
-                      <span className="bg-red-50 text-main-red text-xs font-bold px-3 py-1 rounded-full border border-red-100">
-                        MODO EDICIÓN
-                      </span>
-                    )}
+                    {editandoId && <span className="bg-red-50 text-main-red text-xs font-bold px-3 py-1 rounded-full border border-red-100">MODO EDICIÓN</span>}
                   </header>
 
                   <form onSubmit={handleSubmit} className="space-y-6">
-                    
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div className="md:col-span-2">
-                        <label htmlFor="input-titulo" className="block text-sm font-semibold text-gray-700 mb-1.5">
-                          {vistaActiva === "articulos" ? "Título del Artículo" : "Título de la Noticia"} *
-                        </label>
+                        <label htmlFor="input-titulo" className="block text-sm font-semibold text-gray-700 mb-1.5">{vistaActiva === "articulos" ? "Título del Artículo" : "Título de la Noticia"} *</label>
                         <input id="input-titulo" type="text" required value={titulo} onChange={(e) => setTitulo(e.target.value)} className={inputEstilos} placeholder="Ej: Nueva alianza internacional..." />
                       </div>
                       <div className="md:col-span-1">
@@ -656,12 +589,10 @@ export default function AdminPanel() {
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-3">
                           <div>
                             <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
-                              Adjuntar Documentos (PDF, Word, Excel)
+                              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg> Adjuntar Documentos (PDF, Word, Excel)
                             </h3>
                             <p className="text-xs text-gray-500">Sube un archivo para copiar su enlace.</p>
                           </div>
-                          
                           <label htmlFor="input-doc" className={`text-xs bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg font-semibold shadow-sm cursor-pointer transition-colors whitespace-nowrap ${subiendoArchivo ? 'opacity-50 cursor-not-allowed' : ''}`}>
                             {subiendoArchivo ? "Subiendo..." : "+ Subir archivo"}
                           </label>
@@ -673,12 +604,9 @@ export default function AdminPanel() {
                             {archivosAdjuntos.map((archivo, index) => (
                               <li key={index} className="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-100 shadow-sm">
                                 <span className="text-xs font-medium text-gray-600 truncate mr-3 flex items-center gap-2">
-                                  <svg className="w-3.5 h-3.5 text-main-red" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" /></svg>
-                                  {archivo.nombre}
+                                  <svg className="w-3.5 h-3.5 text-main-red" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" /></svg> {archivo.nombre}
                                 </span>
-                                <button type="button" onClick={() => copiarEnlaceDocumento(archivo.nombre, archivo.url)} className="text-[10px] uppercase tracking-wider bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-1 px-2.5 rounded transition-colors shrink-0">
-                                  Copiar Enlace
-                                </button>
+                                <button type="button" onClick={() => copiarEnlaceDocumento(archivo.nombre, archivo.url)} className="text-[10px] uppercase tracking-wider bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-1 px-2.5 rounded transition-colors shrink-0">Copiar Enlace</button>
                               </li>
                             ))}
                           </ul>
@@ -687,31 +615,16 @@ export default function AdminPanel() {
                     )}
 
                     <div>
-                      <label htmlFor="input-contenido" className="block text-sm font-semibold text-gray-700 mb-1.5">
-                        Cuerpo del texto *
-                      </label>
-                      <textarea 
-                        id="input-contenido"
-                        required 
-                        value={contenido} 
-                        onChange={(e) => setContenido(e.target.value)} 
-                        className={inputEstilos} 
-                        rows="12" 
-                        placeholder="Escribe o pega el desarrollo de la publicación aquí..." 
-                      />
+                      <label htmlFor="input-contenido" className="block text-sm font-semibold text-gray-700 mb-1.5">Cuerpo del texto *</label>
+                      <textarea id="input-contenido" required value={contenido} onChange={(e) => setContenido(e.target.value)} className={inputEstilos} rows="12" placeholder="Escribe o pega el desarrollo de la publicación aquí..." />
                     </div>
 
                     {vistaActiva === "comunicaciones" && contenido.length > 0 && (
                       <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 shadow-inner">
                         <p className="flex text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 items-center gap-2">
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                          Simulación en Portada (Espacio Visible)
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg> Simulación en Portada (Espacio Visible)
                         </p>
-                        <div 
-                          ref={contenidoPreviewRef} 
-                          className="text-gray-600 text-sm md:text-base font-light leading-relaxed noticia-content max-h-80 overflow-hidden bg-white p-5 rounded-lg border border-gray-100" 
-                          dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(contenido) }} 
-                        />
+                        <div ref={contenidoPreviewRef} className="text-gray-600 text-sm md:text-base font-light leading-relaxed noticia-content max-h-80 overflow-hidden bg-white p-5 rounded-lg border border-gray-100" dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(contenido) }} />
                         <div className="mt-3" role="status">
                           {showReadMoreWarning 
                             ? <p className="text-main-red font-bold text-sm">⚠️ El texto superó el límite visible de la tarjeta. Verán "Leer más".</p> 
@@ -746,9 +659,7 @@ export default function AdminPanel() {
                           )}
                           <div className="flex-1">
                             <input type="file" accept="image/*" required={vistaActiva === "comunicaciones" && !editandoId && !imagenPrincipalAnterior} onChange={handleSeleccionPrincipal} className="sr-only" id="input-p" />
-                            <label htmlFor="input-p" className="text-sm bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium cursor-pointer inline-block hover:bg-gray-50 transition-colors">
-                              Examinar archivos...
-                            </label>
+                            <label htmlFor="input-p" className="text-sm bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium cursor-pointer inline-block hover:bg-gray-50 transition-colors">Examinar archivos...</label>
                             <p className="text-xs text-gray-400 mt-2">Formatos recomendados: JPG, PNG. Se optimizará a WebP.</p>
                           </div>
                         </div>
@@ -758,40 +669,65 @@ export default function AdminPanel() {
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Galería / Carrusel</label>
                           <input type="file" accept="image/*" multiple onChange={handleAgregarImagenes} className="sr-only" id="input-c" />
-                          <label htmlFor="input-c" className="text-sm bg-white border border-dashed border-gray-300 text-main-blue w-full text-center py-4 rounded-lg font-medium cursor-pointer block hover:bg-blue-50 transition-colors mb-4">
-                            + Cargar múltiples imágenes
-                          </label>
+                          <label htmlFor="input-c" className="text-sm bg-white border border-dashed border-gray-300 text-main-blue w-full text-center py-4 rounded-lg font-medium cursor-pointer block hover:bg-blue-50 transition-colors mb-4">+ Cargar múltiples imágenes</label>
                           
                           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                            {/* IMÁGENES EXISTENTES CON DRAG & DROP */}
                             {carruselExistente.map((url, i) => (
-                              <div key={`old-${i}`} className="flex flex-col bg-white p-2 rounded-lg border border-gray-100 shadow-sm gap-2">
-                                <div className="relative group w-full h-24 rounded overflow-hidden">
+                              <div 
+                                key={`old-${i}`} 
+                                className="flex flex-col bg-white p-2 rounded-lg border border-gray-100 shadow-sm gap-2"
+                                draggable
+                                onDragStart={(e) => { e.dataTransfer.setData('type', 'old'); e.dataTransfer.setData('index', i); }}
+                                onDragOver={(e) => e.preventDefault()}
+                                onDrop={(e) => {
+                                  e.preventDefault();
+                                  if (e.dataTransfer.getData('type') !== 'old') return;
+                                  const from = parseInt(e.dataTransfer.getData('index'));
+                                  if (from === i || isNaN(from)) return;
+                                  const nuevas = [...carruselExistente];
+                                  const [movida] = nuevas.splice(from, 1);
+                                  nuevas.splice(i, 0, movida);
+                                  setCarruselExistente(nuevas);
+                                }}
+                              >
+                                <div className="relative group w-full h-24 rounded overflow-hidden cursor-move">
                                   <img src={url} className="w-full h-full object-cover" alt="Carrusel" />
                                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                    <button type="button" onClick={() => moverImagenExistente(i, -1)} disabled={i === 0} className="text-white hover:text-light-blue disabled:opacity-30"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg></button>
                                     <button type="button" onClick={() => setCarruselExistente(prev => prev.filter((_, idx) => idx !== i))} className="text-white hover:text-main-red"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                                    <button type="button" onClick={() => moverImagenExistente(i, 1)} disabled={i === carruselExistente.length - 1} className="text-white hover:text-light-blue disabled:opacity-30"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg></button>
                                   </div>
                                 </div>
-                                <span className="text-[10px] font-medium text-gray-500 truncate text-center" title={extraerNombreDesdeUrl(url)}>
-                                  {extraerNombreDesdeUrl(url)}
-                                </span>
+                                <span className="text-[10px] font-medium text-gray-500 truncate text-center" title={extraerNombreDesdeUrl(url)}>{extraerNombreDesdeUrl(url)}</span>
                               </div>
                             ))}
+
+                            {/* NUEVAS IMÁGENES CON DRAG & DROP */}
                             {imagenesCarrusel.map((f, i) => (
-                              <div key={`new-${i}`} className="flex flex-col bg-green-50 p-2 rounded-lg border border-green-200 shadow-sm gap-2">
-                                <div className="relative group w-full h-24 rounded overflow-hidden">
+                              <div 
+                                key={`new-${i}`} 
+                                className="flex flex-col bg-green-50 p-2 rounded-lg border border-green-200 shadow-sm gap-2"
+                                draggable
+                                onDragStart={(e) => { e.dataTransfer.setData('type', 'new'); e.dataTransfer.setData('index', i); }}
+                                onDragOver={(e) => e.preventDefault()}
+                                onDrop={(e) => {
+                                  e.preventDefault();
+                                  if (e.dataTransfer.getData('type') !== 'new') return;
+                                  const from = parseInt(e.dataTransfer.getData('index'));
+                                  if (from === i || isNaN(from)) return;
+                                  const nuevas = [...imagenesCarrusel];
+                                  const [movida] = nuevas.splice(from, 1);
+                                  nuevas.splice(i, 0, movida);
+                                  setImagenesCarrusel(nuevas);
+                                }}
+                              >
+                                <div className="relative group w-full h-24 rounded overflow-hidden cursor-move">
                                   <img src={URL.createObjectURL(f)} className="w-full h-full object-cover" alt="Nueva carrusel" />
                                   <span className="absolute top-1 left-1 bg-green-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded uppercase">Nueva</span>
                                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                    <button type="button" onClick={() => moverImagenNueva(i, -1)} disabled={i === 0} className="text-white hover:text-light-blue disabled:opacity-30"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg></button>
                                     <button type="button" onClick={() => setImagenesCarrusel(prev => prev.filter((_, idx) => idx !== i))} className="text-white hover:text-main-red"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                                    <button type="button" onClick={() => moverImagenNueva(i, 1)} disabled={i === imagenesCarrusel.length - 1} className="text-white hover:text-light-blue disabled:opacity-30"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg></button>
                                   </div>
                                 </div>
-                                <span className="text-[10px] font-medium text-green-700 truncate text-center" title={f.name}>
-                                  {f.name}
-                                </span>
+                                <span className="text-[10px] font-medium text-green-700 truncate text-center" title={f.name}>{f.name}</span>
                               </div>
                             ))}
                           </div>
@@ -800,13 +736,8 @@ export default function AdminPanel() {
                     </div>
 
                     <div className="flex flex-col-reverse sm:flex-row gap-4 pt-4">
-                      <button type="button" onClick={limpiarFormulario} className="w-full sm:w-1/3 text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 font-semibold py-3.5 rounded-xl transition-colors cursor-pointer border border-transparent">
-                        Cancelar
-                      </button>
-                      <button type="submit" disabled={loading} className={`w-full sm:w-2/3 text-white font-bold py-3.5 rounded-xl transition-all shadow-sm flex justify-center items-center gap-2 cursor-pointer
-                        ${editandoId ? 'bg-main-red hover:bg-red-700' : 'bg-main-blue hover:bg-light-blue hover:shadow-md'}
-                        ${loading ? 'opacity-70 cursor-wait' : ''}
-                      `}>
+                      <button type="button" onClick={limpiarFormulario} className="w-full sm:w-1/3 text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 font-semibold py-3.5 rounded-xl transition-colors cursor-pointer border border-transparent">Cancelar</button>
+                      <button type="submit" disabled={loading} className={`w-full sm:w-2/3 text-white font-bold py-3.5 rounded-xl transition-all shadow-sm flex justify-center items-center gap-2 cursor-pointer ${editandoId ? 'bg-main-red hover:bg-red-700' : 'bg-main-blue hover:bg-light-blue hover:shadow-md'} ${loading ? 'opacity-70 cursor-wait' : ''}`}>
                         {loading && <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>}
                         {loading ? "Procesando..." : (editandoId ? "Actualizar Cambios" : "Publicar Ahora")}
                       </button>
@@ -819,63 +750,33 @@ export default function AdminPanel() {
               <div className="lg:col-span-4">
                 <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:sticky lg:top-24">
                   <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
-                    Publicaciones Recientes
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg> Publicaciones Recientes
                   </h2>
-                  
                   <div className="space-y-3 max-h-150 overflow-y-auto custom-scrollbar pr-1">
                     {listaItems.length === 0 ? (
                       <div className="text-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                        <svg className="w-8 h-8 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
                         <p className="text-sm text-gray-500 font-medium">Bandeja vacía</p>
                       </div>
                     ) : (
                       listaItems.map((n) => (
-                        <article key={n.id} className={`group flex flex-col p-4 rounded-xl border transition-all duration-200 cursor-default
-                          ${editandoId === n.id ? 'bg-red-50 border-main-red shadow-sm' : 'bg-white border-gray-100 hover:border-main-blue/30 hover:shadow-sm'}
-                        `}>
+                        <article key={n.id} className={`group flex flex-col p-4 rounded-xl border transition-all duration-200 cursor-default ${editandoId === n.id ? 'bg-red-50 border-main-red shadow-sm' : 'bg-white border-gray-100 hover:border-main-blue/30 hover:shadow-sm'}`}>
                           <div className="flex gap-3 items-start mb-3">
                             <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-gray-100 border border-gray-200 flex items-center justify-center">
-                              {n.imagenPrincipalUrl ? (
-                                <img src={n.imagenPrincipalUrl} className="w-full h-full object-cover" alt="Miniatura" />
-                              ) : (
-                                <span className="text-[10px] font-bold text-gray-400">TXT</span>
-                              )}
+                              {n.imagenPrincipalUrl ? <img src={n.imagenPrincipalUrl} className="w-full h-full object-cover" alt="Miniatura" /> : <span className="text-[10px] font-bold text-gray-400">TXT</span>}
                             </div>
                             <div className="flex-1 min-w-0">
                               <h3 className="font-semibold text-sm text-gray-800 line-clamp-2 leading-snug" title={n.titulo}>{n.titulo}</h3>
-                              <p className="text-[10px] text-gray-400 mt-1 truncate">
-                                /{vistaActiva === "articulos" ? "articulos-academicos" : "noticias"}/{n.slug || n.id}
-                              </p>
+                              <p className="text-[10px] text-gray-400 mt-1 truncate">/{vistaActiva === "articulos" ? "articulos-academicos" : "noticias"}/{n.slug || n.id}</p>
                             </div>
                           </div>
                           <div className="flex gap-2 w-full">
-                            <button onClick={() => handleEditarItem(n)} className="flex-1 bg-white border border-gray-200 text-gray-600 hover:text-main-blue hover:border-main-blue hover:bg-blue-50 py-1.5 rounded-lg text-xs font-semibold transition-colors">
-                              Editar
-                            </button>
-                            {/* NUEVO: Llama a pedirConfirmacionBorrado en lugar de handleBorrarItem */}
-                            <button onClick={() => pedirConfirmacionBorrado(n.id, n.titulo)} className="px-3 bg-white border border-gray-200 text-gray-400 hover:text-main-red hover:border-main-red hover:bg-red-50 py-1.5 rounded-lg transition-colors">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
+                            <button onClick={() => handleEditarItem(n)} className="flex-1 bg-white border border-gray-200 text-gray-600 hover:text-main-blue hover:border-main-blue hover:bg-blue-50 py-1.5 rounded-lg text-xs font-semibold transition-colors">Editar</button>
+                            <button onClick={() => pedirConfirmacionBorrado(n.id, n.titulo)} className="px-3 bg-white border border-gray-200 text-gray-400 hover:text-main-red hover:border-main-red hover:bg-red-50 py-1.5 rounded-lg transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                           </div>
                         </article>
                       ))
                     )}
                   </div>
-                  
-                  {listaItems.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
-                      <button onClick={paginaAnterior} disabled={paginaActual === 1 || loading} className="text-gray-500 hover:text-main-blue disabled:opacity-30 disabled:hover:text-gray-500 p-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7"></path></svg>
-                      </button>
-                      <span className="text-xs font-bold text-gray-400 bg-gray-50 px-3 py-1 rounded-full">
-                        Pág. {paginaActual}
-                      </span>
-                      <button onClick={paginaSiguiente} disabled={!hayMas || loading} className="text-gray-500 hover:text-main-blue disabled:opacity-30 disabled:hover:text-gray-500 p-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7"></path></svg>
-                      </button>
-                    </div>
-                  )}
                 </section>
               </div>
 

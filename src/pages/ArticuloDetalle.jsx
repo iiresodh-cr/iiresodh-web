@@ -5,60 +5,50 @@ import { collection, query, where, getDocs, doc, getDoc } from "firebase/firesto
 import { db } from "../firebase/config";
 
 // MOTOR ESTRUCTURAL PURO
-const formatearTextoConLinksYHashtags = (texto) => {
+export const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
   
-  // 1. Escapar HTML para seguridad
-  let seguro = texto
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  // 1. Escapar < y > por seguridad, pero NO TOCAR el & para no romper URLs
+  let procesado = texto.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-  const linksGuardados = []; // Caja fuerte temporal para evitar doble procesamiento
+  const linksGuardados = []; // Caja fuerte temporal
 
-  // 2. Procesar Markdown: [Texto visible](URL)
-  seguro = seguro.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<)]+)\)/g, (match, label, url) => {
-    const urlLimpia = url.replace(/&amp;/g, "&"); // Restauramos &
-    let etiqueta = label;
-    
-    // Si la etiqueta es un link largo (ej. pegado por error), lo acortamos a 40 caracteres
-    if (etiqueta.startsWith('http') && etiqueta.length > 40) {
-      etiqueta = etiqueta.substring(0, 37) + "...";
+  // 2. Extraer Markdown: [Texto visible](URL)
+  procesado = procesado.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, label, url) => {
+    let visible = label;
+    // Si la etiqueta visible es muy larga, la acortamos a 45 caracteres
+    if (visible.length > 45) {
+      visible = visible.substring(0, 42) + "...";
     }
+    linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline break-all">${visible}</a>`);
+    return `__LINK_${linksGuardados.length - 1}__`; // Dejamos marcador
+  });
+
+  // 3. Extraer URLs crudas pegadas directamente
+  procesado = procesado.replace(/(https?:\/\/[^\s]+)/g, (match, url) => {
+    if (url.includes("__LINK_")) return match; // Evitar procesar los marcadores
     
-    linksGuardados.push(`<a href="${urlLimpia}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all" title="${urlLimpia}">${etiqueta}</a>`);
-    return `__LINK_${linksGuardados.length - 1}__`; // Dejamos el marcador
+    let visible = url;
+    // Acortar visualmente la URL a 45 caracteres
+    if (visible.length > 45) {
+      visible = visible.substring(0, 42) + "...";
+    }
+    linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline break-all">${visible}</a>`);
+    return `__LINK_${linksGuardados.length - 1}__`; // Dejamos marcador
   });
 
-  // 3. Procesar enlaces crudos (raw) pegados directamente
-  seguro = seguro.replace(/(https?:\/\/[^\s<]+)/g, (url) => {
-    const urlLimpia = url.replace(/&amp;/g, "&"); // Restauramos &
-    
-    // Acortamos la vista a 40 caracteres con "..."
-    const shortUrl = urlLimpia.length > 40 ? urlLimpia.substring(0, 37) + "..." : urlLimpia;
-    
-    linksGuardados.push(`<a href="${urlLimpia}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all" title="${urlLimpia}">${shortUrl}</a>`);
-    return `__LINK_${linksGuardados.length - 1}__`; // Dejamos el marcador
+  // 4. Procesar Hashtags
+  procesado = procesado.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (match) => {
+    const term = match.substring(1);
+    return `<a href="/buscar?q=${term}" class="text-light-blue hover:text-main-red font-bold">${match}</a>`;
   });
 
-  // 4. Restaurar los enlaces desde la caja fuerte a sus marcadores
-  seguro = seguro.replace(/__LINK_(\d+)__/g, (match, index) => {
-    return linksGuardados[index];
-  });
+  // 5. Restaurar Links desde la caja fuerte
+  procesado = procesado.replace(/__LINK_(\d+)__/g, (match, i) => linksGuardados[i]);
 
-  // 5. Procesar Hashtags
-  seguro = seguro.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
-    const termino = hashtag.substring(1); 
-    return `<a href="/buscar?q=${termino}" class="text-light-blue hover:text-main-red font-bold transition-colors pointer-events-auto">${hashtag}</a>`;
-  });
-
-  // 6. Respetar los saltos de línea creando párrafos
-  const parrafos = seguro.split(/\n\s*\n/);
-  return parrafos.map(p => {
-    return `<p>${p.replace(/\n/g, '<br />')}</p>`;
-  }).join('');
+  // 6. Convertir saltos de línea a párrafos
+  const parrafos = procesado.split(/\n\s*\n/);
+  return parrafos.map(p => `<p>${p.replace(/\n/g, '<br />')}</p>`).join('');
 };
 
 export default function ArticuloDetalle() {
