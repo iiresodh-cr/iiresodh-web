@@ -70,8 +70,7 @@ function App() {
           <Route path="/articulos-academicos" element={<ArticulosAcademicos />} />
           <Route path="/articulos-academicos/:slug" element={<ArticuloDetalle />} />
           
-          {/* NUEVA RUTA PARA LA TIENDA (DINÁMICA) */}
-          {/* Se agrega ? para que el link del Navbar funcione sin dar 404 */}
+          {/* NUEVA RUTA PARA LA TIENDA (OPCIONAL SLUG) */}
           <Route path="/comprar-libro/:slug?" element={<ComprarLibro />} />
           
           <Route path="*" element={<NotFound />} />
