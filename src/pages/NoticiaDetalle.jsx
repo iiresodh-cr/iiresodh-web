@@ -10,27 +10,53 @@ import { Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
-// MOTOR ESTRUCTURAL PURO
-const formatearTextoConLinksYHashtags = (texto) => {
+// ==========================================
+// NUEVO MOTOR DE LINKS (INFALIBLE)
+// ==========================================
+export const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
+  
+  // 1. Escapar < y > por seguridad, pero NO TOCAR el & para no romper URLs
+  let procesado = texto.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-  let seguro = texto.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  const linksGuardados = []; // Caja fuerte temporal
 
-  seguro = seguro.replace(/\[([^\]]+)\]\((https?:\/\/[^\s<)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all">$1</a>');
-
-  seguro = seguro.replace(/(?<!href="|href=)(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline transition-colors pointer-events-auto break-all">$1</a>');
-
-  seguro = seguro.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (hashtag) => {
-    const termino = hashtag.substring(1); 
-    return `<a href="/buscar?q=${termino}" class="text-light-blue font-semibold hover:text-main-red transition-colors">${hashtag}</a>`;
+  // 2. Extraer Markdown: [Texto visible](URL)
+  procesado = procesado.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, label, url) => {
+    let visible = label;
+    // Si la etiqueta visible es muy larga, la acortamos a 45 caracteres
+    if (visible.length > 45) {
+      visible = visible.substring(0, 42) + "...";
+    }
+    linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline break-all">${visible}</a>`);
+    return `__LINK_${linksGuardados.length - 1}__`; // Dejamos marcador
   });
 
-  const parrafos = seguro.split(/\n\s*\n/);
-  const htmlFinal = parrafos.map(p => {
-    return `<p>${p.replace(/\n/g, '<br />')}</p>`;
-  }).join('');
+  // 3. Extraer URLs crudas pegadas directamente
+  procesado = procesado.replace(/(https?:\/\/[^\s]+)/g, (match, url) => {
+    if (url.includes("__LINK_")) return match; // Evitar procesar los marcadores
+    
+    let visible = url;
+    // Acortar visualmente la URL a 45 caracteres
+    if (visible.length > 45) {
+      visible = visible.substring(0, 42) + "...";
+    }
+    linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline break-all">${visible}</a>`);
+    return `__LINK_${linksGuardados.length - 1}__`; // Dejamos marcador
+  });
 
-  return htmlFinal;
+  // 4. Procesar Hashtags
+  procesado = procesado.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (match) => {
+    const term = match.substring(1);
+    return `<a href="/buscar?q=${term}" class="text-light-blue font-semibold hover:text-main-red transition-colors">${match}</a>`;
+  });
+
+  // 5. Restaurar Links desde la caja fuerte
+  procesado = procesado.replace(/__LINK_(\d+)__/g, (match, i) => linksGuardados[i]);
+
+  // 6. Convertir saltos de línea a párrafos
+  const parrafos = procesado.split(/\n\s*\n/);
+  return parrafos.map(p => `<p>${p.replace(/\n/g, '<br />')}</p>`).join('');
 };
 
 export default function NoticiaDetalle() {
