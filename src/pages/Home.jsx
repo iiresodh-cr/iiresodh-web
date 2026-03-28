@@ -142,7 +142,8 @@ export default function Home() {
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark" aria-hidden="true"></div>
 
-        <div className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-8 md:pt-12 pb-16 flex flex-col gap-8 md:gap-10 overflow-hidden">
+        {/* AJUSTE 3: Reduje el padding superior (pt-4 md:pt-6) para que no haya tanto hueco debajo del menú */}
+        <div className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-4 md:pt-6 pb-12 flex flex-col gap-8 md:gap-10 overflow-hidden">
           
           {/* BLOQUE 1: NOTICIAS DESTACADAS (CARRUSEL) */}
           {noticias.length > 0 && (
@@ -151,27 +152,34 @@ export default function Home() {
               pagination={{ clickable: true }} 
               autoplay={{ delay: 5000 }} 
               spaceBetween={40}
-              className="w-full swiper-custom-pagination pb-12"
+              className="w-full swiper-custom-pagination pb-8 md:pb-12"
             >
               {noticias.map((noticia) => (
                 <SwiperSlide key={noticia.id}>
-                  {/* Cambio clave aquí: items-center para centrado vertical */}
-                  <article className="grid grid-cols-1 md:grid-cols-10 gap-10 items-center bg-white w-full min-h-100">
+                  {/* AJUSTE 2: Regresamos a items-center para que todo se centre bonito */}
+                  <article className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center bg-white w-full">
                     
-                    <div className="md:col-span-4 mb-8 md:mb-0">
-                      <div className="bg-white rounded-xl shadow-sm overflow-hidden flex items-center justify-center">
-                        <img src={noticia.imagenPrincipalUrl} alt={`Imagen principal: ${noticia.titulo}`} className="w-full aspect-4/5 object-cover block" />
+                    {/* AJUSTE 1: Imagen más angosta (lg:col-span-4) con aspecto 4/5 */}
+                    <div className="md:col-span-5 lg:col-span-4 mb-6 md:mb-0">
+                      <div className="bg-gray-50 rounded-2xl shadow-sm overflow-hidden border border-gray-100 flex items-center justify-center">
+                        <img 
+                          src={noticia.imagenPrincipalUrl} 
+                          alt={`Imagen principal: ${noticia.titulo}`} 
+                          className="w-full aspect-[4/5] object-cover object-top block" 
+                        />
                       </div>
                     </div>
 
-                    {/* Cambio clave aquí: flex-col y justify-center para que el texto flote en el medio */}
-                    <div className="md:col-span-6 flex flex-col justify-center bg-white w-full h-full py-4">
-                      <h1 className="text-3xl md:text-5xl font-semibold text-main-blue mb-6 leading-tight tracking-tight">
+                    {/* AJUSTE 1: El texto toma el espacio sobrante (lg:col-span-8) */}
+                    <div className="md:col-span-7 lg:col-span-8 flex flex-col justify-center bg-white w-full">
+                      <span className="text-xs font-bold text-main-red uppercase tracking-widest mb-3 block">
+                        Destacado
+                      </span>
+                      <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-main-blue mb-4 md:mb-6 leading-tight tracking-tight">
                         {noticia.titulo}
                       </h1>
                       
-                      {/* En lugar de noticia.contenido, ahora mostramos noticia.resumen */}
-                      <p className="text-gray-600 mb-8 text-base md:text-lg font-light leading-relaxed text-justify pr-0.5">
+                      <p className="text-gray-600 mb-6 md:mb-8 text-base md:text-lg font-light leading-relaxed">
                         {noticia.resumen || "Haz clic a continuación para leer los detalles de este comunicado."}
                       </p>
                       
@@ -179,7 +187,7 @@ export default function Home() {
                         to={`/noticias/${noticia.slug || noticia.id}`} 
                         className="text-main-red font-bold hover:text-main-blue transition-colors flex items-center gap-2 self-start uppercase tracking-wide text-sm"
                       >
-                        Leer noticia completa <span>&rarr;</span>
+                        Leer noticia completa <span aria-hidden="true">&rarr;</span>
                       </Link>
                     </div>
                   </article>
