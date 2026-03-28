@@ -45,7 +45,6 @@ export default function Navbar() {
     <header className="w-full shadow-sm relative z-50 bg-white">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-stretch">
         
-        {/* LOGO E INDICADOR MÓVIL */}
         <div className="shrink-0 flex items-center justify-between px-6 py-4 md:pr-8 bg-white relative z-20">
           <Link to="/" className="flex items-center" aria-label="Ir a la página de inicio de IIRESODH">
             <img src={logo} alt="Logotipo oficial de IIRESODH" className="h-16 md:h-28 lg:h-32 w-auto object-contain" />
@@ -68,13 +67,11 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* CONTENIDO DERECHA */}
         <div 
           id="mobile-menu"
           className={`flex-col grow ${isMobileMenuOpen ? 'flex absolute top-full left-0 w-full bg-white shadow-xl z-10' : 'hidden md:flex'}`}
         >
           
-          {/* BUSCADOR Y REDES */}
           <div className="bg-white px-6 py-4 flex flex-col md:flex-row justify-between md:justify-end items-center gap-6">
             <div className="w-full md:w-auto md:flex-1 max-w-md md:mr-auto">
               <form onSubmit={handleSearch} className="relative group">
@@ -113,7 +110,6 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* MENÚ DE NAVEGACIÓN */}
           <div className="bg-white px-6 py-2 flex flex-col md:flex-row md:items-center justify-between grow">
             
             <div className="w-full md:w-auto flex justify-start order-2 md:order-1 mt-4 md:mt-0 mb-4 md:mb-0">
@@ -126,7 +122,6 @@ export default function Navbar() {
 
             <nav className="w-full md:w-auto flex flex-col md:flex-row justify-center md:items-center gap-2 md:gap-5 text-sm font-bold tracking-widest uppercase text-main-blue order-1 md:order-2" aria-label="Menú principal">
               
-              {/* Dropdown Nosotros */}
               <div className="relative group w-full md:w-auto" onMouseLeave={() => setActiveDropdown(null)}>
                 <button 
                   className="flex items-center justify-between md:justify-center w-full gap-1.5 hover:text-light-blue transition-colors py-3 md:py-2 cursor-pointer" 
@@ -150,7 +145,6 @@ export default function Navbar() {
                 </div>
               </div>
 
-              {/* Dropdown Áreas */}
               <div className="relative group w-full md:w-auto" onMouseLeave={() => setActiveDropdown(null)}>
                 <button 
                   className="flex items-center justify-between md:justify-center w-full gap-1.5 hover:text-light-blue transition-colors py-3 md:py-2 cursor-pointer" 
@@ -178,7 +172,6 @@ export default function Navbar() {
                 </div>
               </div>
 
-              {/* NUEVO: Dropdown Artículos Académicos y Tienda */}
               <div className="relative group w-full md:w-auto" onMouseLeave={() => setActiveDropdown(null)}>
                 <button 
                   className="flex items-center justify-between md:justify-center w-full gap-1.5 hover:text-light-blue transition-colors py-3 md:py-2 cursor-pointer whitespace-nowrap" 
@@ -196,6 +189,7 @@ export default function Navbar() {
                 >
                   <ul className="py-2 flex flex-col">
                     <li><Link to="/articulos-academicos" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Repositorio General</Link></li>
+                    {/* El link al checkout ahora es dinámico y evita el 404 inicial */}
                     <li><Link to="/comprar-libro" className="flex items-center gap-2 w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors text-main-red font-bold text-xs"><svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg> TIENDA EDITORIAL</Link></li>
                   </ul>
                 </div>
