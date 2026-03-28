@@ -29,9 +29,11 @@ const FormularioPago = ({ libroId, precio, titulo }) => {
     setError(null);
 
     try {
+      // 1. Pedimos al backend el "clientSecret" enviando el libroId
       const crearIntento = httpsCallable(functions, 'crearIntentoPago');
       const { data } = await crearIntento({ libroId });
 
+      // 2. Confirmamos el pago
       const resultadoPago = await stripe.confirmCardPayment(data.clientSecret, {
         payment_method: {
           card: elements.getElement(CardElement),
@@ -140,7 +142,7 @@ export default function ComprarLibro() {
   useEffect(() => {
     window.scrollTo(0, 0);
     const fetchLibro = async () => {
-      // 🛡️ REDIRECCIÓN: Si no hay slug en la URL, enviamos al usuario al catálogo de artículos
+      // 🛡️ PROTECCIÓN: Si no hay slug (clic desde Navbar), redirigimos al repositorio
       if (!slug) {
         navigate("/articulos-academicos");
         return;
