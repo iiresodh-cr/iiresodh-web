@@ -142,14 +142,15 @@ export default function ComprarLibro() {
   useEffect(() => {
     window.scrollTo(0, 0);
     const fetchLibro = async () => {
+      // 🛡️ VALIDACIÓN: Si slug es undefined, no ejecuta la consulta
+      if (!slug) return;
+
       try {
-        // Buscamos el libro en Firestore por su slug
         const q = query(collection(db, "libros"), where("slug", "==", slug), limit(1));
         const snap = await getDocs(q);
         if (!snap.empty) {
           setLibro({ id: snap.docs[0].id, ...snap.docs[0].data() });
         } else {
-          // Si no existe, volvemos a artículos
           navigate("/articulos-academicos");
         }
       } catch (e) {
@@ -177,7 +178,6 @@ export default function ComprarLibro() {
         <section className="relative pt-12 md:pt-16 px-6 md:px-8 z-10 max-w-5xl mx-auto">
           <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden flex flex-col md:flex-row">
             
-            {/* Columna Izquierda: Imagen del Libro (Dinámica) */}
             <div className="md:w-1/2 bg-gray-50 p-8 flex items-center justify-center border-r border-gray-100">
               <div className="w-64 h-80 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
                 {libro.imagenPrincipalUrl ? (
@@ -190,7 +190,6 @@ export default function ComprarLibro() {
               </div>
             </div>
 
-            {/* Columna Derecha: Formulario (Dinámico) */}
             <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
               <span className="text-xs font-black text-main-red uppercase tracking-widest mb-2 block">
                 Publicación Digital

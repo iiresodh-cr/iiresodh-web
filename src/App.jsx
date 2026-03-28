@@ -70,8 +70,8 @@ function App() {
           <Route path="/articulos-academicos" element={<ArticulosAcademicos />} />
           <Route path="/articulos-academicos/:slug" element={<ArticuloDetalle />} />
           
-          {/* NUEVA RUTA PARA LA TIENDA */}
-          <Route path="/comprar-libro" element={<ComprarLibro />} />
+          {/* NUEVA RUTA PARA LA TIENDA (DINÁMICA) */}
+          <Route path="/comprar-libro/:slug" element={<ComprarLibro />} />
           
           <Route path="*" element={<NotFound />} />
         </Route>
