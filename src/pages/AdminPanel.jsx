@@ -27,7 +27,7 @@ const generarSlug = (texto) => {
   return baseSlug ? `${baseSlug}-${randomCode}` : `item-${randomCode}`;
 };
 
-// MOTOR ESTRUCTURAL PURO RESTAURADO
+// MOTOR ESTRUCTURAL PURO
 const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
   let seguro = texto.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -113,6 +113,9 @@ export default function AdminPanel() {
   const [generandoResumen, setGenerandoResumen] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [listaItems, setListaItems] = useState([]);
+
+  // ESTADO PARA EL MODAL DE BORRADO ELEGANTE
+  const [modalBorrar, setModalBorrar] = useState({ isOpen: false, id: null, titulo: "" });
 
   // PAGINACIÓN
   const [primerDoc, setPrimerDoc] = useState(null);
@@ -210,7 +213,6 @@ export default function AdminPanel() {
     };
   }, [mainImagePreviewUrl]);
 
-  // RESTAURADA LOGICA DE SCROLL Y ADVERTENCIA
   useEffect(() => {
     const checkOverflow = () => {
       if (contenidoPreviewRef.current) {
@@ -284,15 +286,25 @@ export default function AdminPanel() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleBorrarItem = async (id, tituloItem) => {
-    if (window.confirm(`¿Eliminar permanentemente "${tituloItem}"?`)) {
-      try {
-        const coleccion = obtenerColeccionActiva();
-        await deleteDoc(doc(db, coleccion, id));
-        cargarItems(); 
-      } catch (error) {
-        console.error("Error al borrar:", error);
-      }
+  // NUEVAS FUNCIONES PARA EL MODAL DE BORRADO
+  const pedirConfirmacionBorrado = (id, tituloItem) => {
+    setModalBorrar({ isOpen: true, id, titulo: tituloItem });
+  };
+
+  const ejecutarBorrado = async () => {
+    if (!modalBorrar.id) return;
+    
+    try {
+      const coleccion = obtenerColeccionActiva();
+      await deleteDoc(doc(db, coleccion, modalBorrar.id));
+      cargarItems(); 
+      setMensaje("¡Contenido eliminado con éxito!");
+    } catch (error) {
+      console.error("Error al borrar:", error);
+      setMensaje("Error al eliminar el contenido.");
+    } finally {
+      setModalBorrar({ isOpen: false, id: null, titulo: "" });
+      setTimeout(() => setMensaje(""), 3000);
     }
   };
 
@@ -437,6 +449,37 @@ export default function AdminPanel() {
 
   return (
     <main className="min-h-screen bg-gray-50/50 font-sans relative overflow-hidden">
+      
+      {/* MODAL DE CONFIRMACIÓN DE BORRADO */}
+      {modalBorrar.isOpen && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 animate-fade-in-up">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-md w-full border border-gray-100 text-center relative overflow-hidden">
+            {/* Elemento decorativo superior */}
+            <div className="absolute top-0 left-0 w-full h-2 bg-main-red"></div>
+            
+            <div className="w-16 h-16 bg-red-50 text-main-red rounded-full flex items-center justify-center mx-auto mb-4 mt-2">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            </div>
+            
+            <h3 className="text-xl font-bold text-gray-800 mb-2">¿Eliminar publicación?</h3>
+            <p className="text-sm text-gray-500 mb-6 leading-relaxed px-2">
+              Estás a punto de borrar permanentemente:<br/>
+              <strong className="text-gray-800 font-bold block mt-2 text-base line-clamp-2">"{modalBorrar.titulo}"</strong>
+              <span className="block mt-4 text-xs font-semibold text-main-red uppercase tracking-wider">Esta acción no se puede deshacer</span>
+            </p>
+            
+            <div className="flex gap-3 w-full">
+              <button onClick={() => setModalBorrar({ isOpen: false, id: null, titulo: "" })} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl transition-colors cursor-pointer">
+                Cancelar
+              </button>
+              <button onClick={ejecutarBorrado} className="flex-1 bg-main-red hover:bg-red-700 text-white font-semibold py-3 rounded-xl transition-colors shadow-sm cursor-pointer">
+                Sí, eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="inset-0 z-0 bg-watermark opacity-5 pointer-events-none fixed" aria-hidden="true"></div>
 
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-50 p-4 shadow-sm border-b border-gray-100 flex justify-between items-center px-6 md:px-10">
@@ -629,7 +672,6 @@ export default function AdminPanel() {
                       />
                     </div>
 
-                    {/* RESTAURADO: Caja de Simulación con OVERFLOW-HIDDEN y altura 80 para simular la tarjeta real */}
                     {vistaActiva === "comunicaciones" && contenido.length > 0 && (
                       <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 shadow-inner">
                         <p className="flex text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 items-center gap-2">
@@ -664,7 +706,6 @@ export default function AdminPanel() {
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                 </button>
                               </div>
-                              {/* RESTAURADO: Nombres de las imágenes principales */}
                               <span className="text-xs text-gray-500 font-medium truncate max-w-40 text-center" title={imagenPrincipal ? imagenPrincipal.name : extraerNombreDesdeUrl(mainImagePreviewUrl)}>
                                 {imagenPrincipal ? imagenPrincipal.name : extraerNombreDesdeUrl(mainImagePreviewUrl)}
                               </span>
@@ -693,7 +734,6 @@ export default function AdminPanel() {
                           </label>
                           
                           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                            {/* RESTAURADO: Nombres de imágenes existentes en carrusel */}
                             {carruselExistente.map((url, i) => (
                               <div key={`old-${i}`} className="flex flex-col bg-white p-2 rounded-lg border border-gray-100 shadow-sm gap-2">
                                 <div className="relative group w-full h-24 rounded overflow-hidden">
@@ -709,7 +749,6 @@ export default function AdminPanel() {
                                 </span>
                               </div>
                             ))}
-                            {/* RESTAURADO: Nombres de nuevas imágenes en carrusel */}
                             {imagenesCarrusel.map((f, i) => (
                               <div key={`new-${i}`} className="flex flex-col bg-green-50 p-2 rounded-lg border border-green-200 shadow-sm gap-2">
                                 <div className="relative group w-full h-24 rounded overflow-hidden">
@@ -776,7 +815,6 @@ export default function AdminPanel() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <h3 className="font-semibold text-sm text-gray-800 line-clamp-2 leading-snug" title={n.titulo}>{n.titulo}</h3>
-                              {/* RESTAURADA: La ruta original de la URL en la lista */}
                               <p className="text-[10px] text-gray-400 mt-1 truncate">
                                 /{vistaActiva === "articulos" ? "articulos-academicos" : "noticias"}/{n.slug || n.id}
                               </p>
@@ -786,7 +824,8 @@ export default function AdminPanel() {
                             <button onClick={() => handleEditarItem(n)} className="flex-1 bg-white border border-gray-200 text-gray-600 hover:text-main-blue hover:border-main-blue hover:bg-blue-50 py-1.5 rounded-lg text-xs font-semibold transition-colors">
                               Editar
                             </button>
-                            <button onClick={() => handleBorrarItem(n.id, n.titulo)} className="px-3 bg-white border border-gray-200 text-gray-400 hover:text-main-red hover:border-main-red hover:bg-red-50 py-1.5 rounded-lg transition-colors">
+                            {/* NUEVO: Llama a pedirConfirmacionBorrado en lugar de handleBorrarItem */}
+                            <button onClick={() => pedirConfirmacionBorrado(n.id, n.titulo)} className="px-3 bg-white border border-gray-200 text-gray-400 hover:text-main-red hover:border-main-red hover:bg-red-50 py-1.5 rounded-lg transition-colors">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             </button>
                           </div>
