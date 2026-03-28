@@ -240,7 +240,8 @@ exports.chatPida = onCall({
         INFORMACIÓN CLAVE QUE DEBES SABER SOBRE IIRESODH:
         - Misión: Somos una institución dedicada a la defensa, promoción y educación en Derechos Humanos y Responsabilidad Social a nivel internacional.
         - Áreas de trabajo principales: Litigio Estratégico, Cooperación Internacional, Cursos y Capacitaciones, y Publicación de Artículos Académicos.
-        - Presencia: Trabajamos a nivel internacional, con proyectos activos en países como Colombia, Costa Rica, México, entre otros.
+        - Oficinas: Tenemos presencia física en Bogotá (Colombia), San José (Costa Rica), Ciudad de Guatemala (Guatemala), Ciudad de México (México) y Quebec (Canadá), pero operamos globalmente.
+        - Presencia: Trabajamos a nivel internacional, con proyectos activos en países como Colombia, Costa Rica, Guatemala, México, Canadá, entre otros.
         
         TUS REGLAS ESTRICTAS DE COMPORTAMIENTO:
         1. SÉ CONCISO: Los usuarios leen en una pequeña ventana de chat. Usa párrafos muy cortos (máximo 3-4 líneas) y viñetas si es necesario. Nunca des respuestas extremadamente largas.
@@ -273,4 +274,85 @@ exports.chatPida = onCall({
     console.error("Error en el cerebro de PIDA:", error);
     throw new HttpsError("internal", "Error procesando la respuesta con PIDA.");
   }
+});
+
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
+// ============================================================================
+// 5. FUNCIÓN PARA CREAR INTENTO DE PAGO (STRIPE ELEMENTS)
+// ============================================================================
+exports.crearIntentoPago = onCall({ 
+  region: "us-central1"
+}, async (request) => {
+  const { libroId } = request.data;
+
+  try {
+    const precioUnitario = 2500; // $25.00 USD en centavos
+
+    // Creamos el PaymentIntent en Stripe
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: precioUnitario,
+      currency: "usd",
+      metadata: {
+        libroId: libroId
+      },
+      // Puedes habilitar otros métodos como Google Pay o Apple Pay automáticos
+      automatic_payment_methods: { enabled: true, allow_redirects: 'never' },
+    });
+
+    // Devolvemos el "secreto del cliente" al frontend
+    return { clientSecret: paymentIntent.client_secret };
+  } catch (error) {
+    console.error("Error creando PaymentIntent:", error);
+    throw new HttpsError("internal", "No se pudo iniciar el pago.");
+  }
+});
+
+// ============================================================================
+// 6. WEBHOOK DE STRIPE: CONFIRMA EL PAGO (ELEMENTS) Y RESTA INVENTARIO
+// ============================================================================
+exports.stripeWebhook = onRequest({ region: "us-central1" }, async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET; 
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret);
+  } catch (err) {
+    console.error(`Error de firma del Webhook: ${err.message}`);
+    res.status(400).send(`Webhook Error: ${err.message}`);
+    return;
+  }
+
+  // Escuchamos el evento específico de Stripe Elements
+  if (event.type === 'payment_intent.succeeded') {
+    const paymentIntent = event.data.object;
+    const libroId = paymentIntent.metadata.libroId;
+    const emailCliente = paymentIntent.receipt_email || "cliente@anonimo.com";
+
+    try {
+      const db = admin.firestore();
+      
+      // Guardamos la compra
+      await db.collection("compras").add({
+        libroId: libroId,
+        email: emailCliente,
+        paymentIntentId: paymentIntent.id,
+        fecha: admin.firestore.FieldValue.serverTimestamp(),
+        estado: 'pagado'
+      });
+
+      // Descontamos el inventario
+      const libroRef = db.collection("libros").doc(libroId);
+      await libroRef.update({
+        stock: admin.firestore.FieldValue.increment(-1)
+      });
+
+      console.log(`¡Éxito! Inventario descontado para el libro ${libroId}.`);
+    } catch (error) {
+      console.error("Error actualizando la base de datos:", error);
+    }
+  }
+
+  res.json({ received: true });
 });
