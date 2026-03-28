@@ -306,14 +306,14 @@ exports.crearIntentoPago = onCall({
 });
 
 // ============================================================================
-// 6. WEBHOOK DE STRIPE: CONFIRMA EL PAGO (ELEMENTS) Y RESTA INVENTARIO
+// 6. WEBHOOK DE STRIPE: CONFIRMA PAGO, RESTA INVENTARIO Y ENVÍA CORREO
 // ============================================================================
 exports.stripeWebhook = onRequest({ 
-  secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET], 
+  // ¡NUEVO! Le damos permiso de usar tus credenciales de Gmail
+  secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN], 
   region: "us-central1" 
 }, async (req, res) => {
   
-  // Inicializamos Stripe y el Webhook Secret aquí
   const stripe = new Stripe(STRIPE_SECRET_KEY.value());
   const endpointSecret = STRIPE_WEBHOOK_SECRET.value(); 
   const sig = req.headers['stripe-signature'];
@@ -327,7 +327,6 @@ exports.stripeWebhook = onRequest({
     return;
   }
 
-  // Escuchamos el evento específico de Stripe Elements
   if (event.type === 'payment_intent.succeeded') {
     const paymentIntent = event.data.object;
     const libroId = paymentIntent.metadata.libroId;
@@ -336,7 +335,7 @@ exports.stripeWebhook = onRequest({
     try {
       const db = admin.firestore();
       
-      // Guardamos la compra
+      // 1. Guardamos la compra
       await db.collection("compras").add({
         libroId: libroId,
         email: emailCliente,
@@ -345,15 +344,49 @@ exports.stripeWebhook = onRequest({
         estado: 'pagado'
       });
 
-      // Descontamos el inventario
+      // 2. Descontamos el inventario
       const libroRef = db.collection("libros").doc(libroId);
       await libroRef.update({
         stock: admin.firestore.FieldValue.increment(-1)
       });
 
+      // 3. ¡NUEVO! ENVIAMOS EL CORREO CON EL LIBRO USANDO NODEMAILER
+      if (emailCliente !== "cliente@anonimo.com") {
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            type: 'OAuth2',
+            user: 'contacto@iiresodh.org',
+            clientId: GMAIL_CLIENT_ID.value(),
+            clientSecret: GMAIL_CLIENT_SECRET.value(),
+            refreshToken: GMAIL_REFRESH_TOKEN.value()
+          }
+        });
+
+        const mailOptions = {
+          from: `"Tienda IIRESODH" <contacto@iiresodh.org>`,
+          to: emailCliente,
+          subject: `¡Gracias por tu compra! Aquí tienes tu libro`,
+          html: `
+            <h2 style="color: #1D3557;">¡Pago procesado con éxito!</h2>
+            <p>Hola,</p>
+            <p>Hemos recibido tu pago correctamente. Puedes descargar tu copia digital del manual en el siguiente enlace:</p>
+            <br>
+            <a href="https://URL_DE_TU_PDF_EN_FIREBASE_STORAGE" style="background-color: #B92F32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+              ⬇ Descargar Libro (PDF)
+            </a>
+            <br><br>
+            <p>Gracias por apoyar la labor del Instituto Internacional de Responsabilidad Social y Derechos Humanos.</p>
+          `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`Correo con el libro enviado a: ${emailCliente}`);
+      }
+
       console.log(`¡Éxito! Inventario descontado para el libro ${libroId}.`);
     } catch (error) {
-      console.error("Error actualizando la base de datos:", error);
+      console.error("Error en el proceso post-pago:", error);
     }
   }
 

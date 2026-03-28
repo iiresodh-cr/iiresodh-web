@@ -33,38 +33,28 @@ const generarSlug = (texto) => {
 export const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
   
-  // 1. Escapar < y > por seguridad, pero NO TOCAR el & para no romper URLs
   let procesado = texto.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const linksGuardados = [];
 
-  const linksGuardados = []; // Caja fuerte temporal
-
-  // 2. Extraer Markdown (Por si alguien decide usarlo manualmente: [Texto](URL))
   procesado = procesado.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, label, url) => {
     linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline wrap-break-words">${label}</a>`);
     return `__LINK_${linksGuardados.length - 1}__`; 
   });
 
-  // 3. LA MAGIA AUTOMÁTICA: Extraer URLs crudas pegadas y convertirlas en "haciendo clic aquí"
   procesado = procesado.replace(/(https?:\/\/[^\s]+)/g, (match, url) => {
-    if (url.includes("__LINK_")) return match; // Evitar procesar los que ya guardamos
-    
-    // AQUÍ ESTÁ EL CAMBIO: Todo link crudo se disfraza automáticamente
+    if (url.includes("__LINK_")) return match; 
     const textoFijo = "clic aquí";
-    
     linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline wrap-break-words">${textoFijo}</a>`);
     return `__LINK_${linksGuardados.length - 1}__`; 
   });
 
-  // 4. Procesar Hashtags
   procesado = procesado.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (match) => {
     const term = match.substring(1);
     return `<a href="/buscar?q=${term}" class="text-light-blue hover:text-main-red font-bold">${match}</a>`;
   });
 
-  // 5. Restaurar Links desde la caja fuerte
   procesado = procesado.replace(/__LINK_(\d+)__/g, (match, i) => linksGuardados[i]);
 
-  // 6. Convertir saltos de línea a párrafos
   const parrafos = procesado.split(/\n\s*\n/);
   return parrafos.map(p => `<p>${p.replace(/\n/g, '<br />')}</p>`).join('');
 };
@@ -111,6 +101,12 @@ export default function AdminPanel() {
   const [resumen, setResumen] = useState("");
   const [contenido, setContenido] = useState("");
   const [fechaPersonalizada, setFechaPersonalizada] = useState(""); 
+  
+  // NUEVOS ESTADOS PARA LIBROS
+  const [precio, setPrecio] = useState("");
+  const [archivoLibro, setArchivoLibro] = useState(null);
+  const [archivoLibroNombre, setArchivoLibroNombre] = useState("");
+  const [archivoLibroAnterior, setArchivoLibroAnterior] = useState(null);
   
   const [imagenPrincipal, setImagenPrincipal] = useState(null);
   const [mainImagePreviewUrl, setMainImagePreviewUrl] = useState(null);
@@ -163,7 +159,9 @@ export default function AdminPanel() {
   };
 
   const obtenerColeccionActiva = () => {
-    return vistaActiva === "articulos" ? "articulos_academicos" : "noticias";
+    if (vistaActiva === "articulos") return "articulos_academicos";
+    if (vistaActiva === "libros") return "libros";
+    return "noticias";
   };
 
   const cargarItemsBatch = async (consulta, direccion) => {
@@ -273,6 +271,11 @@ export default function AdminPanel() {
       setFechaPersonalizada(localISOTime);
     }
 
+    if (vistaActiva === "libros") {
+      setPrecio(item.precio || "");
+      setArchivoLibroAnterior(item.archivoLibroUrl || null);
+    }
+
     setImagenPrincipalAnterior(item.imagenPrincipalUrl || null);
     setMainImagePreviewUrl(item.imagenPrincipalUrl || null); 
     setCarruselExistente(item.imagenesCarruselUrls || []);
@@ -293,6 +296,10 @@ export default function AdminPanel() {
     setCarruselExistente([]);
     setImagenesCarrusel([]);
     setArchivosAdjuntos([]);
+    setPrecio("");
+    setArchivoLibro(null);
+    setArchivoLibroNombre("");
+    setArchivoLibroAnterior(null);
     setMensaje("Operación cancelada. Formulario en blanco.");
     setTimeout(() => setMensaje(""), 3000);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -353,7 +360,7 @@ export default function AdminPanel() {
     const file = e.target.files[0];
     if (file) {
       try {
-        setMensaje("Optimizando imagen...");
+        setMensaje("Optimizando imagen a WebP...");
         const webpFile = await convertirAWebp(file);
         setImagenPrincipal(webpFile);
         setMainImagePreviewUrl(URL.createObjectURL(webpFile));
@@ -367,7 +374,6 @@ export default function AdminPanel() {
   };
 
   const handleAgregarImagenes = async (e) => {
-    // SE SOLUCIONÓ EL ORDEN: Ordenamos los archivos alfabéticamente antes de procesarlos
     const files = Array.from(e.target.files).sort((a, b) => a.name.localeCompare(b.name));
     
     if (files.length > 0) {
@@ -391,13 +397,22 @@ export default function AdminPanel() {
     setMensaje(editandoId ? "Actualizando información..." : "Publicando contenido...");
 
     try {
-      const carpeta = vistaActiva === "articulos" ? "articulos" : "noticias";
-      let finalPrincipalUrl = imagenPrincipalAnterior;
+      const carpeta = vistaActiva === "articulos" ? "articulos" : (vistaActiva === "libros" ? "libros" : "noticias");
       
+      // 1. Subir Portada (convertida a WebP)
+      let finalPrincipalUrl = imagenPrincipalAnterior;
       if (imagenPrincipal) {
-        const refImg = ref(storage, `${carpeta}/${Date.now()}_${imagenPrincipal.name}`);
+        const refImg = ref(storage, `${carpeta}/portadas/${Date.now()}_${imagenPrincipal.name}`);
         await uploadBytes(refImg, imagenPrincipal);
         finalPrincipalUrl = await getDownloadURL(refImg);
+      }
+
+      // 2. Subir Archivo PDF del Libro (Privado y seguro, sin sistema Link)
+      let finalArchivoLibroUrl = archivoLibroAnterior;
+      if (vistaActiva === "libros" && archivoLibro) {
+        const refLibro = ref(storage, `${carpeta}/archivos/${Date.now()}_${archivoLibro.name}`);
+        await uploadBytes(refLibro, archivoLibro);
+        finalArchivoLibroUrl = await getDownloadURL(refLibro);
       }
 
       const nuevasUrls = [];
@@ -419,10 +434,16 @@ export default function AdminPanel() {
         contenido,
         slug: slugGenerado, 
         imagenPrincipalUrl: finalPrincipalUrl || null,
-        imagenesCarruselUrls: vistaActiva === "comunicaciones" ? [...carruselExistente, ...nuevasUrls] : [],
         fechaPublicacion: fechaPersonalizada ? Timestamp.fromDate(new Date(fechaPersonalizada)) : serverTimestamp(),
         activa: true
       };
+
+      if (vistaActiva === "comunicaciones") {
+        datos.imagenesCarruselUrls = [...carruselExistente, ...nuevasUrls];
+      } else if (vistaActiva === "libros") {
+        datos.precio = parseFloat(precio) || 0;
+        datos.archivoLibroUrl = finalArchivoLibroUrl;
+      }
 
       if (editandoId) {
         await updateDoc(doc(db, coleccion, editandoId), datos);
@@ -499,6 +520,7 @@ export default function AdminPanel() {
                   <p className="text-sm text-gray-500">Gestión de noticias y comunicados</p>
                 </div>
               </button>
+              
               <button onClick={() => setVistaActiva("articulos")} className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-main-red/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center">
                 <div className="p-4 bg-red-50 text-main-red rounded-2xl group-hover:bg-main-red group-hover:text-white transition-colors duration-300">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
@@ -508,20 +530,21 @@ export default function AdminPanel() {
                   <p className="text-sm text-gray-500">Publicación de investigaciones</p>
                 </div>
               </button>
-              <div className="bg-gray-50/50 border border-gray-100 p-10 rounded-3xl flex flex-col items-center justify-center gap-5 text-center cursor-not-allowed">
-                <div className="p-4 bg-gray-100 text-gray-400 rounded-2xl">
-                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
+
+              <button onClick={() => setVistaActiva("libros")} className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-green-500/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center">
+                <div className="p-4 bg-green-50 text-green-600 rounded-2xl group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
+                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-400 mb-1">Litigios Activos</h2>
-                  <p className="text-sm text-gray-400 font-medium bg-white px-3 py-1 rounded-full border border-gray-100 inline-block mt-1">Próximamente</p>
+                  <h2 className="text-xl font-bold text-gray-800 mb-1">Tienda Editorial</h2>
+                  <p className="text-sm text-gray-500">Venta de libros y manuales (PDF)</p>
                 </div>
-              </div>
+              </button>
             </nav>
           </section>
         )}
 
-        {(vistaActiva === "comunicaciones" || vistaActiva === "articulos") && (
+        {(vistaActiva === "comunicaciones" || vistaActiva === "articulos" || vistaActiva === "libros") && (
           <div className="animate-fade-in-up">
             <button onClick={() => { limpiarFormulario(); setVistaActiva("inicio"); }} className="mb-8 flex items-center gap-2 text-gray-500 font-medium hover:text-main-blue transition-colors cursor-pointer group">
               <div className="bg-white p-1.5 rounded-full shadow-sm group-hover:shadow border border-gray-100 transition-all">
@@ -548,19 +571,27 @@ export default function AdminPanel() {
                   <header className="mb-8 flex items-center justify-between">
                     <div>
                       <h2 id="form-title" className={`text-2xl md:text-3xl font-bold tracking-tight ${editandoId ? 'text-main-red' : 'text-gray-800'}`}>
-                        {editandoId ? "Editando Publicación" : "Crear Nueva Publicación"}
+                        {editandoId ? "Editando Publicación" : (vistaActiva === "libros" ? "Registrar Nuevo Libro" : "Crear Nueva Publicación")}
                       </h2>
-                      <p className="text-sm text-gray-500 mt-1">Módulo: {vistaActiva === "comunicaciones" ? "Noticias institucionales" : "Artículos de investigación"}</p>
+                      <p className="text-sm text-gray-500 mt-1">Módulo: {vistaActiva === "comunicaciones" ? "Noticias institucionales" : (vistaActiva === "articulos" ? "Artículos de investigación" : "Tienda Editorial")}</p>
                     </div>
                     {editandoId && <span className="bg-red-50 text-main-red text-xs font-bold px-3 py-1 rounded-full border border-red-100">MODO EDICIÓN</span>}
                   </header>
 
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="md:col-span-2">
-                        <label htmlFor="input-titulo" className="block text-sm font-semibold text-gray-700 mb-1.5">{vistaActiva === "articulos" ? "Título del Artículo" : "Título de la Noticia"} *</label>
+                      <div className={vistaActiva === "libros" ? "md:col-span-1" : "md:col-span-2"}>
+                        <label htmlFor="input-titulo" className="block text-sm font-semibold text-gray-700 mb-1.5">{vistaActiva === "articulos" ? "Título del Artículo" : (vistaActiva === "libros" ? "Título del Libro" : "Título de la Noticia")} *</label>
                         <input id="input-titulo" type="text" required value={titulo} onChange={(e) => setTitulo(e.target.value)} className={inputEstilos} placeholder="Ej: Nueva alianza internacional..." />
                       </div>
+
+                      {vistaActiva === "libros" && (
+                        <div className="md:col-span-1">
+                          <label htmlFor="input-precio" className="block text-sm font-semibold text-gray-700 mb-1.5">Precio (USD) *</label>
+                          <input id="input-precio" type="number" step="0.01" required value={precio} onChange={(e) => setPrecio(e.target.value)} className={inputEstilos} placeholder="Ej: 25.00" />
+                        </div>
+                      )}
+
                       <div className="md:col-span-1">
                         <label htmlFor="input-fecha" className="block text-sm font-semibold text-gray-700 mb-1.5">Fecha (Opcional)</label>
                         <input id="input-fecha" type="datetime-local" value={fechaPersonalizada} onChange={(e) => setFechaPersonalizada(e.target.value)} className={`${inputEstilos} text-sm`} />
@@ -582,9 +613,9 @@ export default function AdminPanel() {
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-3">
                           <div>
                             <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg> Adjuntar Documentos (PDF, Word, Excel)
+                              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg> Adjuntar Documentos (Para enlazar)
                             </h3>
-                            <p className="text-xs text-gray-500">Sube un archivo para copiar su enlace.</p>
+                            <p className="text-xs text-gray-500">Sube un archivo para copiar su enlace público.</p>
                           </div>
                           <label htmlFor="input-doc" className={`text-xs bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg font-semibold shadow-sm cursor-pointer transition-colors whitespace-nowrap ${subiendoArchivo ? 'opacity-50 cursor-not-allowed' : ''}`}>
                             {subiendoArchivo ? "Subiendo..." : "+ Subir archivo"}
@@ -607,9 +638,42 @@ export default function AdminPanel() {
                       </div>
                     )}
 
+                    {vistaActiva === "libros" && (
+                      <div className="bg-blue-50/50 p-5 rounded-xl border border-dashed border-blue-200">
+                        <label className="block text-sm font-semibold text-main-blue mb-2">Archivo del Libro (PDF) *</label>
+                        <p className="text-xs text-gray-500 mb-4">Este es el archivo real que se enviará automáticamente al comprador. No se generarán links públicos.</p>
+                        
+                        <input 
+                          type="file" 
+                          accept=".pdf" 
+                          id="input-libro-pdf"
+                          className="sr-only"
+                          required={!editandoId && !archivoLibroAnterior}
+                          onChange={(e) => {
+                            if(e.target.files[0]) {
+                              setArchivoLibro(e.target.files[0]);
+                              setArchivoLibroNombre(e.target.files[0].name);
+                            }
+                          }}
+                        />
+                        <div className="flex items-center gap-3">
+                          <label htmlFor="input-libro-pdf" className="inline-block bg-white border border-gray-300 text-main-blue px-4 py-2 rounded-lg text-sm font-medium cursor-pointer hover:bg-gray-50 transition-colors shadow-sm">
+                            Seleccionar PDF...
+                          </label>
+                          {(archivoLibroNombre || archivoLibroAnterior) && (
+                            <span className="text-xs text-gray-600 font-medium truncate max-w-50 md:max-w-xs bg-white px-3 py-2 rounded-md border border-gray-200">
+                              {archivoLibroNombre || "Archivo guardado (puedes reemplazarlo)"}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     <div>
-                      <label htmlFor="input-contenido" className="block text-sm font-semibold text-gray-700 mb-1.5">Cuerpo del texto *</label>
-                      <textarea id="input-contenido" required value={contenido} onChange={(e) => setContenido(e.target.value)} className={inputEstilos} rows="12" placeholder="Escribe o pega el desarrollo de la publicación aquí..." />
+                      <label htmlFor="input-contenido" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                        {vistaActiva === "libros" ? "Descripción Larga" : "Cuerpo del texto"} *
+                      </label>
+                      <textarea id="input-contenido" required value={contenido} onChange={(e) => setContenido(e.target.value)} className={inputEstilos} rows="12" placeholder={vistaActiva === "libros" ? "Índice o descripción del libro..." : "Escribe o pega el desarrollo de la publicación aquí..."} />
                     </div>
 
                     {vistaActiva === "comunicaciones" && contenido.length > 0 && (
@@ -631,7 +695,9 @@ export default function AdminPanel() {
                       <h3 className="text-sm font-semibold text-gray-800 mb-4 border-b border-gray-100 pb-2">Archivos Multimedia</h3>
                       
                       <div className="mb-6">
-                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Portada principal</label>
+                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                          {vistaActiva === "libros" ? "Portada del Libro" : "Portada principal"}
+                        </label>
                         <div className="flex flex-col sm:flex-row items-start gap-4">
                           {mainImagePreviewUrl ? (
                             <div className="flex flex-col items-center gap-2">
@@ -651,8 +717,8 @@ export default function AdminPanel() {
                             </div>
                           )}
                           <div className="flex-1">
-                            <input type="file" accept="image/*" required={vistaActiva === "comunicaciones" && !editandoId && !imagenPrincipalAnterior} onChange={handleSeleccionPrincipal} className="sr-only" id="input-p" />
-                            <label htmlFor="input-p" className="text-sm bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium cursor-pointer inline-block hover:bg-gray-50 transition-colors">Examinar archivos...</label>
+                            <input type="file" accept="image/*" required={!editandoId && !imagenPrincipalAnterior} onChange={handleSeleccionPrincipal} className="sr-only" id="input-p" />
+                            <label htmlFor="input-p" className="text-sm bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium cursor-pointer inline-block hover:bg-gray-50 transition-colors shadow-sm">Examinar archivos...</label>
                             <p className="text-xs text-gray-400 mt-2">Formatos recomendados: JPG, PNG. Se optimizará a WebP.</p>
                           </div>
                         </div>
@@ -665,7 +731,6 @@ export default function AdminPanel() {
                           <label htmlFor="input-c" className="text-sm bg-white border border-dashed border-gray-300 text-main-blue w-full text-center py-4 rounded-lg font-medium cursor-pointer block hover:bg-blue-50 transition-colors mb-4">+ Cargar múltiples imágenes</label>
                           
                           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                            {/* IMÁGENES EXISTENTES CON DRAG & DROP */}
                             {carruselExistente.map((url, i) => (
                               <div 
                                 key={`old-${i}`} 
@@ -694,7 +759,6 @@ export default function AdminPanel() {
                               </div>
                             ))}
 
-                            {/* NUEVAS IMÁGENES CON DRAG & DROP */}
                             {imagenesCarrusel.map((f, i) => (
                               <div 
                                 key={`new-${i}`} 
@@ -759,7 +823,7 @@ export default function AdminPanel() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <h3 className="font-semibold text-sm text-gray-800 line-clamp-2 leading-snug" title={n.titulo}>{n.titulo}</h3>
-                              <p className="text-[10px] text-gray-400 mt-1 truncate">/{vistaActiva === "articulos" ? "articulos-academicos" : "noticias"}/{n.slug || n.id}</p>
+                              <p className="text-[10px] text-gray-400 mt-1 truncate">/{vistaActiva === "articulos" ? "articulos-academicos" : (vistaActiva === "libros" ? "libros" : "noticias")}/{n.slug || n.id}</p>
                             </div>
                           </div>
                           <div className="flex gap-2 w-full">
