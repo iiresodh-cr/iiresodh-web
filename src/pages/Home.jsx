@@ -40,7 +40,7 @@ export const formatearTextoConLinksYHashtags = (texto) => {
   procesado = procesado.replace(/(https?:\/\/[^\s]+)/g, (match, url) => {
     if (url.includes("__LINK_")) return match; // Evitar procesar los que ya guardamos
     
-    const textoFijo = "haciendo clic aquí";
+    const textoFijo = "clic aquí";
     linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline wrap-break-words">${textoFijo}</a>`);
     return `__LINK_${linksGuardados.length - 1}__`; 
   });
