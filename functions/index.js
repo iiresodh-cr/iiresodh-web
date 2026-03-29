@@ -1,4 +1,3 @@
-// functions/index.js
 const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
@@ -297,7 +296,7 @@ exports.crearIntentoPago = onCall({
 
     const libroData = libroDoc.data();
     
-    // LOGICA DE COBRO EXACTO (MXN O USD)
+    // LÓGICA DE COBRO EXACTO (MXN O USD)
     let montoFinal = 0;
     let currencyStripe = "usd";
 
