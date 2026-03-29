@@ -525,7 +525,7 @@ exports.stripeWebhook = onRequest({
           html: `
             <h2 style="color: #1D3557;">¡Pago procesado con éxito!</h2>
             <p>Hola,</p>
-            <p>Hemos recibido tu pago por el manual: <strong>${libroData.titulo}</strong>.</p>
+            <p>Hemos recibido tu pago por el libro: <strong>${libroData.titulo}</strong>.</p>
             <p>Puedes descargar tu copia digital en el siguiente enlace. <strong>Nota importante: Este enlace es único y caducará en 48 horas por motivos de seguridad.</strong> Por favor, descarga y guarda el archivo en tu dispositivo.</p>
             <br>
             <a href="${urlTemporal}" style="background-color: #B92F32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
