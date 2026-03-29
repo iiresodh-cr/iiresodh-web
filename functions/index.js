@@ -285,7 +285,7 @@ exports.crearIntentoPago = onCall({
   secrets: [STRIPE_SECRET_KEY], 
   region: "us-central1"
 }, async (request) => {
-  const { libroId, emailUsuario } = request.data;
+  const { libroId, emailUsuario, moneda } = request.data; // RECIBIMOS LA MONEDA DETECTADA
 
   try {
     const db = admin.firestore();
@@ -296,14 +296,26 @@ exports.crearIntentoPago = onCall({
     }
 
     const libroData = libroDoc.data();
-    // Convertimos el precio a centavos (Stripe: 25.00 -> 2500)
-    const montoFinal = Math.round(libroData.precio * 100);
+    
+    // LOGICA DE COBRO EXACTO (MXN O USD)
+    let montoFinal = 0;
+    let currencyStripe = "usd";
+
+    if (moneda === "MXN" && libroData.precioMXN) {
+      // Si está en MXN y configuraste el precio en tu admin panel
+      montoFinal = Math.round(libroData.precioMXN * 100);
+      currencyStripe = "mxn";
+    } else {
+      // Valor por defecto en USD
+      montoFinal = Math.round(libroData.precio * 100);
+      currencyStripe = "usd";
+    }
 
     const stripe = new Stripe(STRIPE_SECRET_KEY.value());
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: montoFinal,
-      currency: "usd",
+      currency: currencyStripe,
       receipt_email: emailUsuario || undefined,
       metadata: {
         libroId: libroId,

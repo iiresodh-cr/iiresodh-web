@@ -103,7 +103,8 @@ export default function AdminPanel() {
   
   // NUEVOS ESTADOS PARA LIBROS
   const [precio, setPrecio] = useState("");
-  const [autor, setAutor] = useState(""); // NUEVO
+  const [precioMXN, setPrecioMXN] = useState(""); // NUEVO CAMPO MONEDA LOCAL
+  const [autor, setAutor] = useState(""); 
   const [archivoLibro, setArchivoLibro] = useState(null);
   const [archivoLibroNombre, setArchivoLibroNombre] = useState("");
   const [archivoLibroAnterior, setArchivoLibroAnterior] = useState(null);
@@ -274,7 +275,8 @@ export default function AdminPanel() {
 
     if (vistaActiva === "libros") {
       setPrecio(item.precio || "");
-      setAutor(item.autor || ""); // NUEVO
+      setPrecioMXN(item.precioMXN || ""); // NUEVO
+      setAutor(item.autor || ""); 
       setArchivoLibroAnterior(item.archivoLibroUrl || null);
       setRutaStorageAnterior(item.rutaStorage || null);
     }
@@ -300,7 +302,8 @@ export default function AdminPanel() {
     setImagenesCarrusel([]);
     setArchivosAdjuntos([]);
     setPrecio("");
-    setAutor(""); // NUEVO
+    setPrecioMXN(""); // NUEVO
+    setAutor(""); 
     setArchivoLibro(null);
     setArchivoLibroNombre("");
     setArchivoLibroAnterior(null);
@@ -451,7 +454,8 @@ export default function AdminPanel() {
         datos.imagenesCarruselUrls = [...carruselExistente, ...nuevasUrls];
       } else if (vistaActiva === "libros") {
         datos.precio = parseFloat(precio) || 0;
-        datos.autor = autor; // NUEVO
+        datos.precioMXN = parseFloat(precioMXN) || 0; // NUEVO
+        datos.autor = autor; 
         datos.archivoLibroUrl = finalArchivoLibroUrl;
         
         if (rutaStorageLibro) {
@@ -539,7 +543,7 @@ export default function AdminPanel() {
               
               <button onClick={() => setVistaActiva("articulos")} className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-main-red/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center">
                 <div className="p-4 bg-red-50 text-main-red rounded-2xl group-hover:bg-main-red group-hover:text-white transition-colors duration-300">
-                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-gray-800 mb-1">Artículos Académicos</h2>
@@ -614,11 +618,17 @@ export default function AdminPanel() {
                       </div>
                     </div>
 
-                    {/* NUEVO CAMPO AUTOR - SOLO VISIBLE EN LIBROS */}
+                    {/* NUEVA FILA DE CAMPOS PARA LIBROS (AUTOR Y PRECIO MXN) */}
                     {vistaActiva === "libros" && (
-                      <div>
-                        <label htmlFor="input-autor" className="block text-sm font-semibold text-gray-700 mb-1.5">Autor del Libro *</label>
-                        <input id="input-autor" type="text" required value={autor} onChange={(e) => setAutor(e.target.value)} className={inputEstilos} placeholder="Ej: Fabián Salvioli" />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label htmlFor="input-autor" className="block text-sm font-semibold text-gray-700 mb-1.5">Autor del Libro *</label>
+                          <input id="input-autor" type="text" required value={autor} onChange={(e) => setAutor(e.target.value)} className={inputEstilos} placeholder="Ej: Fabián Salvioli" />
+                        </div>
+                        <div>
+                          <label htmlFor="input-preciomxn" className="block text-sm font-semibold text-gray-700 mb-1.5">Precio (MXN para México) *</label>
+                          <input id="input-preciomxn" type="number" step="0.01" required value={precioMXN} onChange={(e) => setPrecioMXN(e.target.value)} className={inputEstilos} placeholder="Ej: 500.00" />
+                        </div>
                       </div>
                     )}
 

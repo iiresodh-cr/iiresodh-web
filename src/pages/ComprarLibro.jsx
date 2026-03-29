@@ -11,7 +11,7 @@ import PageHeader from "../components/PageHeader";
 const stripePromise = loadStripe("pk_test_51TG3Ix2cAGUeJe5mZ8VfsyNf1qmd7EYcncADyttNU7oZPLxpgi8VfjCWTVjOdluNcgeiyleaPgWmR1FQtZbwLj9E00RTW4N4Qs");
 
 // --- COMPONENTE DEL FORMULARIO DE PAGO ---
-const FormularioPago = ({ libroId, precio, titulo }) => {
+const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
@@ -29,7 +29,8 @@ const FormularioPago = ({ libroId, precio, titulo }) => {
 
     try {
       const crearIntento = httpsCallable(functions, 'crearIntentoPago');
-      const { data } = await crearIntento({ libroId, emailUsuario: email });
+      // ENVIAMOS LA MONEDA (MXN o USD) AL BACKEND
+      const { data } = await crearIntento({ libroId, emailUsuario: email, moneda });
 
       const resultadoPago = await stripe.confirmCardPayment(data.clientSecret, {
         payment_method: {
@@ -117,7 +118,7 @@ const FormularioPago = ({ libroId, precio, titulo }) => {
         disabled={!stripe || loading}
         className="w-full bg-main-red hover:bg-red-700 text-white font-bold py-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider text-sm mt-4 cursor-pointer"
       >
-        {loading ? "Procesando pago..." : `Pagar $${precio} USD`}
+        {loading ? "Procesando pago..." : `Pagar $${precio} ${moneda}`}
       </button>
     </form>
   );
@@ -128,6 +129,23 @@ export default function ComprarLibro() {
   const [libro, setLibro] = useState(null);
   const [listaLibros, setListaLibros] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [moneda, setMoneda] = useState("USD"); // NUEVO ESTADO PARA MONEDA
+
+  // DETECCIÓN DE IP AL CARGAR LA PÁGINA
+  useEffect(() => {
+    const detectarMoneda = async () => {
+      try {
+        const resIp = await fetch("https://ipapi.co/json/");
+        const dataIp = await resIp.json();
+        if (dataIp.country_code === "MX") {
+          setMoneda("MXN");
+        }
+      } catch (error) {
+        console.error("Error detectando país:", error);
+      }
+    };
+    detectarMoneda();
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -162,36 +180,41 @@ export default function ComprarLibro() {
         <PageHeader titulo="Tienda Editorial" subtitulo="Adquiere nuestras publicaciones académicas oficiales." />
         <div className="max-w-7xl mx-auto px-6 py-16 w-full grow">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-            {listaLibros.map((l) => (
-              <div key={l.id} className="bg-white rounded-3xl border border-gray-100 shadow-lg hover:shadow-2xl transition-all overflow-hidden flex flex-col hover:border-main-blue/20">
-                <div className="aspect-4/5 bg-gray-50 flex items-center justify-center p-6 border-b border-gray-50">
-                  {l.imagenPrincipalUrl ? (
-                    <img src={l.imagenPrincipalUrl} alt={l.titulo} className="h-full w-full object-cover rounded-lg shadow-md" />
-                  ) : (
-                    <div className="text-gray-300 font-bold text-center uppercase tracking-tighter">Sin Portada</div>
-                  )}
-                </div>
-                <div className="p-8 flex flex-col grow">
-                  <span className="text-[10px] font-black text-main-red uppercase tracking-widest mb-2 block">Copia Digital (PDF)</span>
-                  <h3 className="text-lg font-extrabold text-main-blue mb-1 uppercase leading-tight">{l.titulo}</h3>
-                  
-                  {/* AUTOR EN EL CATÁLOGO */}
-                  {l.autor && <p className="text-xs text-gray-500 mb-3 italic font-medium">Por: {l.autor}</p>}
-                  
-                  {/* RESUMEN IA COMPLETO EN EL CATÁLOGO (Eliminado line-clamp) */}
-                  {l.resumen && (
-                    <p className="text-xs text-gray-600 mb-8 leading-relaxed border-l-2 border-main-red/20 pl-3 italic">
-                      {l.resumen}
-                    </p>
-                  )}
+            {listaLibros.map((l) => {
+              // LÓGICA DE MONEDA PARA CADA TARJETA DEL CATÁLOGO
+              const esMXN = moneda === "MXN" && l.precioMXN;
+              const precioMostrar = esMXN ? l.precioMXN : l.precio;
+              const monedaMostrar = esMXN ? "MXN" : "USD";
 
-                  <div className="mt-auto pt-6 border-t border-gray-50 flex items-center justify-between">
-                    <span className="text-2xl font-black text-main-blue">${l.precio} <span className="text-xs font-medium text-gray-400">USD</span></span>
-                    <Link to={`/comprar-libro/${l.slug}`} className="bg-main-blue hover:bg-light-blue text-white font-bold py-2.5 px-6 rounded-xl text-xs uppercase tracking-widest transition-colors shadow-sm">Comprar</Link>
+              return (
+                <div key={l.id} className="bg-white rounded-3xl border border-gray-100 shadow-lg hover:shadow-2xl transition-all overflow-hidden flex flex-col hover:border-main-blue/20">
+                  <div className="aspect-4/5 bg-gray-50 flex items-center justify-center p-6 border-b border-gray-50">
+                    {l.imagenPrincipalUrl ? (
+                      <img src={l.imagenPrincipalUrl} alt={l.titulo} className="h-full w-full object-cover rounded-lg shadow-md" />
+                    ) : (
+                      <div className="text-gray-300 font-bold text-center uppercase tracking-tighter">Sin Portada</div>
+                    )}
+                  </div>
+                  <div className="p-8 flex flex-col grow">
+                    <span className="text-[10px] font-black text-main-red uppercase tracking-widest mb-2 block">Copia Digital (PDF)</span>
+                    <h3 className="text-lg font-extrabold text-main-blue mb-1 uppercase leading-tight">{l.titulo}</h3>
+                    
+                    {l.autor && <p className="text-xs text-gray-500 mb-3 italic font-medium">Por: {l.autor}</p>}
+                    
+                    {l.resumen && (
+                      <p className="text-xs text-gray-600 mb-8 leading-relaxed border-l-2 border-main-red/20 pl-3 italic">
+                        {l.resumen}
+                      </p>
+                    )}
+
+                    <div className="mt-auto pt-6 border-t border-gray-50 flex items-center justify-between">
+                      <span className="text-2xl font-black text-main-blue">${precioMostrar} <span className="text-xs font-medium text-gray-400">{monedaMostrar}</span></span>
+                      <Link to={`/comprar-libro/${l.slug}`} className="bg-main-blue hover:bg-light-blue text-white font-bold py-2.5 px-6 rounded-xl text-xs uppercase tracking-widest transition-colors shadow-sm">Comprar</Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           {listaLibros.length === 0 && <p className="text-center text-gray-400 font-medium">No hay libros disponibles en este momento.</p>}
         </div>
@@ -201,6 +224,11 @@ export default function ComprarLibro() {
 
   if (!libro) return <div className="min-h-screen flex items-center justify-center font-bold text-main-red uppercase">Publicación no encontrada</div>;
 
+  // LÓGICA DE MONEDA PARA EL LIBRO INDIVIDUAL
+  const esMXNLibro = moneda === "MXN" && libro.precioMXN;
+  const precioFinal = esMXNLibro ? libro.precioMXN : libro.precio;
+  const monedaFinal = esMXNLibro ? "MXN" : "USD";
+
   return (
     <main className="bg-white min-h-screen flex flex-col font-sans text-center md:text-left">
       <PageHeader titulo="Finalizar Compra" subtitulo="Estás adquiriendo una publicación oficial de IIRESODH." />
@@ -209,7 +237,6 @@ export default function ComprarLibro() {
         <section className="relative pt-12 px-6 md:px-8 z-10 max-w-5xl mx-auto">
           <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden flex flex-col md:flex-row">
             
-            {/* PORTADA MUCHO MÁS PEQUEÑA (Reducida a md:w-3/12 y max-w-40) */}
             <div className="md:w-3/12 bg-gray-50/50 p-8 flex flex-col items-center justify-center border-r border-gray-100 shrink-0">
               <div className="w-full max-w-40 flex items-center justify-center">
                 {libro.imagenPrincipalUrl ? (
@@ -220,7 +247,6 @@ export default function ComprarLibro() {
               </div>
             </div>
 
-            {/* INFORMACIÓN DEL LIBRO + RESUMEN IA */}
             <div className="md:w-9/12 p-8 md:p-12 flex flex-col grow">
               <span className="text-xs font-black text-main-red uppercase tracking-widest mb-2 block">Confirmación de Pedido</span>
               <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-2 leading-tight uppercase">{libro.titulo}</h2>
@@ -239,7 +265,10 @@ export default function ComprarLibro() {
               )}
 
               <div className="border-t border-gray-100 pt-6 mt-auto">
-                <Elements stripe={stripePromise}><FormularioPago libroId={libro.id} precio={libro.precio} titulo={libro.titulo} /></Elements>
+                <Elements stripe={stripePromise}>
+                  {/* PASAMOS LA MONEDA Y EL PRECIO FINAL AL COMPONENTE DE PAGO */}
+                  <FormularioPago libroId={libro.id} precio={precioFinal} moneda={monedaFinal} titulo={libro.titulo} />
+                </Elements>
               </div>
             </div>
           </div>
