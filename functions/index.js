@@ -278,11 +278,16 @@ exports.chatPida = onCall({
 });
 
 // ============================================================================
-// 5. FUNCIÓN PARA VALIDAR CUPONES REALES DE STRIPE
+// 5. FUNCIÓN PARA VALIDAR CUPONES DE STRIPE (ESTÁNDAR API)
 // ============================================================================
 exports.validarCuponStripe = onCall({
   secrets: [STRIPE_SECRET_KEY],
-  region: "us-central1"
+  region: "us-central1",
+  cors: [
+    /iiresodh-web\.web\.app$/, 
+    /iiresodh-web\.firebaseapp\.com$/, 
+    "http://localhost:5173"
+  ]
 }, async (request) => {
   const { codigo } = request.data;
   if (!codigo) {
@@ -291,38 +296,26 @@ exports.validarCuponStripe = onCall({
 
   try {
     const stripe = new Stripe(STRIPE_SECRET_KEY.value());
-    let validCoupon = null;
+    const codigoLimpio = codigo.trim(); // Limpiamos espacios, respetamos mayúsculas/minúsculas originales
 
-    // 1. Buscamos si es un "Promotion Code" (Código que el cliente teclea)
+    // Consulta profesional directa a la API de Stripe
     const promoCodes = await stripe.promotionCodes.list({
-      code: codigo,
+      code: codigoLimpio,
       active: true,
       limit: 1
     });
 
-    if (promoCodes.data.length > 0) {
-      validCoupon = promoCodes.data[0].coupon;
-    } else {
-      // 2. Fallback: Si creaste el descuento directamente como "Coupon" con ese nombre como ID
-      try {
-        const directCoupon = await stripe.coupons.retrieve(codigo);
-        if (directCoupon.valid) {
-          validCoupon = directCoupon;
-        }
-      } catch (err) {
-        // No existe tampoco como Coupon ID directo
-      }
-    }
-
-    if (!validCoupon) {
+    if (promoCodes.data.length === 0) {
       return { valido: false, mensaje: "El código de descuento no es válido o ha expirado." };
     }
 
+    const validCoupon = promoCodes.data[0].coupon;
+
     return {
       valido: true,
-      porcentaje: validCoupon.percent_off, // Vendrá con valor si es un descuento en porcentaje
-      montoFijo: validCoupon.amount_off,   // Vendrá con valor si es un descuento de monto fijo (en centavos)
-      moneda: validCoupon.currency         // Solo aplica si es monto fijo
+      porcentaje: validCoupon.percent_off, 
+      montoFijo: validCoupon.amount_off,   
+      moneda: validCoupon.currency         
     };
 
   } catch (error) {
@@ -331,13 +324,17 @@ exports.validarCuponStripe = onCall({
   }
 });
 
-
 // ============================================================================
 // 6. FUNCIÓN PARA CREAR INTENTO DE PAGO (STRIPE ELEMENTS - DINÁMICO)
 // ============================================================================
 exports.crearIntentoPago = onCall({ 
   secrets: [STRIPE_SECRET_KEY], 
-  region: "us-central1"
+  region: "us-central1",
+  cors: [
+    /iiresodh-web\.web\.app$/, 
+    /iiresodh-web\.firebaseapp\.com$/, 
+    "http://localhost:5173"
+  ]
 }, async (request) => {
   const { libroId, emailUsuario, moneda, codigoDescuento, terminosAceptados } = request.data; 
 
@@ -369,33 +366,27 @@ exports.crearIntentoPago = onCall({
 
     const stripe = new Stripe(STRIPE_SECRET_KEY.value());
 
-    // APLICACIÓN DEL CÓDIGO DE DESCUENTO EN EL SERVIDOR
+    // APLICACIÓN DEL CÓDIGO DE DESCUENTO (ESTÁNDAR API)
     if (codigoDescuento) {
-      let validCoupon = null;
-      // Buscamos código de promoción
-      const promoCodes = await stripe.promotionCodes.list({ code: codigoDescuento, active: true, limit: 1 });
+      const codigoLimpio = codigoDescuento.trim();
+      const promoCodes = await stripe.promotionCodes.list({ 
+        code: codigoLimpio, 
+        active: true, 
+        limit: 1 
+      });
       
       if (promoCodes.data.length > 0) {
-        validCoupon = promoCodes.data[0].coupon;
-      } else {
-        // Fallback por ID directo
-        try {
-          const directCoupon = await stripe.coupons.retrieve(codigoDescuento);
-          if (directCoupon.valid) validCoupon = directCoupon;
-        } catch (e) {}
-      }
-
-      if (validCoupon) {
+        const validCoupon = promoCodes.data[0].coupon;
+        
         if (validCoupon.percent_off) {
           precioBase = precioBase * (1 - validCoupon.percent_off / 100);
         } else if (validCoupon.amount_off && validCoupon.currency === currencyStripe) {
-          // amount_off viene en centavos
-          precioBase = precioBase - (validCoupon.amount_off / 100);
+          precioBase = precioBase - (validCoupon.amount_off / 100); // amount_off viene en centavos
         }
       }
     }
 
-    if (precioBase < 0) precioBase = 0; // Evitamos saldos negativos
+    if (precioBase < 0) precioBase = 0;
 
     // Redondeo obligatorio en centavos para Stripe
     montoFinal = Math.round(precioBase * 100);
