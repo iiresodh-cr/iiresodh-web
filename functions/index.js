@@ -278,16 +278,11 @@ exports.chatPida = onCall({
 });
 
 // ============================================================================
-// 5. FUNCIÓN PARA VALIDAR CUPONES DE STRIPE (BLINDADA)
+// 5. FUNCIÓN PARA VALIDAR CUPONES DE STRIPE (DOCUMENTACIÓN OFICIAL)
 // ============================================================================
 exports.validarCuponStripe = onCall({
   secrets: [STRIPE_SECRET_KEY],
-  region: "us-central1",
-  cors: [
-    /iiresodh-web\.web\.app$/, 
-    /iiresodh-web\.firebaseapp\.com$/, 
-    "http://localhost:5173"
-  ]
+  region: "us-central1"
 }, async (request) => {
   const { codigo } = request.data;
   if (!codigo) {
@@ -298,6 +293,7 @@ exports.validarCuponStripe = onCall({
     const stripe = new Stripe(STRIPE_SECRET_KEY.value());
     const codigoLimpio = codigo.trim();
 
+    // Consulta directa, exacta y nativa a la API de Stripe
     const promoCodes = await stripe.promotionCodes.list({
       code: codigoLimpio,
       active: true,
@@ -305,45 +301,28 @@ exports.validarCuponStripe = onCall({
       expand: ['data.coupon']
     });
 
-    if (promoCodes && promoCodes.data && promoCodes.data.length > 0) {
-      const promo = promoCodes.data[0];
-      
-      let percent_off = null;
-      let amount_off = null;
-      let currency = null;
-
-      // EXTRACCIÓN BLINDADA: Buscamos los valores donde sea que Stripe los haya metido
-      if (promo.coupon && typeof promo.coupon === 'object') {
-          percent_off = promo.coupon.percent_off;
-          amount_off = promo.coupon.amount_off;
-          currency = promo.coupon.currency;
-      } else if (promo.coupon && typeof promo.coupon === 'string') {
-          const fetchedCoupon = await stripe.coupons.retrieve(promo.coupon);
-          percent_off = fetchedCoupon.percent_off;
-          amount_off = fetchedCoupon.amount_off;
-          currency = fetchedCoupon.currency;
-      } else {
-          percent_off = promo.percent_off;
-          amount_off = promo.amount_off;
-          currency = promo.currency;
-      }
-
-      // Si extrajimos algo matemático válido, el cupón funciona.
-      if (percent_off !== undefined || amount_off !== undefined) {
-          return {
-            valido: true,
-            porcentaje: percent_off || null, 
-            montoFijo: amount_off || null,   
-            moneda: currency || null         
-          };
-      }
+    if (!promoCodes.data || promoCodes.data.length === 0) {
+      return { valido: false, mensaje: "El código de descuento no es válido o ha expirado." };
     }
 
-    return { valido: false, mensaje: "El código de descuento no es válido o ha expirado." };
+    const promotionCode = promoCodes.data[0];
+    const coupon = promotionCode.coupon;
+
+    // Validación de seguridad de la estructura del cupón
+    if (!coupon || !coupon.valid) {
+      return { valido: false, mensaje: "El cupón asociado a este código ha expirado." };
+    }
+
+    return {
+      valido: true,
+      porcentaje: coupon.percent_off || null, 
+      montoFijo: coupon.amount_off || null,   
+      moneda: coupon.currency || null         
+    };
 
   } catch (error) {
-    console.error("Error validando cupón en Stripe:", error);
-    throw new HttpsError("internal", "Error al consultar el cupón con el servidor de pagos.");
+    console.error("Error consultando API de Stripe:", error);
+    throw new HttpsError("internal", "Error al comunicarse con el servidor de pagos.");
   }
 });
 
@@ -352,12 +331,7 @@ exports.validarCuponStripe = onCall({
 // ============================================================================
 exports.crearIntentoPago = onCall({ 
   secrets: [STRIPE_SECRET_KEY], 
-  region: "us-central1",
-  cors: [
-    /iiresodh-web\.web\.app$/, 
-    /iiresodh-web\.firebaseapp\.com$/, 
-    "http://localhost:5173"
-  ]
+  region: "us-central1"
 }, async (request) => {
   const { libroId, emailUsuario, moneda, codigoDescuento, terminosAceptados } = request.data; 
 
@@ -389,9 +363,10 @@ exports.crearIntentoPago = onCall({
 
     const stripe = new Stripe(STRIPE_SECRET_KEY.value());
 
-    // APLICACIÓN DEL CÓDIGO DE DESCUENTO (BLINDADO)
+    // APLICACIÓN DEL CÓDIGO DE DESCUENTO (DOCUMENTACIÓN OFICIAL)
     if (codigoDescuento) {
       const codigoLimpio = codigoDescuento.trim();
+
       const promoCodes = await stripe.promotionCodes.list({ 
         code: codigoLimpio, 
         active: true, 
@@ -399,31 +374,15 @@ exports.crearIntentoPago = onCall({
         expand: ['data.coupon']
       });
       
-      if (promoCodes && promoCodes.data && promoCodes.data.length > 0) {
-        const promo = promoCodes.data[0];
-        let p_off = null;
-        let a_off = null;
-        let curr = null;
+      if (promoCodes.data && promoCodes.data.length > 0) {
+        const coupon = promoCodes.data[0].coupon;
 
-        if (promo.coupon && typeof promo.coupon === 'object') {
-            p_off = promo.coupon.percent_off;
-            a_off = promo.coupon.amount_off;
-            curr = promo.coupon.currency;
-        } else if (promo.coupon && typeof promo.coupon === 'string') {
-            const fetchedCoupon = await stripe.coupons.retrieve(promo.coupon);
-            p_off = fetchedCoupon.percent_off;
-            a_off = fetchedCoupon.amount_off;
-            curr = fetchedCoupon.currency;
-        } else {
-            p_off = promo.percent_off;
-            a_off = promo.amount_off;
-            curr = promo.currency;
-        }
-
-        if (p_off) {
-          precioBase = precioBase * (1 - p_off / 100);
-        } else if (a_off && curr === currencyStripe) {
-          precioBase = precioBase - (a_off / 100); // amount_off viene en centavos
+        if (coupon && coupon.valid) {
+          if (coupon.percent_off) {
+            precioBase = precioBase * (1 - coupon.percent_off / 100);
+          } else if (coupon.amount_off && coupon.currency === currencyStripe) {
+            precioBase = precioBase - (coupon.amount_off / 100); // amount_off viene en centavos
+          }
         }
       }
     }
