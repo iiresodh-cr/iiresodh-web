@@ -89,19 +89,24 @@ export default function Privacidad() {
                 <article className={legalTextClass} role="tabpanel" aria-labelledby="tab-general">
                   <header className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
                     <h2 className="text-2xl md:text-4xl font-bold text-main-blue mb-2">Política de Privacidad de IIRESODH</h2>
-                    <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 14 de marzo de 2026</p>
+                    <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 29 de marzo de 2026</p>
                   </header>
 
                   <section>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">1. Introducción y Alcance</h3>
                     <p className="mb-3">Bienvenido a la Política de Privacidad del Instituto Internacional de Responsabilidad Social y Derechos Humanos (en adelante, “IIRESODH”, “nosotros” o “nuestro”).</p>
                     <p className="mb-3">Esta política describe cómo recopilamos, utilizamos, protegemos y compartimos su información personal cuando visita nuestro sitio web institucional (<a href="https://iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors font-semibold">https://iiresodh.org</a>) y se comunica con nosotros.</p>
-                    <aside className="bg-pale-blue/20 p-6 rounded-2xl mt-6">
-                      <p className="text-sm font-medium text-main-blue leading-relaxed">
-                        <strong>Nota sobre servicios externos:</strong> El servicio tecnológico asociado PIDA-AI (<a href="https://pida-ai.com" target="_blank" rel="noopener noreferrer" className="text-light-blue hover:text-main-blue transition-colors">https://pida-ai.com</a>) es gestionado por una entidad jurídica independiente y se rige estrictamente por su propia Política de Privacidad, disponible en su respectivo sitio web.
-                      </p>
-                    </aside>
                   </section>
+
+                  {/* ADVERTENCIA ESTRÍCTA SOBRE LIBROS DIGITALES */}
+                  <aside className="bg-red-50 p-6 rounded-2xl mt-6 border border-red-100">
+                    <p className="text-sm font-bold text-main-red leading-relaxed mb-2 uppercase tracking-tight">
+                      Control de Acceso y Propiedad Intelectual:
+                    </p>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      Al adquirir material bibliográfico en formato digital (PDF), el sistema registra su dirección IP y datos de transacci&oacute;n. IIRESODH implementa medidas tecnológicas de protección para prevenir la piratería. Cualquier intento de redistribución no autorizada será detectado y resultará en la inhabilitación inmediata del acceso sin posibilidad de reembolso, además de las acciones legales correspondientes.
+                    </p>
+                  </aside>
 
                   <section>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">2. Responsable del Tratamiento de sus Datos</h3>
@@ -111,95 +116,71 @@ export default function Privacidad() {
                   <section>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">3. ¿Qué Información Recopilamos?</h3>
                     <ul className="list-disc pl-6 space-y-2">
-                      <li><strong>Información proporcionada directamente:</strong> Recopilamos datos personales cuando nos contacta, se inscribe en nuestras actividades o realiza una donación. Esto incluye su nombre, dirección de correo electrónico, país de residencia y el contenido de sus mensajes.</li>
-                      <li><strong>Información recopilada automáticamente:</strong> Al navegar por nuestro sitio, recopilamos información técnica estándar (dirección IP, tipo de navegador, páginas visitadas) con fines de análisis y seguridad para mejorar nuestros servicios institucionales.</li>
+                      <li><strong>Información proporcionada directamente:</strong> Recopilamos datos personales cuando nos contacta, se inscribe en nuestras actividades, realiza una donación o adquiere libros digitales.</li>
+                      <li><strong>Información de Compra:</strong> En la adquisición de archivos PDF, se procesa su correo electrónico para el envío del material y datos de facturación a través de plataformas de pago seguras.</li>
                     </ul>
-                  </section>
-
-                  <section>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">4. ¿Para Qué Utilizamos su Información? (Fines y Base Legal)</h3>
-                    <ul className="list-disc pl-6 space-y-2">
-                      <li><strong>Atención y Comunicación:</strong> Responder a sus consultas, solicitudes de información y gestionar inscripciones a nuestros programas. (Base legal: Consentimiento).</li>
-                      <li><strong>Difusión Institucional:</strong> Envío de boletines informativos o noticias sobre nuestras labores en defensa de los derechos humanos, siempre que usted haya aceptado recibirlos. (Base legal: Consentimiento).</li>
-                      <li><strong>Mantenimiento y Seguridad:</strong> Analizar el tráfico de nuestro sitio para optimizar la experiencia de usuario y prevenir fraudes informáticos. (Base legal: Interés legítimo).</li>
-                    </ul>
-                  </section>
-
-                  <section>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">5. ¿Con Quién Compartimos su Información?</h3>
-                    <p className="mb-3">IIRESODH no vende, alquila ni comercializa su información personal bajo ninguna circunstancia. Solo la compartimos en casos estrictamente necesarios:</p>
-                    <ul className="list-disc pl-6 space-y-2">
-                      <li><strong>Proveedores Tecnológicos:</strong> Empresas que nos brindan servicios de alojamiento web (hosting) o plataformas para el envío de boletines, quienes operan bajo estrictos acuerdos de confidencialidad.</li>
-                      <li><strong>Obligación Legal:</strong> Cuando una autoridad competente lo requiera en el marco de la ley y el debido proceso jurisdiccional.</li>
-                    </ul>
-                  </section>
-
-                  <section>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">6. Seguridad de su Información</h3>
-                    <p>IIRESODH aplica medidas de seguridad técnicas y organizativas para proteger su información contra accesos no autorizados, pérdida o alteración. Nuestro sitio utiliza certificados SSL para cifrar la información durante la transmisión, protegiendo así su privacidad.</p>
-                  </section>
-
-                  <section>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">7. Retención de Datos</h3>
-                    <p>Conservaremos sus datos personales únicamente durante el tiempo que sea necesario para cumplir con las finalidades descritas en esta política o para dar cumplimiento a obligaciones legales o fiscales vigentes aplicables a la institución.</p>
-                  </section>
-
-                  <section>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">8. Sus Derechos</h3>
-                    <p className="mb-3">Como usuario, usted tiene derecho a Acceder a sus datos, Rectificarlos si son incorrectos, solicitar su Supresión, u Oponerse a ciertos tratamientos (como darse de baja de nuestros boletines). Para ejercer sus derechos, por favor escríbanos a:</p>
-                    <p className="font-bold text-main-blue pl-6"><a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">contacto@iiresodh.org</a></p>
-                  </section>
-
-                  <section>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">9. Modificaciones</h3>
-                    <p>IIRESODH se reserva el derecho de actualizar esta Política de Privacidad para reflejar cambios en nuestras prácticas institucionales o en la normativa aplicable. La fecha de la última revisión se publicará siempre en la parte superior de esta página.</p>
-                  </section>
-
-                  <section>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">10. Contacto</h3>
-                    <address className="bg-gray-50 p-8 rounded-2xl mt-4 text-left not-italic font-normal text-sm md:text-base border border-gray-100">
-                      <p className="font-bold text-main-blue mb-1 uppercase tracking-tight">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</p>
-                      <p className="mb-1"><strong>Correo electrónico:</strong> <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">contacto@iiresodh.org</a></p>
-                      <p><strong>Dirección Sede Central:</strong> Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica.</p>
-                    </address>
                   </section>
                 </article>
               )}
 
               {/* =========================================
-                  CONTENIDO: AVISO PARA MÉXICO (Omitido por brevedad pero sigue misma lógica estructural)
+                  CONTENIDO: AVISO PARA MÉXICO
               ========================================= */}
               {activeTab === "mexico" && (
                 <article className={legalTextClass} role="tabpanel" aria-labelledby="tab-mexico">
-                  {/* ... Estructura similar con h2, section, h3, etc. ... */}
                   <div className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
                     <h2 className="text-2xl md:text-4xl font-bold text-main-blue mb-2">Aviso de Privacidad (MÉXICO)</h2>
-                    <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 14 de marzo de 2026</p>
+                    <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 29 de marzo de 2026</p>
                   </div>
-                  {/* El resto del contenido se mantiene igual que el original subido */}
-                  <div>
+                  <section>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">1. Introducción y Marco Legal</h3>
-                    <p className="mb-3">En estricto cumplimiento a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP) aplicable en los Estados Unidos Mexicanos, se emite el presente Aviso de Privacidad para informar a los usuarios (en adelante, el “Titular”) sobre el tratamiento de sus datos en el sitio web institucional: <a href="https://iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors font-semibold">https://iiresodh.org</a>.</p>
-                  </div>
-                  {/* ... etc ... */}
+                    <p className="mb-3">En estricto cumplimiento a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP) aplicable en los Estados Unidos Mexicanos, se emite el presente Aviso de Privacidad para informar a los usuarios sobre el tratamiento de sus datos en <a href="https://iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors font-semibold">https://iiresodh.org</a>.</p>
+                    <p className="bg-gray-50 p-4 rounded-xl text-sm italic">
+                      Este aviso cubre la protección de sus derechos ARCO (Acceso, Rectificación, Cancelación y Oposición) ante el tratamiento de datos derivados de la compra de publicaciones digitales y donaciones.
+                    </p>
+                  </section>
                 </article>
               )}
 
               {/* =========================================
-                  CONTENIDO: TÉRMINOS Y CONDICIONES (Omitido por brevedad pero sigue misma lógica estructural)
+                  CONTENIDO: TÉRMINOS Y CONDICIONES
               ========================================= */}
               {activeTab === "terminos" && (
                 <article className={legalTextClass} role="tabpanel" aria-labelledby="tab-terminos">
                   <header className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
                     <h2 className="text-2xl md:text-4xl font-bold text-main-blue mb-2">Términos y Condiciones del Sitio Web</h2>
-                    <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 14 de marzo de 2026</p>
+                    <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 29 de marzo de 2026</p>
                   </header>
-                  {/* El resto del contenido se mantiene igual que el original subido */}
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">1. Introducción</h3>
-                    <p>Estos Términos y Condiciones (en adelante, los “Términos”) se aplican al uso de este sitio web, accesible en <a href="https://iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors font-bold">https://iiresodh.org</a> (en adelante, el “Sitio Web”), y a las transacciones relacionadas con nuestros productos y servicios.</p>
-                  </div>
-                  {/* ... etc ... */}
+
+                  <section>
+                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">1. Uso de Contenidos Digitales y Política Anti-Piratería</h3>
+                    <p className="mb-4">Al adquirir o descargar material bibliográfico o académico en formato digital (PDF) de IIRESODH, usted acepta los siguientes términos de carácter vinculante y estricto:</p>
+                    
+                    <div className="space-y-4 bg-gray-50 p-6 md:p-8 rounded-2xl border border-gray-200">
+                      <p><strong>A. Licencia de Uso Personal:</strong> La compra otorga una licencia de uso personal, no exclusiva e intransferible. El archivo está destinado únicamente para el estudio privado del adquirente.</p>
+                      
+                      <p><strong>B. Prohibición de Redistribución:</strong> Queda terminantemente prohibida la reproducción total o parcial, el alquiler, la venta, el préstamo, la carga en servidores públicos, la distribución en redes sociales o cualquier otra forma de comunicación pública de los archivos PDF suministrados.</p>
+                      
+                      <p><strong>C. Enlaces Temporales:</strong> Por seguridad, los enlaces de descarga proporcionados tras el pago tienen una validez de <strong>48 horas</strong>. Es responsabilidad del usuario descargar y resguardar su archivo en dicho plazo. No se generarán enlaces nuevos tras la expiración salvo por fallos técnicos comprobables del sistema.</p>
+                      
+                      <p className="text-main-red font-bold">D. Consecuencias de la Piratería: IIRESODH perseguirá legalmente cualquier infracción a sus derechos de autor. La distribución ilícita de nuestro material académico constituye un delito bajo las leyes de propiedad intelectual internacionales y regionales.</p>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">2. Propiedad Intelectual</h3>
+                    <p>Todo el material contenido en este sitio, incluyendo pero no limitado a textos, logotipos, libros en PDF, diseños y código fuente, es propiedad exclusiva de IIRESODH o de sus autores. El uso no autorizado de estos elementos será sancionado conforme a la legislación civil y penal vigente.</p>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">3. Transacciones y Pagos</h3>
+                    <p>IIRESODH utiliza pasarelas de pago cifradas de terceros. No almacenamos los datos de su tarjeta de crédito. Una vez procesado el pago con éxito, el sistema automatizado procederá al envío del material al correo electrónico proporcionado. Dada la naturaleza digital de los productos (PDF), no se aceptan cambios ni devoluciones una vez que el enlace de descarga ha sido generado.</p>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">4. Limitación de Responsabilidad</h3>
+                    <p>IIRESODH no se hace responsable de las pérdidas de archivos por parte del usuario tras la descarga exitosa o el vencimiento del enlace de 48 horas. Tampoco garantizamos que el sitio web sea ininterrumpido o libre de errores, aunque nos esforzamos por mantener la máxima disponibilidad técnica.</p>
+                  </section>
                 </article>
               )}
 
