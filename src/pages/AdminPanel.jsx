@@ -636,7 +636,7 @@ export default function AdminPanel() {
                       <div className="flex justify-between items-end mb-1.5">
                         <label htmlFor="input-resumen" className="block text-sm font-semibold text-gray-700">Resumen corto *</label>
                         <button type="button" onClick={handleAutoResumen} disabled={generandoResumen} className="text-xs font-semibold text-main-blue hover:text-light-blue bg-blue-50 hover:bg-blue-100 py-1.5 px-3 rounded-lg transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50">
-                          {generandoResumen ? "Generando..." : "✨ Auto-completar con IA"}
+                          {generandoResumen ? "Generando..." : "✨ Auto-completar con PIDA"}
                         </button>
                       </div>
                       <textarea id="input-resumen" required maxLength="250" value={resumen} onChange={(e) => setResumen(e.target.value)} className={inputEstilos} rows="2" placeholder="Un párrafo breve para atraer al lector..." />
