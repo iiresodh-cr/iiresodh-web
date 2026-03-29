@@ -149,7 +149,7 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
                value={codigoDescuento}
                onChange={(e) => setCodigoDescuento(e.target.value)}
                placeholder="Ej. OFERTA10"
-               className="flex-grow bg-gray-50 border border-gray-200 p-3.5 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-main-blue/20 focus:border-main-blue transition-all uppercase placeholder:normal-case"
+               className="grow bg-gray-50 border border-gray-200 p-3.5 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-main-blue/20 focus:border-main-blue transition-all uppercase placeholder:normal-case"
              />
              <button 
                 type="button" 
