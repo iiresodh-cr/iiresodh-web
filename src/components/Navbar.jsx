@@ -178,12 +178,7 @@ export default function Navbar() {
                 </div>
               </div>
 
-              {/* ENLACE DIRECTO A TIENDA (Solicitado) */}
-              <Link to="/comprar-libro" className="hover:text-light-blue py-3 md:py-2 transition-colors whitespace-nowrap">
-                TIENDA
-              </Link>
-
-              {/* DROPDOWN NOTICIAS Y ARTÍCULOS (Solicitado) */}
+              {/* DROPDOWN PUBLICACIONES (Primero que Tienda) */}
               <div className="relative group w-full md:w-auto" onMouseLeave={() => setActiveDropdown(null)}>
                 <button 
                   className="flex items-center justify-between md:justify-center w-full gap-1.5 hover:text-light-blue transition-colors py-3 md:py-2 cursor-pointer whitespace-nowrap" 
@@ -205,6 +200,11 @@ export default function Navbar() {
                   </ul>
                 </div>
               </div>
+
+              {/* ENLACE DIRECTO A TIENDA (Segundo que Publicaciones) */}
+              <Link to="/comprar-libro" className="hover:text-light-blue py-3 md:py-2 transition-colors whitespace-nowrap">
+                TIENDA
+              </Link>
 
             </nav>
             
