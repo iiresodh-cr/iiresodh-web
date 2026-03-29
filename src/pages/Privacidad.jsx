@@ -88,11 +88,10 @@ export default function Privacidad() {
                     <p className="mb-3">Bienvenido a la Política de Privacidad del Instituto Internacional de Responsabilidad Social y Derechos Humanos (en adelante, “IIRESODH”, “nosotros” o “nuestro”).</p>
                     <p className="mb-3">Esta política describe cómo recopilamos, utilizamos, protegemos y compartimos su información personal cuando visita nuestro sitio web institucional (<a href="https://iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors font-semibold">https://iiresodh.org</a>) y se comunica con nosotros.</p>
                     
-                    {/* INSERCIÓN ANTI-PIRATERÍA 1 */}
                     <div className="bg-red-50 p-6 rounded-2xl mt-6 border border-red-100">
-                      <p className="text-sm font-bold text-main-red mb-2 uppercase tracking-widest">Protección de Material Digital</p>
-                      <p className="text-sm text-gray-700 leading-relaxed">
-                        Para la adquisición de libros en formato PDF, el sistema registra la dirección IP del adquirente y utiliza marcas de agua digitales vinculadas a la transacción. IIRESODH monitorea activamente la red para detectar descargas masivas o intentos de redistribución ilícita, reservándose el derecho de inhabilitar el acceso de forma permanente ante cualquier sospecha de piratería.
+                      <p className="text-sm font-bold text-main-red mb-2 uppercase tracking-widest">Advertencia de Seguridad y Trazabilidad:</p>
+                      <p className="text-sm text-gray-700 leading-relaxed italic">
+                        Para la adquisición de material bibliográfico en formato PDF, IIRESODH registra la dirección IP, el nodo de conexión y los datos de identidad del adquirente. Cada archivo entregado cuenta con marcas de agua digitales e identificadores únicos vinculados a la transacción. El uso de este sitio implica la aceptación del monitoreo técnico para prevenir la redistribución ilícita.
                       </p>
                     </div>
 
@@ -173,11 +172,14 @@ export default function Privacidad() {
                     <h2 className="text-2xl md:text-4xl font-bold text-main-blue mb-2">Aviso de Privacidad (MÉXICO)</h2>
                     <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 29 de marzo de 2026</p>
                   </div>
-                  <div>
+                  <section>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">1. Introducción y Marco Legal</h3>
                     <p className="mb-3">En estricto cumplimiento a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP) aplicable en los Estados Unidos Mexicanos, se emite el presente Aviso de Privacidad para informar a los usuarios (en adelante, el “Titular”) sobre el tratamiento de sus datos en el sitio web institucional: <a href="https://iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors font-semibold">https://iiresodh.org</a>.</p>
-                  </div>
-                  {/* ... El resto de tu contenido original de México iría aquí ... */}
+                    
+                    <p className="mt-4 bg-gray-50 p-6 rounded-xl text-sm border-l-4 border-main-red leading-relaxed">
+                      <strong>Cláusula de Protección de Activos Digitales:</strong> En términos de la LFPDPPP, se informa que el tratamiento de datos personales para la entrega de publicaciones digitales incluye la validación de integridad del archivo y el registro de metadatos de acceso. Cualquier intento de vulnerar los sistemas de protección de propiedad intelectual o la redistribución no autorizada será reportada ante las autoridades competentes por constituir una violación a los derechos de autor y el uso indebido de activos institucionales.
+                    </p>
+                  </section>
                 </article>
               )}
 
@@ -188,25 +190,17 @@ export default function Privacidad() {
                     <h2 className="text-2xl md:text-4xl font-bold text-main-blue mb-2">Términos y Condiciones del Sitio Web</h2>
                     <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 29 de marzo de 2026</p>
                   </header>
-                  <div>
+                  <section>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">1. Introducción</h3>
                     <p className="mb-6">Estos Términos y Condiciones (en adelante, los “Términos”) se aplican al uso de este sitio web, accesible en <a href="https://iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors font-bold">https://iiresodh.org</a> (en adelante, el “Sitio Web”), y a las transacciones relacionadas con nuestros productos y servicios.</p>
                     
-                    {/* INSERCIÓN ANTI-PIRATERÍA 2 (ESTRICTA) */}
-                    <h3 className="text-lg md:text-xl font-bold text-main-red mb-3">2. Política Estricta de Uso de Material Digital y Anti-Piratería</h3>
-                    <div className="bg-gray-50 p-8 rounded-2xl border border-gray-200 mb-8 space-y-4 font-medium">
-                      <p>IIRESODH suministra libros y manuales en formato digital (PDF) bajo las siguientes condiciones innegociables:</p>
-                      <ul className="list-decimal pl-6 space-y-4">
-                        <li><strong>Uso Personal:</strong> La compra de un libro digital otorga una licencia de uso personal, privada y no exclusiva. Queda prohibida su reproducción para fines comerciales o públicos.</li>
-                        <li><strong>Prohibición de Redistribución:</strong> Se prohíbe terminantemente compartir, enviar por correo electrónico, subir a nubes públicas (Google Drive, Dropbox, etc.), o publicar en redes sociales el archivo PDF adquirido.</li>
-                        <li><strong>Trazabilidad Digital:</strong> Cada archivo entregado contiene metadatos ocultos vinculados a la transacción. En caso de detectarse una copia en circulación ilegal, IIRESODH iniciará de inmediato las acciones legales penales y civiles correspondientes contra el comprador original por infracción a la Ley de Derechos de Autor.</li>
-                        <li><strong>Enlaces de Descarga:</strong> Por seguridad de la propiedad intelectual, los enlaces enviados tienen una validez de <strong>48 horas</strong>. Es responsabilidad del usuario descargar y resguardar su archivo en dicho plazo.</li>
-                      </ul>
+                    <h3 className="text-lg md:text-xl font-bold text-main-red mb-3 uppercase tracking-tighter">2. Política Estricta Anti-Piratería y Propiedad Intelectual</h3>
+                    <div className="space-y-4 bg-gray-50 p-8 rounded-2xl border border-gray-200 mb-8">
+                      <p><strong>A. Licencia Intransferible:</strong> La adquisición de un manual o libro en formato PDF otorga una licencia de uso <strong>personal, privada y no exclusiva</strong>. Queda terminantemente prohibido compartir, distribuir, enviar por correo, cargar en servidores públicos o redes sociales el material adquirido.</p>
+                      <p><strong>B. Enlaces de Descarga:</strong> Por seguridad de la propiedad intelectual, el enlace de descarga enviado tras la compra caduca exactamente **48 horas** después de la transacción. Es responsabilidad exclusiva del usuario descargar y resguardar el archivo en su dispositivo personal antes de este plazo.</p>
+                      <p><strong>C. Consecuencias Legales:</strong> La detección de cualquier copia de nuestro material académico en circulación pública o privada no autorizada facultará a IIRESODH para iniciar de inmediato acciones legales penales y civiles contra el comprador original por violación a los derechos de autor internacionales.</p>
                     </div>
-                    
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">3. Propiedad Intelectual</h3>
-                    <p>Todo el contenido presente en este Sitio Web, incluyendo textos, gráficos, logotipos e iconos, es propiedad de IIRESODH y está protegido por las leyes de propiedad intelectual internacionales.</p>
-                  </div>
+                  </section>
                 </article>
               )}
 
