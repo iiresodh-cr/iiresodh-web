@@ -160,7 +160,7 @@ export default function ComprarLibro() {
     return (
       <main className="bg-white min-h-screen flex flex-col font-sans">
         <PageHeader titulo="Tienda Editorial" subtitulo="Adquiere nuestras publicaciones académicas oficiales." />
-        <div className="max-w-6xl mx-auto px-6 py-16 w-full grow">
+        <div className="max-w-7xl mx-auto px-6 py-16 w-full grow">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
             {listaLibros.map((l) => (
               <div key={l.id} className="bg-white rounded-3xl border border-gray-100 shadow-lg hover:shadow-2xl transition-all overflow-hidden flex flex-col">
@@ -173,8 +173,18 @@ export default function ComprarLibro() {
                 </div>
                 <div className="p-8 flex flex-col grow">
                   <span className="text-[10px] font-black text-main-red uppercase tracking-widest mb-2 block">Copia Digital (PDF)</span>
-                  <h3 className="text-lg font-extrabold text-main-blue mb-4 line-clamp-2 leading-tight uppercase">{l.titulo}</h3>
-                  {l.autor && <p className="text-xs text-gray-500 mb-4 italic">Por: {l.autor}</p>}
+                  <h3 className="text-lg font-extrabold text-main-blue mb-1 line-clamp-2 leading-tight uppercase">{l.titulo}</h3>
+                  
+                  {/* AUTOR EN EL CATÁLOGO */}
+                  {l.autor && <p className="text-xs text-gray-500 mb-3 italic font-medium">Por: {l.autor}</p>}
+                  
+                  {/* RESUMEN IA EN EL CATÁLOGO (Decisión de compra aquí) */}
+                  {l.resumen && (
+                    <p className="text-xs text-gray-600 mb-6 line-clamp-3 leading-relaxed border-l-2 border-main-red/20 pl-3 italic">
+                      {l.resumen}
+                    </p>
+                  )}
+
                   <div className="mt-auto pt-6 border-t border-gray-50 flex items-center justify-between">
                     <span className="text-2xl font-black text-main-blue">${l.precio} <span className="text-xs font-medium text-gray-400">USD</span></span>
                     <Link to={`/comprar-libro/${l.slug}`} className="bg-main-blue hover:bg-light-blue text-white font-bold py-2.5 px-6 rounded-xl text-xs uppercase tracking-widest transition-colors shadow-sm">Comprar</Link>
@@ -199,24 +209,24 @@ export default function ComprarLibro() {
         <section className="relative pt-12 px-6 md:px-8 z-10 max-w-5xl mx-auto">
           <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden flex flex-col md:flex-row">
             
-            {/* IMAGEN MÁS PEQUEÑA Y CENTRADA */}
-            <div className="md:w-5/12 bg-gray-50/50 p-8 flex flex-col items-center justify-center border-r border-gray-100">
-              <div className="w-full max-w-60 flex items-center justify-center">
+            {/* IMAGEN MÁS PEQUEÑA PARA PRIORIZAR TEXTO */}
+            <div className="md:w-4/12 bg-gray-50/50 p-8 flex flex-col items-center justify-center border-r border-gray-100">
+              <div className="w-full max-w-48 flex items-center justify-center">
                 {libro.imagenPrincipalUrl ? (
-                  <img src={libro.imagenPrincipalUrl} alt={libro.titulo} className="max-w-full max-h-80 object-contain rounded-lg shadow-md" />
+                  <img src={libro.imagenPrincipalUrl} alt={libro.titulo} className="max-w-full max-h-72 object-contain rounded-lg shadow-md" />
                 ) : (
-                  <div className="w-48 h-64 bg-white rounded-lg shadow-sm border border-gray-200 flex items-center justify-center text-main-blue font-bold p-4 text-center text-sm">{libro.titulo}</div>
+                  <div className="w-40 h-56 bg-white rounded-lg shadow-sm border border-gray-200 flex items-center justify-center text-main-blue font-bold p-4 text-center text-xs uppercase">{libro.titulo}</div>
                 )}
               </div>
             </div>
 
             {/* INFORMACIÓN DEL LIBRO + RESUMEN IA */}
-            <div className="md:w-7/12 p-8 md:p-12 flex flex-col">
-              <span className="text-xs font-black text-main-red uppercase tracking-widest mb-2 block">Publicación Digital</span>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-2 leading-tight">{libro.titulo}</h2>
+            <div className="md:w-8/12 p-8 md:p-12 flex flex-col">
+              <span className="text-xs font-black text-main-red uppercase tracking-widest mb-2 block">Confirmación de Pedido</span>
+              <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-2 leading-tight uppercase">{libro.titulo}</h2>
               
               {libro.autor && (
-                <p className="text-gray-500 font-medium mb-6 italic text-sm">Por: {libro.autor}</p>
+                <p className="text-gray-500 font-medium mb-6 italic text-sm">Escrito por: {libro.autor}</p>
               )}
 
               {libro.resumen && (
