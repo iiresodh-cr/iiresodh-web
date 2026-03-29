@@ -278,7 +278,7 @@ exports.chatPida = onCall({
 });
 
 // ============================================================================
-// 5. FUNCIÓN PARA VALIDAR CUPONES DE STRIPE (BLINDADA CONTRA CRASHES)
+// 5. FUNCIÓN PARA VALIDAR CUPONES DE STRIPE (BLINDADA CONTRA CRASHES Y CON LOGS)
 // ============================================================================
 exports.validarCuponStripe = onCall({
   secrets: [STRIPE_SECRET_KEY],
@@ -297,8 +297,9 @@ exports.validarCuponStripe = onCall({
   try {
     const stripe = new Stripe(STRIPE_SECRET_KEY.value());
     const codigoLimpio = codigo.trim();
-
     let validCoupon = null;
+
+    console.log(`[Rastreador] Buscando en Stripe el código: '${codigoLimpio}'...`);
 
     // 1. Buscamos el código de promoción y FORZAMOS a Stripe a incluir el objeto "coupon" completo
     const promoCodes = await stripe.promotionCodes.list({
@@ -309,7 +310,17 @@ exports.validarCuponStripe = onCall({
     });
 
     if (promoCodes && promoCodes.data && promoCodes.data.length > 0) {
+      console.log(`[Rastreador] Código '${codigoLimpio}' ENCONTRADO.`);
       validCoupon = promoCodes.data[0].coupon;
+    } else {
+      console.log(`[Rastreador] Código NO ENCONTRADO. Listando los primeros 5 códigos que sí existen en esta Base de Datos:`);
+      // Consultamos qué es lo que SÍ está viendo Firebase en Stripe
+      const debugCodes = await stripe.promotionCodes.list({ limit: 5 });
+      if (debugCodes.data.length > 0) {
+        debugCodes.data.forEach(c => console.log(`- Código hallado: ${c.code} (Activo: ${c.active})`));
+      } else {
+        console.log(`[Rastreador] ADVERTENCIA: Esta cuenta de Stripe no tiene NINGÚN código de promoción creado.`);
+      }
     }
 
     // 2. Fallback blindado: si el usuario escribió directamente un ID de Cupón
@@ -324,7 +335,7 @@ exports.validarCuponStripe = onCall({
       }
     }
 
-    // 3. Validación final: Si sigue vacío, el código no sirve
+    // 3. Validación final
     if (!validCoupon) {
       return { valido: false, mensaje: "El código de descuento no es válido o ha expirado." };
     }
