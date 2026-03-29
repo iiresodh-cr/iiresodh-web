@@ -71,52 +71,52 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
 
   if (exito) {
     return (
-      <div className="bg-green-50 text-green-700 p-6 rounded-xl text-center border border-green-200 animate-fade-in-up">
-        <h3 className="text-xl font-bold mb-2">¡Pago Exitoso!</h3>
-        <p>Gracias por adquirir <strong>{titulo}</strong>. Te hemos enviado un correo a <strong>{email}</strong> con el archivo.</p>
+      <div className="bg-green-50 text-green-700 p-8 rounded-xl text-center border border-green-200 animate-fade-in-up">
+        <h3 className="text-2xl font-bold mb-3">¡Pago Exitoso!</h3>
+        <p className="text-lg">Gracias por adquirir <strong>{titulo}</strong>. Te hemos enviado un correo a <strong>{email}</strong> con el archivo.</p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5 text-left">
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-1 text-left">Nombre Completo</label>
+        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Nombre Completo</label>
         <input 
           type="text" 
           required
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
           placeholder="Ej. Juan Pérez"
-          className="w-full bg-gray-50 border border-gray-200 p-3 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-main-blue/20 focus:border-main-blue transition-all"
+          className="w-full bg-gray-50 border border-gray-200 p-3.5 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-main-blue/20 focus:border-main-blue transition-all"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-1 text-left">Correo Electrónico (Para envío del PDF)</label>
+        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Correo Electrónico (Para envío del PDF)</label>
         <input 
           type="email" 
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="tu@correo.com"
-          className="w-full bg-gray-50 border border-gray-200 p-3 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-main-blue/20 focus:border-main-blue transition-all"
+          className="w-full bg-gray-50 border border-gray-200 p-3.5 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-main-blue/20 focus:border-main-blue transition-all"
         />
       </div>
 
-      <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl mt-2 text-left">
+      <div className="bg-gray-50 border border-gray-200 p-5 rounded-xl mt-4 text-left">
         <label className="block text-sm font-semibold text-gray-700 mb-3">Datos de la Tarjeta</label>
-        <div className="bg-white p-3 rounded-lg border border-gray-300">
+        <div className="bg-white p-3.5 rounded-lg border border-gray-300 shadow-sm">
           <CardElement options={cardElementOptions} />
         </div>
       </div>
 
-      {error && <div className="bg-red-50 text-main-red p-3 rounded-lg text-sm border border-red-200">{error}</div>}
+      {error && <div className="bg-red-50 text-main-red p-4 rounded-lg text-sm border border-red-200 font-medium">{error}</div>}
 
       <button 
         type="submit" 
         disabled={!stripe || loading}
-        className="w-full bg-main-red hover:bg-red-700 text-white font-bold py-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider text-sm mt-4 cursor-pointer"
+        className="w-full bg-main-red hover:bg-red-700 text-white font-bold py-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest mt-6 cursor-pointer text-base"
       >
         {loading ? "Procesando pago..." : `Pagar $${precio} ${moneda}`}
       </button>
@@ -229,37 +229,55 @@ export default function ComprarLibro() {
   const monedaFinal = esMXNLibro ? "MXN" : "USD";
 
   return (
-    <main className="bg-white min-h-screen flex flex-col font-sans text-center md:text-left">
+    <main className="bg-white min-h-screen flex flex-col font-sans">
       <PageHeader titulo="Finalizar Compra" subtitulo="Estás adquiriendo una publicación oficial de IIRESODH." />
+      
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark" aria-hidden="true"></div>
-        <section className="relative pt-12 px-6 md:px-8 z-10 max-w-5xl mx-auto">
-          <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden flex flex-col md:flex-row">
-            
-            {/* PORTADA EN TAMAÑO ELEGANTE Y PROPORCIONADO */}
-            <div className="md:w-5/12 bg-gray-50/50 p-8 flex flex-col items-center justify-center border-r border-gray-100 shrink-0">
-              <div className="w-full max-w-sm flex items-center justify-center">
-                {libro.imagenPrincipalUrl ? (
-                  <img src={libro.imagenPrincipalUrl} alt={libro.titulo} className="max-w-full max-h-100 object-contain shadow-md rounded-md" />
-                ) : (
-                  <div className="w-48 h-64 bg-white rounded-lg shadow-sm border border-gray-200 flex items-center justify-center text-main-blue font-bold p-4 text-center text-xs uppercase leading-tight">{libro.titulo}</div>
-                )}
-              </div>
-            </div>
 
-            <div className="md:w-7/12 p-8 md:p-12 flex flex-col grow">
-              <span className="text-xs font-black text-main-red uppercase tracking-widest mb-2 block">Confirmación de Pedido</span>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-2 leading-tight uppercase">{libro.titulo}</h2>
+        {/* ESTRUCTURA IDÉNTICA AL EJEMPLO QUE ENVIASTE */}
+        <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
+          <div className="max-w-7xl mx-auto bg-white overflow-hidden">
+            <div className="px-8 md:px-12 lg:px-16 pb-12 md:pb-16 animate-fade-in-up">
               
-              {libro.autor && (
-                <p className="text-gray-500 font-medium mb-8 italic text-sm">Escrito por: {libro.autor}</p>
-              )}
+              <div className="flex flex-col md:flex-row gap-10 lg:gap-16 items-start text-center md:text-left">
+                
+                {/* LADO IZQUIERDO: PORTADA GRANDE Y SIN CAJAS GRISES */}
+                <div className="w-full md:w-5/12 flex justify-center shrink-0">
+                  {libro.imagenPrincipalUrl ? (
+                    <img 
+                      src={libro.imagenPrincipalUrl} 
+                      alt={libro.titulo} 
+                      className="max-w-full w-auto object-contain shadow-2xl rounded-xl" 
+                      style={{ maxHeight: "600px" }} 
+                    />
+                  ) : (
+                    <div className="w-64 h-80 bg-gray-50 rounded-xl shadow-sm border border-gray-200 flex items-center justify-center text-main-blue font-bold p-4 text-center text-sm uppercase leading-tight">
+                      {libro.titulo}
+                    </div>
+                  )}
+                </div>
 
-              <div className="border-t border-gray-100 pt-6 mt-auto">
-                <Elements stripe={stripePromise}>
-                  <FormularioPago libroId={libro.id} precio={precioFinal} moneda={monedaFinal} titulo={libro.titulo} />
-                </Elements>
+                {/* LADO DERECHO: TEXTO Y FORMULARIO */}
+                <div className="w-full md:w-7/12 flex flex-col grow">
+                  <span className="text-xs font-black text-main-red uppercase tracking-widest mb-3 block">Confirmación de Pedido</span>
+                  <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-main-blue mb-4 leading-tight uppercase">{libro.titulo}</h2>
+                  
+                  {libro.autor && (
+                    <p className="text-gray-500 font-medium mb-10 italic text-base md:text-lg">
+                      Escrito por: <span className="font-bold text-gray-800">{libro.autor}</span>
+                    </p>
+                  )}
+
+                  <div className="border-t border-gray-200 pt-8 mt-auto">
+                    <Elements stripe={stripePromise}>
+                      <FormularioPago libroId={libro.id} precio={precioFinal} moneda={monedaFinal} titulo={libro.titulo} />
+                    </Elements>
+                  </div>
+                </div>
+
               </div>
+
             </div>
           </div>
         </section>
