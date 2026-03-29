@@ -17,7 +17,10 @@ import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps
 // Imagen para portada de video
 import posterVideo from "../assets/Isotipo-color-512.png";
 
-const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+// Importación de Wrappers y MUI
+import AdminTextField from "../components/ui/AdminTextField";
+import ToastAlert from "../components/ui/ToastAlert";
+import { Button } from "@mui/material";
 
 // ==========================================
 // NUEVO MOTOR DE LINKS (INFALIBLE)
@@ -142,7 +145,6 @@ export default function Home() {
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark" aria-hidden="true"></div>
 
-        {/* AJUSTE 3: Reduje el padding superior (pt-4 md:pt-6) para que no haya tanto hueco debajo del menú */}
         <div className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-4 md:pt-6 pb-12 flex flex-col gap-8 md:gap-10 overflow-hidden">
           
           {/* BLOQUE 1: NOTICIAS DESTACADAS (CARRUSEL) */}
@@ -156,10 +158,8 @@ export default function Home() {
             >
               {noticias.map((noticia) => (
                 <SwiperSlide key={noticia.id}>
-                  {/* AJUSTE 2: Regresamos a items-center para que todo se centre bonito */}
                   <article className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center bg-white w-full">
                     
-                    {/* AJUSTE 1: Imagen más angosta (lg:col-span-4) con aspecto 4/5 */}
                     <div className="md:col-span-5 lg:col-span-4 mb-6 md:mb-0">
                       <div className="bg-gray-50 rounded-2xl shadow-sm overflow-hidden border border-gray-100 flex items-center justify-center">
                         <img 
@@ -170,7 +170,6 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* AJUSTE 1: El texto toma el espacio sobrante (lg:col-span-8) */}
                     <div className="md:col-span-7 lg:col-span-8 flex flex-col justify-center bg-white w-full">
                       <span className="text-xs font-bold text-main-red uppercase tracking-widest mb-3 block">
                         Destacado
@@ -281,7 +280,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* BLOQUE 3: NUEVA SECCIÓN - VIDEO (5) Y FORMULARIO (5) */}
+          {/* BLOQUE 3: VIDEO INSTITUCIONAL Y FORMULARIO */}
           <div className="pt-6 mt-0 border-t border-gray-100 bg-white">
             <div className="grid grid-cols-1 md:grid-cols-10 gap-10 items-stretch bg-white w-full">
               
@@ -303,7 +302,7 @@ export default function Home() {
 
               {/* DERECHA: FORMULARIO DE CONTACTO */}
               <div className="md:col-span-5 flex flex-col w-full h-full">
-                <div className="w-full h-full bg-gray-50 rounded-2xl p-8 md:p-10 border border-gray-100 shadow-sm flex flex-col justify-center">
+                <div className="w-full h-full bg-gray-50 rounded-2xl p-8 md:p-10 border border-gray-100 shadow-sm flex flex-col justify-center relative">
                   <h3 className="text-2xl font-semibold text-main-blue mb-3 text-center">
                     Escríbenos un mensaje
                   </h3>
@@ -311,63 +310,77 @@ export default function Home() {
                     ¿Tienes alguna consulta o deseas colaborar con nosotros?
                   </p>
                   
-                  <form onSubmit={handleEnviarContacto} className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Notificaciones flotantes */}
+                  <ToastAlert
+                    open={estadoEnvio === "exito"}
+                    message="¡Mensaje enviado con éxito! Nos pondremos en contacto pronto."
+                    isError={false}
+                    onClose={() => setEstadoEnvio("idle")}
+                  />
+                  <ToastAlert
+                    open={estadoEnvio === "error"}
+                    message="Ocurrió un error. Por favor, escríbenos directamente a contacto@iiresodh.org"
+                    isError={true}
+                    onClose={() => setEstadoEnvio("idle")}
+                  />
+
+                  <form onSubmit={handleEnviarContacto} className="space-y-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                       <div>
-                        <input 
-                          type="text" 
-                          required 
+                        <AdminTextField
+                          label="Tu nombre"
+                          required
                           value={contacto.nombre}
                           onChange={(e) => setContacto({...contacto, nombre: e.target.value})}
-                          className="w-full border border-gray-300 p-3.5 text-base rounded-lg focus:outline-none focus:ring-2 focus:ring-light-blue bg-white"
-                          placeholder="Tu nombre"
-                          aria-label="Tu nombre"
+                          placeholder="Ej: Juan Pérez"
                         />
                       </div>
                       <div>
-                        <input 
-                          type="email" 
-                          required 
+                        <AdminTextField
+                          label="Correo electrónico"
+                          type="email"
+                          required
                           value={contacto.correo}
                           onChange={(e) => setContacto({...contacto, correo: e.target.value})}
-                          className="w-full border border-gray-300 p-3.5 text-base rounded-lg focus:outline-none focus:ring-2 focus:ring-light-blue bg-white"
                           placeholder="tu@correo.com"
-                          aria-label="Tu correo electrónico"
                         />
                       </div>
                     </div>
                     <div>
-                      <textarea 
-                        required 
-                        rows="4"
+                      <AdminTextField
+                        label="¿En qué te podemos ayudar?"
+                        required
+                        multiline
+                        rows={4}
                         value={contacto.mensaje}
                         onChange={(e) => setContacto({...contacto, mensaje: e.target.value})}
-                        className="w-full border border-gray-300 p-3.5 text-base rounded-lg focus:outline-none focus:ring-2 focus:ring-light-blue bg-white resize-none"
-                        placeholder="¿En qué te podemos ayudar?"
-                        aria-label="Tu mensaje"
-                      ></textarea>
+                        placeholder="Escribe tu mensaje aquí..."
+                      />
                     </div>
 
-                    {estadoEnvio === "exito" && (
-                      <div className="bg-green-50 text-green-700 p-3 rounded-lg font-bold text-sm text-center border border-green-200">
-                        ¡Mensaje enviado con éxito! Nos pondremos en contacto pronto.
-                      </div>
-                    )}
-                    
-                    {estadoEnvio === "error" && (
-                      <div className="bg-red-50 text-main-red p-3 rounded-lg font-bold text-sm text-center border border-red-200">
-                        Error. Escríbenos a contacto@iiresodh.org
-                      </div>
-                    )}
-
-                    <div className="text-center pt-2">
-                      <button 
-                        type="submit" 
+                    <div className="text-center pt-4">
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        color="secondary"
                         disabled={estadoEnvio === "enviando"}
-                        className="w-full md:w-auto md:px-12 bg-main-red hover:bg-main-blue text-white font-bold py-3.5 rounded-lg transition-colors duration-300 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider text-sm"
+                        sx={{
+                          py: 1.5,
+                          px: { xs: 2, md: 6 },
+                          width: { xs: '100%', md: 'auto' },
+                          borderRadius: '8px',
+                          fontWeight: 'bold',
+                          letterSpacing: '0.05em',
+                          transition: 'all 0.3s',
+                          boxShadow: 'none',
+                          '&:hover': {
+                            backgroundColor: 'primary.main', // Cambia al color azul oscuro
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                          }
+                        }}
                       >
                         {estadoEnvio === "enviando" ? "Enviando..." : "Enviar Mensaje"}
-                      </button>
+                      </Button>
                     </div>
                   </form>
                 </div>
