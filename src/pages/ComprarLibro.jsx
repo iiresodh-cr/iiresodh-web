@@ -13,26 +13,49 @@ const stripePromise = loadStripe("pk_test_51TG3Ix2cAGUeJe5mZ8VfsyNf1qmd7EYcncADy
 const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
   const stripe = useStripe();
   const elements = useElements();
-  const [loading, setLoading] = useState(false);
+  const [loadingPago, setLoadingPago] = useState(false);
+  const [loadingDescuento, setLoadingDescuento] = useState(false);
   const [error, setError] = useState(null);
+  const [errorDescuento, setErrorDescuento] = useState(null);
   const [exito, setExito] = useState(false);
+  
   const [email, setEmail] = useState("");
   const [nombre, setNombre] = useState("");
   
-  // Estados para descuento y términos
   const [codigoDescuento, setCodigoDescuento] = useState("");
   const [descuentoAplicado, setDescuentoAplicado] = useState(null);
   const [aceptarTerminos, setAceptarTerminos] = useState(false);
 
-  // Función para validar visualmente el descuento
-  const aplicarDescuento = () => {
-      // Validación estricta en mayúsculas
-      if(codigoDescuento.trim().toUpperCase() === "OFERTA10") {
-          setDescuentoAplicado({ codigo: "OFERTA10", porcentaje: 10 });
-          setError(null);
-      } else {
+  // Función para consultar Stripe y validar el descuento real
+  const aplicarDescuento = async () => {
+      if (!codigoDescuento.trim()) return;
+      
+      setLoadingDescuento(true);
+      setErrorDescuento(null);
+      setError(null);
+
+      try {
+          const validarCupon = httpsCallable(functions, 'validarCuponStripe');
+          const { data } = await validarCupon({ codigo: codigoDescuento.trim() }); // Enviamos tal cual lo escribe
+
+          if (data.valido) {
+              setDescuentoAplicado({ 
+                  codigo: codigoDescuento.trim(), 
+                  porcentaje: data.porcentaje,
+                  montoFijo: data.montoFijo,
+                  moneda: data.moneda
+              });
+              setErrorDescuento(null);
+          } else {
+              setDescuentoAplicado(null);
+              setErrorDescuento(data.mensaje || "El código no es válido o ha expirado.");
+          }
+      } catch (err) {
+          console.error(err);
           setDescuentoAplicado(null);
-          setError("El código de descuento no es válido o ha expirado.");
+          setErrorDescuento("Error de conexión al validar el cupón.");
+      } finally {
+          setLoadingDescuento(false);
       }
   }
 
@@ -45,7 +68,7 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
         return;
     }
 
-    setLoading(true);
+    setLoadingPago(true);
     setError(null);
 
     try {
@@ -79,7 +102,7 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
       console.error(err);
       setError("Ocurrió un error al procesar tu pago. Verifica tu conexión e intenta de nuevo.");
     } finally {
-      setLoading(false);
+      setLoadingPago(false);
     }
   };
 
@@ -96,10 +119,19 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
     },
   };
 
-  // Cálculo matemático del precio visual (el backend hace su propia validación por seguridad)
-  const precioFinal = descuentoAplicado ? precio * (1 - descuentoAplicado.porcentaje / 100) : precio;
+  // Cálculo matemático del precio visual
+  let precioFinal = precio;
+  if (descuentoAplicado) {
+      if (descuentoAplicado.porcentaje) {
+          precioFinal = precio * (1 - descuentoAplicado.porcentaje / 100);
+      } else if (descuentoAplicado.montoFijo) {
+          // El monto de Stripe viene en centavos
+          precioFinal = precio - (descuentoAplicado.montoFijo / 100);
+      }
+  }
+  if (precioFinal < 0) precioFinal = 0;
 
-  // Lógica dinámica para el enlace de privacidad según el país (moneda detectada)
+  // Lógica dinámica para el enlace de privacidad
   const esMexico = moneda === "MXN";
   const urlPrivacidad = esMexico ? "/privacidad?tab=mexico" : "/privacidad?tab=general";
   const textoPrivacidad = esMexico ? "Aviso de Privacidad" : "Política de Privacidad";
@@ -140,26 +172,34 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
         />
       </div>
 
-      {/* SECCIÓN: CÓDIGO DE DESCUENTO */}
+      {/* SECCIÓN: CÓDIGO DE DESCUENTO CON CONSULTA A STRIPE */}
       <div>
          <label className="block text-sm font-semibold text-gray-700 mb-1.5">Código de Descuento (Opcional)</label>
          <div className="flex gap-2">
              <input 
                type="text" 
                value={codigoDescuento}
-               onChange={(e) => setCodigoDescuento(e.target.value)}
-               placeholder="Ej. OFERTA10"
-               className="grow bg-gray-50 border border-gray-200 p-3.5 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-main-blue/20 focus:border-main-blue transition-all uppercase placeholder:normal-case"
+               onChange={(e) => {
+                 setCodigoDescuento(e.target.value);
+                 if(errorDescuento) setErrorDescuento(null); // Limpia el error visual al escribir
+               }}
+               placeholder="Código"
+               className={`grow bg-gray-50 border p-3.5 rounded-lg focus:bg-white focus:outline-none focus:ring-2 transition-all uppercase placeholder:normal-case ${errorDescuento ? 'border-red-300 focus:ring-red-200 focus:border-red-400' : 'border-gray-200 focus:ring-main-blue/20 focus:border-main-blue'}`}
              />
              <button 
                 type="button" 
                 onClick={aplicarDescuento}
-                disabled={!codigoDescuento.trim() || loading}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3.5 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!codigoDescuento.trim() || loadingDescuento}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3.5 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-w-25"
              >
-                 Aplicar
+                 {loadingDescuento ? "..." : "Aplicar"}
              </button>
          </div>
+         {errorDescuento && (
+            <p className="text-sm text-red-600 mt-2 font-medium bg-red-50 p-2 rounded border border-red-100 animate-fade-in-up">
+              {errorDescuento}
+            </p>
+         )}
       </div>
 
       {/* SECCIÓN: DATOS DE LA TARJETA */}
@@ -202,10 +242,10 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
 
         <button 
           type="submit" 
-          disabled={!stripe || loading || !aceptarTerminos}
+          disabled={!stripe || loadingPago || !aceptarTerminos}
           className={`w-full text-white font-bold py-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest cursor-pointer text-base ${descuentoAplicado ? 'bg-green-600 hover:bg-green-700' : 'bg-main-red hover:bg-red-700'}`}
         >
-          {loading ? "Procesando pago seguro..." : `Pagar $${precioFinal.toFixed(2)} ${moneda}`}
+          {loadingPago ? "Procesando pago seguro..." : `Pagar $${precioFinal.toFixed(2)} ${moneda}`}
         </button>
       </div>
     </form>

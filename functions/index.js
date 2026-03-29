@@ -278,16 +278,69 @@ exports.chatPida = onCall({
 });
 
 // ============================================================================
-// 5. FUNCIÓN PARA CREAR INTENTO DE PAGO (STRIPE ELEMENTS - DINÁMICO)
+// 5. FUNCIÓN PARA VALIDAR CUPONES REALES DE STRIPE
+// ============================================================================
+exports.validarCuponStripe = onCall({
+  secrets: [STRIPE_SECRET_KEY],
+  region: "us-central1"
+}, async (request) => {
+  const { codigo } = request.data;
+  if (!codigo) {
+    throw new HttpsError("invalid-argument", "Código requerido.");
+  }
+
+  try {
+    const stripe = new Stripe(STRIPE_SECRET_KEY.value());
+    let validCoupon = null;
+
+    // 1. Buscamos si es un "Promotion Code" (Código que el cliente teclea)
+    const promoCodes = await stripe.promotionCodes.list({
+      code: codigo,
+      active: true,
+      limit: 1
+    });
+
+    if (promoCodes.data.length > 0) {
+      validCoupon = promoCodes.data[0].coupon;
+    } else {
+      // 2. Fallback: Si creaste el descuento directamente como "Coupon" con ese nombre como ID
+      try {
+        const directCoupon = await stripe.coupons.retrieve(codigo);
+        if (directCoupon.valid) {
+          validCoupon = directCoupon;
+        }
+      } catch (err) {
+        // No existe tampoco como Coupon ID directo
+      }
+    }
+
+    if (!validCoupon) {
+      return { valido: false, mensaje: "El código de descuento no es válido o ha expirado." };
+    }
+
+    return {
+      valido: true,
+      porcentaje: validCoupon.percent_off, // Vendrá con valor si es un descuento en porcentaje
+      montoFijo: validCoupon.amount_off,   // Vendrá con valor si es un descuento de monto fijo (en centavos)
+      moneda: validCoupon.currency         // Solo aplica si es monto fijo
+    };
+
+  } catch (error) {
+    console.error("Error validando cupón en Stripe:", error);
+    throw new HttpsError("internal", "Error al consultar el cupón con el servidor de pagos.");
+  }
+});
+
+
+// ============================================================================
+// 6. FUNCIÓN PARA CREAR INTENTO DE PAGO (STRIPE ELEMENTS - DINÁMICO)
 // ============================================================================
 exports.crearIntentoPago = onCall({ 
   secrets: [STRIPE_SECRET_KEY], 
   region: "us-central1"
 }, async (request) => {
-  // RECIBIMOS LOS NUEVOS PARÁMETROS: terminosAceptados y codigoDescuento
   const { libroId, emailUsuario, moneda, codigoDescuento, terminosAceptados } = request.data; 
 
-  // Validación backend obligatoria para los términos
   if (!terminosAceptados) {
     throw new HttpsError("failed-precondition", "Es obligatorio aceptar los términos de uso y política de privacidad.");
   }
@@ -302,30 +355,50 @@ exports.crearIntentoPago = onCall({
 
     const libroData = libroDoc.data();
     
-    // LÓGICA DE COBRO EXACTO Y DESCUENTOS
     let montoFinal = 0;
     let currencyStripe = "usd";
     let precioBase = 0;
 
     if (moneda === "MXN" && libroData.precioMXN) {
-      // Si está en MXN y configuraste el precio en tu admin panel
       precioBase = libroData.precioMXN;
       currencyStripe = "mxn";
     } else {
-      // Valor por defecto en USD
       precioBase = libroData.precio;
       currencyStripe = "usd";
     }
 
+    const stripe = new Stripe(STRIPE_SECRET_KEY.value());
+
     // APLICACIÓN DEL CÓDIGO DE DESCUENTO EN EL SERVIDOR
-    if (codigoDescuento === "OFERTA10") {
-      precioBase = precioBase * 0.90; // Aplica un 10% de descuento
+    if (codigoDescuento) {
+      let validCoupon = null;
+      // Buscamos código de promoción
+      const promoCodes = await stripe.promotionCodes.list({ code: codigoDescuento, active: true, limit: 1 });
+      
+      if (promoCodes.data.length > 0) {
+        validCoupon = promoCodes.data[0].coupon;
+      } else {
+        // Fallback por ID directo
+        try {
+          const directCoupon = await stripe.coupons.retrieve(codigoDescuento);
+          if (directCoupon.valid) validCoupon = directCoupon;
+        } catch (e) {}
+      }
+
+      if (validCoupon) {
+        if (validCoupon.percent_off) {
+          precioBase = precioBase * (1 - validCoupon.percent_off / 100);
+        } else if (validCoupon.amount_off && validCoupon.currency === currencyStripe) {
+          // amount_off viene en centavos
+          precioBase = precioBase - (validCoupon.amount_off / 100);
+        }
+      }
     }
+
+    if (precioBase < 0) precioBase = 0; // Evitamos saldos negativos
 
     // Redondeo obligatorio en centavos para Stripe
     montoFinal = Math.round(precioBase * 100);
-
-    const stripe = new Stripe(STRIPE_SECRET_KEY.value());
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: montoFinal,
@@ -335,11 +408,9 @@ exports.crearIntentoPago = onCall({
         libroId: libroId,
         titulo: libroData.titulo,
         emailCliente: emailUsuario || "cliente@anonimo.com",
-        // Guardamos la verificación en la metadata de Stripe para enviarla al Webhook
         terminosAceptados: terminosAceptados ? "true" : "false",
         codigoDescuento: codigoDescuento || "Ninguno"
       },
-      // Desactivamos redirecciones para forzar Stripe Elements puro
       automatic_payment_methods: { enabled: true, allow_redirects: 'never' },
     });
 
@@ -351,7 +422,7 @@ exports.crearIntentoPago = onCall({
 });
 
 // ============================================================================
-// 6. WEBHOOK DE STRIPE: CONFIRMA PAGO, RESTA INVENTARIO Y ENVÍA CORREO
+// 7. WEBHOOK DE STRIPE: CONFIRMA PAGO, RESTA INVENTARIO Y ENVÍA CORREO
 // ============================================================================
 exports.stripeWebhook = onRequest({ 
   secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN], 
@@ -376,14 +447,12 @@ exports.stripeWebhook = onRequest({
     const libroId = paymentIntent.metadata.libroId;
     const emailCliente = paymentIntent.receipt_email || paymentIntent.metadata.emailCliente || "cliente@anonimo.com";
     
-    // Extraemos la confirmación legal enviada por la metadata
     const terminosAceptados = paymentIntent.metadata.terminosAceptados === "true";
     const codigoDescuento = paymentIntent.metadata.codigoDescuento || "Ninguno";
 
     try {
       const db = admin.firestore();
 
-      // --- PROTECCIÓN DE IDEMPOTENCIA ---
       const comprasRef = db.collection("compras");
       const compraExistente = await comprasRef.where("paymentIntentId", "==", paymentIntent.id).get();
       
@@ -393,7 +462,6 @@ exports.stripeWebhook = onRequest({
         return; 
       }
       
-      // 1. Buscamos los datos reales del libro
       const libroDoc = await db.collection("libros").doc(libroId).get();
       if (!libroDoc.exists) {
         console.error(`Error: Se pagó el libro ${libroId} pero no existe en Firestore.`);
@@ -402,7 +470,7 @@ exports.stripeWebhook = onRequest({
       }
       const libroData = libroDoc.data();
 
-      // 2. Guardamos la compra con el REGISTRO LEGAL
+      // Registro en Firebase con datos legales
       await db.collection("compras").add({
         libroId: libroId,
         titulo: libroData.titulo,
@@ -410,21 +478,17 @@ exports.stripeWebhook = onRequest({
         paymentIntentId: paymentIntent.id,
         fecha: admin.firestore.FieldValue.serverTimestamp(),
         estado: 'pagado',
-        terminosAceptados: terminosAceptados, // Registro en la base de datos
-        codigoDescuento: codigoDescuento      // Registro del descuento usado
+        terminosAceptados: terminosAceptados,
+        codigoDescuento: codigoDescuento
       });
 
-      // 3. Descontamos el inventario
       await db.collection("libros").doc(libroId).update({
         stock: admin.firestore.FieldValue.increment(-1)
       });
 
-      // 4. GENERAR URL TEMPORAL ESTRICTA Y ENVIAR CORREO
       if (emailCliente !== "cliente@anonimo.com") {
-        
-        // REGLA ESTRICTA DE SEGURIDAD: Sin ruta, no hay correo
         if (!libroData.rutaStorage) {
-          console.error(`CRÍTICO: El libro ${libroId} no tiene 'rutaStorage' configurado. No se generó enlace para evitar brecha de seguridad.`);
+          console.error(`CRÍTICO: El libro ${libroId} no tiene 'rutaStorage'.`);
           return res.json({ received: true, error: "Missing rutaStorage" });
         }
 
@@ -433,7 +497,7 @@ exports.stripeWebhook = onRequest({
         
         const [urlTemporal] = await file.getSignedUrl({
           action: 'read',
-          expires: Date.now() + 1000 * 60 * 60 * 48, // Caduca exactamente en 48 horas (milisegundos)
+          expires: Date.now() + 1000 * 60 * 60 * 48,
         });
 
         const transporter = nodemailer.createTransport({
