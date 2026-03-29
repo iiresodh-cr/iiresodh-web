@@ -278,7 +278,7 @@ exports.chatPida = onCall({
 });
 
 // ============================================================================
-// 5. FUNCIÓN PARA VALIDAR CUPONES DE STRIPE (BLINDADA CONTRA CRASHES Y CON LOGS)
+// 5. FUNCIÓN PARA VALIDAR CUPONES DE STRIPE (BLINDADA)
 // ============================================================================
 exports.validarCuponStripe = onCall({
   secrets: [STRIPE_SECRET_KEY],
@@ -297,11 +297,7 @@ exports.validarCuponStripe = onCall({
   try {
     const stripe = new Stripe(STRIPE_SECRET_KEY.value());
     const codigoLimpio = codigo.trim();
-    let validCoupon = null;
 
-    console.log(`[Rastreador] Buscando en Stripe el código: '${codigoLimpio}'...`);
-
-    // 1. Buscamos el código de promoción y FORZAMOS a Stripe a incluir el objeto "coupon" completo
     const promoCodes = await stripe.promotionCodes.list({
       code: codigoLimpio,
       active: true,
@@ -310,42 +306,40 @@ exports.validarCuponStripe = onCall({
     });
 
     if (promoCodes && promoCodes.data && promoCodes.data.length > 0) {
-      console.log(`[Rastreador] Código '${codigoLimpio}' ENCONTRADO.`);
-      validCoupon = promoCodes.data[0].coupon;
-    } else {
-      console.log(`[Rastreador] Código NO ENCONTRADO. Listando los primeros 5 códigos que sí existen en esta Base de Datos:`);
-      // Consultamos qué es lo que SÍ está viendo Firebase en Stripe
-      const debugCodes = await stripe.promotionCodes.list({ limit: 5 });
-      if (debugCodes.data.length > 0) {
-        debugCodes.data.forEach(c => console.log(`- Código hallado: ${c.code} (Activo: ${c.active})`));
+      const promo = promoCodes.data[0];
+      
+      let percent_off = null;
+      let amount_off = null;
+      let currency = null;
+
+      // EXTRACCIÓN BLINDADA: Buscamos los valores donde sea que Stripe los haya metido
+      if (promo.coupon && typeof promo.coupon === 'object') {
+          percent_off = promo.coupon.percent_off;
+          amount_off = promo.coupon.amount_off;
+          currency = promo.coupon.currency;
+      } else if (promo.coupon && typeof promo.coupon === 'string') {
+          const fetchedCoupon = await stripe.coupons.retrieve(promo.coupon);
+          percent_off = fetchedCoupon.percent_off;
+          amount_off = fetchedCoupon.amount_off;
+          currency = fetchedCoupon.currency;
       } else {
-        console.log(`[Rastreador] ADVERTENCIA: Esta cuenta de Stripe no tiene NINGÚN código de promoción creado.`);
+          percent_off = promo.percent_off;
+          amount_off = promo.amount_off;
+          currency = promo.currency;
+      }
+
+      // Si extrajimos algo matemático válido, el cupón funciona.
+      if (percent_off !== undefined || amount_off !== undefined) {
+          return {
+            valido: true,
+            porcentaje: percent_off || null, 
+            montoFijo: amount_off || null,   
+            moneda: currency || null         
+          };
       }
     }
 
-    // 2. Fallback blindado: si el usuario escribió directamente un ID de Cupón
-    if (!validCoupon) {
-      try {
-        const directCoupon = await stripe.coupons.retrieve(codigoLimpio);
-        if (directCoupon && directCoupon.valid) {
-          validCoupon = directCoupon;
-        }
-      } catch (e) {
-        // Ignoramos silenciosamente si tampoco existe como Cupón directo
-      }
-    }
-
-    // 3. Validación final
-    if (!validCoupon) {
-      return { valido: false, mensaje: "El código de descuento no es válido o ha expirado." };
-    }
-
-    return {
-      valido: true,
-      porcentaje: validCoupon.percent_off || null, 
-      montoFijo: validCoupon.amount_off || null,   
-      moneda: validCoupon.currency || null         
-    };
+    return { valido: false, mensaje: "El código de descuento no es válido o ha expirado." };
 
   } catch (error) {
     console.error("Error validando cupón en Stripe:", error);
@@ -398,9 +392,6 @@ exports.crearIntentoPago = onCall({
     // APLICACIÓN DEL CÓDIGO DE DESCUENTO (BLINDADO)
     if (codigoDescuento) {
       const codigoLimpio = codigoDescuento.trim();
-      let validCoupon = null;
-
-      // Forzamos la expansión de los datos del cupón
       const promoCodes = await stripe.promotionCodes.list({ 
         code: codigoLimpio, 
         active: true, 
@@ -409,24 +400,30 @@ exports.crearIntentoPago = onCall({
       });
       
       if (promoCodes && promoCodes.data && promoCodes.data.length > 0) {
-        validCoupon = promoCodes.data[0].coupon;
-      }
+        const promo = promoCodes.data[0];
+        let p_off = null;
+        let a_off = null;
+        let curr = null;
 
-      if (!validCoupon) {
-        try {
-          const directCoupon = await stripe.coupons.retrieve(codigoLimpio);
-          if (directCoupon && directCoupon.valid) {
-            validCoupon = directCoupon;
-          }
-        } catch (e) {}
-      }
+        if (promo.coupon && typeof promo.coupon === 'object') {
+            p_off = promo.coupon.percent_off;
+            a_off = promo.coupon.amount_off;
+            curr = promo.coupon.currency;
+        } else if (promo.coupon && typeof promo.coupon === 'string') {
+            const fetchedCoupon = await stripe.coupons.retrieve(promo.coupon);
+            p_off = fetchedCoupon.percent_off;
+            a_off = fetchedCoupon.amount_off;
+            curr = fetchedCoupon.currency;
+        } else {
+            p_off = promo.percent_off;
+            a_off = promo.amount_off;
+            curr = promo.currency;
+        }
 
-      // Aplicamos matemáticas solo si el cupón está 100% verificado
-      if (validCoupon) {
-        if (validCoupon.percent_off) {
-          precioBase = precioBase * (1 - validCoupon.percent_off / 100);
-        } else if (validCoupon.amount_off && validCoupon.currency === currencyStripe) {
-          precioBase = precioBase - (validCoupon.amount_off / 100); // amount_off viene en centavos
+        if (p_off) {
+          precioBase = precioBase * (1 - p_off / 100);
+        } else if (a_off && curr === currencyStripe) {
+          precioBase = precioBase - (a_off / 100); // amount_off viene en centavos
         }
       }
     }
