@@ -159,7 +159,7 @@ export default function Navbar() {
                   aria-expanded={activeDropdown === 'areas'}
                   aria-controls="dropdown-areas"
                 >
-                  ÁREAS DE TRABAJO 
+                  NUESTRO TRABAJO 
                   <svg className={`w-4 h-4 text-pale-blue transition-transform duration-300 ${activeDropdown === 'areas' ? 'rotate-180' : ''} md:group-hover:rotate-180`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
                 <div 
