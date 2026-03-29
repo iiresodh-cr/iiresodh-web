@@ -1,3 +1,4 @@
+// src/pages/ComprarLibro.jsx
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { loadStripe } from "@stripe/stripe-js";
@@ -29,7 +30,6 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
 
     try {
       const crearIntento = httpsCallable(functions, 'crearIntentoPago');
-      // ENVIAMOS LA MONEDA (MXN o USD) AL BACKEND
       const { data } = await crearIntento({ libroId, emailUsuario: email, moneda });
 
       const resultadoPago = await stripe.confirmCardPayment(data.clientSecret, {
@@ -129,9 +129,8 @@ export default function ComprarLibro() {
   const [libro, setLibro] = useState(null);
   const [listaLibros, setListaLibros] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [moneda, setMoneda] = useState("USD"); // ESTADO PARA MONEDA (IP)
+  const [moneda, setMoneda] = useState("USD");
 
-  // DETECCIÓN DE IP PARA COBRO LOCAL EN MXN
   useEffect(() => {
     const detectarMoneda = async () => {
       try {
@@ -181,15 +180,12 @@ export default function ComprarLibro() {
         <div className="max-w-7xl mx-auto px-6 py-16 w-full grow">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
             {listaLibros.map((l) => {
-              // LÓGICA DE MONEDA PARA CADA TARJETA
               const esMXN = moneda === "MXN" && l.precioMXN;
               const precioMostrar = esMXN ? l.precioMXN : l.precio;
               const monedaMostrar = esMXN ? "MXN" : "USD";
 
               return (
                 <div key={l.id} className="bg-white rounded-3xl border border-gray-100 shadow-lg hover:shadow-2xl transition-all overflow-hidden flex flex-col hover:border-main-blue/20">
-                  
-                  {/* IMAGEN MÁS PEQUEÑA */}
                   <div className="bg-gray-50 flex items-center justify-center p-8 border-b border-gray-100">
                     {l.imagenPrincipalUrl ? (
                       <img src={l.imagenPrincipalUrl} alt={l.titulo} className="h-48 w-auto object-contain shadow-md rounded-md" />
@@ -197,15 +193,12 @@ export default function ComprarLibro() {
                       <div className="text-gray-300 font-bold text-center uppercase tracking-tighter h-48 flex items-center">Sin Portada</div>
                     )}
                   </div>
-
                   <div className="p-8 flex flex-col grow">
                     <span className="text-[10px] font-black text-main-red uppercase tracking-widest mb-2 block">Copia Digital (PDF)</span>
-                    <h3 className="text-lg font-extrabold text-main-blue mb-2 leading-tight uppercase">{l.titulo}</h3>
+                    <h3 className="text-lg font-extrabold text-main-blue mb-1 uppercase leading-tight">{l.titulo}</h3>
                     
-                    {/* AUTOR EN EL CATÁLOGO */}
-                    {l.autor && <p className="text-sm font-bold text-gray-700 mb-3">Por: {l.autor}</p>}
+                    {l.autor && <p className="text-xs text-gray-500 mb-3 italic font-medium">Por: {l.autor}</p>}
                     
-                    {/* RESUMEN IA COMPLETO EN EL CATÁLOGO (Decisión de compra aquí) */}
                     {l.resumen && (
                       <div className="mb-6 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
                         <p className="text-sm text-gray-700 leading-relaxed italic">
@@ -231,7 +224,6 @@ export default function ComprarLibro() {
 
   if (!libro) return <div className="min-h-screen flex items-center justify-center font-bold text-main-red uppercase">Publicación no encontrada</div>;
 
-  // LÓGICA DE MONEDA PARA EL LIBRO INDIVIDUAL
   const esMXNLibro = moneda === "MXN" && libro.precioMXN;
   const precioFinal = esMXNLibro ? libro.precioMXN : libro.precio;
   const monedaFinal = esMXNLibro ? "MXN" : "USD";
@@ -244,19 +236,18 @@ export default function ComprarLibro() {
         <section className="relative pt-12 px-6 md:px-8 z-10 max-w-5xl mx-auto">
           <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden flex flex-col md:flex-row">
             
-            {/* PORTADA AÚN MÁS PEQUEÑA (Reducida a md:w-4/12) */}
-            <div className="md:w-4/12 bg-gray-50/50 p-8 flex flex-col items-center justify-center border-r border-gray-100 shrink-0">
-              <div className="w-full flex items-center justify-center">
+            {/* PORTADA EN TAMAÑO ELEGANTE Y PROPORCIONADO */}
+            <div className="md:w-5/12 bg-gray-50/50 p-8 flex flex-col items-center justify-center border-r border-gray-100 shrink-0">
+              <div className="w-full max-w-sm flex items-center justify-center">
                 {libro.imagenPrincipalUrl ? (
-                  <img src={libro.imagenPrincipalUrl} alt={libro.titulo} className="max-w-full h-64 object-contain shadow-md rounded-md" />
+                  <img src={libro.imagenPrincipalUrl} alt={libro.titulo} className="max-w-full max-h-[400px] object-contain shadow-md rounded-md" />
                 ) : (
-                  <div className="w-32 h-48 bg-white rounded-lg shadow-sm border border-gray-200 flex items-center justify-center text-main-blue font-bold p-4 text-center text-xs uppercase leading-tight">{libro.titulo}</div>
+                  <div className="w-48 h-64 bg-white rounded-lg shadow-sm border border-gray-200 flex items-center justify-center text-main-blue font-bold p-4 text-center text-xs uppercase leading-tight">{libro.titulo}</div>
                 )}
               </div>
             </div>
 
-            {/* INFORMACIÓN DEL LIBRO SIN EL TEXTO DE LA IA */}
-            <div className="md:w-8/12 p-8 md:p-12 flex flex-col grow">
+            <div className="md:w-7/12 p-8 md:p-12 flex flex-col grow">
               <span className="text-xs font-black text-main-red uppercase tracking-widest mb-2 block">Confirmación de Pedido</span>
               <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-2 leading-tight uppercase">{libro.titulo}</h2>
               
@@ -266,7 +257,6 @@ export default function ComprarLibro() {
 
               <div className="border-t border-gray-100 pt-6 mt-auto">
                 <Elements stripe={stripePromise}>
-                  {/* PASAMOS LA MONEDA Y EL PRECIO FINAL AL COMPONENTE DE PAGO */}
                   <FormularioPago libroId={libro.id} precio={precioFinal} moneda={monedaFinal} titulo={libro.titulo} />
                 </Elements>
               </div>
