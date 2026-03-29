@@ -278,7 +278,7 @@ exports.chatPida = onCall({
 });
 
 // ============================================================================
-// 5. FUNCIÓN PARA VALIDAR CUPONES DE STRIPE (ESTÁNDAR API)
+// 5. FUNCIÓN PARA VALIDAR CUPONES DE STRIPE (BLINDADA CONTRA CRASHES)
 // ============================================================================
 exports.validarCuponStripe = onCall({
   secrets: [STRIPE_SECRET_KEY],
@@ -296,26 +296,44 @@ exports.validarCuponStripe = onCall({
 
   try {
     const stripe = new Stripe(STRIPE_SECRET_KEY.value());
-    const codigoLimpio = codigo.trim(); // Limpiamos espacios, respetamos mayúsculas/minúsculas originales
+    const codigoLimpio = codigo.trim();
 
-    // Consulta profesional directa a la API de Stripe
+    let validCoupon = null;
+
+    // 1. Buscamos el código de promoción y FORZAMOS a Stripe a incluir el objeto "coupon" completo
     const promoCodes = await stripe.promotionCodes.list({
       code: codigoLimpio,
       active: true,
-      limit: 1
+      limit: 1,
+      expand: ['data.coupon']
     });
 
-    if (promoCodes.data.length === 0) {
+    if (promoCodes && promoCodes.data && promoCodes.data.length > 0) {
+      validCoupon = promoCodes.data[0].coupon;
+    }
+
+    // 2. Fallback blindado: si el usuario escribió directamente un ID de Cupón
+    if (!validCoupon) {
+      try {
+        const directCoupon = await stripe.coupons.retrieve(codigoLimpio);
+        if (directCoupon && directCoupon.valid) {
+          validCoupon = directCoupon;
+        }
+      } catch (e) {
+        // Ignoramos silenciosamente si tampoco existe como Cupón directo
+      }
+    }
+
+    // 3. Validación final: Si sigue vacío, el código no sirve
+    if (!validCoupon) {
       return { valido: false, mensaje: "El código de descuento no es válido o ha expirado." };
     }
 
-    const validCoupon = promoCodes.data[0].coupon;
-
     return {
       valido: true,
-      porcentaje: validCoupon.percent_off, 
-      montoFijo: validCoupon.amount_off,   
-      moneda: validCoupon.currency         
+      porcentaje: validCoupon.percent_off || null, 
+      montoFijo: validCoupon.amount_off || null,   
+      moneda: validCoupon.currency || null         
     };
 
   } catch (error) {
@@ -366,18 +384,34 @@ exports.crearIntentoPago = onCall({
 
     const stripe = new Stripe(STRIPE_SECRET_KEY.value());
 
-    // APLICACIÓN DEL CÓDIGO DE DESCUENTO (ESTÁNDAR API)
+    // APLICACIÓN DEL CÓDIGO DE DESCUENTO (BLINDADO)
     if (codigoDescuento) {
       const codigoLimpio = codigoDescuento.trim();
+      let validCoupon = null;
+
+      // Forzamos la expansión de los datos del cupón
       const promoCodes = await stripe.promotionCodes.list({ 
         code: codigoLimpio, 
         active: true, 
-        limit: 1 
+        limit: 1,
+        expand: ['data.coupon']
       });
       
-      if (promoCodes.data.length > 0) {
-        const validCoupon = promoCodes.data[0].coupon;
-        
+      if (promoCodes && promoCodes.data && promoCodes.data.length > 0) {
+        validCoupon = promoCodes.data[0].coupon;
+      }
+
+      if (!validCoupon) {
+        try {
+          const directCoupon = await stripe.coupons.retrieve(codigoLimpio);
+          if (directCoupon && directCoupon.valid) {
+            validCoupon = directCoupon;
+          }
+        } catch (e) {}
+      }
+
+      // Aplicamos matemáticas solo si el cupón está 100% verificado
+      if (validCoupon) {
         if (validCoupon.percent_off) {
           precioBase = precioBase * (1 - validCoupon.percent_off / 100);
         } else if (validCoupon.amount_off && validCoupon.currency === currencyStripe) {
