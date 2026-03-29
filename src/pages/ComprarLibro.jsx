@@ -163,7 +163,7 @@ export default function ComprarLibro() {
         <div className="max-w-7xl mx-auto px-6 py-16 w-full grow">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
             {listaLibros.map((l) => (
-              <div key={l.id} className="bg-white rounded-3xl border border-gray-100 shadow-lg hover:shadow-2xl transition-all overflow-hidden flex flex-col">
+              <div key={l.id} className="bg-white rounded-3xl border border-gray-100 shadow-lg hover:shadow-2xl transition-all overflow-hidden flex flex-col hover:border-main-blue/20">
                 <div className="aspect-4/5 bg-gray-50 flex items-center justify-center p-6 border-b border-gray-50">
                   {l.imagenPrincipalUrl ? (
                     <img src={l.imagenPrincipalUrl} alt={l.titulo} className="h-full w-full object-cover rounded-lg shadow-md" />
@@ -173,14 +173,14 @@ export default function ComprarLibro() {
                 </div>
                 <div className="p-8 flex flex-col grow">
                   <span className="text-[10px] font-black text-main-red uppercase tracking-widest mb-2 block">Copia Digital (PDF)</span>
-                  <h3 className="text-lg font-extrabold text-main-blue mb-1 line-clamp-2 leading-tight uppercase">{l.titulo}</h3>
+                  <h3 className="text-lg font-extrabold text-main-blue mb-1 uppercase leading-tight">{l.titulo}</h3>
                   
                   {/* AUTOR EN EL CATÁLOGO */}
                   {l.autor && <p className="text-xs text-gray-500 mb-3 italic font-medium">Por: {l.autor}</p>}
                   
-                  {/* RESUMEN IA EN EL CATÁLOGO (Decisión de compra aquí) */}
+                  {/* RESUMEN IA COMPLETO EN EL CATÁLOGO (Eliminado line-clamp) */}
                   {l.resumen && (
-                    <p className="text-xs text-gray-600 mb-6 line-clamp-3 leading-relaxed border-l-2 border-main-red/20 pl-3 italic">
+                    <p className="text-xs text-gray-600 mb-8 leading-relaxed border-l-2 border-main-red/20 pl-3 italic">
                       {l.resumen}
                     </p>
                   )}
@@ -209,19 +209,19 @@ export default function ComprarLibro() {
         <section className="relative pt-12 px-6 md:px-8 z-10 max-w-5xl mx-auto">
           <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden flex flex-col md:flex-row">
             
-            {/* IMAGEN MÁS PEQUEÑA PARA PRIORIZAR TEXTO */}
-            <div className="md:w-4/12 bg-gray-50/50 p-8 flex flex-col items-center justify-center border-r border-gray-100">
-              <div className="w-full max-w-48 flex items-center justify-center">
+            {/* PORTADA MUCHO MÁS PEQUEÑA (Reducida a md:w-3/12 y max-w-40) */}
+            <div className="md:w-3/12 bg-gray-50/50 p-8 flex flex-col items-center justify-center border-r border-gray-100 shrink-0">
+              <div className="w-full max-w-40 flex items-center justify-center">
                 {libro.imagenPrincipalUrl ? (
-                  <img src={libro.imagenPrincipalUrl} alt={libro.titulo} className="max-w-full max-h-72 object-contain rounded-lg shadow-md" />
+                  <img src={libro.imagenPrincipalUrl} alt={libro.titulo} className="max-w-full max-h-64 object-contain rounded-lg shadow-md" />
                 ) : (
-                  <div className="w-40 h-56 bg-white rounded-lg shadow-sm border border-gray-200 flex items-center justify-center text-main-blue font-bold p-4 text-center text-xs uppercase">{libro.titulo}</div>
+                  <div className="w-32 h-48 bg-white rounded-lg shadow-sm border border-gray-200 flex items-center justify-center text-main-blue font-bold p-4 text-center text-xs uppercase leading-tight">{libro.titulo}</div>
                 )}
               </div>
             </div>
 
             {/* INFORMACIÓN DEL LIBRO + RESUMEN IA */}
-            <div className="md:w-8/12 p-8 md:p-12 flex flex-col">
+            <div className="md:w-9/12 p-8 md:p-12 flex flex-col grow">
               <span className="text-xs font-black text-main-red uppercase tracking-widest mb-2 block">Confirmación de Pedido</span>
               <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-2 leading-tight uppercase">{libro.titulo}</h2>
               
@@ -230,7 +230,7 @@ export default function ComprarLibro() {
               )}
 
               {libro.resumen && (
-                <div className="mb-8 p-5 bg-blue-50/50 rounded-2xl border border-blue-100 relative">
+                <div className="mb-8 p-5 bg-blue-50/50 rounded-2xl border border-blue-100 relative shadow-inner">
                    <svg className="absolute -top-3 -left-3 w-8 h-8 text-main-blue/20" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.017 16H19.017C19.5693 16 20.017 15.5523 20.017 15V9C20.017 8.44772 19.5693 8 19.017 8H15.017C14.4647 8 14.017 8.44772 14.017 9V11C14.017 11.5523 13.5693 12 13.017 12H12.017V4H22.017V15C22.017 18.3137 19.3307 21 16.017 21H14.017ZM2.017 21L2.017 18C2.017 16.8954 2.91238 16 4.017 16H7.017C7.56928 16 8.017 15.5523 8.017 15V9C8.017 8.44772 7.56928 8 7.017 8H3.017C2.46472 8 2.017 8.44772 2.017 9V11C2.017 11.5523 1.56928 12 1.017 12H0.017V4H10.017V15C10.017 18.3137 7.33072 21 4.017 21H2.017Z" /></svg>
                    <p className="text-gray-700 text-sm md:text-base leading-relaxed font-light italic">
                      {libro.resumen}
@@ -238,7 +238,7 @@ export default function ComprarLibro() {
                 </div>
               )}
 
-              <div className="border-t border-gray-100 pt-6">
+              <div className="border-t border-gray-100 pt-6 mt-auto">
                 <Elements stripe={stripePromise}><FormularioPago libroId={libro.id} precio={libro.precio} titulo={libro.titulo} /></Elements>
               </div>
             </div>
