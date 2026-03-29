@@ -278,7 +278,7 @@ exports.chatPida = onCall({
 });
 
 // ============================================================================
-// 5. FUNCIÓN PARA VALIDAR CUPONES DE STRIPE (REFLEJO DIRECTO EN FRONTEND)
+// 5. FUNCIÓN PARA VALIDAR CUPONES DE STRIPE (DOCUMENTACIÓN OFICIAL BLINDADA)
 // ============================================================================
 exports.validarCuponStripe = onCall({
   secrets: [STRIPE_SECRET_KEY],
@@ -291,33 +291,40 @@ exports.validarCuponStripe = onCall({
 
   try {
     const stripe = new Stripe(STRIPE_SECRET_KEY.value());
-    const codigoLimpio = codigo.trim().toUpperCase();
+    const codigoLimpio = codigo.trim();
 
-    // Obtenemos los códigos activos (método que ya probamos que encuentra PIDA33 en tu entorno)
-    const promoCodes = await stripe.promotionCodes.list({ active: true, limit: 100, expand: ['data.coupon'] });
-    const matchedPromo = promoCodes.data.find(p => (p.code || "").trim().toUpperCase() === codigoLimpio);
+    // Consulta directa a la API de Stripe, expandiendo ambas rutas posibles
+    const promoCodes = await stripe.promotionCodes.list({
+      code: codigoLimpio,
+      active: true,
+      limit: 1,
+      expand: ['data.coupon', 'data.promotion.coupon']
+    });
 
-    if (!matchedPromo) {
+    if (!promoCodes.data || promoCodes.data.length === 0) {
       return { valido: false, mensaje: "El código de descuento no es válido o ha expirado." };
     }
 
-    let couponObj = matchedPromo.coupon;
+    const promotionCode = promoCodes.data[0];
+    
+    // FIX DE LA ESTRUCTURA: Buscamos el cupón en la ruta nueva o en la clásica
+    let coupon = promotionCode.coupon || (promotionCode.promotion && promotionCode.promotion.coupon);
 
-    // Blindaje de extracción: Aseguramos tener el objeto cupón completo
-    if (typeof couponObj === 'string') {
-      couponObj = await stripe.coupons.retrieve(couponObj);
+    // Si Stripe nos dio solo el ID en texto, descargamos el objeto completo
+    if (typeof coupon === 'string') {
+      coupon = await stripe.coupons.retrieve(coupon);
     }
 
-    if (!couponObj || couponObj.valid === false) {
-      return { valido: false, mensaje: "El cupón ha expirado." };
+    // Validación de seguridad (aquí fallaba antes porque daba undefined)
+    if (!coupon || coupon.valid === false) {
+      return { valido: false, mensaje: "El cupón asociado a este código ha expirado." };
     }
 
-    // Devolvemos el objeto correcto para que React actualice la pantalla
     return {
       valido: true,
-      porcentaje: couponObj.percent_off || null, 
-      montoFijo: couponObj.amount_off || null,   
-      moneda: couponObj.currency || null         
+      porcentaje: coupon.percent_off || null, 
+      montoFijo: coupon.amount_off || null,   
+      moneda: coupon.currency || null         
     };
 
   } catch (error) {
@@ -363,24 +370,32 @@ exports.crearIntentoPago = onCall({
 
     const stripe = new Stripe(STRIPE_SECRET_KEY.value());
 
-    // APLICACIÓN DEL CÓDIGO DE DESCUENTO AL COBRO
+    // APLICACIÓN DEL CÓDIGO DE DESCUENTO (DOCUMENTACIÓN OFICIAL BLINDADA)
     if (codigoDescuento) {
-      const codigoLimpio = codigoDescuento.trim().toUpperCase();
+      const codigoLimpio = codigoDescuento.trim();
 
-      const promoCodes = await stripe.promotionCodes.list({ active: true, limit: 100, expand: ['data.coupon'] });
-      const matchedPromo = promoCodes.data.find(p => (p.code || "").trim().toUpperCase() === codigoLimpio);
+      const promoCodes = await stripe.promotionCodes.list({ 
+        code: codigoLimpio, 
+        active: true, 
+        limit: 1,
+        expand: ['data.coupon', 'data.promotion.coupon']
+      });
+      
+      if (promoCodes.data && promoCodes.data.length > 0) {
+        const promotionCode = promoCodes.data[0];
+        
+        // FIX DE LA ESTRUCTURA
+        let coupon = promotionCode.coupon || (promotionCode.promotion && promotionCode.promotion.coupon);
 
-      if (matchedPromo) {
-        let couponObj = matchedPromo.coupon;
-        if (typeof couponObj === 'string') {
-          couponObj = await stripe.coupons.retrieve(couponObj);
+        if (typeof coupon === 'string') {
+          coupon = await stripe.coupons.retrieve(coupon);
         }
 
-        if (couponObj && couponObj.valid !== false) {
-          if (couponObj.percent_off) {
-            precioBase = precioBase * (1 - couponObj.percent_off / 100);
-          } else if (couponObj.amount_off && couponObj.currency === currencyStripe) {
-            precioBase = precioBase - (couponObj.amount_off / 100); // amount_off viene en centavos
+        if (coupon && coupon.valid !== false) {
+          if (coupon.percent_off) {
+            precioBase = precioBase * (1 - coupon.percent_off / 100);
+          } else if (coupon.amount_off && coupon.currency === currencyStripe) {
+            precioBase = precioBase - (coupon.amount_off / 100); // amount_off viene en centavos
           }
         }
       }
