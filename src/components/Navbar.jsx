@@ -178,32 +178,34 @@ export default function Navbar() {
                 </div>
               </div>
 
-              {/* Dropdown Artículos Académicos (LA ESTRUCTURA QUE SOLICITASTE) */}
+              {/* ENLACE DIRECTO A TIENDA (Solicitado) */}
+              <Link to="/comprar-libro" className="hover:text-light-blue py-3 md:py-2 transition-colors whitespace-nowrap">
+                TIENDA
+              </Link>
+
+              {/* DROPDOWN NOTICIAS Y ARTÍCULOS (Solicitado) */}
               <div className="relative group w-full md:w-auto" onMouseLeave={() => setActiveDropdown(null)}>
                 <button 
                   className="flex items-center justify-between md:justify-center w-full gap-1.5 hover:text-light-blue transition-colors py-3 md:py-2 cursor-pointer whitespace-nowrap" 
-                  onClick={() => toggleDropdown('articulos')}
+                  onClick={() => toggleDropdown('noticias')}
                   aria-haspopup="true"
-                  aria-expanded={activeDropdown === 'articulos'}
-                  aria-controls="dropdown-articulos"
+                  aria-expanded={activeDropdown === 'noticias'}
+                  aria-controls="dropdown-noticias"
                 >
-                  ARTÍCULOS ACADÉMICOS 
-                  <svg className={`w-4 h-4 text-pale-blue transition-transform duration-300 ${activeDropdown === 'articulos' ? 'rotate-180' : ''} md:group-hover:rotate-180`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                  PUBLICACIONES 
+                  <svg className={`w-4 h-4 text-pale-blue transition-transform duration-300 ${activeDropdown === 'noticias' ? 'rotate-180' : ''} md:group-hover:rotate-180`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
                 <div 
-                  id="dropdown-articulos"
-                  className={`${activeDropdown === 'articulos' ? 'block' : 'hidden'} md:block md:absolute md:left-0 md:top-full md:w-64 md:bg-white md:shadow-xl md:rounded-b md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300 md:border-t-4 md:border-main-red w-full bg-gray-50 border-l-4 border-main-red md:border-l-0 z-50`}
+                  id="dropdown-noticias"
+                  className={`${activeDropdown === 'noticias' ? 'block' : 'hidden'} md:block md:absolute md:left-0 md:top-full md:w-64 md:bg-white md:shadow-xl md:rounded-b md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300 md:border-t-4 md:border-main-red w-full bg-gray-50 border-l-4 border-main-red md:border-l-0 z-50`}
                 >
                   <ul className="py-2 flex flex-col">
-                    {/* Opción 1: Repositorio de Artículos */}
-                    <li><Link to="/articulos-academicos" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">ARTÍCULOS ACADÉMICOS</Link></li>
-                    {/* Opción 2: Tienda Editorial */}
-                    <li><Link to="/comprar-libro" className="flex items-center gap-2 w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors text-main-red font-bold text-xs"><svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg> TIENDA EDITORIAL</Link></li>
+                    <li><Link to="/noticias" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Repositorio de Noticias</Link></li>
+                    <li><Link to="/articulos-academicos" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Artículos Académicos</Link></li>
                   </ul>
                 </div>
               </div>
 
-              <Link to="/noticias" className="hover:text-light-blue py-3 md:py-2 transition-colors">NOTICIAS</Link>
             </nav>
             
           </div>
