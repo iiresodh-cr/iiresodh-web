@@ -240,7 +240,7 @@ export default function ComprarLibro() {
             <div className="md:w-5/12 bg-gray-50/50 p-8 flex flex-col items-center justify-center border-r border-gray-100 shrink-0">
               <div className="w-full max-w-sm flex items-center justify-center">
                 {libro.imagenPrincipalUrl ? (
-                  <img src={libro.imagenPrincipalUrl} alt={libro.titulo} className="max-w-full max-h-[400px] object-contain shadow-md rounded-md" />
+                  <img src={libro.imagenPrincipalUrl} alt={libro.titulo} className="max-w-full max-h-100 object-contain shadow-md rounded-md" />
                 ) : (
                   <div className="w-48 h-64 bg-white rounded-lg shadow-sm border border-gray-200 flex items-center justify-center text-main-blue font-bold p-4 text-center text-xs uppercase leading-tight">{libro.titulo}</div>
                 )}
