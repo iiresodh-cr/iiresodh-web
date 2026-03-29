@@ -278,7 +278,7 @@ exports.chatPida = onCall({
 });
 
 // ============================================================================
-// 5. FUNCIÓN PARA VALIDAR CUPONES DE STRIPE (DOCUMENTACIÓN OFICIAL)
+// 5. FUNCIÓN PARA VALIDAR CUPONES DE STRIPE (REFLEJO DIRECTO EN FRONTEND)
 // ============================================================================
 exports.validarCuponStripe = onCall({
   secrets: [STRIPE_SECRET_KEY],
@@ -291,33 +291,33 @@ exports.validarCuponStripe = onCall({
 
   try {
     const stripe = new Stripe(STRIPE_SECRET_KEY.value());
-    const codigoLimpio = codigo.trim();
+    const codigoLimpio = codigo.trim().toUpperCase();
 
-    // Consulta directa, exacta y nativa a la API de Stripe
-    const promoCodes = await stripe.promotionCodes.list({
-      code: codigoLimpio,
-      active: true,
-      limit: 1,
-      expand: ['data.coupon']
-    });
+    // Obtenemos los códigos activos (método que ya probamos que encuentra PIDA33 en tu entorno)
+    const promoCodes = await stripe.promotionCodes.list({ active: true, limit: 100, expand: ['data.coupon'] });
+    const matchedPromo = promoCodes.data.find(p => (p.code || "").trim().toUpperCase() === codigoLimpio);
 
-    if (!promoCodes.data || promoCodes.data.length === 0) {
+    if (!matchedPromo) {
       return { valido: false, mensaje: "El código de descuento no es válido o ha expirado." };
     }
 
-    const promotionCode = promoCodes.data[0];
-    const coupon = promotionCode.coupon;
+    let couponObj = matchedPromo.coupon;
 
-    // Validación de seguridad de la estructura del cupón
-    if (!coupon || !coupon.valid) {
-      return { valido: false, mensaje: "El cupón asociado a este código ha expirado." };
+    // Blindaje de extracción: Aseguramos tener el objeto cupón completo
+    if (typeof couponObj === 'string') {
+      couponObj = await stripe.coupons.retrieve(couponObj);
     }
 
+    if (!couponObj || couponObj.valid === false) {
+      return { valido: false, mensaje: "El cupón ha expirado." };
+    }
+
+    // Devolvemos el objeto correcto para que React actualice la pantalla
     return {
       valido: true,
-      porcentaje: coupon.percent_off || null, 
-      montoFijo: coupon.amount_off || null,   
-      moneda: coupon.currency || null         
+      porcentaje: couponObj.percent_off || null, 
+      montoFijo: couponObj.amount_off || null,   
+      moneda: couponObj.currency || null         
     };
 
   } catch (error) {
@@ -363,25 +363,24 @@ exports.crearIntentoPago = onCall({
 
     const stripe = new Stripe(STRIPE_SECRET_KEY.value());
 
-    // APLICACIÓN DEL CÓDIGO DE DESCUENTO (DOCUMENTACIÓN OFICIAL)
+    // APLICACIÓN DEL CÓDIGO DE DESCUENTO AL COBRO
     if (codigoDescuento) {
-      const codigoLimpio = codigoDescuento.trim();
+      const codigoLimpio = codigoDescuento.trim().toUpperCase();
 
-      const promoCodes = await stripe.promotionCodes.list({ 
-        code: codigoLimpio, 
-        active: true, 
-        limit: 1,
-        expand: ['data.coupon']
-      });
-      
-      if (promoCodes.data && promoCodes.data.length > 0) {
-        const coupon = promoCodes.data[0].coupon;
+      const promoCodes = await stripe.promotionCodes.list({ active: true, limit: 100, expand: ['data.coupon'] });
+      const matchedPromo = promoCodes.data.find(p => (p.code || "").trim().toUpperCase() === codigoLimpio);
 
-        if (coupon && coupon.valid) {
-          if (coupon.percent_off) {
-            precioBase = precioBase * (1 - coupon.percent_off / 100);
-          } else if (coupon.amount_off && coupon.currency === currencyStripe) {
-            precioBase = precioBase - (coupon.amount_off / 100); // amount_off viene en centavos
+      if (matchedPromo) {
+        let couponObj = matchedPromo.coupon;
+        if (typeof couponObj === 'string') {
+          couponObj = await stripe.coupons.retrieve(couponObj);
+        }
+
+        if (couponObj && couponObj.valid !== false) {
+          if (couponObj.percent_off) {
+            precioBase = precioBase * (1 - couponObj.percent_off / 100);
+          } else if (couponObj.amount_off && couponObj.currency === currencyStripe) {
+            precioBase = precioBase - (couponObj.amount_off / 100); // amount_off viene en centavos
           }
         }
       }
