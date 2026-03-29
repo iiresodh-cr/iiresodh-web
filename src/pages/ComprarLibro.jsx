@@ -177,46 +177,73 @@ export default function ComprarLibro() {
     return (
       <main className="bg-white min-h-screen flex flex-col font-sans">
         <PageHeader titulo="Tienda Editorial" subtitulo="Adquiere nuestras publicaciones académicas oficiales." />
-        <div className="max-w-7xl mx-auto px-6 py-16 w-full grow">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-            {listaLibros.map((l) => {
-              const esMXN = moneda === "MXN" && l.precioMXN;
-              const precioMostrar = esMXN ? l.precioMXN : l.precio;
-              const monedaMostrar = esMXN ? "MXN" : "USD";
+        
+        <div className="relative overflow-hidden grow pb-20">
+          <div className="bg-watermark" aria-hidden="true"></div>
+          
+          <section className="relative pt-12 md:pt-16 px-6 md:px-8 z-10 max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-16 items-start">
+              
+              {listaLibros.map((l) => {
+                const esMXN = moneda === "MXN" && l.precioMXN;
+                const precioMostrar = esMXN ? l.precioMXN : l.precio;
+                const monedaMostrar = esMXN ? "MXN" : "USD";
 
-              return (
-                <div key={l.id} className="bg-white rounded-3xl border border-gray-100 shadow-lg hover:shadow-2xl transition-all overflow-hidden flex flex-col hover:border-main-blue/20">
-                  <div className="aspect-4/5 bg-gray-50 flex items-center justify-center p-6 border-b border-gray-50">
-                    {l.imagenPrincipalUrl ? (
-                      <img src={l.imagenPrincipalUrl} alt={l.titulo} className="h-full w-full object-cover rounded-lg shadow-md" />
-                    ) : (
-                      <div className="text-gray-300 font-bold text-center uppercase tracking-tighter">Sin Portada</div>
-                    )}
-                  </div>
-                  <div className="p-8 flex flex-col grow">
-                    <span className="text-[10px] font-black text-main-red uppercase tracking-widest mb-2 block">Copia Digital (PDF)</span>
-                    <h3 className="text-lg font-extrabold text-main-blue mb-1 uppercase leading-tight">{l.titulo}</h3>
+                return (
+                  <div key={l.id} className="flex flex-col group h-full">
                     
-                    {l.autor && <p className="text-xs text-gray-500 mb-3 italic font-medium">Por: {l.autor}</p>}
-                    
-                    {l.resumen && (
-                      <div className="mb-6 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-                        <p className="text-sm text-gray-700 leading-relaxed italic">
+                    {/* IMAGEN DE LA TARJETA (Grande y limpia) */}
+                    <Link to={`/comprar-libro/${l.slug}`} className="w-full aspect-4/5 rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center shadow-md group-hover:shadow-xl transition-all duration-300 mb-6">
+                      {l.imagenPrincipalUrl ? (
+                        <img 
+                          src={l.imagenPrincipalUrl} 
+                          alt={l.titulo} 
+                          className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500" 
+                        />
+                      ) : (
+                        <div className="text-gray-300 font-bold text-center uppercase tracking-tighter">Sin Portada</div>
+                      )}
+                    </Link>
+
+                    {/* TEXTO Y BOTONES DE LA TARJETA */}
+                    <div className="flex flex-col grow">
+                      <span className="text-[10px] font-black text-main-red uppercase tracking-widest mb-2 block">Copia Digital (PDF)</span>
+                      
+                      <Link to={`/comprar-libro/${l.slug}`}>
+                        <h3 className="text-xl md:text-2xl font-extrabold text-main-blue mb-2 leading-tight uppercase group-hover:text-light-blue transition-colors">
+                          {l.titulo}
+                        </h3>
+                      </Link>
+                      
+                      {l.autor && <p className="text-sm font-bold text-gray-700 mb-4">Por: {l.autor}</p>}
+                      
+                      {l.resumen && (
+                        <p className="text-sm text-gray-600 mb-6 leading-relaxed font-light italic">
                           {l.resumen}
                         </p>
-                      </div>
-                    )}
+                      )}
 
-                    <div className="mt-auto pt-6 border-t border-gray-50 flex items-center justify-between">
-                      <span className="text-2xl font-black text-main-blue">${precioMostrar} <span className="text-xs font-medium text-gray-400">{monedaMostrar}</span></span>
-                      <Link to={`/comprar-libro/${l.slug}`} className="bg-main-blue hover:bg-light-blue text-white font-bold py-2.5 px-6 rounded-xl text-xs uppercase tracking-widest transition-colors shadow-sm">Comprar</Link>
+                      <div className="mt-auto pt-6 border-t border-gray-200 flex flex-wrap gap-4 items-center justify-between">
+                        <span className="text-2xl font-black text-main-blue">
+                          ${precioMostrar} <span className="text-sm font-medium text-gray-500">{monedaMostrar}</span>
+                        </span>
+                        <Link to={`/comprar-libro/${l.slug}`} className="bg-main-blue hover:bg-light-blue text-white font-bold py-3 px-8 rounded-xl text-sm uppercase tracking-widest transition-colors shadow-sm">
+                          Comprar
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-          {listaLibros.length === 0 && <p className="text-center text-gray-400 font-medium">No hay libros disponibles en este momento.</p>}
+                );
+              })}
+
+            </div>
+            
+            {listaLibros.length === 0 && (
+              <div className="text-center py-20">
+                <p className="text-xl text-gray-400 font-medium">No hay libros disponibles en este momento.</p>
+              </div>
+            )}
+          </section>
         </div>
       </main>
     );
@@ -235,9 +262,17 @@ export default function ComprarLibro() {
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark" aria-hidden="true"></div>
 
-        {/* ESTRUCTURA IDÉNTICA AL EJEMPLO QUE ENVIASTE */}
+        {/* ESTRUCTURA IDÉNTICA AL EJEMPLO QUE ENVIASTE (ArticuloDetalle) */}
         <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
           <div className="max-w-7xl mx-auto bg-white overflow-hidden">
+            
+            {/* BOTÓN DE VOLVER (Como en ArticuloDetalle) */}
+            <div className="px-8 pt-8 md:px-12 lg:px-16 md:pt-12 pb-6">
+              <Link to="/comprar-libro" className="inline-flex items-center gap-2 text-xs font-bold text-main-red uppercase tracking-widest hover:text-main-blue transition-colors" aria-label="Regresar a la tienda">
+                <span className="text-lg leading-none" aria-hidden="true">&larr;</span> Volver a la Tienda
+              </Link>
+            </div>
+
             <div className="px-8 md:px-12 lg:px-16 pb-12 md:pb-16 animate-fade-in-up">
               
               <div className="flex flex-col md:flex-row gap-10 lg:gap-16 items-start text-center md:text-left">
