@@ -22,6 +22,9 @@ import AdminTextField from "../components/ui/AdminTextField";
 import ToastAlert from "../components/ui/ToastAlert";
 import { Button } from "@mui/material";
 
+// URL para cargar el mapa de react-simple-maps
+const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+
 // ==========================================
 // NUEVO MOTOR DE LINKS (INFALIBLE)
 // ==========================================
@@ -280,7 +283,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* BLOQUE 3: VIDEO INSTITUCIONAL Y FORMULARIO */}
+          {/* BLOQUE 3: NUEVA SECCIÓN - VIDEO (5) Y FORMULARIO (5) */}
           <div className="pt-6 mt-0 border-t border-gray-100 bg-white">
             <div className="grid grid-cols-1 md:grid-cols-10 gap-10 items-stretch bg-white w-full">
               
