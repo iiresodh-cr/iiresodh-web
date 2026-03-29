@@ -18,17 +18,46 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
   const [exito, setExito] = useState(false);
   const [email, setEmail] = useState("");
   const [nombre, setNombre] = useState("");
+  
+  // Estados para descuento y términos
+  const [codigoDescuento, setCodigoDescuento] = useState("");
+  const [descuentoAplicado, setDescuentoAplicado] = useState(null);
+  const [aceptarTerminos, setAceptarTerminos] = useState(false);
+
+  // Función para validar visualmente el descuento
+  const aplicarDescuento = () => {
+      // Validación estricta en mayúsculas
+      if(codigoDescuento.trim().toUpperCase() === "OFERTA10") {
+          setDescuentoAplicado({ codigo: "OFERTA10", porcentaje: 10 });
+          setError(null);
+      } else {
+          setDescuentoAplicado(null);
+          setError("El código de descuento no es válido o ha expirado.");
+      }
+  }
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!stripe || !elements) return;
+
+    if (!aceptarTerminos) {
+        setError("Debes aceptar los términos de uso y la política de privacidad para continuar.");
+        return;
+    }
 
     setLoading(true);
     setError(null);
 
     try {
       const crearIntento = httpsCallable(functions, 'crearIntentoPago');
-      const { data } = await crearIntento({ libroId, emailUsuario: email, moneda });
+      
+      const { data } = await crearIntento({ 
+          libroId, 
+          emailUsuario: email, 
+          moneda,
+          codigoDescuento: descuentoAplicado ? descuentoAplicado.codigo : null,
+          terminosAceptados: true
+      });
 
       const resultadoPago = await stripe.confirmCardPayment(data.clientSecret, {
         payment_method: {
@@ -48,7 +77,7 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
       }
     } catch (err) {
       console.error(err);
-      setError("Ocurrió un error al procesar tu pago. Intenta de nuevo.");
+      setError("Ocurrió un error al procesar tu pago. Verifica tu conexión e intenta de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -67,11 +96,20 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
     },
   };
 
+  // Cálculo matemático del precio visual (el backend hace su propia validación por seguridad)
+  const precioFinal = descuentoAplicado ? precio * (1 - descuentoAplicado.porcentaje / 100) : precio;
+
+  // Lógica dinámica para el enlace de privacidad según el país (moneda detectada)
+  const esMexico = moneda === "MXN";
+  const urlPrivacidad = esMexico ? "/privacidad?tab=mexico" : "/privacidad?tab=general";
+  const textoPrivacidad = esMexico ? "Aviso de Privacidad" : "Política de Privacidad";
+  const articuloPrivacidad = esMexico ? "el " : "la ";
+
   if (exito) {
     return (
       <div className="bg-green-50 text-green-700 p-8 rounded-xl text-center border border-green-200 animate-fade-in-up">
         <h3 className="text-2xl font-bold mb-3">¡Pago Exitoso!</h3>
-        <p className="text-lg">Gracias por adquirir <strong>{titulo}</strong>. Te hemos enviado un correo a <strong>{email}</strong> con el archivo.</p>
+        <p className="text-lg">Gracias por adquirir <strong>{titulo}</strong>. Te hemos enviado un correo a <strong>{email}</strong> con tu enlace de descarga segura.</p>
       </div>
     );
   }
@@ -102,6 +140,29 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
         />
       </div>
 
+      {/* SECCIÓN: CÓDIGO DE DESCUENTO */}
+      <div>
+         <label className="block text-sm font-semibold text-gray-700 mb-1.5">Código de Descuento (Opcional)</label>
+         <div className="flex gap-2">
+             <input 
+               type="text" 
+               value={codigoDescuento}
+               onChange={(e) => setCodigoDescuento(e.target.value)}
+               placeholder="Ej. OFERTA10"
+               className="flex-grow bg-gray-50 border border-gray-200 p-3.5 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-main-blue/20 focus:border-main-blue transition-all uppercase placeholder:normal-case"
+             />
+             <button 
+                type="button" 
+                onClick={aplicarDescuento}
+                disabled={!codigoDescuento.trim() || loading}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3.5 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+             >
+                 Aplicar
+             </button>
+         </div>
+      </div>
+
+      {/* SECCIÓN: DATOS DE LA TARJETA */}
       <div className="bg-gray-50 border border-gray-200 p-5 rounded-xl mt-4 text-left">
         <label className="block text-sm font-semibold text-gray-700 mb-3">Datos de la Tarjeta</label>
         <div className="bg-white p-3.5 rounded-lg border border-gray-300 shadow-sm">
@@ -109,15 +170,44 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
         </div>
       </div>
 
+      {/* SECCIÓN: CHECKBOX LEGAL DE TÉRMINOS CON LÓGICA POR PAÍS */}
+      <div className="flex items-start mt-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
+        <div className="flex items-center h-5 mt-0.5">
+          <input
+            id="terminos"
+            type="checkbox"
+            checked={aceptarTerminos}
+            onChange={(e) => setAceptarTerminos(e.target.checked)}
+            className="w-5 h-5 text-main-blue bg-white border-gray-300 rounded focus:ring-main-blue focus:ring-2 cursor-pointer"
+          />
+        </div>
+        <label htmlFor="terminos" className="ml-3 text-sm font-medium text-gray-700 leading-snug cursor-pointer">
+          He leído y acepto {articuloPrivacidad} <Link to={urlPrivacidad} target="_blank" className="text-main-blue font-bold hover:underline">{textoPrivacidad}</Link> y los <Link to="/privacidad?tab=terminos" target="_blank" className="text-main-blue font-bold hover:underline">Términos de Uso</Link> (incluyendo la política anti-piratería).
+        </label>
+      </div>
+
       {error && <div className="bg-red-50 text-main-red p-4 rounded-lg text-sm border border-red-200 font-medium">{error}</div>}
 
-      <button 
-        type="submit" 
-        disabled={!stripe || loading}
-        className="w-full bg-main-red hover:bg-red-700 text-white font-bold py-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest mt-6 cursor-pointer text-base"
-      >
-        {loading ? "Procesando pago..." : `Pagar $${precio} ${moneda}`}
-      </button>
+      {/* SECCIÓN: BOTÓN DE PAGO Y RESUMEN DE DESCUENTO */}
+      <div className="mt-6">
+        {descuentoAplicado && (
+          <div className="flex justify-between items-center bg-green-50 p-4 rounded-xl border border-green-200 mb-4 shadow-sm animate-fade-in-up">
+            <span className="text-green-800 font-bold text-sm uppercase tracking-widest">Descuento aplicado:</span>
+            <div className="text-right flex items-center gap-3">
+              <span className="text-gray-400 line-through text-sm font-medium">${precio.toFixed(2)}</span>
+              <span className="text-green-700 font-extrabold text-2xl">${precioFinal.toFixed(2)} <span className="text-sm font-bold">{moneda}</span></span>
+            </div>
+          </div>
+        )}
+
+        <button 
+          type="submit" 
+          disabled={!stripe || loading || !aceptarTerminos}
+          className={`w-full text-white font-bold py-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest cursor-pointer text-base ${descuentoAplicado ? 'bg-green-600 hover:bg-green-700' : 'bg-main-red hover:bg-red-700'}`}
+        >
+          {loading ? "Procesando pago seguro..." : `Pagar $${precioFinal.toFixed(2)} ${moneda}`}
+        </button>
+      </div>
     </form>
   );
 };
@@ -180,7 +270,6 @@ export default function ComprarLibro() {
           <div className="bg-watermark" aria-hidden="true"></div>
           
           <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
-            {/* CONTENEDOR BLANCO ESTANDARIZADO */}
             <div className="max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl shadow-sm border border-gray-100">
               <div className="px-6 md:px-12 lg:px-16 py-12 md:py-16 animate-fade-in-up">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-16 items-start">

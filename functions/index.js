@@ -284,7 +284,13 @@ exports.crearIntentoPago = onCall({
   secrets: [STRIPE_SECRET_KEY], 
   region: "us-central1"
 }, async (request) => {
-  const { libroId, emailUsuario, moneda } = request.data; // RECIBIMOS LA MONEDA DETECTADA
+  // RECIBIMOS LOS NUEVOS PARÁMETROS: terminosAceptados y codigoDescuento
+  const { libroId, emailUsuario, moneda, codigoDescuento, terminosAceptados } = request.data; 
+
+  // Validación backend obligatoria para los términos
+  if (!terminosAceptados) {
+    throw new HttpsError("failed-precondition", "Es obligatorio aceptar los términos de uso y política de privacidad.");
+  }
 
   try {
     const db = admin.firestore();
@@ -296,19 +302,28 @@ exports.crearIntentoPago = onCall({
 
     const libroData = libroDoc.data();
     
-    // LÓGICA DE COBRO EXACTO (MXN O USD)
+    // LÓGICA DE COBRO EXACTO Y DESCUENTOS
     let montoFinal = 0;
     let currencyStripe = "usd";
+    let precioBase = 0;
 
     if (moneda === "MXN" && libroData.precioMXN) {
       // Si está en MXN y configuraste el precio en tu admin panel
-      montoFinal = Math.round(libroData.precioMXN * 100);
+      precioBase = libroData.precioMXN;
       currencyStripe = "mxn";
     } else {
       // Valor por defecto en USD
-      montoFinal = Math.round(libroData.precio * 100);
+      precioBase = libroData.precio;
       currencyStripe = "usd";
     }
+
+    // APLICACIÓN DEL CÓDIGO DE DESCUENTO EN EL SERVIDOR
+    if (codigoDescuento === "OFERTA10") {
+      precioBase = precioBase * 0.90; // Aplica un 10% de descuento
+    }
+
+    // Redondeo obligatorio en centavos para Stripe
+    montoFinal = Math.round(precioBase * 100);
 
     const stripe = new Stripe(STRIPE_SECRET_KEY.value());
 
@@ -319,7 +334,10 @@ exports.crearIntentoPago = onCall({
       metadata: {
         libroId: libroId,
         titulo: libroData.titulo,
-        emailCliente: emailUsuario || "cliente@anonimo.com"
+        emailCliente: emailUsuario || "cliente@anonimo.com",
+        // Guardamos la verificación en la metadata de Stripe para enviarla al Webhook
+        terminosAceptados: terminosAceptados ? "true" : "false",
+        codigoDescuento: codigoDescuento || "Ninguno"
       },
       // Desactivamos redirecciones para forzar Stripe Elements puro
       automatic_payment_methods: { enabled: true, allow_redirects: 'never' },
@@ -357,6 +375,10 @@ exports.stripeWebhook = onRequest({
     const paymentIntent = event.data.object;
     const libroId = paymentIntent.metadata.libroId;
     const emailCliente = paymentIntent.receipt_email || paymentIntent.metadata.emailCliente || "cliente@anonimo.com";
+    
+    // Extraemos la confirmación legal enviada por la metadata
+    const terminosAceptados = paymentIntent.metadata.terminosAceptados === "true";
+    const codigoDescuento = paymentIntent.metadata.codigoDescuento || "Ninguno";
 
     try {
       const db = admin.firestore();
@@ -380,14 +402,16 @@ exports.stripeWebhook = onRequest({
       }
       const libroData = libroDoc.data();
 
-      // 2. Guardamos la compra
+      // 2. Guardamos la compra con el REGISTRO LEGAL
       await db.collection("compras").add({
         libroId: libroId,
         titulo: libroData.titulo,
         email: emailCliente,
         paymentIntentId: paymentIntent.id,
         fecha: admin.firestore.FieldValue.serverTimestamp(),
-        estado: 'pagado'
+        estado: 'pagado',
+        terminosAceptados: terminosAceptados, // Registro en la base de datos
+        codigoDescuento: codigoDescuento      // Registro del descuento usado
       });
 
       // 3. Descontamos el inventario
