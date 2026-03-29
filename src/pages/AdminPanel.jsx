@@ -8,6 +8,11 @@ import { httpsCallable } from "firebase/functions";
 
 import logoColor from "../assets/Logo_Oficiale_200w-trim.png";
 
+// Importación de los nuevos Wrappers de MUI
+import AdminTextField from "../components/ui/AdminTextField";
+import ConfirmDialog from "../components/ui/ConfirmDialog";
+import ToastAlert from "../components/ui/ToastAlert";
+
 const generarSlug = (texto) => {
   if (!texto) return `item-${Math.random().toString(36).substring(2, 6)}`;
   
@@ -484,31 +489,16 @@ export default function AdminPanel() {
     }
   };
 
-  const inputEstilos = "w-full border border-gray-200 bg-gray-50 p-3.5 text-base rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-main-blue/20 focus:border-main-blue transition-all duration-200";
-
   return (
     <main className="min-h-screen bg-gray-50/50 font-sans relative overflow-hidden">
       
-      {modalBorrar.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 animate-fade-in-up">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-md w-full border border-gray-100 text-center relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2 bg-main-red"></div>
-            <div className="w-16 h-16 bg-red-50 text-main-red rounded-full flex items-center justify-center mx-auto mb-4 mt-2">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-            </div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">¿Eliminar publicación?</h3>
-            <p className="text-sm text-gray-500 mb-6 leading-relaxed px-2">
-              Estás a punto de borrar permanentemente:<br/>
-              <strong className="text-gray-800 font-bold block mt-2 text-base line-clamp-2">"{modalBorrar.titulo}"</strong>
-              <span className="block mt-4 text-xs font-semibold text-main-red uppercase tracking-wider">Esta acción no se puede deshacer</span>
-            </p>
-            <div className="flex gap-3 w-full">
-              <button onClick={() => setModalBorrar({ isOpen: false, id: null, titulo: "" })} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl transition-colors cursor-pointer">Cancelar</button>
-              <button onClick={ejecutarBorrado} className="flex-1 bg-main-red hover:bg-red-700 text-white font-semibold py-3 rounded-xl transition-colors shadow-sm cursor-pointer">Sí, eliminar</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog 
+        open={modalBorrar.isOpen}
+        title="¿Eliminar publicación?"
+        content={`Estás a punto de borrar permanentemente: "${modalBorrar.titulo}". Esta acción no se puede deshacer.`}
+        onCancel={() => setModalBorrar({ isOpen: false, id: null, titulo: "" })}
+        onConfirm={ejecutarBorrado}
+      />
 
       <div className="fixed inset-0 z-0 bg-watermark opacity-5 pointer-events-none" aria-hidden="true"></div>
 
@@ -573,17 +563,12 @@ export default function AdminPanel() {
               Regresar al menú
             </button>
 
-            {mensaje && (
-              <div className={`fixed top-24 right-6 z-40 p-4 rounded-xl shadow-lg font-medium flex items-center gap-3 animate-fade-in-up border max-w-sm ${mensaje.includes("Error") ? "bg-white border-red-200 text-main-red" : "bg-white border-green-200 text-green-700"}`}>
-                <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  {mensaje.includes("Error") 
-                    ? <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                    : <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  }
-                </svg>
-                <span className="text-sm">{mensaje}</span>
-              </div>
-            )}
+            <ToastAlert 
+              open={!!mensaje} 
+              message={mensaje} 
+              isError={mensaje.includes("Error")} 
+              onClose={() => setMensaje("")} 
+            />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               <div className="lg:col-span-8 space-y-8">
@@ -601,20 +586,37 @@ export default function AdminPanel() {
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div className={vistaActiva === "libros" ? "md:col-span-1" : "md:col-span-2"}>
-                        <label htmlFor="input-titulo" className="block text-sm font-semibold text-gray-700 mb-1.5">{vistaActiva === "articulos" ? "Título del Artículo" : (vistaActiva === "libros" ? "Título del Libro" : "Título de la Noticia")} *</label>
-                        <input id="input-titulo" type="text" required value={titulo} onChange={(e) => setTitulo(e.target.value)} className={inputEstilos} placeholder="Ej: Nueva alianza internacional..." />
+                        <AdminTextField 
+                          label={vistaActiva === "articulos" ? "Título del Artículo" : (vistaActiva === "libros" ? "Título del Libro" : "Título de la Noticia")}
+                          value={titulo}
+                          onChange={(e) => setTitulo(e.target.value)}
+                          required
+                          placeholder="Ej: Nueva alianza internacional..."
+                        />
                       </div>
 
                       {vistaActiva === "libros" && (
                         <div className="md:col-span-1">
-                          <label htmlFor="input-precio" className="block text-sm font-semibold text-gray-700 mb-1.5">Precio (USD) *</label>
-                          <input id="input-precio" type="number" step="0.01" required value={precio} onChange={(e) => setPrecio(e.target.value)} className={inputEstilos} placeholder="Ej: 25.00" />
+                          <AdminTextField 
+                            label="Precio (USD)"
+                            type="number"
+                            step="0.01"
+                            required
+                            value={precio}
+                            onChange={(e) => setPrecio(e.target.value)}
+                            placeholder="Ej: 25.00"
+                          />
                         </div>
                       )}
 
                       <div className="md:col-span-1">
-                        <label htmlFor="input-fecha" className="block text-sm font-semibold text-gray-700 mb-1.5">Fecha (Opcional)</label>
-                        <input id="input-fecha" type="datetime-local" value={fechaPersonalizada} onChange={(e) => setFechaPersonalizada(e.target.value)} className={`${inputEstilos} text-sm`} />
+                        <AdminTextField 
+                          label="Fecha (Opcional)"
+                          type="datetime-local"
+                          value={fechaPersonalizada}
+                          onChange={(e) => setFechaPersonalizada(e.target.value)}
+                          InputLabelProps={{ shrink: true }}
+                        />
                       </div>
                     </div>
 
@@ -622,24 +624,46 @@ export default function AdminPanel() {
                     {vistaActiva === "libros" && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                          <label htmlFor="input-autor" className="block text-sm font-semibold text-gray-700 mb-1.5">Autor del Libro *</label>
-                          <input id="input-autor" type="text" required value={autor} onChange={(e) => setAutor(e.target.value)} className={inputEstilos} placeholder="Ej: Fabián Salvioli" />
+                          <AdminTextField 
+                            label="Autor del Libro"
+                            value={autor}
+                            onChange={(e) => setAutor(e.target.value)}
+                            required
+                            placeholder="Ej: Fabián Salvioli"
+                          />
                         </div>
                         <div>
-                          <label htmlFor="input-preciomxn" className="block text-sm font-semibold text-gray-700 mb-1.5">Precio (MXN para México) *</label>
-                          <input id="input-preciomxn" type="number" step="0.01" required value={precioMXN} onChange={(e) => setPrecioMXN(e.target.value)} className={inputEstilos} placeholder="Ej: 500.00" />
+                          <AdminTextField 
+                            label="Precio (MXN para México)"
+                            type="number"
+                            step="0.01"
+                            required
+                            value={precioMXN}
+                            onChange={(e) => setPrecioMXN(e.target.value)}
+                            placeholder="Ej: 500.00"
+                          />
                         </div>
                       </div>
                     )}
 
                     <div>
                       <div className="flex justify-between items-end mb-1.5">
-                        <label htmlFor="input-resumen" className="block text-sm font-semibold text-gray-700">Resumen corto *</label>
-                        <button type="button" onClick={handleAutoResumen} disabled={generandoResumen} className="text-xs font-semibold text-main-blue hover:text-light-blue bg-blue-50 hover:bg-blue-100 py-1.5 px-3 rounded-lg transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50">
-                          {generandoResumen ? "Generando..." : "✨ Auto-completar con PIDA"}
-                        </button>
+                        <div className="w-full flex justify-end">
+                          <button type="button" onClick={handleAutoResumen} disabled={generandoResumen} className="text-xs font-semibold text-main-blue hover:text-light-blue bg-blue-50 hover:bg-blue-100 py-1.5 px-3 rounded-lg transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50 mb-2">
+                            {generandoResumen ? "Generando..." : "✨ Auto-completar con PIDA"}
+                          </button>
+                        </div>
                       </div>
-                      <textarea id="input-resumen" required maxLength="250" value={resumen} onChange={(e) => setResumen(e.target.value)} className={inputEstilos} rows="2" placeholder="Un párrafo breve para atraer al lector..." />
+                      <AdminTextField 
+                        label="Resumen corto"
+                        required
+                        multiline
+                        rows={2}
+                        value={resumen}
+                        onChange={(e) => setResumen(e.target.value)}
+                        placeholder="Un párrafo breve para atraer al lector..."
+                        inputProps={{ maxLength: 250 }}
+                      />
                     </div>
 
                     {vistaActiva === "comunicaciones" && (
@@ -704,10 +728,15 @@ export default function AdminPanel() {
                     )}
 
                     <div>
-                      <label htmlFor="input-contenido" className="block text-sm font-semibold text-gray-700 mb-1.5">
-                        {vistaActiva === "libros" ? "Descripción Larga" : "Cuerpo del texto"} *
-                      </label>
-                      <textarea id="input-contenido" required value={contenido} onChange={(e) => setContenido(e.target.value)} className={inputEstilos} rows="12" placeholder={vistaActiva === "libros" ? "Índice o descripción del libro..." : "Escribe o pega el desarrollo de la publicación aquí..."} />
+                      <AdminTextField 
+                        label={vistaActiva === "libros" ? "Descripción Larga" : "Cuerpo del texto"}
+                        required
+                        multiline
+                        rows={12}
+                        value={contenido}
+                        onChange={(e) => setContenido(e.target.value)}
+                        placeholder={vistaActiva === "libros" ? "Índice o descripción del libro..." : "Escribe o pega el desarrollo de la publicación aquí..."}
+                      />
                     </div>
 
                     {vistaActiva === "comunicaciones" && contenido.length > 0 && (
