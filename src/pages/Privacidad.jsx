@@ -7,6 +7,7 @@ export default function Privacidad() {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState("general");
 
+  // Leer el parámetro de la URL para abrir la pestaña correcta y hacer scroll
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const tab = searchParams.get("tab");
@@ -18,22 +19,26 @@ export default function Privacidad() {
     window.scrollTo(0, 0);
   }, [location]);
 
+  // Constante para estandarizar la clase tipográfica institucional de los textos legales
   const legalTextClass = "space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify animate-fade-in-up";
 
   return (
     <main className="bg-white flex flex-col min-h-screen font-sans">
       
+      {/* ENCABEZADO Estandarizado */}
       <PageHeader 
         titulo="Privacidad y Términos" 
         subtitulo="Transparencia y protección de datos para todos nuestros usuarios." 
       />
 
       <div className="relative overflow-hidden grow pb-20">
+        {/* Marca de agua institucional */}
         <div className="bg-watermark" aria-hidden="true"></div>
 
         <section className="relative py-12 md:py-16 px-0 md:px-8 z-10" aria-label="Contenido legal">
           <div className="max-w-7xl mx-auto">
             
+            {/* Pestañas de Navegación */}
             <nav className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 mb-12 px-6 md:px-0" role="tablist" aria-label="Secciones legales">
               <button
                 role="tab"
@@ -80,21 +85,13 @@ export default function Privacidad() {
                 <article className={legalTextClass} role="tabpanel" aria-labelledby="tab-general">
                   <header className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
                     <h2 className="text-2xl md:text-4xl font-bold text-main-blue mb-2">Política de Privacidad de IIRESODH</h2>
-                    <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 29 de marzo de 2026</p>
+                    <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 14 de marzo de 2026</p>
                   </header>
 
                   <section>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">1. Introducción y Alcance</h3>
                     <p className="mb-3">Bienvenido a la Política de Privacidad del Instituto Internacional de Responsabilidad Social y Derechos Humanos (en adelante, “IIRESODH”, “nosotros” o “nuestro”).</p>
                     <p className="mb-3">Esta política describe cómo recopilamos, utilizamos, protegemos y compartimos su información personal cuando visita nuestro sitio web institucional (<a href="https://iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors font-semibold">https://iiresodh.org</a>) y se comunica con nosotros.</p>
-                    
-                    <div className="bg-red-50 p-6 rounded-2xl mt-6 border border-red-100">
-                      <p className="text-sm font-bold text-main-red mb-2 uppercase tracking-widest">Advertencia de Seguridad y Trazabilidad:</p>
-                      <p className="text-sm text-gray-700 leading-relaxed italic">
-                        Para la adquisición de material bibliográfico en formato PDF, IIRESODH registra la dirección IP, el nodo de conexión y los datos de identidad del adquirente. Cada archivo entregado cuenta con marcas de agua digitales e identificadores únicos vinculados a la transacción. El uso de este sitio implica la aceptación del monitoreo técnico para prevenir la redistribución ilícita.
-                      </p>
-                    </div>
-
                     <aside className="bg-pale-blue/20 p-6 rounded-2xl mt-6">
                       <p className="text-sm font-medium text-main-blue leading-relaxed">
                         <strong>Nota sobre servicios externos:</strong> El servicio tecnológico asociado PIDA-AI (<a href="https://pida-ai.com" target="_blank" rel="noopener noreferrer" className="text-light-blue hover:text-main-blue transition-colors">https://pida-ai.com</a>) es gestionado por una entidad jurídica independiente y se rige estrictamente por su propia Política de Privacidad, disponible en su respectivo sitio web.
@@ -111,6 +108,7 @@ export default function Privacidad() {
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">3. ¿Qué Información Recopilamos?</h3>
                     <ul className="list-disc pl-6 space-y-2">
                       <li><strong>Información proporcionada directamente:</strong> Recopilamos datos personales cuando nos contacta, se inscribe en nuestras actividades o realiza una donación. Esto incluye su nombre, dirección de correo electrónico, país de residencia y el contenido de sus mensajes.</li>
+                      <li><strong>Información de Protección de Activos:</strong> En la compra de libros digitales, recopilamos la dirección IP y el ID de dispositivo para la prevención de piratería y control de descargas autorizadas.</li>
                       <li><strong>Información recopilada automáticamente:</strong> Al navegar por nuestro sitio, recopilamos información técnica estándar (dirección IP, tipo de navegador, páginas visitadas) con fines de análisis y seguridad para mejorar nuestros servicios institucionales.</li>
                     </ul>
                   </section>
@@ -120,7 +118,7 @@ export default function Privacidad() {
                     <ul className="list-disc pl-6 space-y-2">
                       <li><strong>Atención y Comunicación:</strong> Responder a sus consultas, solicitudes de información y gestionar inscripciones a nuestros programas. (Base legal: Consentimiento).</li>
                       <li><strong>Difusión Institucional:</strong> Envío de boletines informativos o noticias sobre nuestras labores en defensa de los derechos humanos, siempre que usted haya aceptado recibirlos. (Base legal: Consentimiento).</li>
-                      <li><strong>Mantenimiento y Seguridad:</strong> Analizar el tráfico de nuestro sitio para optimizar la experiencia de usuario y prevenir fraudes informáticos. (Base legal: Interés legítimo).</li>
+                      <li><strong>Mantenimiento y Seguridad:</strong> Analizar el tráfico de nuestro sitio para optimizar la experiencia de usuario y prevenir fraudes informáticos o piratería digital. (Base legal: Interés legítimo).</li>
                     </ul>
                   </section>
 
@@ -170,35 +168,46 @@ export default function Privacidad() {
                 <article className={legalTextClass} role="tabpanel" aria-labelledby="tab-mexico">
                   <div className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
                     <h2 className="text-2xl md:text-4xl font-bold text-main-blue mb-2">Aviso de Privacidad (MÉXICO)</h2>
-                    <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 29 de marzo de 2026</p>
+                    <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 14 de marzo de 2026</p>
                   </div>
                   <section>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">1. Introducción y Marco Legal</h3>
                     <p className="mb-3">En estricto cumplimiento a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP) aplicable en los Estados Unidos Mexicanos, se emite el presente Aviso de Privacidad para informar a los usuarios (en adelante, el “Titular”) sobre el tratamiento de sus datos en el sitio web institucional: <a href="https://iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors font-semibold">https://iiresodh.org</a>.</p>
-                    
-                    <p className="mt-4 bg-gray-50 p-6 rounded-xl text-sm border-l-4 border-main-red leading-relaxed">
-                      <strong>Cláusula de Protección de Activos Digitales:</strong> En términos de la LFPDPPP, se informa que el tratamiento de datos personales para la entrega de publicaciones digitales incluye la validación de integridad del archivo y el registro de metadatos de acceso. Cualquier intento de vulnerar los sistemas de protección de propiedad intelectual o la redistribución no autorizada será reportada ante las autoridades competentes por constituir una violación a los derechos de autor y el uso indebido de activos institucionales.
+                  </section>
+
+                  {/* NUEVA CLÁUSULA ANTI-PIRATERÍA MÉXICO */}
+                  <section className="bg-red-50 p-8 rounded-2xl border-l-4 border-l-main-red">
+                    <h3 className="text-lg font-extrabold text-main-red mb-3 uppercase tracking-tight">2. Cláusula Estricta de Propiedad Intelectual Digital</h3>
+                    <p className="text-gray-700 leading-relaxed text-sm md:text-base">
+                      En virtud de la Ley Federal del Derecho de Autor, los libros digitales (PDF) suministrados por IIRESODH cuentan con medidas tecnológicas de protección. El Titular reconoce que la licencia es estrictamente personal e intransferible. Cualquier intento de redistribución ilícita, comunicación pública o lucro con dicho material digital faculta a IIRESODH para proceder penalmente ante la Fiscalía General de la República por violación a los derechos de autor.
                     </p>
                   </section>
                 </article>
               )}
 
-              {/* TÉRMINOS Y CONDICIONES */}
+              {/* TÉRMINOS DE USO */}
               {activeTab === "terminos" && (
                 <article className={legalTextClass} role="tabpanel" aria-labelledby="tab-terminos">
                   <header className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
                     <h2 className="text-2xl md:text-4xl font-bold text-main-blue mb-2">Términos y Condiciones del Sitio Web</h2>
-                    <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 29 de marzo de 2026</p>
+                    <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">Fecha de última actualización: 14 de marzo de 2026</p>
                   </header>
                   <section>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">1. Introducción</h3>
-                    <p className="mb-6">Estos Términos y Condiciones (en adelante, los “Términos”) se aplican al uso de este sitio web, accesible en <a href="https://iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors font-bold">https://iiresodh.org</a> (en adelante, el “Sitio Web”), y a las transacciones relacionadas con nuestros productos y servicios.</p>
-                    
-                    <h3 className="text-lg md:text-xl font-bold text-main-red mb-3 uppercase tracking-tighter">2. Política Estricta Anti-Piratería y Propiedad Intelectual</h3>
-                    <div className="space-y-4 bg-gray-50 p-8 rounded-2xl border border-gray-200 mb-8">
-                      <p><strong>A. Licencia Intransferible:</strong> La adquisición de un manual o libro en formato PDF otorga una licencia de uso <strong>personal, privada y no exclusiva</strong>. Queda terminantemente prohibido compartir, distribuir, enviar por correo, cargar en servidores públicos o redes sociales el material adquirido.</p>
-                      <p><strong>B. Enlaces de Descarga:</strong> Por seguridad de la propiedad intelectual, el enlace de descarga enviado tras la compra caduca exactamente **48 horas** después de la transacción. Es responsabilidad exclusiva del usuario descargar y resguardar el archivo en su dispositivo personal antes de este plazo.</p>
-                      <p><strong>C. Consecuencias Legales:</strong> La detección de cualquier copia de nuestro material académico en circulación pública o privada no autorizada facultará a IIRESODH para iniciar de inmediato acciones legales penales y civiles contra el comprador original por violación a los derechos de autor internacionales.</p>
+                    <p>Estos Términos y Condiciones (en adelante, los “Términos”) se aplican al uso de este sitio web, accesible en <a href="https://iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors font-bold">https://iiresodh.org</a> (en adelante, el “Sitio Web”), y a las transacciones relacionadas con nuestros productos y servicios.</p>
+                  </section>
+
+                  {/* NUEVAS CONDICIONES ESTRICTAS ANTI-PIRATERÍA */}
+                  <section className="space-y-4">
+                    <h3 className="text-lg md:text-xl font-bold text-main-red uppercase tracking-tighter">2. Política de Cero Tolerancia a la Piratería</h3>
+                    <div className="bg-gray-50 p-6 md:p-8 rounded-2xl border border-gray-200 space-y-4">
+                      <p className="font-bold text-main-blue">Al adquirir una publicación digital de IIRESODH, el usuario acepta bajo juramento las siguientes condiciones:</p>
+                      <ul className="list-decimal pl-6 space-y-3 font-medium text-gray-800">
+                        <li><strong>Licencia Unipersonal:</strong> El archivo PDF es para uso exclusivo del comprador. Se prohíbe su envío masivo por correo, redes sociales o cualquier medio telemático.</li>
+                        <li><strong>Rastreo y Trazabilidad:</strong> IIRESODH utiliza identificadores únicos invisibles en cada descarga. Si un archivo es hallado en servidores de descarga o redes de intercambio, el comprador original será identificado y denunciado judicialmente.</li>
+                        <li><strong>Vigencia del Enlace:</strong> Por seguridad, los enlaces de descarga caducan en **48 horas**. Es responsabilidad del usuario resguardar el archivo de inmediato. No se otorgarán reemplazos tras la expiración del enlace original.</li>
+                        <li><strong>Acciones Legales:</strong> El incumplimiento de estos términos activará inmediatamente acciones legales civiles y penales bajo las leyes internacionales de propiedad intelectual.</li>
+                      </ul>
                     </div>
                   </section>
                 </article>
