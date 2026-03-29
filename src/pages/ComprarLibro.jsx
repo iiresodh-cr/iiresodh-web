@@ -186,11 +186,11 @@ export default function ComprarLibro() {
 
               return (
                 <div key={l.id} className="bg-white rounded-3xl border border-gray-100 shadow-lg hover:shadow-2xl transition-all overflow-hidden flex flex-col hover:border-main-blue/20">
-                  <div className="bg-gray-50 flex items-center justify-center p-8 border-b border-gray-100">
+                  <div className="aspect-4/5 bg-gray-50 flex items-center justify-center p-6 border-b border-gray-50">
                     {l.imagenPrincipalUrl ? (
-                      <img src={l.imagenPrincipalUrl} alt={l.titulo} className="h-48 w-auto object-contain shadow-md rounded-md" />
+                      <img src={l.imagenPrincipalUrl} alt={l.titulo} className="h-full w-full object-cover rounded-lg shadow-md" />
                     ) : (
-                      <div className="text-gray-300 font-bold text-center uppercase tracking-tighter h-48 flex items-center">Sin Portada</div>
+                      <div className="text-gray-300 font-bold text-center uppercase tracking-tighter">Sin Portada</div>
                     )}
                   </div>
                   <div className="p-8 flex flex-col grow">
