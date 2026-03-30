@@ -4,6 +4,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
 const Stripe = require("stripe"); 
+const { PDFDocument, rgb, StandardFonts } = require("pdf-lib"); // LIBRERÍA DE SOCIAL DRM
 
 // Inicializamos Firebase Admin
 if (!admin.apps.length) {
@@ -19,7 +20,7 @@ const GMAIL_CLIENT_SECRET = defineSecret("GMAIL_CLIENT_SECRET");
 const GMAIL_REFRESH_TOKEN = defineSecret("GMAIL_REFRESH_TOKEN");
 const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY"); 
 const STRIPE_WEBHOOK_SECRET = defineSecret("STRIPE_WEBHOOK_SECRET"); 
-const PIDA_SERVICE_ACCOUNT = defineSecret("PIDA_SERVICE_ACCOUNT"); // NUEVO SECRETO DE PIDA
+const PIDA_SERVICE_ACCOUNT = defineSecret("PIDA_SERVICE_ACCOUNT"); 
 
 // ============================================================================
 // CONEXIÓN A BASE DE DATOS DE PIDA (SOLO LECTURA)
@@ -121,11 +122,9 @@ exports.noticiaMeta = onRequest({ region: "us-central1" }, async (req, res) => {
       return res.redirect(302, "/noticias");
     }
 
-    // Detectamos el dominio real (para que funcione en producción)
     const host = req.headers['x-forwarded-host'] || req.hostname;
     const appUrl = `https://${host}`;
 
-    // SANITIZACIÓN: Reemplazamos comillas dobles para que no rompan las etiquetas de Facebook
     const titulo = (noticiaData.titulo || "Noticia en IIRESODH").replace(/"/g, '&quot;');
     let descripcion = "Lee la noticia completa en nuestro portal institucional.";
     if (noticiaData.resumen) {
@@ -136,17 +135,14 @@ exports.noticiaMeta = onRequest({ region: "us-central1" }, async (req, res) => {
     const imagen = noticiaData.imagenPrincipalUrl || `${appUrl}/logo.png`; 
     const urlCompleta = `${appUrl}${req.originalUrl}`;
 
-    // Descargamos el index.html original
     const response = await fetch(`${appUrl}/index.html`);
     let html = await response.text();
 
-    // 🚨 EL TRUCO PARA FACEBOOK: ELIMINAR LOS META TAGS ORIGINALES 🚨
     html = html.replace(/<title>.*?<\/title>/gi, '');
     html = html.replace(/<meta[^>]*property="og:[^>]*>/gi, '');
     html = html.replace(/<meta[^>]*name="twitter:[^>]*>/gi, '');
     html = html.replace(/<meta[^>]*name="description"[^>]*>/gi, '');
 
-    // Fabricamos las etiquetas exclusivas de la noticia
     const metaTags = `
       <title>${titulo} | IIRESODH</title>
       <meta name="description" content="${descripcion}" />
@@ -161,7 +157,6 @@ exports.noticiaMeta = onRequest({ region: "us-central1" }, async (req, res) => {
       <meta name="twitter:image" content="${imagen}" />
     </head>`;
 
-    // Inyectamos todo limpio antes del cierre del head
     html = html.replace("</head>", metaTags);
 
     res.set("Cache-Control", "public, max-age=300, s-maxage=600");
@@ -188,7 +183,6 @@ exports.enviarFormularioContacto = onCall({
   }
 
   try {
-    // Configuración de Nodemailer usando OAuth2
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -202,8 +196,8 @@ exports.enviarFormularioContacto = onCall({
 
     const mailOptions = {
       from: `"Web IIRESODH" <contacto@iiresodh.org>`,
-      to: 'contacto@iiresodh.org', // Correo destino
-      replyTo: correo, // Para poder darle "Responder" al usuario
+      to: 'contacto@iiresodh.org',
+      replyTo: correo, 
       subject: `Nuevo mensaje web de: ${nombre}`,
       text: `Nombre: ${nombre}\nCorreo: ${correo}\n\nMensaje:\n${mensaje}`,
       html: `
@@ -249,7 +243,6 @@ exports.chatPida = onCall({
     const apiKey = geminiApiKey.value();
     const genAI = new GoogleGenerativeAI(apiKey);
     
-    // EL NUEVO CEREBRO INSTITUCIONAL DE PIDA:
     const model = genAI.getGenerativeModel({ 
         model: "gemini-2.5-flash",
         systemInstruction: `Eres PIDA, el asistente virtual oficial del Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH).
@@ -272,18 +265,15 @@ exports.chatPida = onCall({
         8. IDIOMA Y HONESTIDAD: Responde siempre en el idioma del usuario. Si no sabes algo, admítelo con cortesía y sugiere contactar vía formulario o email.`
     });
 
-    // Traducimos el historial del frontend al formato que entiende Gemini
     const historialFormateado = historial.map(msg => ({
       role: msg.isBot ? "model" : "user",
       parts: [{ text: msg.text }]
     }));
 
-    // Iniciamos el chat con memoria
     const chat = model.startChat({
       history: historialFormateado,
     });
 
-    // Enviamos el nuevo mensaje
     const result = await chat.sendMessage(mensaje);
     const respuestaTexto = result.response.text();
 
@@ -311,7 +301,6 @@ exports.validarCuponStripe = onCall({
     const stripe = new Stripe(STRIPE_SECRET_KEY.value());
     const codigoLimpio = codigo.trim();
 
-    // NUEVO: INTERCEPTACIÓN DE CUPONES DE PIDA
     if (codigoLimpio.toUpperCase().startsWith("PIDA")) {
       if (!emailUsuario) {
         return { valido: false, mensaje: "Por favor, ingresa tu correo electrónico para validar este cupón." };
@@ -320,7 +309,7 @@ exports.validarCuponStripe = onCall({
       const pidaDb = getPidaFirestore();
       const pidaClientSnapshot = await pidaDb.collection('customers')
         .where('email', '==', emailUsuario.toLowerCase())
-        .where('status', 'in', ['active', 'trialing']) // Acepta usuarios activos y en prueba
+        .where('status', 'in', ['active', 'trialing']) 
         .limit(1)
         .get();
 
@@ -332,7 +321,6 @@ exports.validarCuponStripe = onCall({
       }
     }
 
-    // Consulta directa a la API de Stripe, expandiendo ambas rutas posibles
     const promoCodes = await stripe.promotionCodes.list({
       code: codigoLimpio,
       active: true,
@@ -345,16 +333,12 @@ exports.validarCuponStripe = onCall({
     }
 
     const promotionCode = promoCodes.data[0];
-    
-    // FIX DE LA ESTRUCTURA: Buscamos el cupón en la ruta nueva o en la clásica
     let coupon = promotionCode.coupon || (promotionCode.promotion && promotionCode.promotion.coupon);
 
-    // Si Stripe nos dio solo el ID en texto, descargamos el objeto completo
     if (typeof coupon === 'string') {
       coupon = await stripe.coupons.retrieve(coupon);
     }
 
-    // Validación de seguridad (aquí fallaba antes porque daba undefined)
     if (!coupon || coupon.valid === false) {
       return { valido: false, mensaje: "El cupón asociado a este código ha expirado." };
     }
@@ -409,16 +393,14 @@ exports.crearIntentoPago = onCall({
 
     const stripe = new Stripe(STRIPE_SECRET_KEY.value());
 
-    // APLICACIÓN DEL CÓDIGO DE DESCUENTO (DOCUMENTACIÓN OFICIAL BLINDADA)
     if (codigoDescuento) {
       const codigoLimpio = codigoDescuento.trim();
 
-      // NUEVO: BLINDAGE FINAL PARA CUPONES DE PIDA
       if (codigoLimpio.toUpperCase().startsWith("PIDA")) {
         const pidaDb = getPidaFirestore();
         const pidaClientSnapshot = await pidaDb.collection('customers')
         .where('email', '==', emailUsuario.toLowerCase())
-        .where('status', 'in', ['active', 'trialing']) // Acepta usuarios activos y en prueba
+        .where('status', 'in', ['active', 'trialing'])
         .limit(1)
         .get();
 
@@ -436,8 +418,6 @@ exports.crearIntentoPago = onCall({
       
       if (promoCodes.data && promoCodes.data.length > 0) {
         const promotionCode = promoCodes.data[0];
-        
-        // FIX DE LA ESTRUCTURA
         let coupon = promotionCode.coupon || (promotionCode.promotion && promotionCode.promotion.coupon);
 
         if (typeof coupon === 'string') {
@@ -448,15 +428,13 @@ exports.crearIntentoPago = onCall({
           if (coupon.percent_off) {
             precioBase = precioBase * (1 - coupon.percent_off / 100);
           } else if (coupon.amount_off && coupon.currency === currencyStripe) {
-            precioBase = precioBase - (coupon.amount_off / 100); // amount_off viene en centavos
+            precioBase = precioBase - (coupon.amount_off / 100); 
           }
         }
       }
     }
 
     if (precioBase < 0) precioBase = 0;
-
-    // Redondeo obligatorio en centavos para Stripe
     montoFinal = Math.round(precioBase * 100);
 
     const paymentIntent = await stripe.paymentIntents.create({
@@ -481,11 +459,13 @@ exports.crearIntentoPago = onCall({
 });
 
 // ============================================================================
-// 7. WEBHOOK DE STRIPE: CONFIRMA PAGO, RESTA INVENTARIO Y ENVÍA CORREO
+// 7. WEBHOOK DE STRIPE: SOCIAL DRM ANTI-PIRATERÍA (OPTIMIZADO Y PROTEGIDO)
 // ============================================================================
 exports.stripeWebhook = onRequest({ 
   secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN], 
-  region: "us-central1" 
+  region: "us-central1",
+  memory: "2GiB",        // 🚀 Suficiente músculo para PDFs
+  timeoutSeconds: 180    // 🚀 Tiempo extra para operaciones pesadas
 }, async (req, res) => {
   
   const stripe = new Stripe(STRIPE_SECRET_KEY.value());
@@ -516,20 +496,20 @@ exports.stripeWebhook = onRequest({
       const compraExistente = await comprasRef.where("paymentIntentId", "==", paymentIntent.id).get();
       
       if (!compraExistente.empty) {
-        console.log(`El pago ${paymentIntent.id} ya fue procesado. Ignorando evento duplicado.`);
+        console.log(`El pago ${paymentIntent.id} ya fue procesado. Ignorando.`);
         res.json({ received: true });
         return; 
       }
       
       const libroDoc = await db.collection("libros").doc(libroId).get();
       if (!libroDoc.exists) {
-        console.error(`Error: Se pagó el libro ${libroId} pero no existe en Firestore.`);
+        console.error(`Error: Se pagó el libro ${libroId} pero no existe en BD.`);
         res.status(404).send("Libro no encontrado");
         return;
       }
       const libroData = libroDoc.data();
 
-      // Registro en Firebase con datos legales
+      // Registro Legal
       await db.collection("compras").add({
         libroId: libroId,
         titulo: libroData.titulo,
@@ -554,11 +534,87 @@ exports.stripeWebhook = onRequest({
         const bucket = admin.storage().bucket();
         const file = bucket.file(libroData.rutaStorage);
         
-        const [urlTemporal] = await file.getSignedUrl({
-          action: 'read',
-          expires: Date.now() + 1000 * 60 * 60 * 48,
-        });
+        let urlTemporal = "";
+        let mensajeExitoHTML = "";
 
+        // 🛡️ SEGURO DE VIDA: VERIFICAR TAMAÑO DEL ARCHIVO
+        const [metadata] = await file.getMetadata();
+        const fileSizeInMB = metadata.size / (1024 * 1024);
+        
+        console.log(`El archivo ${libroData.rutaStorage} pesa ${fileSizeInMB.toFixed(2)} MB.`);
+
+        // Límite fijado en 40MB para no romper el servidor de Firebase
+        if (fileSizeInMB > 40) {
+            console.log(`⚠️ ARCHIVO DEMASIADO PESADO (>40MB). Saltando Social DRM. Generando link directo.`);
+            
+            [urlTemporal] = await file.getSignedUrl({
+                action: 'read',
+                expires: Date.now() + 1000 * 60 * 60 * 48, // 48 horas
+            });
+
+            mensajeExitoHTML = `
+              <h2 style="color: #1D3557;">¡Pago procesado con éxito!</h2>
+              <p>Hola,</p>
+              <p>Hemos recibido tu pago por la publicación: <strong>${libroData.titulo}</strong>.</p>
+              <p>Puedes descargar tu copia en el siguiente enlace. <strong>Nota importante: Este enlace de alta velocidad es único y caducará en 48 horas por motivos de seguridad anti-piratería.</strong> Por favor, descarga y guarda el archivo PDF en tu dispositivo personal.</p>
+              <br>
+              <a href="${urlTemporal}" style="background-color: #B92F32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+                ⬇ Descargar Publicación (PDF)
+              </a>
+              <br><br>
+              <p>Gracias por apoyar la labor del Instituto Internacional de Responsabilidad Social y Derechos Humanos.</p>
+            `;
+        } else {
+            console.log(`✅ Tamaño óptimo. Iniciando estampado de marca de agua anti-piratería...`);
+            
+            const [fileBuffer] = await file.download();
+            const pdfDoc = await PDFDocument.load(fileBuffer, { updateMetadata: false });
+            const pages = pdfDoc.getPages();
+            const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+            
+            const marcaDeAgua = `LICENCIA PERSONAL DE: ${emailCliente.toUpperCase()} | REF: ${paymentIntent.id} | IIRESODH`;
+
+            pages.forEach((page) => {
+              page.drawText(marcaDeAgua, {
+                x: 20, 
+                y: 20, 
+                size: 9,
+                font: font,
+                color: rgb(0.725, 0.184, 0.196), 
+                opacity: 0.65, 
+              });
+            });
+
+            const pdfBytes = await pdfDoc.save({ useObjectStreams: false });
+            pdfDoc.catalog = null; 
+
+            const rutaEntrega = `entregas_seguras/${paymentIntent.id}.pdf`;
+            const archivoEntrega = bucket.file(rutaEntrega);
+            await archivoEntrega.save(pdfBytes, {
+              contentType: 'application/pdf',
+              metadata: { cacheControl: 'private, max-age=0' }
+            });
+
+            [urlTemporal] = await archivoEntrega.getSignedUrl({
+              action: 'read',
+              expires: Date.now() + 1000 * 60 * 60 * 48,
+            });
+
+            mensajeExitoHTML = `
+              <h2 style="color: #1D3557;">¡Pago procesado con éxito!</h2>
+              <p>Hola,</p>
+              <p>Hemos recibido tu pago por el libro: <strong>${libroData.titulo}</strong>.</p>
+              <p>Tu copia ha sido personalizada con una marca de agua de seguridad y trazabilidad. Puedes descargarla en el siguiente enlace. <strong>Nota importante: Este enlace es único y caducará en 48 horas.</strong> Por favor, descarga y guarda el archivo PDF en tu dispositivo personal.</p>
+              <br>
+              <a href="${urlTemporal}" style="background-color: #B92F32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+                ⬇ Descargar Libro (PDF)
+              </a>
+              <br><br>
+              <p>Gracias por apoyar la labor del Instituto Internacional de Responsabilidad Social y Derechos Humanos.</p>
+            `;
+        }
+
+        // Enviar Correo
         const transporter = nodemailer.createTransport({
           service: 'gmail',
           auth: {
@@ -574,24 +630,14 @@ exports.stripeWebhook = onRequest({
           from: `"Tienda IIRESODH" <contacto@iiresodh.org>`,
           to: emailCliente,
           subject: `¡Gracias por tu compra! Aquí tienes tu libro`,
-          html: `
-            <h2 style="color: #1D3557;">¡Pago procesado con éxito!</h2>
-            <p>Hola,</p>
-            <p>Hemos recibido tu pago por el libro: <strong>${libroData.titulo}</strong>.</p>
-            <p>Puedes descargar tu copia digital en el siguiente enlace. <strong>Nota importante: Este enlace es único y caducará en 48 horas por motivos de seguridad.</strong> Por favor, descarga y guarda el archivo en tu dispositivo.</p>
-            <br>
-            <a href="${urlTemporal}" style="background-color: #B92F32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
-              ⬇ Descargar Libro (PDF)
-            </a>
-            <br><br>
-            <p>Gracias por apoyar la labor del Instituto Internacional de Responsabilidad Social y Derechos Humanos.</p>
-          `
+          html: mensajeExitoHTML
         };
 
         await transporter.sendMail(mailOptions);
+        console.log(`Correo enviado exitosamente a ${emailCliente}.`);
       }
     } catch (error) {
-      console.error("Error en el proceso post-pago:", error);
+      console.error("Error crítico en el proceso post-pago:", error);
     }
   }
 

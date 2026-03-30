@@ -386,7 +386,7 @@ export default function ComprarLibro() {
                         {/* DISEÑO MEJORADO: El libro flota limpiamente sin cajas grises feas */}
                         <Link 
                           to={`/comprar-libro/${l.slug}`} 
-                          className="w-full aspect-[4/5] flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300"
+                          className="w-full aspect-4/5 flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300"
                         >
                           {l.imagenPrincipalUrl ? (
                             <img 
