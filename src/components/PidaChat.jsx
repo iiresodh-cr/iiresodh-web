@@ -4,6 +4,9 @@ import pidaImg from "../assets/PIDA_bot.webp";
 import { functions } from "../firebase/config";
 import { httpsCallable } from "firebase/functions";
 
+// Importaciones de MUI
+import { Paper, InputBase, IconButton, Tooltip, Button, Zoom } from '@mui/material';
+
 const MENSAJE_INICIAL = { 
   text: "¡Hola! Soy PIDA, el asistente virtual de IIRESODH. ¿En qué te puedo ayudar hoy?", 
   isBot: true 
@@ -48,14 +51,30 @@ export default function PidaChat() {
 
   const cancelarReinicio = () => setMostrarConfirmacion(false);
 
-  // Formatear Negritas
+  // Formatear Negritas y URLs clicables
   const formatearMensaje = (texto) => {
     if (!texto) return "";
-    const partes = texto.split(/(\*\*.*?\*\*)/g);
+    
+    // Esta expresión regular separa el texto cada vez que encuentra una URL (http/https) o texto en **negrita**
+    const regex = /(https?:\/\/[^\s]+|\*\*.*?\*\*)/g;
+    const partes = texto.split(regex);
     
     return partes.map((parte, i) => {
       if (parte.startsWith('**') && parte.endsWith('**')) {
         return <strong key={i} className="font-bold text-gray-900">{parte.slice(2, -2)}</strong>;
+      }
+      if (parte.match(/^https?:\/\//)) {
+        return (
+          <a 
+            key={i} 
+            href={parte} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="text-main-red hover:text-light-blue underline font-semibold break-all transition-colors"
+          >
+            {parte}
+          </a>
+        );
       }
       return <span key={i}>{parte}</span>;
     });
@@ -91,22 +110,58 @@ export default function PidaChat() {
 
   return (
     <div className="fixed bottom-6 right-6 z-50 font-sans">
+      {/* BOTÓN FLOTANTE (TOGGLE) CON MUI */}
       {!isOpen && (
-        <button 
-          onClick={toggleChat}
-          className="relative group flex flex-col items-center justify-center w-24 h-16 bg-white rounded-full shadow-2xl hover:shadow-main-red/30 hover:-translate-y-1 transition-all duration-300 border border-gray-100 cursor-pointer overflow-hidden p-2"
-          aria-label="Abrir asistente PIDA"
-        >
-          <img src={pidaImg} alt="PIDA Bot" className="w-12 h-12 object-contain mt-1 drop-shadow-sm" />
-          <div className="absolute inset-0 bg-linear-to-tr from-main-red/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        </button>
+        <Tooltip title="Chatea con PIDA" placement="left" arrow TransitionComponent={Zoom}>
+          <Paper 
+            component="button"
+            onClick={toggleChat}
+            elevation={4}
+            aria-label="Abrir asistente PIDA"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 96,
+              height: 64,
+              borderRadius: 50,
+              bgcolor: 'white',
+              border: '1px solid #f3f4f6',
+              cursor: 'pointer',
+              transition: 'all 0.3s',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: '0 10px 15px -3px rgba(185, 47, 50, 0.25)' // Sombra roja suave
+              }
+            }}
+          >
+            <img src={pidaImg} alt="PIDA Bot" className="w-12 h-12 object-contain mt-1 drop-shadow-sm" />
+          </Paper>
+        </Tooltip>
       )}
 
+      {/* VENTANA DE CHAT */}
       {isOpen && (
-        <div className="relative flex flex-col w-80 sm:w-96 max-h-[75vh] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-fade-in-up">
-          
+        <Paper 
+          elevation={12} 
+          sx={{
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            width: { xs: 320, sm: 384 },
+            maxHeight: '75vh',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            animation: 'fadeInUp 0.3s ease-out forwards',
+            '@keyframes fadeInUp': {
+              '0%': { opacity: 0, transform: 'translateY(20px)' },
+              '100%': { opacity: 1, transform: 'translateY(0)' },
+            }
+          }}
+        >
+          {/* MODAL DE CONFIRMACIÓN INTERNO (Mantiene confinamiento para no romper el widget) */}
           {mostrarConfirmacion && (
-            <div className="absolute inset-0 z-20 bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center">
+            <div className="absolute inset-0 z-20 bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center animate-fade-in-up">
               <div className="w-16 h-16 bg-blue-50 text-main-blue rounded-full flex items-center justify-center mb-4">
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               </div>
@@ -115,16 +170,29 @@ export default function PidaChat() {
                 PIDA olvidará la conversación actual y comenzarán una nueva.
               </p>
               <div className="flex gap-3 w-full">
-                <button onClick={cancelarReinicio} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2.5 rounded-xl transition-colors cursor-pointer">
+                <Button 
+                  onClick={cancelarReinicio} 
+                  variant="outlined" 
+                  color="inherit" 
+                  fullWidth 
+                  sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 600, py: 1 }}
+                >
                   Cancelar
-                </button>
-                <button onClick={confirmarReinicio} className="flex-1 bg-main-blue hover:bg-light-blue text-white font-semibold py-2.5 rounded-xl transition-colors shadow-sm cursor-pointer">
+                </Button>
+                <Button 
+                  onClick={confirmarReinicio} 
+                  variant="contained" 
+                  color="primary" // Usará el azul institucional (main-blue) de tu ThemeProvider
+                  fullWidth 
+                  sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 600, py: 1, boxShadow: 'none' }}
+                >
                   Sí, reiniciar
-                </button>
+                </Button>
               </div>
             </div>
           )}
 
+          {/* CABECERA */}
           <div className="bg-main-red p-4 flex items-center justify-between text-white shadow-md z-10 border-b border-white/10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center overflow-hidden border border-white/20">
@@ -137,16 +205,31 @@ export default function PidaChat() {
             </div>
             
             <div className="flex items-center gap-1">
-              <button onClick={solicitarReinicio} title="Reiniciar conversación" className="text-white/80 hover:text-white hover:bg-white/20 p-1.5 rounded-lg transition-colors cursor-pointer" aria-label="Reiniciar chat">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-              </button>
+              <Tooltip title="Reiniciar conversación" arrow>
+                <IconButton 
+                  onClick={solicitarReinicio} 
+                  size="small"
+                  aria-label="Reiniciar chat"
+                  sx={{ color: 'rgba(255,255,255,0.8)', '&:hover': { color: 'white', bgcolor: 'rgba(255,255,255,0.2)' } }}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </IconButton>
+              </Tooltip>
               
-              <button onClick={toggleChat} className="text-white hover:bg-white/20 p-1.5 rounded-lg transition-colors cursor-pointer" aria-label="Cerrar chat">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
-              </button>
+              <Tooltip title="Cerrar chat" arrow>
+                <IconButton 
+                  onClick={toggleChat} 
+                  size="small"
+                  aria-label="Cerrar chat"
+                  sx={{ color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' } }}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </IconButton>
+              </Tooltip>
             </div>
           </div>
 
+          {/* ÁREA DE MENSAJES */}
           <div className="flex-1 p-4 overflow-y-auto bg-gray-50 flex flex-col gap-3 min-h-75 custom-scrollbar">
             {mensajes.map((msg, index) => (
               <div key={index} className={`flex ${msg.isBot ? 'justify-start' : 'justify-end'}`}>
@@ -172,23 +255,61 @@ export default function PidaChat() {
             <div ref={messagesEndRef} />
           </div>
 
-          <form onSubmit={handleEnviar} className="p-3 bg-white border-t border-gray-100 flex gap-2">
-            <input 
-              type="text" 
+          {/* FORMULARIO DE ENVÍO CON MUI */}
+          <Paper
+            component="form"
+            onSubmit={handleEnviar}
+            elevation={0}
+            sx={{
+              p: 1.5, 
+              display: 'flex', 
+              gap: 1, 
+              alignItems: 'center',
+              borderTop: '1px solid #F3F4F6', 
+              borderRadius: 0, 
+              bgcolor: 'white'
+            }}
+          >
+            <InputBase
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Escribe tu mensaje aquí..." 
-              className="flex-1 bg-gray-50 border border-gray-200 text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:bg-white focus:ring-2 focus:ring-main-red/20 focus:border-main-red transition-all duration-200"
+              placeholder="Escribe tu mensaje aquí..."
+              disabled={escribiendo}
+              sx={{
+                flex: 1, 
+                bgcolor: '#F9FAFB', 
+                border: '1px solid #E5E7EB',
+                borderRadius: '12px', 
+                px: 2, 
+                py: 1, 
+                fontSize: '0.875rem',
+                fontFamily: '"Work Sans", sans-serif',
+                transition: 'all 0.2s ease-in-out',
+                '&.Mui-focused': { 
+                  bgcolor: 'white', 
+                  borderColor: '#B92F32', // main-red
+                  boxShadow: '0 0 0 2px rgba(185, 47, 50, 0.1)' 
+                }
+              }}
             />
-            <button 
+            <IconButton
               type="submit"
               disabled={!input.trim() || escribiendo}
-              className="bg-main-red text-white p-2.5 rounded-xl hover:bg-red-700 hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none cursor-pointer flex items-center justify-center shrink-0"
+              color="secondary" // Usará el color rojo definido en ThemeProvider
+              sx={{
+                bgcolor: 'secondary.main', 
+                color: 'white', 
+                borderRadius: '12px', 
+                p: 1.5,
+                transition: 'all 0.2s',
+                '&:hover': { bgcolor: '#9B2527', transform: 'scale(1.05)' },
+                '&.Mui-disabled': { bgcolor: '#E5E7EB', color: '#9CA3AF' }
+              }}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-            </button>
-          </form>
-        </div>
+               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+            </IconButton>
+          </Paper>
+        </Paper>
       )}
     </div>
   );

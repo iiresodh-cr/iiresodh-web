@@ -8,6 +8,10 @@ import { collection, query, where, getDocs, limit, orderBy } from "firebase/fire
 import { httpsCallable } from "firebase/functions";
 import PageHeader from "../components/PageHeader";
 
+// Importaciones de MUI y Wrappers
+import AdminTextField from "../components/ui/AdminTextField";
+import { Button, Checkbox, FormControlLabel, Alert, Paper } from "@mui/material";
+
 const stripePromise = loadStripe("pk_test_51TG3Ix2cAGUeJe5mZ8VfsyNf1qmd7EYcncADyttNU7oZPLxpgi8VfjCWTVjOdluNcgeiyleaPgWmR1FQtZbwLj9E00RTW4N4Qs");
 
 const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
@@ -36,7 +40,7 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
 
       try {
           const validarCupon = httpsCallable(functions, 'validarCuponStripe');
-          const { data } = await validarCupon({ codigo: codigoDescuento.trim() }); // Enviamos tal cual lo escribe
+          const { data } = await validarCupon({ codigo: codigoDescuento.trim() });
 
           if (data.valido) {
               setDescuentoAplicado({ 
@@ -125,7 +129,6 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
       if (descuentoAplicado.porcentaje) {
           precioFinal = precio * (1 - descuentoAplicado.porcentaje / 100);
       } else if (descuentoAplicado.montoFijo) {
-          // El monto de Stripe viene en centavos
           precioFinal = precio - (descuentoAplicado.montoFijo / 100);
       }
   }
@@ -139,100 +142,131 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
 
   if (exito) {
     return (
-      <div className="bg-green-50 text-green-700 p-8 rounded-xl text-center border border-green-200 animate-fade-in-up">
-        <h3 className="text-2xl font-bold mb-3">¡Pago Exitoso!</h3>
-        <p className="text-lg">Gracias por adquirir <strong>{titulo}</strong>. Te hemos enviado un correo a <strong>{email}</strong> con tu enlace de descarga segura.</p>
-      </div>
+      <Alert 
+        severity="success" 
+        variant="filled"
+        sx={{ 
+          borderRadius: '16px', 
+          p: 4, 
+          animation: 'fade-in-up 0.5s ease-out',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+        }}
+      >
+        <h3 className="text-2xl font-bold mb-3 text-white tracking-tight">¡Pago Exitoso!</h3>
+        <p className="text-base font-medium text-green-50 leading-relaxed">
+          Gracias por adquirir <strong>{titulo}</strong>. Te hemos enviado un correo a <strong>{email}</strong> con tu enlace de descarga segura.
+        </p>
+      </Alert>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 text-left">
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Nombre Completo</label>
-        <input 
-          type="text" 
+    <form onSubmit={handleSubmit} className="space-y-6 text-left">
+      
+      {/* SECCIÓN: CAMPOS DE TEXTO CON GAP INFALIBLE */}
+      <div className="flex flex-col gap-6">
+        <AdminTextField 
+          label="Nombre Completo"
           required
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
           placeholder="Ej. Juan Pérez"
-          className="w-full bg-gray-50 border border-gray-200 p-3.5 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-main-blue/20 focus:border-main-blue transition-all"
         />
-      </div>
 
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Correo Electrónico (Para envío del PDF)</label>
-        <input 
-          type="email" 
+        <AdminTextField 
+          label="Correo Electrónico (Para envío del PDF)"
+          type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="tu@correo.com"
-          className="w-full bg-gray-50 border border-gray-200 p-3.5 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-main-blue/20 focus:border-main-blue transition-all"
         />
       </div>
 
-      {/* SECCIÓN: CÓDIGO DE DESCUENTO CON CONSULTA A STRIPE */}
+      {/* SECCIÓN: CÓDIGO DE DESCUENTO CON MUI */}
       <div>
-         <label className="block text-sm font-semibold text-gray-700 mb-1.5">Código de Descuento (Opcional)</label>
-         <div className="flex gap-2">
-             <input 
-               type="text" 
-               value={codigoDescuento}
-               onChange={(e) => {
-                 setCodigoDescuento(e.target.value);
-                 if(errorDescuento) setErrorDescuento(null); // Limpia el error visual al escribir
-               }}
-               placeholder="Código"
-               className={`grow bg-gray-50 border p-3.5 rounded-lg focus:bg-white focus:outline-none focus:ring-2 transition-all uppercase placeholder:normal-case ${errorDescuento ? 'border-red-300 focus:ring-red-200 focus:border-red-400' : 'border-gray-200 focus:ring-main-blue/20 focus:border-main-blue'}`}
-             />
-             <button 
-                type="button" 
+         <div className="flex gap-3 items-stretch">
+             <div className="grow">
+                 <AdminTextField 
+                   label="Código de Descuento (Opcional)"
+                   value={codigoDescuento}
+                   onChange={(e) => {
+                     setCodigoDescuento(e.target.value.toUpperCase());
+                     if(errorDescuento) setErrorDescuento(null);
+                   }}
+                   placeholder="CÓDIGO"
+                 />
+             </div>
+             <Button 
+                variant="contained"
                 onClick={aplicarDescuento}
                 disabled={!codigoDescuento.trim() || loadingDescuento}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3.5 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-w-25"
+                sx={{ 
+                  borderRadius: '12px', 
+                  px: { xs: 3, sm: 4 }, 
+                  bgcolor: '#F3F4F6', 
+                  color: '#374151',
+                  fontWeight: 'bold',
+                  boxShadow: 'none',
+                  border: '1px solid #E5E7EB',
+                  '&:hover': { bgcolor: '#E5E7EB', boxShadow: 'none' },
+                  '&.Mui-disabled': { bgcolor: '#F9FAFB', color: '#9CA3AF' }
+                }}
              >
                  {loadingDescuento ? "..." : "Aplicar"}
-             </button>
+             </Button>
          </div>
          {errorDescuento && (
-            <p className="text-sm text-red-600 mt-2 font-medium bg-red-50 p-2 rounded border border-red-100 animate-fade-in-up">
+            <Alert severity="error" sx={{ mt: 2, borderRadius: '10px' }} className="animate-fade-in-up">
               {errorDescuento}
-            </p>
+            </Alert>
          )}
       </div>
 
       {/* SECCIÓN: DATOS DE LA TARJETA */}
-      <div className="bg-gray-50 border border-gray-200 p-5 rounded-xl mt-4 text-left">
-        <label className="block text-sm font-semibold text-gray-700 mb-3">Datos de la Tarjeta</label>
-        <div className="bg-white p-3.5 rounded-lg border border-gray-300 shadow-sm">
+      <div className="bg-gray-50 border border-gray-200 p-5 rounded-xl text-left">
+        <label className="block text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">Datos de Pago Seguro</label>
+        <div className="bg-white p-4 rounded-lg border border-gray-300 shadow-inner">
           <CardElement options={cardElementOptions} />
         </div>
       </div>
 
-      {/* SECCIÓN: CHECKBOX LEGAL DE TÉRMINOS CON LÓGICA POR PAÍS */}
-      <div className="flex items-start mt-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
-        <div className="flex items-center h-5 mt-0.5">
-          <input
-            id="terminos"
-            type="checkbox"
-            checked={aceptarTerminos}
-            onChange={(e) => setAceptarTerminos(e.target.checked)}
-            className="w-5 h-5 text-main-blue bg-white border-gray-300 rounded focus:ring-main-blue focus:ring-2 cursor-pointer"
-          />
-        </div>
-        <label htmlFor="terminos" className="ml-3 text-sm font-medium text-gray-700 leading-snug cursor-pointer">
-          He leído y acepto {articuloPrivacidad} <Link to={urlPrivacidad} target="_blank" className="text-main-blue font-bold hover:underline">{textoPrivacidad}</Link> y los <Link to="/privacidad?tab=terminos" target="_blank" className="text-main-blue font-bold hover:underline">Términos de Uso</Link> (incluyendo la política anti-piratería).
-        </label>
+      {/* SECCIÓN: CHECKBOX LEGAL DE TÉRMINOS CON MUI */}
+      <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={aceptarTerminos}
+              onChange={(e) => setAceptarTerminos(e.target.checked)}
+              sx={{
+                color: '#D1D5DB',
+                '&.Mui-checked': { color: 'primary.main' },
+              }}
+            />
+          }
+          label={
+            <span className="text-sm font-medium text-gray-700 leading-snug">
+              He leído y acepto {articuloPrivacidad} <Link to={urlPrivacidad} target="_blank" className="text-main-blue font-bold hover:underline">{textoPrivacidad}</Link> y los <Link to="/privacidad?tab=terminos" target="_blank" className="text-main-blue font-bold hover:underline">Términos de Uso</Link> (incluyendo la política anti-piratería).
+            </span>
+          }
+          sx={{ m: 0, alignItems: 'flex-start', '& .MuiFormControlLabel-label': { mt: '2px' } }}
+        />
       </div>
 
-      {error && <div className="bg-red-50 text-main-red p-4 rounded-lg text-sm border border-red-200 font-medium">{error}</div>}
+      {error && (
+        <Alert severity="error" sx={{ borderRadius: '12px', fontWeight: 'medium' }}>
+          {error}
+        </Alert>
+      )}
 
       {/* SECCIÓN: BOTÓN DE PAGO Y RESUMEN DE DESCUENTO */}
-      <div className="mt-6">
+      <div className="pt-2">
         {descuentoAplicado && (
-          <div className="flex justify-between items-center bg-green-50 p-4 rounded-xl border border-green-200 mb-4 shadow-sm animate-fade-in-up">
-            <span className="text-green-800 font-bold text-sm uppercase tracking-widest">Descuento aplicado:</span>
+          <div className="flex justify-between items-center bg-green-50 p-4 rounded-xl border border-green-200 mb-5 shadow-sm animate-fade-in-up">
+            <span className="text-green-800 font-bold text-xs md:text-sm uppercase tracking-widest flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              Descuento aplicado:
+            </span>
             <div className="text-right flex items-center gap-3">
               <span className="text-gray-400 line-through text-sm font-medium">${precio.toFixed(2)}</span>
               <span className="text-green-700 font-extrabold text-2xl">${precioFinal.toFixed(2)} <span className="text-sm font-bold">{moneda}</span></span>
@@ -240,13 +274,31 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
           </div>
         )}
 
-        <button 
+        <Button 
           type="submit" 
+          variant="contained"
           disabled={!stripe || loadingPago || !aceptarTerminos}
-          className={`w-full text-white font-bold py-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest cursor-pointer text-base ${descuentoAplicado ? 'bg-green-600 hover:bg-green-700' : 'bg-main-red hover:bg-red-700'}`}
+          fullWidth
+          sx={{
+             py: 2,
+             borderRadius: '12px',
+             fontSize: '1rem',
+             fontWeight: 'bold',
+             letterSpacing: '0.1em',
+             bgcolor: descuentoAplicado ? '#16a34a' : 'secondary.main', // Verde si hay descuento, Rojo institucional si no
+             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+             '&:hover': { 
+               bgcolor: descuentoAplicado ? '#15803d' : '#9B2527',
+               boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+             },
+             '&.Mui-disabled': {
+               bgcolor: '#E5E7EB',
+               color: '#9CA3AF'
+             }
+          }}
         >
           {loadingPago ? "Procesando pago seguro..." : `Pagar $${precioFinal.toFixed(2)} ${moneda}`}
-        </button>
+        </Button>
       </div>
     </form>
   );
