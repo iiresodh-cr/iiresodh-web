@@ -19,38 +19,28 @@ import { CircularProgress, Button, Alert } from "@mui/material";
 export const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
   
-  // 1. Escapar < y > por seguridad, pero NO TOCAR el & para no romper URLs
   let procesado = texto.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const linksGuardados = [];
 
-  const linksGuardados = []; // Caja fuerte temporal
-
-  // 2. Extraer Markdown (Por si alguien decide usarlo manualmente: [Texto](URL))
   procesado = procesado.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, label, url) => {
     linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline wrap-break-words">${label}</a>`);
     return `__LINK_${linksGuardados.length - 1}__`; 
   });
 
-  // 3. LA MAGIA AUTOMÁTICA: Extraer URLs crudas pegadas y convertirlas en "haciendo clic aquí"
   procesado = procesado.replace(/(https?:\/\/[^\s]+)/g, (match, url) => {
-    if (url.includes("__LINK_")) return match; // Evitar procesar los que ya guardamos
-    
-    // AQUÍ ESTÁ EL CAMBIO: Todo link crudo se disfraza automáticamente
+    if (url.includes("__LINK_")) return match; 
     const textoFijo = "clic aquí";
-    
     linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline wrap-break-words">${textoFijo}</a>`);
     return `__LINK_${linksGuardados.length - 1}__`; 
   });
 
-  // 4. Procesar Hashtags
   procesado = procesado.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (match) => {
     const term = match.substring(1);
     return `<a href="/buscar?q=${term}" class="text-light-blue hover:text-main-red font-bold">${match}</a>`;
   });
 
-  // 5. Restaurar Links desde la caja fuerte
   procesado = procesado.replace(/__LINK_(\d+)__/g, (match, i) => linksGuardados[i]);
 
-  // 6. Convertir saltos de línea a párrafos
   const parrafos = procesado.split(/\n\s*\n/);
   return parrafos.map(p => `<p>${p.replace(/\n/g, '<br />')}</p>`).join('');
 };
@@ -92,7 +82,6 @@ export default function NoticiaDetalle() {
     fetchNoticia();
   }, [id]);
 
-  // ESTADO DE CARGA MEJORADO CON MUI
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4" role="status">
@@ -104,7 +93,6 @@ export default function NoticiaDetalle() {
     );
   }
 
-  // ESTADO DE ERROR MEJORADO CON MUI
   if (!noticia) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6" role="alert">
@@ -138,17 +126,19 @@ export default function NoticiaDetalle() {
         <div className="w-24 h-1.5 bg-main-red mx-auto rounded-full" aria-hidden="true"></div>
       </header>
 
-      <div className="relative overflow-hidden grow pb-20">
-        <div className="bg-watermark" aria-hidden="true"></div>
+      {/* CORRECCIÓN 1: Se quitó el 'overflow-hidden' del contenedor general para no romper el Sticky */}
+      <div className="relative grow pb-20">
+        
+        {/* CORRECCIÓN 2: Se encierra la marca de agua en su propia "jaula" con overflow-hidden */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
+          <div className="bg-watermark"></div>
+        </div>
 
-        {/* CORRECCIÓN 1: pt-4 md:pt-6 y px-0 para subir el contenedor y ajustar a los lados */}
         <section className="relative pt-4 md:pt-6 px-0 z-10">
           
-          {/* CORRECCIÓN 2: Se quitó el 'md:rounded-3xl' para que sea plano */}
-          <article className="max-w-7xl mx-auto bg-white overflow-hidden">
+          {/* CORRECCIÓN 3: Se quitó el 'overflow-hidden' del article */}
+          <article className="max-w-7xl mx-auto bg-white">
             
-            {/* BOTÓN DE VOLVER MEJORADO CON MUI */}
-            {/* CORRECCIÓN 3: Ajustados los padding pt-4 md:pt-6 y alineado lateral px-6 */}
             <div className="px-6 md:px-12 lg:px-16 pt-4 md:pt-6 pb-6">
               <Button 
                 component={Link} 
@@ -171,12 +161,12 @@ export default function NoticiaDetalle() {
               </Button>
             </div>
 
-            {/* CORRECCIÓN 4: Alineado lateral px-6 para coincidir */}
             <div className="px-6 md:px-12 lg:px-16 pb-12 md:pb-16 animate-fade-in-up w-full">
               
               <div className="flex flex-col lg:flex-row gap-12 items-start">
                 
-                <div className="w-full lg:w-1/2 shrink-0">
+                {/* LA MAGIA: lg:sticky y lg:top-8 ahora sí funcionarán libremente */}
+                <div className="w-full lg:w-1/2 shrink-0 lg:sticky lg:top-8 z-20">
                   <Swiper 
                     modules={[Pagination, Autoplay]} 
                     pagination={{ clickable: true }} 
@@ -196,7 +186,7 @@ export default function NoticiaDetalle() {
                   </Swiper>
                 </div>
 
-                <div className="w-full lg:w-1/2">
+                <div className="w-full lg:w-1/2 z-10">
                   <div 
                     className="noticia-content"
                     dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(noticia.contenido) }}
@@ -207,7 +197,6 @@ export default function NoticiaDetalle() {
                       Compartir esta noticia
                     </p>
                     
-                    {/* BOTONES DE REDES SOCIALES MEJORADOS CON MUI */}
                     <nav className="flex flex-wrap justify-center lg:justify-start gap-3" aria-label="Redes sociales para compartir">
                       
                       <Button
@@ -230,9 +219,9 @@ export default function NoticiaDetalle() {
                           textTransform: 'none',
                           boxShadow: 'none',
                           '&:hover': {
-                            bgcolor: '#F0FDF4', // bg-green-50
-                            color: '#16A34A', // text-green-600
-                            borderColor: '#BBF7D0', // border-green-200
+                            bgcolor: '#F0FDF4', 
+                            color: '#16A34A', 
+                            borderColor: '#BBF7D0', 
                             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
                           }
                         }}
@@ -260,9 +249,9 @@ export default function NoticiaDetalle() {
                           textTransform: 'none',
                           boxShadow: 'none',
                           '&:hover': {
-                            bgcolor: '#EFF6FF', // bg-blue-50
-                            color: '#1D4ED8', // text-blue-700
-                            borderColor: '#BFDBFE', // border-blue-200
+                            bgcolor: '#EFF6FF', 
+                            color: '#1D4ED8', 
+                            borderColor: '#BFDBFE', 
                             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
                           }
                         }}
