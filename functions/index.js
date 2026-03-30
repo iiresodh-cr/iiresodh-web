@@ -19,6 +19,23 @@ const GMAIL_CLIENT_SECRET = defineSecret("GMAIL_CLIENT_SECRET");
 const GMAIL_REFRESH_TOKEN = defineSecret("GMAIL_REFRESH_TOKEN");
 const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY"); 
 const STRIPE_WEBHOOK_SECRET = defineSecret("STRIPE_WEBHOOK_SECRET"); 
+const PIDA_SERVICE_ACCOUNT = defineSecret("PIDA_SERVICE_ACCOUNT"); // NUEVO SECRETO DE PIDA
+
+// ============================================================================
+// CONEXIÓN A BASE DE DATOS DE PIDA (SOLO LECTURA)
+// ============================================================================
+let pidaDbInstance = null;
+
+function getPidaFirestore() {
+  if (!pidaDbInstance) {
+    const serviceAccount = JSON.parse(PIDA_SERVICE_ACCOUNT.value());
+    const pidaApp = admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    }, 'PidaApp');
+    pidaDbInstance = pidaApp.firestore();
+  }
+  return pidaDbInstance;
+}
 
 // ============================================================================
 // 1. FUNCIÓN DE INTELIGENCIA ARTIFICIAL (GEMINI)
@@ -282,10 +299,10 @@ exports.chatPida = onCall({
 // 5. FUNCIÓN PARA VALIDAR CUPONES DE STRIPE (DOCUMENTACIÓN OFICIAL BLINDADA)
 // ============================================================================
 exports.validarCuponStripe = onCall({
-  secrets: [STRIPE_SECRET_KEY],
+  secrets: [STRIPE_SECRET_KEY, PIDA_SERVICE_ACCOUNT],
   region: "us-central1"
 }, async (request) => {
-  const { codigo } = request.data;
+  const { codigo, emailUsuario } = request.data;
   if (!codigo) {
     throw new HttpsError("invalid-argument", "Código requerido.");
   }
@@ -293,6 +310,27 @@ exports.validarCuponStripe = onCall({
   try {
     const stripe = new Stripe(STRIPE_SECRET_KEY.value());
     const codigoLimpio = codigo.trim();
+
+    // NUEVO: INTERCEPTACIÓN DE CUPONES DE PIDA
+    if (codigoLimpio.toUpperCase().startsWith("PIDA")) {
+      if (!emailUsuario) {
+        return { valido: false, mensaje: "Por favor, ingresa tu correo electrónico para validar este cupón." };
+      }
+
+      const pidaDb = getPidaFirestore();
+      const pidaClientSnapshot = await pidaDb.collection('clientes')
+        .where('email', '==', emailUsuario.toLowerCase())
+        .where('status', '==', 'active')
+        .limit(1)
+        .get();
+
+      if (pidaClientSnapshot.empty) {
+        return { 
+          valido: false, 
+          mensaje: "Este cupón es exclusivo para suscriptores activos de PIDA. Verifica tu correo o tu suscripción." 
+        };
+      }
+    }
 
     // Consulta directa a la API de Stripe, expandiendo ambas rutas posibles
     const promoCodes = await stripe.promotionCodes.list({
@@ -338,7 +376,7 @@ exports.validarCuponStripe = onCall({
 // 6. FUNCIÓN PARA CREAR INTENTO DE PAGO (STRIPE ELEMENTS - DINÁMICO)
 // ============================================================================
 exports.crearIntentoPago = onCall({ 
-  secrets: [STRIPE_SECRET_KEY], 
+  secrets: [STRIPE_SECRET_KEY, PIDA_SERVICE_ACCOUNT], 
   region: "us-central1"
 }, async (request) => {
   const { libroId, emailUsuario, moneda, codigoDescuento, terminosAceptados } = request.data; 
@@ -374,6 +412,20 @@ exports.crearIntentoPago = onCall({
     // APLICACIÓN DEL CÓDIGO DE DESCUENTO (DOCUMENTACIÓN OFICIAL BLINDADA)
     if (codigoDescuento) {
       const codigoLimpio = codigoDescuento.trim();
+
+      // NUEVO: BLINDAGE FINAL PARA CUPONES DE PIDA
+      if (codigoLimpio.toUpperCase().startsWith("PIDA")) {
+        const pidaDb = getPidaFirestore();
+        const pidaClientSnapshot = await pidaDb.collection('clientes')
+          .where('email', '==', (emailUsuario || "").toLowerCase())
+          .where('status', '==', 'active')
+          .limit(1)
+          .get();
+
+        if (pidaClientSnapshot.empty) {
+          throw new HttpsError("permission-denied", "Intento de pago rechazado. El correo no pertenece a un suscriptor activo de PIDA.");
+        }
+      }
 
       const promoCodes = await stripe.promotionCodes.list({ 
         code: codigoLimpio, 

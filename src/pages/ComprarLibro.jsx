@@ -34,13 +34,23 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
   const aplicarDescuento = async () => {
       if (!codigoDescuento.trim()) return;
       
+      // NUEVO: Validar que el usuario haya escrito su correo primero
+      if (!email.trim()) {
+          setErrorDescuento("Por favor, ingresa tu correo electrónico para validar este cupón.");
+          return;
+      }
+      
       setLoadingDescuento(true);
       setErrorDescuento(null);
       setError(null);
 
       try {
           const validarCupon = httpsCallable(functions, 'validarCuponStripe');
-          const { data } = await validarCupon({ codigo: codigoDescuento.trim() });
+          // MODIFICADO: Enviamos el correo junto con el código
+          const { data } = await validarCupon({ 
+              codigo: codigoDescuento.trim(),
+              emailUsuario: email.trim() 
+          });
 
           if (data.valido) {
               setDescuentoAplicado({ 
