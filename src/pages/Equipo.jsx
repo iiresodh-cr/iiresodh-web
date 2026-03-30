@@ -11,6 +11,9 @@ import fotoRandall from "../assets/Randall.webp";
 import fotoRoxanne from "../assets/Roxanne-Cabrera.webp";
 import fotoFabricio from "../assets/Fabricio-Soley.webp";
 
+// Importaciones de MUI
+import { CircularProgress, Paper } from "@mui/material";
+
 export default function Equipo() {
   const [equipo, setEquipo] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +43,7 @@ export default function Equipo() {
         id: "staff-1",
         nombre: "David Urquilla",
         cargo: "Coordinador de tecnología y Abogado",
-        fotoUrl: fotoDavid, // Imagen actualizada aquí
+        fotoUrl: fotoDavid,
         destacado: false,
         orden: 6
       },
@@ -86,15 +89,24 @@ export default function Equipo() {
       }
     ];
 
-    setEquipo(mockupData);
-    setLoading(false);
+    // Simulamos un pequeño tiempo de carga para que la animación de MUI sea visible y fluida
+    setTimeout(() => {
+      setEquipo(mockupData);
+      setLoading(false);
+    }, 400);
   }, []);
 
-  if (loading) return (
-    <div className="min-h-screen bg-white flex items-center justify-center text-main-blue font-bold uppercase tracking-widest" role="status">
-      <span>Cargando...</span>
-    </div>
-  );
+  // ESTADO DE CARGA MEJORADO CON MUI
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 pt-20" role="status">
+        <CircularProgress size={50} thickness={4} sx={{ color: '#1D3557' }} />
+        <span className="text-main-blue font-bold text-sm uppercase tracking-widest animate-pulse">
+          Cargando equipo...
+        </span>
+      </div>
+    );
+  }
 
   const presidente = equipo.find(m => m.destacado);
   const staff = equipo.filter(m => !m.destacado).sort((a, b) => a.orden - b.orden);
@@ -111,22 +123,32 @@ export default function Equipo() {
         <div className="bg-watermark" aria-hidden="true"></div>
 
         <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
-          <div className="max-w-7xl mx-auto bg-white overflow-hidden shadow-sm md:rounded-3xl border border-gray-50">
+          {/* AQUÍ SE ELIMINARON LAS CLASES: shadow-sm border border-gray-50 */}
+          <div className="max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl">
             
             <div className="px-8 md:px-12 lg:px-16 py-12 md:py-16 animate-fade-in-up">
               
-              {/* SECCIÓN PRESIDENTE */}
+              {/* SECCIÓN PRESIDENTE MEJORADA CON MUI PAPER */}
               {presidente && (
                 <section className="mb-24" aria-labelledby="presidente-nombre">
                   <div className="flex flex-col md:flex-row items-start gap-10 md:gap-20">
                     <div className="w-full md:w-2/5 shrink-0">
-                      <div className="aspect-4/5 bg-gray-50 border border-gray-200 rounded-xl overflow-hidden shadow-md">
+                      <Paper 
+                        elevation={4} 
+                        sx={{ 
+                          aspectRatio: '4/5', 
+                          borderRadius: '16px', 
+                          overflow: 'hidden',
+                          bgcolor: '#F9FAFB', // bg-gray-50
+                          border: '1px solid #E5E7EB' // border-gray-200
+                        }}
+                      >
                         <img 
                           src={presidente.fotoUrl} 
                           alt={`Retrato de ${presidente.nombre}`} 
                           className="w-full h-full object-cover"
                         />
-                      </div>
+                      </Paper>
                     </div>
                     
                     <div className="w-full md:w-3/5 text-justify">
@@ -145,18 +167,38 @@ export default function Equipo() {
                 </section>
               )}
 
-              {/* SECCIÓN STAFF */}
+              {/* SECCIÓN STAFF MEJORADA CON MUI PAPER */}
               <section aria-label="Miembros del equipo">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
                   {staff.map((miembro) => (
-                    <article key={miembro.id} className="flex flex-col group">
-                      <div className="aspect-4/5 w-full mb-6 rounded-xl overflow-hidden bg-gray-50 border border-gray-200 shadow-sm transition-all duration-500 group-hover:shadow-lg">
+                    <article key={miembro.id} className="flex flex-col group cursor-default">
+                      <Paper
+                        elevation={1}
+                        sx={{
+                          aspectRatio: '4/5',
+                          width: '100%',
+                          mb: 3,
+                          borderRadius: '16px',
+                          overflow: 'hidden',
+                          bgcolor: '#F9FAFB',
+                          border: '1px solid #F3F4F6',
+                          transition: 'all 0.5s ease',
+                          '&:hover': {
+                            transform: 'translateY(-8px)',
+                            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', // shadow-xl
+                          },
+                          // Este selector mantiene la funcionalidad de escala de grises de Tailwind
+                          '&:hover img': {
+                            filter: 'grayscale(0%)',
+                          }
+                        }}
+                      >
                         <img 
                           src={miembro.fotoUrl} 
                           alt={`Retrato de ${miembro.nombre}`} 
-                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
+                          className="w-full h-full object-cover grayscale transition-all duration-700" 
                         />
-                      </div>
+                      </Paper>
                       <div className="px-2">
                         <h3 className="text-xl font-semibold text-main-blue leading-tight mb-1 group-hover:text-main-red transition-colors uppercase tracking-tight">
                           {miembro.nombre}
