@@ -318,9 +318,9 @@ exports.validarCuponStripe = onCall({
       }
 
       const pidaDb = getPidaFirestore();
-      const pidaClientSnapshot = await pidaDb.collection('clientes')
+      const pidaClientSnapshot = await pidaDb.collection('customers')
         .where('email', '==', emailUsuario.toLowerCase())
-        .where('status', '==', 'active')
+        .where('status', 'in', ['active', 'trialing']) // Acepta usuarios activos y en prueba
         .limit(1)
         .get();
 
@@ -416,11 +416,11 @@ exports.crearIntentoPago = onCall({
       // NUEVO: BLINDAGE FINAL PARA CUPONES DE PIDA
       if (codigoLimpio.toUpperCase().startsWith("PIDA")) {
         const pidaDb = getPidaFirestore();
-        const pidaClientSnapshot = await pidaDb.collection('clientes')
-          .where('email', '==', (emailUsuario || "").toLowerCase())
-          .where('status', '==', 'active')
-          .limit(1)
-          .get();
+        const pidaClientSnapshot = await pidaDb.collection('customers')
+        .where('email', '==', emailUsuario.toLowerCase())
+        .where('status', 'in', ['active', 'trialing']) // Acepta usuarios activos y en prueba
+        .limit(1)
+        .get();
 
         if (pidaClientSnapshot.empty) {
           throw new HttpsError("permission-denied", "Intento de pago rechazado. El correo no pertenece a un suscriptor activo de PIDA.");
