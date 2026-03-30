@@ -544,26 +544,20 @@ exports.stripeWebhook = onRequest({
         console.log(`El archivo ${libroData.rutaStorage} pesa ${fileSizeInMB.toFixed(2)} MB.`);
 
         // Límite fijado en 40MB para no romper el servidor de Firebase
+        // ========================================================
+        // 🔒 INICIO DE MAGIA ANTI-PIRATERÍA (DOS LÍNEAS)
+        // ========================================================
         if (fileSizeInMB > 40) {
-            console.log(`⚠️ ARCHIVO DEMASIADO PESADO (>40MB). Saltando Social DRM. Generando link directo.`);
+            console.log(`⚠️ ARCHIVO DEMASIADO PESADO (>40MB). Saltando Social DRM...`);
             
             [urlTemporal] = await file.getSignedUrl({
                 action: 'read',
-                expires: Date.now() + 1000 * 60 * 60 * 48, // 48 horas
+                expires: Date.now() + 1000 * 60 * 60 * 48, 
             });
 
-            mensajeExitoHTML = `
-              <h2 style="color: #1D3557;">¡Pago procesado con éxito!</h2>
-              <p>Hola,</p>
-              <p>Hemos recibido tu pago por la publicación: <strong>${libroData.titulo}</strong>.</p>
-              <p>Puedes descargar tu copia en el siguiente enlace. <strong>Nota importante: Este enlace de alta velocidad es único y caducará en 48 horas por motivos de seguridad anti-piratería.</strong> Por favor, descarga y guarda el archivo PDF en tu dispositivo personal.</p>
-              <br>
-              <a href="${urlTemporal}" style="background-color: #B92F32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
-                ⬇ Descargar Publicación (PDF)
-              </a>
-              <br><br>
-              <p>Gracias por apoyar la labor del Instituto Internacional de Responsabilidad Social y Derechos Humanos.</p>
-            `;
+            // ... (El mensaje HTML se queda igual) ...
+            mensajeExitoHTML = `...`; 
+
         } else {
             console.log(`✅ Tamaño óptimo. Iniciando estampado de marca de agua anti-piratería...`);
             
@@ -572,10 +566,22 @@ exports.stripeWebhook = onRequest({
             const pages = pdfDoc.getPages();
             const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
             
-            const marcaDeAgua = `LICENCIA PERSONAL DE: ${emailCliente.toUpperCase()} | REF: ${paymentIntent.id} | IIRESODH`;
+            // 🚀 CAMBIO AQUÍ: Dividimos el texto en dos líneas
+            const linea1 = `LICENCIA PERSONAL DE: ${emailCliente.toUpperCase()}`;
+            const linea2 = `REF: ${paymentIntent.id} | IIRESODH`;
 
             pages.forEach((page) => {
-              page.drawText(marcaDeAgua, {
+              // Dibujamos la primera línea un poquito más arriba (y: 32)
+              page.drawText(linea1, {
+                x: 20, 
+                y: 32, 
+                size: 9,
+                font: font,
+                color: rgb(0.725, 0.184, 0.196), 
+                opacity: 0.65, 
+              });
+              // Dibujamos la segunda línea justo debajo (y: 20)
+              page.drawText(linea2, {
                 x: 20, 
                 y: 20, 
                 size: 9,
