@@ -5,6 +5,9 @@ import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../firebase/config";
 import PageHeader from "../components/PageHeader";
 
+// Importaciones de MUI
+import { CircularProgress, Button } from "@mui/material";
+
 const PAGINAS_ESTATICAS = [
   { 
     id: 'p1-general', 
@@ -145,16 +148,15 @@ export default function ResultadosBusqueda() {
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark" aria-hidden="true"></div>
 
-        {/* CONTENEDOR INSTITUCIONAL */}
         <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10" aria-label="Resultados encontrados">
           <div className="max-w-6xl mx-auto bg-white overflow-hidden shadow-sm md:rounded-3xl border border-gray-50">
             
             <div className="px-8 md:px-12 lg:px-16 py-12 md:py-16 animate-fade-in-up">
               
               {loading ? (
-                <div className="flex flex-col justify-center items-center py-20" role="status">
-                  <div className="w-16 h-16 border-4 border-pale-blue border-t-main-red rounded-full animate-spin mb-6" aria-hidden="true"></div>
-                  <span className="text-main-blue font-bold text-lg uppercase tracking-widest">Buscando coincidencias...</span>
+                <div className="flex flex-col justify-center items-center py-20 gap-4" role="status">
+                  <CircularProgress size={50} thickness={4} sx={{ color: '#1D3557' }} />
+                  <span className="text-main-blue font-bold text-lg uppercase tracking-widest animate-pulse">Buscando coincidencias...</span>
                 </div>
               ) : totalResultados === 0 ? (
                 <div className="text-center py-12" role="alert">
@@ -165,9 +167,30 @@ export default function ResultadosBusqueda() {
                   <p className="text-gray-500 font-light mb-8 max-w-md mx-auto">
                     Intente utilizar palabras clave más generales o revise la ortografía del término ingresado.
                   </p>
-                  <Link to="/" className="inline-block bg-main-blue text-white px-8 py-3 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-light-blue transition-colors shadow-md" aria-label="Regresar a la página de inicio">
-                    &larr; Volver al inicio
-                  </Link>
+                  
+                  {/* BOTÓN DE VOLVER MEJORADO CON MUI */}
+                  <Button 
+                    component={Link}
+                    to="/"
+                    variant="contained"
+                    startIcon={<span className="text-lg leading-none">&larr;</span>}
+                    sx={{
+                      bgcolor: 'primary.main',
+                      color: 'white',
+                      px: 4,
+                      py: 1.5,
+                      borderRadius: '50px',
+                      fontWeight: 'bold',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.1em',
+                      fontSize: '0.75rem',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                      '&:hover': { bgcolor: 'info.main', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }
+                    }}
+                    aria-label="Regresar a la página de inicio"
+                  >
+                    Volver al inicio
+                  </Button>
                 </div>
               ) : (
                 <div className="space-y-16">
@@ -205,7 +228,6 @@ export default function ResultadosBusqueda() {
                       <div className="flex flex-col gap-6" role="list">
                         {resultadosNoticias.map(noticia => (
                           <article key={noticia.id} role="listitem">
-                            {/* SE ELIMINÓ LA PALABRA 'block' AL FINAL DE className */}
                             <Link to={`/noticias/${noticia.slug || noticia.id}`} className="group bg-white p-4 rounded-2xl border border-gray-100 flex flex-col sm:flex-row gap-6 hover:shadow-xl hover:border-pale-blue transition-all duration-300" aria-label={`Leer noticia: ${noticia.titulo}`}>
                               <div className="w-full sm:w-48 shrink-0 aspect-4/5 bg-gray-50 rounded-xl overflow-hidden shadow-sm">
                                 <img src={noticia.imagenPrincipalUrl} alt="" aria-hidden="true" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />

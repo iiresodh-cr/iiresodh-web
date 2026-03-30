@@ -3,6 +3,9 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 
+// Importaciones de MUI
+import { Tabs, Tab, Box } from '@mui/material';
+
 export default function Privacidad() {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState("general");
@@ -18,6 +21,11 @@ export default function Privacidad() {
     
     window.scrollTo(0, 0);
   }, [location]);
+
+  // Manejador para el componente Tabs de MUI
+  const handleChangeTab = (event, newValue) => {
+    setActiveTab(newValue);
+  };
 
   // Constante para estandarizar la clase tipográfica institucional de los textos legales
   const legalTextClass = "space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify animate-fade-in-up";
@@ -36,45 +44,50 @@ export default function Privacidad() {
         <div className="bg-watermark"></div>
 
         <section className="relative py-12 md:py-16 px-0 md:px-8 z-10">
-          {/* Ancho homologado a max-w-7xl como en el resto del sitio */}
           <div className="max-w-7xl mx-auto">
             
-            {/* Pestañas de Navegación alineadas al contenedor - Sombras eliminadas */}
-            <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 mb-12 px-6 md:px-0">
-              <button
-                onClick={() => setActiveTab("general")}
-                className={`py-3 px-8 rounded-full font-bold uppercase tracking-widest text-sm transition-all cursor-pointer ${
-                  activeTab === "general"
-                    ? "bg-main-blue text-white"
-                    : "bg-white text-main-blue border border-gray-200 hover:bg-pale-blue hover:text-main-blue"
-                }`}
+            {/* PESTAÑAS DE NAVEGACIÓN MEJORADAS CON MUI */}
+            <Box sx={{ width: '100%', mb: 6, display: 'flex', justifyContent: 'center' }}>
+              <Tabs
+                value={activeTab}
+                onChange={handleChangeTab}
+                variant="scrollable"
+                scrollButtons="auto"
+                allowScrollButtonsMobile
+                TabIndicatorProps={{
+                  sx: { backgroundColor: '#B92F32', height: 3, borderRadius: '3px 3px 0 0' } // Indicador Rojo (main-red)
+                }}
+                sx={{
+                  borderBottom: 1,
+                  borderColor: 'divider',
+                  '& .MuiTab-root': {
+                    textTransform: 'uppercase',
+                    fontWeight: 'bold',
+                    letterSpacing: '0.1em',
+                    fontSize: '0.875rem',
+                    color: '#6B7280',
+                    fontFamily: '"Work Sans", sans-serif',
+                    transition: 'all 0.3s',
+                    px: { xs: 2, md: 4 },
+                    py: 2.5,
+                    '&.Mui-selected': {
+                      color: '#1D3557', // Texto Azul institucional al seleccionar
+                    },
+                    '&:hover': {
+                      color: '#1D3557',
+                      backgroundColor: 'rgba(29, 53, 87, 0.04)' // Hover suave
+                    }
+                  }
+                }}
               >
-                Política General
-              </button>
-              <button
-                onClick={() => setActiveTab("mexico")}
-                className={`py-3 px-8 rounded-full font-bold uppercase tracking-widest text-sm transition-all cursor-pointer ${
-                  activeTab === "mexico"
-                    ? "bg-main-red text-white"
-                    : "bg-white text-main-red border border-gray-200 hover:bg-red-50 hover:border-main-red"
-                }`}
-              >
-                Aviso para México
-              </button>
-              <button
-                onClick={() => setActiveTab("terminos")}
-                className={`py-3 px-8 rounded-full font-bold uppercase tracking-widest text-sm transition-all cursor-pointer ${
-                  activeTab === "terminos"
-                    ? "bg-main-blue text-white"
-                    : "bg-white text-main-blue border border-gray-200 hover:bg-pale-blue hover:text-main-blue"
-                }`}
-              >
-                Términos de Uso
-              </button>
-            </div>
+                <Tab label="Política General" value="general" />
+                <Tab label="Aviso para México" value="mexico" />
+                <Tab label="Términos de Uso" value="terminos" />
+              </Tabs>
+            </Box>
 
             {/* Contenedor Legal - DISEÑO PLANO: Sin sombras ni bordes grises */}
-            <div className="bg-white md:rounded-3xl p-8 md:p-12 lg:p-16">
+            <div className="bg-white md:rounded-3xl p-8 md:p-12 lg:p-16 pt-0 md:pt-4">
               
               {/* =========================================
                   CONTENIDO: POLÍTICA GENERAL
@@ -349,7 +362,7 @@ export default function Privacidad() {
                     <p className="mb-3">Este Sitio Web y todo su contenido se proporcionan “tal cual” y “según disponibilidad” y pueden contener imprecisiones o errores tipográficos. Renunciamos expresamente a toda garantía, ya sea expresa o implícita, en cuanto a la disponibilidad, exactitud o integridad del Contenido.</p>
                     <p className="font-bold text-main-blue mb-2 uppercase text-xs tracking-widest">No garantizamos que:</p>
                     <ul className="list-disc pl-6 mb-4 space-y-2">
-                      <li>Este Sitio Web, o nuestros productos y servicios, satisfagan sus requisitos específicos.</li>
+                      <li>Este Sitio Web, o nuestros products y servicios, satisfagan sus requisitos específicos.</li>
                       <li>El acceso al Sitio Web sea ininterrumpido, oportuno, seguro o libre de errores.</li>
                       <li>La calidad de cualquier producto o servicio adquirido a través de este Sitio Web cumpla con sus expectativas.</li>
                     </ul>

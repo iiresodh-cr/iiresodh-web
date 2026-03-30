@@ -5,6 +5,9 @@ import { db } from "../firebase/config";
 import { Link } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 
+// Importaciones de MUI
+import { CircularProgress, Button } from "@mui/material";
+
 const NOTICIAS_POR_PAGINA = 10;
 
 export default function Noticias() {
@@ -82,11 +85,12 @@ export default function Noticias() {
     setPagina(prev => prev - 1);
   };
 
+  // ESTADO DE CARGA HOMOLOGADO CON MUI
   if (loading && noticias.length === 0) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center pt-20" role="status">
-        <div className="w-16 h-16 border-4 border-pale-blue border-t-main-red rounded-full animate-spin mb-6" aria-hidden="true"></div>
-        <span className="text-main-blue font-bold text-lg uppercase tracking-widest">Cargando Noticias...</span>
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 pt-20" role="status">
+        <CircularProgress size={50} thickness={4} sx={{ color: '#1D3557' }} />
+        <span className="text-main-blue font-bold text-sm uppercase tracking-widest animate-pulse">Cargando Noticias...</span>
       </div>
     );
   }
@@ -160,38 +164,54 @@ export default function Noticias() {
                 </div>
               )}
 
-              {/* Controles de Paginación */}
+              {/* CONTROLES DE PAGINACIÓN MEJORADOS CON MUI */}
               {noticias.length > 0 && (
                 <nav className="mt-16 flex items-center justify-center gap-8 border-t border-gray-100 pt-10" aria-label="Navegación de noticias">
-                  <button 
+                  <Button 
                     onClick={paginaAnterior}
                     disabled={pagina === 1 || loading}
-                    className={`px-8 py-2.5 rounded-full font-bold text-xs uppercase tracking-widest transition-all ${
-                      pagina === 1 || loading 
-                      ? 'text-gray-300 cursor-not-allowed border border-gray-200' 
-                      : 'text-main-blue hover:bg-main-blue hover:text-white border border-main-blue cursor-pointer'
-                    }`}
-                    aria-label="Ir a la página anterior de noticias"
+                    variant="outlined"
+                    startIcon={<span className="text-lg leading-none">&larr;</span>}
+                    sx={{
+                      px: 4,
+                      py: 1,
+                      borderRadius: '50px',
+                      fontWeight: 'bold',
+                      fontSize: '0.75rem',
+                      letterSpacing: '0.1em',
+                      color: 'primary.main',
+                      borderColor: 'primary.main',
+                      '&:hover': { bgcolor: 'rgba(29, 53, 87, 0.04)', borderColor: 'primary.main' },
+                      '&.Mui-disabled': { color: '#D1D5DB', borderColor: '#E5E7EB' }
+                    }}
                   >
-                    &larr; Anterior
-                  </button>
+                    Anterior
+                  </Button>
 
                   <span className="text-main-blue font-black text-xl" aria-current="page">
                     <span className="sr-only">Página actual:</span> {pagina}
                   </span>
 
-                  <button 
+                  <Button 
                     onClick={paginaSiguiente}
                     disabled={!hayMas || loading}
-                    className={`px-8 py-2.5 rounded-full font-bold text-xs uppercase tracking-widest transition-all ${
-                      !hayMas || loading 
-                      ? 'text-gray-300 cursor-not-allowed border border-gray-200' 
-                      : 'text-main-blue hover:bg-main-blue hover:text-white border border-main-blue cursor-pointer'
-                    }`}
-                    aria-label="Ir a la página siguiente de noticias"
+                    variant="outlined"
+                    endIcon={<span className="text-lg leading-none">&rarr;</span>}
+                    sx={{
+                      px: 4,
+                      py: 1,
+                      borderRadius: '50px',
+                      fontWeight: 'bold',
+                      fontSize: '0.75rem',
+                      letterSpacing: '0.1em',
+                      color: 'primary.main',
+                      borderColor: 'primary.main',
+                      '&:hover': { bgcolor: 'rgba(29, 53, 87, 0.04)', borderColor: 'primary.main' },
+                      '&.Mui-disabled': { color: '#D1D5DB', borderColor: '#E5E7EB' }
+                    }}
                   >
-                    Siguiente &rarr;
-                  </button>
+                    Siguiente
+                  </Button>
                 </nav>
               )}
 

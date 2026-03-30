@@ -5,6 +5,9 @@ import { collection, getDocs, query, orderBy, limit, startAfter, endBefore, limi
 import { db } from "../firebase/config";
 import PageHeader from "../components/PageHeader";
 
+// Importaciones de MUI
+import { CircularProgress, Button } from "@mui/material";
+
 const ARTICULOS_POR_PAGINA = 10;
 
 export default function ArticulosAcademicos() {
@@ -17,7 +20,7 @@ export default function ArticulosAcademicos() {
   const [pagina, setPagina] = useState(1);
   const [hayMas, setHayMas] = useState(true);
 
-  // Función de carga genérica con lógica de paginación
+  // Función de carga genérica
   const fetchArticulos = async (consulta) => {
     setLoading(true);
     try {
@@ -34,7 +37,6 @@ export default function ArticulosAcademicos() {
         }));
         setArticulos(data);
         
-        // Verificamos si hay una posible página siguiente
         setHayMas(querySnapshot.docs.length === ARTICULOS_POR_PAGINA);
       } else {
         if (pagina > 1) setHayMas(false);
@@ -44,7 +46,7 @@ export default function ArticulosAcademicos() {
       console.error("Error al cargar artículos:", error);
     } finally {
       setLoading(false);
-      window.scrollTo(0, 0); // Volver arriba al cambiar de página
+      window.scrollTo(0, 0);
     }
   };
 
@@ -82,18 +84,18 @@ export default function ArticulosAcademicos() {
     setPagina(prev => prev - 1);
   };
 
-  // Utilidad para formatear la fecha de Firebase
   const formatearFecha = (timestamp) => {
     if (!timestamp) return "";
     const date = timestamp.toDate();
     return date.toLocaleDateString("es-ES", { year: "numeric", month: "long", day: "numeric" });
   };
 
+  // ESTADO DE CARGA HOMOLOGADO CON MUI
   if (loading && articulos.length === 0) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center pt-20" role="status">
-        <div className="w-16 h-16 border-4 border-pale-blue border-t-main-red rounded-full animate-spin mb-6" aria-hidden="true"></div>
-        <span className="text-main-blue font-bold text-lg uppercase tracking-widest">Cargando repositorio...</span>
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 pt-20" role="status">
+        <CircularProgress size={50} thickness={4} sx={{ color: '#1D3557' }} />
+        <span className="text-main-blue font-bold text-sm uppercase tracking-widest animate-pulse">Cargando repositorio...</span>
       </div>
     );
   }
@@ -109,7 +111,6 @@ export default function ArticulosAcademicos() {
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark" aria-hidden="true"></div>
 
-        {/* CONTENEDOR INSTITUCIONAL */}
         <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10" aria-label="Lista de artículos académicos">
           <div className={`max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl ${articulos.length === 0 ? 'min-h-100 flex items-center justify-center' : ''}`}>
             
@@ -126,7 +127,6 @@ export default function ArticulosAcademicos() {
                 </div>
               ) : (
                 <>
-                  {/* GRID DE TARJETAS DE ARTÍCULOS */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" role="list">
                     {articulos.map((articulo) => (
                       <article key={articulo.id} role="listitem">
@@ -135,7 +135,6 @@ export default function ArticulosAcademicos() {
                           className="bg-gray-50 rounded-2xl overflow-hidden border border-gray-200 hover:shadow-xl hover:border-pale-blue transition-all duration-300 flex flex-col group cursor-pointer h-full"
                           aria-label={`Leer artículo: ${articulo.titulo}`}
                         >
-                          
                           {articulo.imagenPrincipalUrl && (
                             <div className="w-full aspect-video overflow-hidden bg-gray-200 shrink-0">
                               <img 
@@ -146,20 +145,16 @@ export default function ArticulosAcademicos() {
                               />
                             </div>
                           )}
-                          
                           <div className="p-6 flex flex-col grow">
                             <span className="text-xs font-black text-main-red uppercase tracking-widest mb-3 block">
                               {formatearFecha(articulo.fechaPublicacion)}
                             </span>
-                            
                             <h3 className="text-xl font-bold text-main-blue group-hover:text-light-blue transition-colors mb-3 line-clamp-2 leading-tight">
                               {articulo.titulo}
                             </h3>
-                            
                             <p className="text-gray-600 font-light text-sm line-clamp-3 mb-6 leading-relaxed grow">
                               {articulo.resumen}
                             </p>
-                            
                             <div className="inline-flex items-center gap-2 text-xs font-bold text-main-blue uppercase tracking-widest group-hover:text-main-red transition-colors mt-auto">
                               Leer artículo <span className="text-lg leading-none" aria-hidden="true">&rarr;</span>
                             </div>
@@ -169,45 +164,59 @@ export default function ArticulosAcademicos() {
                     ))}
                   </div>
 
-                  {/* Controles de Paginación */}
+                  {/* CONTROLES DE PAGINACIÓN MEJORADOS CON MUI */}
                   <nav className="mt-16 flex items-center justify-center gap-8 border-t border-gray-100 pt-10" aria-label="Navegación de páginas de artículos">
-                    <button 
+                    <Button 
                       onClick={paginaAnterior}
                       disabled={pagina === 1 || loading}
-                      className={`px-8 py-2.5 rounded-full font-bold text-xs uppercase tracking-widest transition-all ${
-                        pagina === 1 || loading 
-                        ? 'text-gray-300 cursor-not-allowed border border-gray-200' 
-                        : 'text-main-blue hover:bg-main-blue hover:text-white border border-main-blue cursor-pointer'
-                      }`}
-                      aria-label="Página anterior"
+                      variant="outlined"
+                      startIcon={<span className="text-lg leading-none">&larr;</span>}
+                      sx={{
+                        px: 4,
+                        py: 1,
+                        borderRadius: '50px',
+                        fontWeight: 'bold',
+                        fontSize: '0.75rem',
+                        letterSpacing: '0.1em',
+                        color: 'primary.main',
+                        borderColor: 'primary.main',
+                        '&:hover': { bgcolor: 'rgba(29, 53, 87, 0.04)', borderColor: 'primary.main' },
+                        '&.Mui-disabled': { color: '#D1D5DB', borderColor: '#E5E7EB' }
+                      }}
                     >
-                      &larr; Anterior
-                    </button>
+                      Anterior
+                    </Button>
 
                     <span className="text-main-blue font-black text-xl" aria-current="page">
                       <span className="sr-only">Página actual:</span> {pagina}
                     </span>
 
-                    <button 
+                    <Button 
                       onClick={paginaSiguiente}
                       disabled={!hayMas || loading}
-                      className={`px-8 py-2.5 rounded-full font-bold text-xs uppercase tracking-widest transition-all ${
-                        !hayMas || loading 
-                        ? 'text-gray-300 cursor-not-allowed border border-gray-200' 
-                        : 'text-main-blue hover:bg-main-blue hover:text-white border border-main-blue cursor-pointer'
-                      }`}
-                      aria-label="Página siguiente"
+                      variant="outlined"
+                      endIcon={<span className="text-lg leading-none">&rarr;</span>}
+                      sx={{
+                        px: 4,
+                        py: 1,
+                        borderRadius: '50px',
+                        fontWeight: 'bold',
+                        fontSize: '0.75rem',
+                        letterSpacing: '0.1em',
+                        color: 'primary.main',
+                        borderColor: 'primary.main',
+                        '&:hover': { bgcolor: 'rgba(29, 53, 87, 0.04)', borderColor: 'primary.main' },
+                        '&.Mui-disabled': { color: '#D1D5DB', borderColor: '#E5E7EB' }
+                      }}
                     >
-                      Siguiente &rarr;
-                    </button>
+                      Siguiente
+                    </Button>
                   </nav>
                 </>
               )}
-
             </div>
           </div>
         </section>
-
       </div>
     </main>
   );
