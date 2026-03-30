@@ -19,9 +19,9 @@ export default function LitigioEstrategico() {
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark" aria-hidden="true"></div>
 
-        <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10" aria-labelledby="intro-litigio">
+        <section className="relative pt-4 md:pt-6 px-0 z-10" aria-labelledby="intro-litigio">
           <div className="max-w-7xl mx-auto bg-white overflow-hidden">
-            <div className="px-8 md:px-12 lg:px-16 pb-12 md:pb-16 animate-fade-in-up">
+            <div className="px-6 md:px-12 lg:px-16 pt-4 md:pt-6 pb-12 animate-fade-in-up w-full">
               
               <div id="intro-litigio" className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify mb-12">
                 <p>

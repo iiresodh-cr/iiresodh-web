@@ -108,10 +108,10 @@ export default function Noticias() {
         <div className="bg-watermark" aria-hidden="true"></div>
 
         {/* CONTENEDOR INSTITUCIONAL HOMOLOGADO */}
-        <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
-          <div className={`max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl ${noticias.length === 0 ? 'min-h-100 flex items-center justify-center' : ''}`}>
+        <section className="relative pt-4 md:pt-6 px-0 z-10">
+          <div className="max-w-7xl mx-auto bg-white overflow-hidden">
             
-            <div className="px-8 md:px-12 lg:px-16 py-12 md:py-16 animate-fade-in-up w-full">
+            <div className="px-6 md:px-12 lg:px-16 pt-4 md:pt-6 pb-12 animate-fade-in-up w-full">
               
               {noticias.length === 0 ? (
                 <div className="text-center">

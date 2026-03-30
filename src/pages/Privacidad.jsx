@@ -43,11 +43,14 @@ export default function Privacidad() {
         {/* Marca de agua institucional */}
         <div className="bg-watermark"></div>
 
-        <section className="relative py-12 md:py-16 px-0 md:px-8 z-10">
-          <div className="max-w-7xl mx-auto">
+        {/* CORRECCIÓN 1: pt-4 md:pt-6 px-0 para subir el bloque */}
+        <section className="relative pt-4 md:pt-6 px-0 z-10">
+          
+          {/* CORRECCIÓN 2: Contenedor plano y limpio (bg-white overflow-hidden) sin bordes ni sombras */}
+          <div className="max-w-7xl mx-auto bg-white overflow-hidden">
             
             {/* PESTAÑAS DE NAVEGACIÓN MEJORADAS CON MUI */}
-            <Box sx={{ width: '100%', mb: 6, display: 'flex', justifyContent: 'center' }}>
+            <Box sx={{ width: '100%', pt: { xs: 2, md: 4 }, display: 'flex', justifyContent: 'center' }}>
               <Tabs
                 value={activeTab}
                 onChange={handleChangeTab}
@@ -60,6 +63,10 @@ export default function Privacidad() {
                 sx={{
                   borderBottom: 1,
                   borderColor: 'divider',
+                  width: '100%',
+                  '& .MuiTabs-flexContainer': {
+                    justifyContent: { xs: 'flex-start', md: 'center' }
+                  },
                   '& .MuiTab-root': {
                     textTransform: 'uppercase',
                     fontWeight: 'bold',
@@ -86,8 +93,8 @@ export default function Privacidad() {
               </Tabs>
             </Box>
 
-            {/* Contenedor Legal - DISEÑO PLANO: Sin sombras ni bordes grises */}
-            <div className="bg-white md:rounded-3xl p-8 md:p-12 lg:p-16 pt-0 md:pt-4">
+            {/* CORRECCIÓN 3: Ajuste de paddings para alinear con el resto de páginas, sin rounded-3xl */}
+            <div className="px-6 md:px-12 lg:px-16 pt-8 pb-12 w-full">
               
               {/* =========================================
                   CONTENIDO: POLÍTICA GENERAL
@@ -226,7 +233,7 @@ export default function Privacidad() {
                       <li>Envío de boletines informativos institucionales.</li>
                       <li>Análisis estadístico del uso del sitio web para mejora continua.</li>
                     </ul>
-                    <p className="mt-4">En caso de que no desee que sus datos personales sean tratados para las Finalidades Secundarias, usted puede manifestar su negativa enviando un correo a <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue font-bold transition-colors">contacto@iiresodh.org</a>.</p>
+                    <p className="mt-4">En caso de que no desee que sus datos personales sean treated para las Finalidades Secundarias, usted puede manifestar su negativa enviando un correo a <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue font-bold transition-colors">contacto@iiresodh.org</a>.</p>
                   </div>
 
                   <div>

@@ -57,10 +57,13 @@ export default function QuienesSomos() {
       <div className="relative overflow-hidden grow pb-10">
         <div className="bg-watermark" aria-hidden="true"></div>
 
-        <section className="relative pt-8 md:pt-12 px-0 md:px-8 z-10" aria-labelledby="historia-section">
+        {/* Pegado arriba como en Home */}
+        <section className="relative z-10 pt-4 md:pt-6 px-0" aria-labelledby="historia-section">
+          
+          {/* Contenedor plano y limpio, sin bordes ni sombras (Igual a Home) */}
           <div className="max-w-7xl mx-auto bg-white overflow-hidden">
 
-            <div className="px-8 md:px-12 lg:px-16 pb-8 animate-fade-in-up w-full">
+            <div className="px-6 md:px-12 lg:px-16 pt-4 md:pt-6 pb-8 animate-fade-in-up w-full">
               
               <div id="historia-section" className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify mb-12">
                 <p>
@@ -124,7 +127,7 @@ export default function QuienesSomos() {
           </div>
         </section>
 
-        <section id="organigrama" className="bg-main-blue text-white py-14 px-6 relative z-20 scroll-mt-32 mt-6" aria-labelledby="organigrama-titulo">
+        <section id="organigrama" className="bg-main-blue text-white py-14 px-6 relative z-20 scroll-mt-32 mt-12" aria-labelledby="organigrama-titulo">
           <div className="max-w-5xl mx-auto">
             <h2 id="organigrama-titulo" className="text-3xl font-semibold text-center mb-10 uppercase">
               Organigrama y Estructura

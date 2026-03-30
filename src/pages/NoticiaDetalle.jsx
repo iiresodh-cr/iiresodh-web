@@ -141,11 +141,15 @@ export default function NoticiaDetalle() {
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark" aria-hidden="true"></div>
 
-        <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
-          <article className="max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl">
+        {/* CORRECCIÓN 1: pt-4 md:pt-6 y px-0 para subir el contenedor y ajustar a los lados */}
+        <section className="relative pt-4 md:pt-6 px-0 z-10">
+          
+          {/* CORRECCIÓN 2: Se quitó el 'md:rounded-3xl' para que sea plano */}
+          <article className="max-w-7xl mx-auto bg-white overflow-hidden">
             
             {/* BOTÓN DE VOLVER MEJORADO CON MUI */}
-            <div className="px-8 pt-8 md:px-12 lg:px-16 md:pt-12 pb-6">
+            {/* CORRECCIÓN 3: Ajustados los padding pt-4 md:pt-6 y alineado lateral px-6 */}
+            <div className="px-6 md:px-12 lg:px-16 pt-4 md:pt-6 pb-6">
               <Button 
                 component={Link} 
                 to="/noticias" 
@@ -167,7 +171,8 @@ export default function NoticiaDetalle() {
               </Button>
             </div>
 
-            <div className="px-8 md:px-12 lg:px-16 pb-12 md:pb-16 animate-fade-in-up">
+            {/* CORRECCIÓN 4: Alineado lateral px-6 para coincidir */}
+            <div className="px-6 md:px-12 lg:px-16 pb-12 md:pb-16 animate-fade-in-up w-full">
               
               <div className="flex flex-col lg:flex-row gap-12 items-start">
                 

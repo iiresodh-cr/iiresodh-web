@@ -111,10 +111,10 @@ export default function ArticulosAcademicos() {
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark" aria-hidden="true"></div>
 
-        <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10" aria-label="Lista de artículos académicos">
-          <div className={`max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl ${articulos.length === 0 ? 'min-h-100 flex items-center justify-center' : ''}`}>
+        <section className="relative pt-4 md:pt-6 px-0 z-10" aria-label="Lista de artículos académicos">
+          <div className="max-w-7xl mx-auto bg-white overflow-hidden">
             
-            <div className="px-8 md:px-12 lg:px-16 py-12 md:py-16 animate-fade-in-up w-full">
+            <div className="px-6 md:px-12 lg:px-16 pt-4 md:pt-6 pb-12 animate-fade-in-up w-full">
               
               {articulos.length === 0 ? (
                 <div className="text-center">

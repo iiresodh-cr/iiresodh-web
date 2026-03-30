@@ -122,11 +122,11 @@ export default function Equipo() {
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark" aria-hidden="true"></div>
 
-        <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
+        <section className="relative pt-4 md:pt-6 px-0 z-10">
           {/* AQUÍ SE ELIMINARON LAS CLASES: shadow-sm border border-gray-50 */}
-          <div className="max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl">
+          <div className="max-w-7xl mx-auto bg-white overflow-hidden">
             
-            <div className="px-8 md:px-12 lg:px-16 py-12 md:py-16 animate-fade-in-up">
+            <div className="px-6 md:px-12 lg:px-16 pt-4 md:pt-6 pb-12 animate-fade-in-up w-full">
               
               {/* SECCIÓN PRESIDENTE MEJORADA CON MUI PAPER */}
               {presidente && (

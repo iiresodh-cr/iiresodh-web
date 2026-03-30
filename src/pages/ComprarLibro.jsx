@@ -371,9 +371,9 @@ export default function ComprarLibro() {
         <div className="relative overflow-hidden grow pb-20">
           <div className="bg-watermark" aria-hidden="true"></div>
           
-          <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
-            <div className="max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl shadow-sm border border-gray-100">
-              <div className="px-6 md:px-12 lg:px-16 py-12 md:py-16 animate-fade-in-up">
+          <section className="relative pt-4 md:pt-6 px-0 z-10">
+            <div className="max-w-7xl mx-auto bg-white overflow-hidden">
+              <div className="px-6 md:px-12 lg:px-16 pt-4 md:pt-6 pb-12 animate-fade-in-up w-full">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-16 items-start">
                   {listaLibros.map((l) => {
                     const esMXN = moneda === "MXN" && l.precioMXN;
@@ -434,14 +434,14 @@ export default function ComprarLibro() {
       <PageHeader titulo="Finalizar Compra" subtitulo="Estás adquiriendo una publicación oficial de IIRESODH." />
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark" aria-hidden="true"></div>
-        <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
-          <div className="max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl shadow-sm border border-gray-100">
-            <div className="px-8 pt-8 md:px-12 lg:px-16 md:pt-12 pb-6 border-b border-gray-50">
+        <section className="relative pt-4 md:pt-6 px-0 z-10">
+          <div className="max-w-7xl mx-auto bg-white overflow-hidden">
+            <div className="px-6 md:px-12 lg:px-16 pt-4 md:pt-6 pb-6 border-b border-gray-50">
               <Link to="/comprar-libro" className="inline-flex items-center gap-2 text-xs font-bold text-main-red uppercase tracking-widest hover:text-main-blue transition-colors">
                 <span className="text-lg leading-none">&larr;</span> Volver a la Tienda
               </Link>
             </div>
-            <div className="px-8 md:px-12 lg:px-16 py-12 md:py-16 animate-fade-in-up">
+            <div className="px-6 md:px-12 lg:px-16 py-8 md:py-12 animate-fade-in-up">
               <div className="flex flex-col md:flex-row gap-10 lg:gap-16 items-start text-center md:text-left">
                 <div className="w-full md:w-5/12 flex justify-center shrink-0">
                   {libro.imagenPrincipalUrl ? (
