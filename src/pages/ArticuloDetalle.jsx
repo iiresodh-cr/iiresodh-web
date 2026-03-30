@@ -11,30 +11,45 @@ import { CircularProgress, Button, Alert } from "@mui/material";
 export const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
   
+  // 1. Escapar < y > por seguridad, pero NO TOCAR el & para no romper URLs
   let procesado = texto.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const linksGuardados = [];
 
+  const linksGuardados = []; // Caja fuerte temporal
+
+  // 2. Extraer Markdown: [Texto visible](URL)
   procesado = procesado.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, label, url) => {
     let visible = label;
-    if (visible.length > 45) visible = visible.substring(0, 42) + "...";
+    // Si la etiqueta visible es muy larga, la acortamos a 45 caracteres
+    if (visible.length > 45) {
+      visible = visible.substring(0, 42) + "...";
+    }
     linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline break-all">${visible}</a>`);
-    return `__LINK_${linksGuardados.length - 1}__`; 
+    return `__LINK_${linksGuardados.length - 1}__`; // Dejamos marcador
   });
 
+  // 3. Extraer URLs crudas pegadas directamente
   procesado = procesado.replace(/(https?:\/\/[^\s]+)/g, (match, url) => {
-    if (url.includes("__LINK_")) return match; 
+    if (url.includes("__LINK_")) return match; // Evitar procesar los marcadores
+    
     let visible = url;
-    if (visible.length > 45) visible = visible.substring(0, 42) + "...";
+    // Acortar visualmente la URL a 45 caracteres
+    if (visible.length > 45) {
+      visible = visible.substring(0, 42) + "...";
+    }
     linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline break-all">${visible}</a>`);
-    return `__LINK_${linksGuardados.length - 1}__`; 
+    return `__LINK_${linksGuardados.length - 1}__`; // Dejamos marcador
   });
 
+  // 4. Procesar Hashtags
   procesado = procesado.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (match) => {
     const term = match.substring(1);
     return `<a href="/buscar?q=${term}" class="text-light-blue hover:text-main-red font-bold">${match}</a>`;
   });
 
+  // 5. Restaurar Links desde la caja fuerte
   procesado = procesado.replace(/__LINK_(\d+)__/g, (match, i) => linksGuardados[i]);
+
+  // 6. Convertir saltos de línea a párrafos
   const parrafos = procesado.split(/\n\s*\n/);
   return parrafos.map(p => `<p>${p.replace(/\n/g, '<br />')}</p>`).join('');
 };
@@ -44,10 +59,7 @@ export default function ArticuloDetalle() {
   const navigate = useNavigate();
   const [articulo, setArticulo] = useState(null);
   const [loading, setLoading] = useState(true);
-  
-  // LOGICA CORREGIDA: Forzar URL absoluta para redes sociales
-  const baseUrl = "https://iiresodh.org"; 
-  const currentUrl = `${baseUrl}${window.location.pathname}`;
+  const currentUrl = window.location.href; // Para compartir en redes sociales
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -57,35 +69,18 @@ export default function ArticuloDetalle() {
         const q = query(collection(db, "articulos_academicos"), where("slug", "==", slug));
         const querySnapshot = await getDocs(q);
         
-        let data = null;
         if (!querySnapshot.empty) {
-          data = { id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() };
+          setArticulo({ id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() });
         } else {
           const docRef = doc(db, "articulos_academicos", slug);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
-            data = { id: docSnap.id, ...docSnap.data() };
+            setArticulo({ id: docSnap.id, ...docSnap.data() });
+          } else {
+            // Si no existe, evitamos el navigate automático para mostrar la alerta de MUI
+            setArticulo(null);
           }
         }
-
-        if (data) {
-          setArticulo(data);
-          
-          // Inyectar etiquetas para asegurar que las redes rastreen la foto
-          if (data.titulo) document.title = `${data.titulo} | IIRESODH`;
-          if (data.imagenPrincipalUrl) {
-            let metaImage = document.querySelector('meta[property="og:image"]');
-            if (!metaImage) {
-              metaImage = document.createElement('meta');
-              metaImage.setAttribute('property', 'og:image');
-              document.head.appendChild(metaImage);
-            }
-            metaImage.setAttribute('content', data.imagenPrincipalUrl);
-          }
-        } else {
-          setArticulo(null);
-        }
-
       } catch (error) {
         console.error("Error al cargar el artículo:", error);
       } finally {
@@ -93,7 +88,9 @@ export default function ArticuloDetalle() {
       }
     };
 
-    if (slug) fetchArticulo();
+    if (slug) {
+      fetchArticulo();
+    }
   }, [slug, navigate]);
 
   const formatearFecha = (timestamp) => {
@@ -102,6 +99,7 @@ export default function ArticuloDetalle() {
     return date.toLocaleDateString("es-ES", { year: "numeric", month: "long", day: "numeric" });
   };
 
+  // ESTADO DE CARGA MEJORADO CON MUI
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 pt-20" role="status">
@@ -113,6 +111,7 @@ export default function ArticuloDetalle() {
     );
   }
 
+  // ESTADO DE ERROR MEJORADO CON MUI
   if (!articulo) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6" role="alert">
@@ -124,15 +123,17 @@ export default function ArticuloDetalle() {
     );
   }
 
-  // LOGICA CORREGIDA: Doble salto de línea (\n\n) para WhatsApp
+  // ENLACES PARA REDES SOCIALES
   const shareUrls = {
-    whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(articulo.titulo + "\n\n" + currentUrl)}`,
+    whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(articulo.titulo + " " + currentUrl)}`,
     twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(articulo.titulo)}`,
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`
   };
 
   return (
     <main className="bg-white min-h-screen flex flex-col font-sans">
+      
+      {/* CABECERA AZUL (FRANJA) AL ESTILO DE NOTICIAS */}
       <header className="bg-main-blue text-white py-14 px-6 text-center relative z-20">
         <span className="text-xs font-black text-main-red uppercase tracking-widest mb-4 block">
           {formatearFecha(articulo.fechaPublicacion) || 'Artículo Académico'}
@@ -149,6 +150,7 @@ export default function ArticuloDetalle() {
         <section className="relative pt-12 md:pt-16 px-0 md:px-8 z-10">
           <article className="max-w-7xl mx-auto bg-white overflow-hidden md:rounded-3xl">
             
+            {/* BOTÓN DE VOLVER MEJORADO CON MUI */}
             <div className="px-8 pt-8 md:px-12 lg:px-16 md:pt-12 pb-6">
               <Button 
                 component={Link} 
@@ -173,6 +175,7 @@ export default function ArticuloDetalle() {
 
             <div className="px-8 md:px-12 lg:px-16 pb-12 md:pb-16 animate-fade-in-up">
 
+              {/* IMAGEN PRINCIPAL (SI EXISTE) */}
               {articulo.imagenPrincipalUrl && (
                 <div className="mb-12 w-full rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center">
                   <img 
@@ -183,17 +186,21 @@ export default function ArticuloDetalle() {
                 </div>
               )}
 
+              {/* CONTENIDO DEL ARTÍCULO */}
               <div 
                 className="noticia-content"
                 dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(articulo.contenido) }}
               />
 
+              {/* PIE DE PÁGINA PARA COMPARTIR EN REDES SOCIALES (COMO EN NOTICIAS) */}
               <footer className="mt-12 pt-8 border-t border-gray-100">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 text-center lg:text-left">
                   Compartir este artículo
                 </p>
                 
                 <nav className="flex flex-wrap justify-center lg:justify-start gap-3" aria-label="Redes sociales para compartir">
+                  
+                  {/* WhatsApp */}
                   <Button
                     component="a"
                     href={shareUrls.whatsapp}
@@ -224,6 +231,7 @@ export default function ArticuloDetalle() {
                     WhatsApp
                   </Button>
 
+                  {/* Facebook */}
                   <Button
                     component="a"
                     href={shareUrls.facebook}
@@ -254,6 +262,7 @@ export default function ArticuloDetalle() {
                     Facebook
                   </Button>
 
+                  {/* X / Twitter */}
                   <Button
                     component="a"
                     href={shareUrls.twitter}
