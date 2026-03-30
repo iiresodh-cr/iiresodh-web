@@ -382,15 +382,20 @@ export default function ComprarLibro() {
 
                     return (
                       <div key={l.id} className="flex flex-col group h-full">
-                        <Link to={`/comprar-libro/${l.slug}`} className="w-full aspect-4/5 rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center shadow-md group-hover:shadow-xl transition-all duration-300 mb-6 relative">
+                        
+                        {/* DISEÑO MEJORADO: El libro flota limpiamente sin cajas grises feas */}
+                        <Link 
+                          to={`/comprar-libro/${l.slug}`} 
+                          className="w-full aspect-[4/5] flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300"
+                        >
                           {l.imagenPrincipalUrl ? (
                             <img 
                               src={l.imagenPrincipalUrl} 
                               alt={l.titulo} 
-                              className="max-h-full max-w-full object-contain p-4 rounded-md shadow-sm" 
+                              className="max-h-full max-w-full object-contain shadow-lg group-hover:shadow-2xl transition-shadow duration-300 rounded-sm" 
                             />
                           ) : (
-                            <div className="text-gray-300 font-bold text-center uppercase tracking-tighter p-4">Sin Portada</div>
+                            <div className="w-full h-full bg-gray-50 rounded-xl flex items-center justify-center border border-gray-100 text-gray-300 font-bold text-center uppercase tracking-tighter p-4">Sin Portada</div>
                           )}
                         </Link>
 
@@ -443,18 +448,21 @@ export default function ComprarLibro() {
             </div>
             <div className="px-6 md:px-12 lg:px-16 py-8 md:py-12 animate-fade-in-up">
               <div className="flex flex-col md:flex-row gap-10 lg:gap-16 items-start text-center md:text-left">
+                
+                {/* DISEÑO MEJORADO: El libro se ve grande, limpio y con sombra profunda sin caja gris */}
                 <div className="w-full md:w-5/12 flex justify-center shrink-0">
                   {libro.imagenPrincipalUrl ? (
                     <img 
                       src={libro.imagenPrincipalUrl} 
                       alt={libro.titulo} 
-                      className="max-w-full w-auto object-contain shadow-2xl rounded-xl p-10 bg-gray-50" 
-                      style={{ maxHeight: "500px" }} 
+                      className="max-w-full w-auto object-contain shadow-2xl rounded-sm" 
+                      style={{ maxHeight: "480px" }} 
                     />
                   ) : (
-                    <div className="w-64 h-80 bg-gray-50 rounded-xl shadow-sm border border-gray-200 flex items-center justify-center text-main-blue font-bold p-10 text-center text-sm uppercase leading-tight">{libro.titulo}</div>
+                    <div className="w-64 h-80 bg-gray-50 rounded-sm shadow-sm border border-gray-200 flex items-center justify-center text-main-blue font-bold p-10 text-center text-sm uppercase leading-tight">{libro.titulo}</div>
                   )}
                 </div>
+                
                 <div className="w-full md:w-7/12 flex flex-col grow">
                   <span className="text-xs font-black text-main-red uppercase tracking-widest mb-3 block">Confirmación de Pedido</span>
                   <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-main-blue mb-4 leading-tight uppercase">{libro.titulo}</h2>
