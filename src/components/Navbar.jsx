@@ -54,14 +54,14 @@ export default function Navbar() {
             <img src={logo} alt="Logotipo oficial de IIRESODH" className="h-16 md:h-28 lg:h-32 w-auto object-contain" />
           </Link>
           
-          {/* Reemplazo: Botón Hamburguesa con MUI IconButton para efecto Ripple */}
+          {/* CORRECCIÓN: Botón Hamburguesa oculto correctamente en md (768px) en adelante */}
           <IconButton 
-            className="md:hidden"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-menu"
             aria-label={isMobileMenuOpen ? "Cerrar menú de navegación" : "Abrir menú de navegación"}
             sx={{ 
+              display: { xs: 'inline-flex', md: 'none' }, // <-- Aquí está la magia de MUI
               p: 1, 
               color: '#1D3557', // main-blue
               '&:hover': { color: '#B92F32', bgcolor: 'rgba(185, 47, 50, 0.04)' } // main-red
@@ -87,7 +87,6 @@ export default function Navbar() {
           <div className="bg-white px-6 py-4 flex flex-col md:flex-row justify-between md:justify-end items-center gap-6">
             <div className="w-full md:w-auto md:flex-1 max-w-md md:mr-auto">
               
-              {/* Reemplazo: Buscador avanzado con MUI Paper e InputBase */}
               <Paper
                 component="form"
                 onSubmit={handleSearch}
@@ -98,12 +97,12 @@ export default function Navbar() {
                   alignItems: 'center',
                   width: '100%',
                   borderRadius: 50,
-                  backgroundColor: '#F9FAFB', // Equivalente a bg-gray-50
-                  border: '1px solid #E5E7EB', // Equivalente a border-gray-200
+                  backgroundColor: '#F9FAFB',
+                  border: '1px solid #E5E7EB',
                   transition: 'all 0.2s ease-in-out',
                   '&:focus-within': {
                     backgroundColor: '#FFFFFF',
-                    borderColor: '#457B9D', // Equivalente a light-blue
+                    borderColor: '#457B9D',
                     boxShadow: '0 0 0 2px rgba(69, 123, 157, 0.2)',
                   }
                 }}
@@ -120,9 +119,9 @@ export default function Navbar() {
                   aria-label="Ejecutar búsqueda"
                   sx={{ 
                     p: '6px', 
-                    bgcolor: '#457B9D', // light-blue
+                    bgcolor: '#457B9D', 
                     color: 'white', 
-                    '&:hover': { bgcolor: '#1D3557' }, // main-blue
+                    '&:hover': { bgcolor: '#1D3557' }, 
                     width: 32, 
                     height: 32,
                     mr: '2px'
@@ -135,7 +134,6 @@ export default function Navbar() {
             </div>
 
             <div className="hidden md:flex items-center gap-6 text-light-blue shrink-0" role="group" aria-label="Redes sociales">
-              {/* Reemplazo: Integración de Tooltips de MUI */}
               <Tooltip title="Síguenos en Facebook" arrow placement="bottom">
                 <a href="https://www.facebook.com/iiresodhcostarica" target="_blank" rel="noreferrer" className="hover:text-main-blue transition-colors flex items-center" aria-label="Visitar nuestro Facebook">
                   <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" /></svg>
@@ -159,7 +157,7 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* MENÚ DE NAVEGACIÓN (Se mantiene con Tailwind para preservar el layout) */}
+          {/* MENÚ DE NAVEGACIÓN */}
           <div className="bg-white px-6 py-2 flex flex-col md:flex-row md:items-center justify-between grow">
             
             <div className="w-full md:w-auto flex justify-start order-2 md:order-1 mt-4 md:mt-0 mb-4 md:mb-0">
