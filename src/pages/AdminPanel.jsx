@@ -194,9 +194,20 @@ export default function AdminPanel() {
       
       let data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-      // ORDENAMIENTO LOCAL: Si estamos en noticias, ponemos las persistentes arriba
+      // ORDENAMIENTO LOCAL MEJORADO
       if (vistaActiva === "comunicaciones") {
-        data.sort((a, b) => (b.persistente === a.persistente) ? 0 : b.persistente ? 1 : -1);
+        data.sort((a, b) => {
+          // 1. Prioridad: ¿Es persistente? (Las fijadas van arriba)
+          if (a.persistente && !b.persistente) return -1;
+          if (!a.persistente && b.persistente) return 1;
+          
+          // 2. Segunda prioridad: Fecha de publicación (Las más recientes van primero)
+          // Usamos .seconds de los Timestamp de Firebase para comparar con precisión
+          const tiempoA = a.fechaPublicacion?.seconds || 0;
+          const tiempoB = b.fechaPublicacion?.seconds || 0;
+          
+          return tiempoB - tiempoA;
+        });
       }
 
       setListaItems(data);
@@ -915,28 +926,35 @@ export default function AdminPanel() {
                       <div className="bg-white border border-gray-200 rounded-xl p-6">
                         <h3 className="text-sm font-semibold text-gray-800 mb-4 border-b border-gray-100 pb-2">Clasificación y Visibilidad</h3>
                         
-                        {/* Selector de Tags */}
+                        {/* Selector de Tags con MUI Chips */}
                         <div className="mb-6">
                           <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Etiquetas (Tags)</label>
                           <div className="flex flex-wrap gap-2">
-                            {TAGS_DISPONIBLES.map(tag => (
-                              <button
-                                type="button"
-                                key={tag}
-                                onClick={() => {
-                                  setTagsSeleccionados(prev => 
-                                    prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-                                  )
-                                }}
-                                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors border cursor-pointer ${
-                                  tagsSeleccionados.includes(tag) 
-                                  ? 'bg-main-blue text-white border-main-blue' 
-                                  : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
-                                }`}
-                              >
-                                {tag}
-                              </button>
-                            ))}
+                            {TAGS_DISPONIBLES.map(tag => {
+                              const isSelected = tagsSeleccionados.includes(tag);
+                              return (
+                                <Chip
+                                  key={tag}
+                                  label={tag}
+                                  onClick={() => {
+                                    setTagsSeleccionados(prev => 
+                                      isSelected ? prev.filter(t => t !== tag) : [...prev, tag]
+                                    );
+                                  }}
+                                  color={isSelected ? "primary" : "default"}
+                                  variant={isSelected ? "filled" : "outlined"}
+                                  sx={{ 
+                                    fontWeight: 'bold', 
+                                    borderRadius: '8px', // Le da un toque menos redondo y más moderno
+                                    transition: 'all 0.2s ease',
+                                    '&:hover': { 
+                                      transform: 'scale(1.03)',
+                                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                    }
+                                  }}
+                                />
+                              );
+                            })}
                           </div>
                         </div>
 
