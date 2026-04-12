@@ -22,6 +22,9 @@ const iiresodhTheme = createTheme({
   },
 });
 
+// IMPORTAR CONFIGURACIÓN DE IDIOMAS AQUÍ
+import './i18n';
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     {/* injectFirst asegura que Tailwind pueda sobrescribir a MUI si es necesario */}

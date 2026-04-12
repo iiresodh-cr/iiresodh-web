@@ -1,0 +1,11 @@
+{
+  "navbar": {
+    "inicio": "Accueil",
+    "quienesSomos": "Qui Sommes-Nous",
+    "noticias": "Actualités"
+  },
+  "home": {
+    "bienvenida": "Bienvenue à IIRESODH",
+    "descripcion": "Institut Interaméricain de Responsabilité Sociale et des Droits de l'Homme"
+  }
+}
