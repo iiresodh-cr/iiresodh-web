@@ -198,14 +198,14 @@ export default function Home() {
             </Swiper>
           )}
 
-          {/* BLOQUE 2: QUIÉNES SOMOS (6) Y MAPA (4) */}
+          {/* BLOQUE 2: QUÉ ES EL IIRESODH (6) Y MAPA (4) */}
           <div className="pt-4 bg-white">
             <div className="grid grid-cols-1 md:grid-cols-10 gap-10 items-start overflow-visible bg-white min-h-125">
               
-              {/* IZQUIERDA: QUIÉNES SOMOS + TEXTO */}
+              {/* IZQUIERDA: QUÉ ES EL IIRESODH + TEXTO */}
               <div className="md:col-span-6 flex flex-col items-center md:items-start bg-white relative z-10 w-full">
                 <h2 className="text-2xl md:text-3xl font-semibold text-main-blue mb-8 text-center md:text-center w-full">
-                  ¿Quiénes Somos?
+                  ¿Qué es el IIRESODH?
                 </h2>
                 <div className="space-y-4 w-full mb-8">
                   <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">

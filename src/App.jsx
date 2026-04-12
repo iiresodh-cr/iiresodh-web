@@ -24,9 +24,7 @@ import InformesAnuales from "./pages/InformesAnuales";
 // Nuevas Páginas
 import CooperacionInternacional from "./pages/CooperacionInternacional";
 import Colombia from "./pages/Colombia";
-import CursosActivos from "./pages/CursosActivos";
-import CursosPasados from "./pages/CursosPasados";
-import LitigiosActivos from "./pages/LitigiosActivos";
+import Cursos from "./pages/Cursos";
 import Equipo from "./pages/Equipo";
 import ArticulosAcademicos from "./pages/ArticulosAcademicos";
 import ArticuloDetalle from "./pages/ArticuloDetalle";
@@ -60,8 +58,7 @@ function App() {
           <Route path="/litigio-estrategico" element={<LitigioEstrategico />} />
           <Route path="/cooperacion-internacional" element={<CooperacionInternacional />} />
           <Route path="/colombia" element={<Colombia />} />
-          <Route path="/cursos-activos" element={<CursosActivos />} />
-          <Route path="/cursos-pasados" element={<CursosPasados />} />
+          <Route path="/cursos" element={<Cursos />} />
           <Route path="/donaciones" element={<Donaciones />} />
           <Route path="/noticias" element={<Noticias />} />
           <Route path="/noticias/:id" element={<NoticiaDetalle />} />
@@ -81,8 +78,6 @@ function App() {
         
         {/* RUTAS PRIVADAS (Protegidas) */}
         <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
-        {/* Litigios Activos: Acceso privado a recursos de clientes */}
-        <Route path="/litigios-activos" element={<ProtectedRoute><LitigiosActivos /></ProtectedRoute>} />
         
       </Routes>
     </BrowserRouter>
