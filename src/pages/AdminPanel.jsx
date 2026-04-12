@@ -13,6 +13,8 @@ import AdminTextField from "../components/ui/AdminTextField";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import ToastAlert from "../components/ui/ToastAlert";
 
+import { Button, Checkbox, FormControlLabel, Box } from "@mui/material";
+
 const generarSlug = (texto) => {
   if (!texto) return `item-${Math.random().toString(36).substring(2, 6)}`;
   
@@ -933,20 +935,36 @@ export default function AdminPanel() {
                         </div>
 
                         {/* Checkbox de Persistencia */}
-                        <div>
-                          <div className="flex items-center">
-                            <input 
-                              type="checkbox" 
-                              id="check-persistente"
-                              checked={persistente}
-                              onChange={(e) => setPersistente(e.target.checked)}
-                              className="w-5 h-5 text-main-red bg-gray-100 border-gray-300 rounded focus:ring-main-red focus:ring-2 cursor-pointer"
-                            />
-                            <label htmlFor="check-persistente" className="ml-3 text-sm font-medium text-gray-700 cursor-pointer">
-                              Fijar noticia en el Carrusel de Inicio (Máximo 3)
-                            </label>
-                          </div>
-                          <p className="text-xs text-gray-400 ml-8 mt-1">Las noticias fijadas siempre aparecerán de primeras en la portada y no serán desplazadas por nuevas publicaciones.</p>
+                        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 mt-4">
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                checked={persistente}
+                                onChange={(e) => setPersistente(e.target.checked)}
+                                color="secondary" // Usa el color rojo definido en el ThemeProvider
+                                sx={{
+                                  '&.Mui-checked': {
+                                    color: 'secondary.main', // Asegura el rojo institucional al estar marcado
+                                  },
+                                }}
+                              />
+                            }
+                            label={
+                              <Box>
+                                <span className="text-sm font-bold text-gray-700 block">
+                                  Fijar noticia en el Carrusel de Inicio (Máximo 3)
+                                </span>
+                                <span className="text-xs text-gray-400 font-normal">
+                                  Las noticias fijadas siempre aparecerán de primeras en la portada.
+                                </span>
+                              </Box>
+                            }
+                            sx={{ 
+                              m: 0, 
+                              alignItems: 'flex-start',
+                              '& .MuiFormControlLabel-label': { mt: 0.5 } 
+                            }}
+                          />
                         </div>
                       </div>
                     )}
