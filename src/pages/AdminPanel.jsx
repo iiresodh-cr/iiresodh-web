@@ -13,7 +13,7 @@ import AdminTextField from "../components/ui/AdminTextField";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import ToastAlert from "../components/ui/ToastAlert";
 
-import { Button, Checkbox, FormControlLabel, Box } from "@mui/material";
+import { Button, Checkbox, FormControlLabel, Box, Chip} from "@mui/material";
 
 const generarSlug = (texto) => {
   if (!texto) return `item-${Math.random().toString(36).substring(2, 6)}`;
@@ -186,15 +186,21 @@ export default function AdminPanel() {
   };
 
   const cargarItemsBatch = async (consulta, direccion) => {
-    try {
-      const querySnapshot = await getDocs(consulta);
-      if (!querySnapshot.empty) {
-        setPrimerDoc(querySnapshot.docs[0]);
-        setUltimoDoc(querySnapshot.docs[querySnapshot.docs.length - 1]);
-        
-        const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setListaItems(data);
-        setHayMas(querySnapshot.docs.length === ITEMS_POR_PAGINA);
+  try {
+    const querySnapshot = await getDocs(consulta);
+    if (!querySnapshot.empty) {
+      setPrimerDoc(querySnapshot.docs[0]);
+      setUltimoDoc(querySnapshot.docs[querySnapshot.docs.length - 1]);
+      
+      let data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      // ORDENAMIENTO LOCAL: Si estamos en noticias, ponemos las persistentes arriba
+      if (vistaActiva === "comunicaciones") {
+        data.sort((a, b) => (b.persistente === a.persistente) ? 0 : b.persistente ? 1 : -1);
+      }
+
+      setListaItems(data);
+      setHayMas(querySnapshot.docs.length === ITEMS_POR_PAGINA);
 
         if (direccion === "sig") setPaginaActual(prev => prev + 1);
         if (direccion === "ant") setPaginaActual(prev => prev - 1);
@@ -994,14 +1000,46 @@ export default function AdminPanel() {
                       </div>
                     ) : (
                       listaItems.map((n) => (
-                        <article key={n.id} className={`group flex flex-col p-4 rounded-xl border transition-all duration-200 cursor-default ${editandoId === n.id ? 'bg-red-50 border-main-red shadow-sm' : 'bg-white border-gray-100 hover:border-main-blue/30 hover:shadow-sm'}`}>
+                        <article key={n.id} className={`group flex flex-col p-4 rounded-xl border transition-all duration-200 cursor-default ${editandoId === n.id ? 'bg-red-50 border-main-red shadow-sm' : n.persistente ? 'bg-blue-50/30 border-main-blue/40 shadow-sm' : 'bg-white border-gray-100 hover:border-main-blue/30 hover:shadow-sm'}`}>
                           <div className="flex gap-3 items-start mb-3">
-                            <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-gray-100 border border-gray-200 flex items-center justify-center">
+                            {/* Se agregó 'relative' al div de la imagen para posicionar el pin */}
+                            <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-gray-100 border border-gray-200 flex items-center justify-center">
                               {n.imagenPrincipalUrl ? <img src={n.imagenPrincipalUrl} className="w-full h-full object-cover" alt="Miniatura" /> : <span className="text-[10px] font-bold text-gray-400">TXT</span>}
+                              
+                              {/* Nuevo: Ícono de pin para las persistentes */}
+                              {n.persistente && (
+                                <div className="absolute inset-0 bg-main-blue/20 flex items-center justify-center">
+                                  <svg className="w-5 h-5 text-main-blue drop-shadow-md" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v4l2 2v2h-7v5l-1 1-1-1v-5H4v-2l2-2V4z" />
+                                  </svg>
+                                </div>
+                              )}
                             </div>
+                            
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-sm text-gray-800 line-clamp-2 leading-snug" title={n.titulo}>{n.titulo}</h3>
-                              <p className="text-[10px] text-gray-400 mt-1 truncate">/{vistaActiva === "articulos" ? "articulos-academicos" : (vistaActiva === "libros" ? "libros" : "noticias")}/{n.slug || n.id}</p>
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-start gap-2">
+                                  {/* Nuevo: Etiqueta "Fijada" */}
+                                  {n.persistente && (
+                                    <span className="text-[9px] font-black text-main-blue uppercase tracking-tighter bg-white px-1.5 py-0.5 rounded border border-main-blue/30 mt-0.5">
+                                      Fijada
+                                    </span>
+                                  )}
+                                  <h3 className="font-semibold text-sm text-gray-800 line-clamp-2 leading-snug" title={n.titulo}>{n.titulo}</h3>
+                                </div>
+                                <p className="text-[10px] text-gray-400 truncate">/{vistaActiva === "articulos" ? "articulos-academicos" : (vistaActiva === "libros" ? "libros" : "noticias")}/{n.slug || n.id}</p>
+                                
+                                {/* Nuevo: Muestra de Tags si existen */}
+                                {n.tags && n.tags.length > 0 && (
+                                  <div className="flex flex-wrap gap-1 mt-0.5">
+                                    {n.tags.map(t => (
+                                      <span key={t} className="text-[8px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-sm uppercase font-bold">
+                                        {t}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
                           <div className="flex gap-2 w-full">
