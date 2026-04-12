@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { signOut } from "firebase/auth";
 import { auth, db, storage, functions } from "../firebase/config";
-import { collection, addDoc, updateDoc, serverTimestamp, doc, deleteDoc, getDocs, query, orderBy, Timestamp, limit, startAfter, endBefore, limitToLast } from "firebase/firestore";
+import { collection, addDoc, updateDoc, serverTimestamp, doc, deleteDoc, getDocs, query, orderBy, Timestamp, limit, startAfter, endBefore, limitToLast, where } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { httpsCallable } from "firebase/functions";
 
@@ -96,6 +96,15 @@ const convertirAWebp = (file, calidad = 0.8) => {
   });
 };
 
+// ==========================================
+// CONFIGURACIÓN DE TAGS
+// Para agregar más, simplemente escribe aquí:
+// ==========================================
+const TAGS_DISPONIBLES = [
+  "Canadá", "México", "Guatemala", 
+  "Costa Rica", "Colombia", "Institucional"
+];
+
 export default function AdminPanel() {
   const navigate = useNavigate(); 
   
@@ -130,6 +139,9 @@ export default function AdminPanel() {
   const [generandoResumen, setGenerandoResumen] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [listaItems, setListaItems] = useState([]);
+  // NUEVOS ESTADOS PARA COMUNICACIONES
+  const [tagsSeleccionados, setTagsSeleccionados] = useState([]);
+  const [persistente, setPersistente] = useState(false);
 
   const [modalBorrar, setModalBorrar] = useState({ isOpen: false, id: null, titulo: "" });
 
@@ -272,6 +284,12 @@ export default function AdminPanel() {
     setResumen(item.resumen || "");
     setContenido(item.contenido || "");
 
+    // Cargar tags y persistencia
+    if (vistaActiva === "comunicaciones") {
+      setTagsSeleccionados(item.tags || []);
+      setPersistente(item.persistente || false);
+    }
+
     if (item.fechaPublicacion) {
       const date = item.fechaPublicacion.toDate();
       const localISOTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
@@ -300,6 +318,9 @@ export default function AdminPanel() {
     setResumen("");
     setContenido("");
     setFechaPersonalizada("");
+    // Limpiar nuevos campos
+    setTagsSeleccionados([]);
+    setPersistente(false);
     setMainImagePreviewUrl(null);
     setImagenPrincipal(null);
     setImagenPrincipalAnterior(null);
@@ -407,6 +428,30 @@ export default function AdminPanel() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    // VALIDACIÓN DE LÍMITE DE NOTICIAS PERSISTENTES
+    if (vistaActiva === "comunicaciones" && persistente) {
+      try {
+        const qPersistentes = query(collection(db, "noticias"), where("persistente", "==", true));
+        const snapPersistentes = await getDocs(qPersistentes);
+        
+        let cantidadFijas = snapPersistentes.docs.length;
+        
+        // Si estamos editando una noticia que YA estaba fijada, no la sumamos como nueva
+        if (editandoId && snapPersistentes.docs.some(doc => doc.id === editandoId)) {
+          cantidadFijas -= 1; 
+        }
+
+        if (cantidadFijas >= 3) {
+          setMensaje("Error: Ya existen 3 noticias fijadas. Debes desmarcar alguna antes de fijar esta.");
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error("Error verificando persistencia", error);
+      }
+    }
+
     setMensaje(editandoId ? "Actualizando información..." : "Publicando contenido...");
 
     try {
@@ -457,6 +502,9 @@ export default function AdminPanel() {
 
       if (vistaActiva === "comunicaciones") {
         datos.imagenesCarruselUrls = [...carruselExistente, ...nuevasUrls];
+        // GUARDAMOS LOS NUEVOS CAMPOS
+        datos.tags = tagsSeleccionados;
+        datos.persistente = persistente;
       } else if (vistaActiva === "libros") {
         datos.precio = parseFloat(precio) || 0;
         datos.precioMXN = parseFloat(precioMXN) || 0; // NUEVO
@@ -853,6 +901,55 @@ export default function AdminPanel() {
                           </div>
                         </div>
                       )}
+
+                      {/* NUEVO BLOQUE: TAGS Y PERSISTENCIA */}
+                    {vistaActiva === "comunicaciones" && (
+                      <div className="bg-white border border-gray-200 rounded-xl p-6">
+                        <h3 className="text-sm font-semibold text-gray-800 mb-4 border-b border-gray-100 pb-2">Clasificación y Visibilidad</h3>
+                        
+                        {/* Selector de Tags */}
+                        <div className="mb-6">
+                          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Etiquetas (Tags)</label>
+                          <div className="flex flex-wrap gap-2">
+                            {TAGS_DISPONIBLES.map(tag => (
+                              <button
+                                type="button"
+                                key={tag}
+                                onClick={() => {
+                                  setTagsSeleccionados(prev => 
+                                    prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+                                  )
+                                }}
+                                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors border cursor-pointer ${
+                                  tagsSeleccionados.includes(tag) 
+                                  ? 'bg-main-blue text-white border-main-blue' 
+                                  : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                                }`}
+                              >
+                                {tag}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Checkbox de Persistencia */}
+                        <div>
+                          <div className="flex items-center">
+                            <input 
+                              type="checkbox" 
+                              id="check-persistente"
+                              checked={persistente}
+                              onChange={(e) => setPersistente(e.target.checked)}
+                              className="w-5 h-5 text-main-red bg-gray-100 border-gray-300 rounded focus:ring-main-red focus:ring-2 cursor-pointer"
+                            />
+                            <label htmlFor="check-persistente" className="ml-3 text-sm font-medium text-gray-700 cursor-pointer">
+                              Fijar noticia en el Carrusel de Inicio (Máximo 3)
+                            </label>
+                          </div>
+                          <p className="text-xs text-gray-400 ml-8 mt-1">Las noticias fijadas siempre aparecerán de primeras en la portada y no serán desplazadas por nuevas publicaciones.</p>
+                        </div>
+                      </div>
+                    )}
                     </div>
 
                     <div className="flex flex-col-reverse sm:flex-row gap-4 pt-4">

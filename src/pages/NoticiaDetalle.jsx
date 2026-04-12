@@ -6,9 +6,10 @@ import { db } from "../firebase/config";
 
 // Swiper
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Pagination, Autoplay } from 'swiper/modules';
+import { Pagination, Autoplay, EffectFade } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
+import 'swiper/css/effect-fade';
 
 // Importaciones de MUI
 import { CircularProgress, Button, Alert } from "@mui/material";
@@ -168,10 +169,14 @@ export default function NoticiaDetalle() {
                 {/* LA MAGIA: lg:sticky y lg:top-8 ahora sí funcionarán libremente */}
                 <div className="w-full lg:w-1/2 shrink-0 lg:sticky lg:top-8 z-20">
                   <Swiper 
-                    modules={[Pagination, Autoplay]} 
-                    pagination={{ clickable: true }} 
-                    autoplay={{ delay: 5000 }} 
-                    className="w-full swiper-custom-pagination"
+                    modules={[Pagination, Autoplay, EffectFade]} 
+                    effect="fade"
+                    fadeEffect={{ crossFade: true }}
+                    pagination={{ clickable: true }}
+                    autoplay={{ delay: 5000, disableOnInteraction: false }}
+                    loop={true}
+                    speed={800}
+                    className="w-full swiper-custom-pagination pb-8 md:pb-12"
                     aria-label="Galería de imágenes de la noticia"
                   >
                     {todasLasImagenes.map((url, i) => (

@@ -1,15 +1,16 @@
 // src/pages/Home.jsx
 import { useEffect, useState, useRef } from "react";
-import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
+import { collection, query, orderBy, limit, getDocs, where } from "firebase/firestore";
 import { db, functions } from "../firebase/config";
 import { httpsCallable } from "firebase/functions";
 import { Link } from "react-router-dom";
 
 // Swiper
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Pagination, Autoplay } from 'swiper/modules';
+import { Pagination, Autoplay, EffectFade } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
+import 'swiper/css/effect-fade';
 
 // Mapa
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
@@ -88,13 +89,41 @@ export default function Home() {
   useEffect(() => {
     const fetchNoticias = async () => {
       try {
-        const q = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), limit(3));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-          setNoticias(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        // 1. Buscamos las noticias marcadas como persistentes
+        const qPersistentes = query(collection(db, "noticias"), where("persistente", "==", true));
+        const snapPersistentes = await getDocs(qPersistentes);
+        
+        let noticiasFijas = snapPersistentes.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Las limitamos a 3 por si hay algún error de base de datos
+        noticiasFijas = noticiasFijas.slice(0, 3);
+
+        // 2. Calculamos cuántas faltan para llenar el carrusel (que son 3 en total)
+        let noticiasRecientes = [];
+        const faltantes = 3 - noticiasFijas.length;
+        
+        if (faltantes > 0) {
+          // Buscamos las más recientes en general
+          const qRecientes = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), limit(10));
+          const snapRecientes = await getDocs(qRecientes);
+          
+          const idsFijas = noticiasFijas.map(n => n.id);
+          
+          // Filtramos para no repetir las que ya están fijadas, y tomamos solo las 'faltantes'
+          noticiasRecientes = snapRecientes.docs
+            .map(doc => ({ id: doc.id, ...doc.data() }))
+            .filter(n => !idsFijas.includes(n.id))
+            .slice(0, faltantes);
         }
-      } catch (e) { console.error(e); }
-      finally { setLoading(false); }
+
+        // 3. Combinamos ambas listas: primero las fijas, luego las recientes
+        setNoticias([...noticiasFijas, ...noticiasRecientes]);
+        
+      } catch (e) { 
+        console.error("Error cargando noticias del carrusel:", e); 
+      } finally { 
+        setLoading(false); 
+      }
     };
     fetchNoticias();
   }, []);
@@ -153,10 +182,13 @@ export default function Home() {
           {/* BLOQUE 1: NOTICIAS DESTACADAS (CARRUSEL) */}
           {noticias.length > 0 && (
             <Swiper 
-              modules={[Pagination, Autoplay]} 
+              modules={[Pagination, Autoplay, EffectFade]}
+              effect={"fade"}
+              fadeEffect={{ crossFade: true }}
               pagination={{ clickable: true }} 
-              autoplay={{ delay: 5000 }} 
-              spaceBetween={40}
+              autoplay={{ delay: 5000, disableOnInteraction: false }} 
+              loop={true}
+              speed={800}
               className="w-full swiper-custom-pagination pb-8 md:pb-12"
             >
               {noticias.map((noticia) => (
