@@ -188,7 +188,7 @@ export default function Home() {
                 modules={[Autoplay, EffectFade]} 
                 effect="fade"
                 fadeEffect={{ crossFade: true }}
-                autoplay={{ delay: 7000, disableOnInteraction: false }} 
+                autoplay={{ delay: 7000, disableOnInteraction: false, pauseOnMouseEnter: true }} 
                 loop={true}
                 speed={1200}
                 className="w-full rounded-[2.5rem] overflow-hidden shadow-2xl"
