@@ -18,7 +18,7 @@ export default function Footer() {
             <img 
               src={logoBlanco} 
               alt="Logo institucional de IIRESODH" 
-              className="w-full max-w-[200px] object-contain opacity-95 hover:opacity-100 transition-opacity"
+              className="w-full max-w-50 object-contain opacity-95 hover:opacity-100 transition-opacity"
             />
           </Link>
           <p className="text-sm font-light text-gray-300 leading-relaxed max-w-sm">
