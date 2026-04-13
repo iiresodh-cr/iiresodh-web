@@ -5,7 +5,7 @@ import { collection, query, where, getDocs, doc, getDoc } from "firebase/firesto
 import { db } from "../firebase/config";
 
 // Importaciones de MUI
-import { CircularProgress, Button, Alert } from "@mui/material";
+import { CircularProgress, Button, Alert, Snackbar } from "@mui/material";
 
 // MOTOR ESTRUCTURAL PURO
 export const formatearTextoConLinksYHashtags = (texto) => {
@@ -59,6 +59,7 @@ export default function ArticuloDetalle() {
   const navigate = useNavigate();
   const [articulo, setArticulo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [copiado, setCopiado] = useState(false); // Estado para el aviso de enlace copiado
   const currentUrl = window.location.href; // Para compartir en redes sociales
 
   useEffect(() => {
@@ -97,6 +98,12 @@ export default function ArticuloDetalle() {
     if (!timestamp) return "";
     const date = timestamp.toDate();
     return date.toLocaleDateString("es-ES", { year: "numeric", month: "long", day: "numeric" });
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(currentUrl)
+      .then(() => setCopiado(true))
+      .catch((err) => console.error("Error al copiar el enlace: ", err));
   };
 
   // ESTADO DE CARGA MEJORADO CON MUI
@@ -297,6 +304,34 @@ export default function ArticuloDetalle() {
                     X (Twitter)
                   </Button>
 
+                  {/* NUEVO BOTÓN: Copiar Enlace */}
+                  <Button
+                    onClick={handleCopyLink}
+                    variant="outlined"
+                    startIcon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>}
+                    aria-label="Copiar enlace del artículo"
+                    sx={{
+                      borderRadius: 50,
+                      px: 2.5,
+                      py: 1,
+                      color: '#6B7280',
+                      bgcolor: '#F9FAFB',
+                      borderColor: 'transparent',
+                      fontWeight: 'bold',
+                      letterSpacing: '0.05em',
+                      textTransform: 'none',
+                      boxShadow: 'none',
+                      '&:hover': {
+                        bgcolor: '#F3F4F6', 
+                        color: '#374151', 
+                        borderColor: '#E5E7EB',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
+                      }
+                    }}
+                  >
+                    Copiar Enlace
+                  </Button>
+
                 </nav>
               </footer>
 
@@ -304,6 +339,14 @@ export default function ArticuloDetalle() {
           </article>
         </section>
       </div>
+
+      <Snackbar
+        open={copiado}
+        autoHideDuration={3000}
+        onClose={() => setCopiado(false)}
+        message="¡Enlace copiado al portapapeles!"
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      />
     </main>
   );
 }
