@@ -1,10 +1,30 @@
 // src/pages/QuienesSomos.jsx
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 
+// Importaciones para el Mapa y Video
+import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
+import { Paper } from "@mui/material";
+import posterVideo from "../assets/Isotipo-color-512.png";
+
+const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+
 export default function QuienesSomos() {
   const location = useLocation();
+
+  // Estados y Refs para el Mapa
+  const [hoveredSede, setHoveredSede] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
+  const mapContainerRef = useRef(null);
+
+  const sedes = [
+    { id: 'ca', pais: 'Canadá', coords: [-71.1743, 46.8033], info: 'Atención virtual o presencial previa cita en la ciudad de Lévis, Québec. En Toronto vinculado con Waldman & Associates. Email: contacto@iiresodh.org' },
+    { id: 'mx', pais: 'México', coords: [-99.1332, 19.4326], info: 'Atención virtual o presencial previa cita. Email: contacto@iiresodh.org' },
+    { id: 'gt', pais: 'Guatemala', coords: [-90.5069, 14.6349], info: 'Diagonal 6 12-42, Edificio Design Center. Oficina No. 506, Torre 1, Zona 10. Ciudad de Guatemala. Teléfono: +502 5557 7466' },
+    { id: 'cr', pais: 'Costa Rica', coords: [-84.0833, 9.9333], info: 'Centro Corporativo San Rafael, nivel 3. San Rafael de Escazú, San José. CP 10201. Teléfono: +506 4703 5727' },
+    { id: 'co', pais: 'Colombia', coords: [-74.0636, 4.6243], info: 'Carrera. 11C No. 117-05. Oficina 5. Bogotá, Colombia. Teléfono: Bogotá +7461964. Móvil: +57 301 4844324' }
+  ];
 
   useEffect(() => {
     if (location.hash) {
@@ -19,165 +39,250 @@ export default function QuienesSomos() {
     }
   }, [location]);
 
+  // Funciones del Mapa
+  const handleHover = (sede, e) => {
+    if (!mapContainerRef.current) return;
+    const rect = mapContainerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const leftPos = x > rect.width / 2 ? x - 260 : x + 20;
+    const topPos = y < 150 ? y + 20 : y - 140;
+    setTooltipPos({ top: topPos, left: leftPos });
+    setHoveredSede(sede);
+  };
+
+  const showTooltipKeyboard = (sede, target) => {
+    const rect = target.getBoundingClientRect();
+    const mapRect = mapContainerRef.current.getBoundingClientRect();
+    const x = rect.left + rect.width / 2 - mapRect.left;
+    const y = rect.top + rect.height / 2 - mapRect.top;
+    const leftPos = x > mapRect.width / 2 ? x - 260 : x + 20;
+    const topPos = y < 150 ? y + 20 : y - 140;
+    setTooltipPos({ top: topPos, left: leftPos });
+    setHoveredSede(sede);
+  };
+
+  // PRINCIPIOS RECTORES
   const principiosRectores = [
     {
-      titulo: "Respeto a la dignidad humana",
-      texto: "La dignidad humana es el valor intrínseco e inalienable que posee cada persona por el simple hecho de serlo, sin distinción alguna de su origen, condición o capacidades. Este principio exige que los individuos sean tratados siempre como un fin en sí mismos y nunca meramente como un medio o herramienta para alcanzar otros objetivos. Implica reconocer la autonomía personal y garantizar que cada ser humano pueda vivir libre de humillaciones, maltratos o cualquier forma de degradación. Al colocar la dignidad en el centro de nuestras acciones, sentamos las bases para una convivencia basada en el reconocimiento mutuo y el valor sagrado de la vida."
+      titulo: "Dignidad Humana",
+      texto: "Valor intrínseco e inalienable de cada persona. Exige tratar a los individuos como un fin en sí mismos, garantizando una vida libre de humillaciones y basada en el reconocimiento mutuo."
     },
     {
-      titulo: "Defensa de los derechos humanos",
-      texto: "Defender los derechos humanos significa velar por el cumplimiento de las garantías fundamentales que permiten a las personas vivir con libertad, justicia y paz. Estos derechos son universales e interdependientes, actuando como un escudo protector frente al abuso de poder, la violencia y la discriminación sistemática. Su promoción no es solo una obligación legal de los Estados, sino un compromiso ético de la sociedad civil para erradicar la injusticia y proteger a los más vulnerables. Al garantizar estos derechos, aseguramos que la voz de cada individuo sea escuchada y que su integridad sea respetada en cualquier rincón del mundo."
+      titulo: "Defensa de Derechos",
+      texto: "Velar por las garantías fundamentales que permiten vivir con libertad, justicia y paz. Actúan como un escudo protector frente al abuso de poder y la discriminación sistemática."
     },
     {
-      titulo: "Equidad de género",
-      texto: "La equidad de género busca asegurar que todas las personas, independientemente de su sexo o identidad, tengan acceso a las mismas oportunidades, recursos y derechos fundamentales. No se trata simplemente de una igualdad numérica, sino de identificar y eliminar las barreras estructurales y los prejuicios históricos que han limitado históricamente el desarrollo de ciertos grupos. Fomentar la equidad permite que el talento y el esfuerzo se valoren por su capacidad real y no por estereotipos obsoletos que perpetúan la desigualdad. Es un paso indispensable para construir una sociedad más justa, donde el género no determine el límite de las aspiraciones de nadie."
+      titulo: "Equidad de Género",
+      texto: "Asegurar que todas las personas tengan acceso a las mismas oportunidades, eliminando barreras estructurales y prejuicios para construir una sociedad justa y equitativa."
     },
     {
-      titulo: "Respeto y protección al medio ambiente",
-      texto: "Este principio implica reconocer nuestra profunda interdependencia con la naturaleza y asumir la responsabilidad de preservar los recursos del planeta para las generaciones presentes y futuras. El respeto al entorno nos obliga a adoptar prácticas sostenibles que minimicen nuestra huella ecológica y promuevan la regeneración de los ecosistemas dañados por la actividad humana. No es una opción meramente estética o altruista, sino una necesidad vital para la supervivencia de la especie y el equilibrio climático global. Proteger el medio ambiente es, en última instancia, un acto de respeto hacia la vida en todas sus manifestaciones y una deuda con el futuro."
+      titulo: "Protección Ambiental",
+      texto: "Adoptar prácticas sostenibles que minimicen nuestra huella ecológica, reconociendo nuestra interdependencia con la naturaleza para protegerla para las generaciones futuras."
     },
     {
-      titulo: "Ética y transparencia laboral",
-      texto: "La ética y la transparencia son los pilares que sostienen la confianza dentro de cualquier organización y el sistema económico en su conjunto. Actuar con integridad en el trabajo significa tomar decisiones basadas en valores morales sólidos, evitando conflictos de intereses y combatiendo activamente cualquier forma de corrupción o favoritismo. La transparencia permite que los procesos sean claros y auditables, fomentando una cultura de rendición de cuentas donde la honestidad sea la norma y no la excepción. Un entorno laboral ético no solo mejora la productividad, sino que también dignifica el esfuerzo de los trabajadores y fortalece la reputación institucional."
+      titulo: "Ética y Transparencia",
+      texto: "Actuar con integridad, evitando conflictos de intereses y combatiendo la corrupción. Fomentar una cultura de rendición de cuentas donde la honestidad sea la norma."
     },
     {
-      titulo: "Inclusión social",
-      texto: "La inclusión social es el proceso proactivo de integrar a todos los individuos en la vida comunitaria, asegurando que aquellos en situación de vulnerabilidad o exclusión puedan participar plenamente. Esto requiere derribar barreras físicas, económicas y culturales que impiden el acceso equitativo a servicios básicos, empleo digno y participación ciudadana. Al valorar la diversidad como una riqueza y no como un problema, la inclusión fortalece el tejido social y reduce las brechas de desigualdad que suelen generar resentimiento y conflicto. Una sociedad verdaderamente inclusiva es aquella que se adapta para abrazar a todos sus miembros, garantizando que nadie se quede atrás."
+      titulo: "Inclusión Social",
+      texto: "Integrar a todos los individuos en la vida comunitaria, especialmente a los más vulnerables, derribando barreras físicas, económicas y culturales que impiden la participación."
     }
   ];
 
   return (
-    <main className="bg-white min-h-screen flex flex-col font-sans">
+    <main className="bg-white min-h-screen flex flex-col font-sans overflow-x-hidden">
       
       <PageHeader 
         titulo="¿Quiénes Somos?" 
         subtitulo="Defendiendo la democracia y los derechos humanos desde Costa Rica para el mundo." 
       />
 
-      <div className="relative overflow-hidden grow pb-10">
+      <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark" aria-hidden="true"></div>
 
-        {/* Pegado arriba como en Home */}
-        <section className="relative z-10 pt-4 md:pt-6 px-0" aria-labelledby="historia-section">
+        {/* Sección plana y continua, sin sombras ni bordes envolventes */}
+        <section className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-12 pb-16">
           
-          {/* Contenedor plano y limpio, sin bordes ni sombras (Igual a Home) */}
-          <div className="max-w-7xl mx-auto bg-white overflow-hidden">
+          {/* BLOQUE 1: Presencia (Video/Map) */}
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <span className="text-main-red font-black tracking-[0.3em] uppercase text-xs mb-3 block">Nuestra Presencia</span>
+            <h2 className="text-3xl md:text-4xl font-black text-main-blue tracking-tighter">
+              Impacto Global, Acción Local
+            </h2>
+          </div>
 
-            <div className="px-6 md:px-12 lg:px-16 pt-4 md:pt-6 pb-8 animate-fade-in-up w-full">
-              
-              <div id="historia-section" className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify mb-12">
-                <p>
-                  El <strong className="font-semibold text-main-blue">IIRESODH</strong> nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
-                </p>
-                <p>
-                  Desde su creación fue una entidad con claridad en sus objetivos para el fortalecimiento, promoción y protección de los derechos humanos, y con ello incidir en una cultura donde el respeto sea asumido por las empresas e instituciones públicas como una forma de desarrollo directo.
-                </p>
-                <p>
-                  Contamos con acuerdos de cooperación con el CCPR-Centre en Ginebra, la Comisión Interamericana de Derechos Humanos, la Universidad Nacional de La Plata y el Instituto Universitario de Yucatán. Nuestro personal cuenta con amplia experiencia en el sistema interamericano y universal de Naciones Unidas.
-                </p>
-                <p>
-                  Desde 2013 hemos capacitado a más de 1500 personas en América Latina y Europa. En 2021 abrimos el instituto de altos estudios universitarios (U-IIRESODH) en México para ofrecer maestrías especializadas.
-                </p>
-                <p>
-                  Desde 2019 implementamos proyectos de cooperación orientados a la incidencia y al litigio estratégico en Nicaragua, Venezuela, Costa Rica y Colombia, con el apoyo de donantes como las embajadas de Reino Unido y Suiza, y el PNUD.
-                </p>
-              </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch">
+            {/* IZQUIERDA: VIDEO INSTITUCIONAL */}
+            <div className="w-full flex flex-col h-full">
+              <Paper elevation={0} className="w-full h-full min-h-[300px] aspect-video rounded-3xl overflow-hidden border border-gray-100 bg-black flex items-center justify-center" sx={{ borderRadius: '24px' }}>
+                <video src="https://storage.googleapis.com/videos-iire/IIRESODH.webm" controls className="w-full h-full object-cover" poster={posterVideo} />
+              </Paper>
+            </div>
 
-              <div id="mision-vision" className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 scroll-mt-32">
-                <article className="bg-gray-50 border-l-4 border-main-red p-8 md:p-10 rounded-r-xl">
-                  <h2 className="text-2xl font-extrabold text-main-blue mb-4 uppercase tracking-wider flex items-center gap-3">
-                    <span className="bg-main-red text-white w-8 h-8 flex items-center justify-center rounded-full text-lg font-black" aria-hidden="true">M</span>
-                    Misión
-                  </h2>
-                  <p className="text-gray-700 text-base md:text-lg font-light leading-relaxed text-justify">
-                    Promover el respeto y cumplimiento de los estándares internacionales en derechos humanos a través del litigio estratégico y proyectos de capacitación, brindando acompañamiento al sector público y privado en materia de responsabilidad social.
-                  </p>
-                </article>
-                <article className="bg-pale-blue/10 border-l-4 border-light-blue p-8 md:p-10 rounded-r-xl">
-                  <h2 className="text-2xl font-extrabold text-main-blue mb-4 uppercase tracking-wider flex items-center gap-3">
-                    <span className="bg-light-blue text-white w-8 h-8 flex items-center justify-center rounded-full text-lg font-black" aria-hidden="true">V</span>
-                    Visión
-                  </h2>
-                  <p className="text-gray-700 text-base md:text-lg font-light leading-relaxed text-justify">
-                    Ser una institución que impulse el respeto y la inclusión de los derechos humanos mediante estrategias de defensa y capacitación, con la finalidad de construir una sociedad democrática y participativa.
-                  </p>
-                </article>
-              </div>
-
-              <section id="principios-rectores" className="scroll-mt-32" aria-labelledby="principios-titulo">
-                <h2 id="principios-titulo" className="text-2xl md:text-3xl font-semibold text-main-blue text-center mb-10 uppercase">
-                  Principios Rectores
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6" role="list">
-                  {principiosRectores.map((principio, index) => (
-                    <div key={index} className="flex flex-col bg-gray-50 p-8 rounded-xl border-t-4 border-main-red" role="listitem">
-                      <h3 className="text-xl font-extrabold text-main-blue mb-3 flex items-center gap-3">
-                        <div className="w-3 h-3 rounded-full bg-main-red shrink-0" aria-hidden="true"></div>
-                        {principio.titulo}
-                      </h3>
-                      <p className="text-gray-600 font-light leading-relaxed text-justify text-base">
-                        {principio.texto}
-                      </p>
-                    </div>
-                  ))}
+            {/* DERECHA: SEDES OFICIALES (MAPA) */}
+            <div className="w-full flex flex-col h-full">
+              <Paper elevation={0} className="w-full relative bg-gray-50 rounded-3xl p-6 border border-gray-100 flex flex-col items-center justify-center h-full" sx={{ borderRadius: '24px' }}>
+                <div className="text-center mb-4 w-full">
+                  <h3 className="text-xl font-black text-main-blue uppercase tracking-tight">Sedes Oficiales</h3>
+                  <p className="text-xs text-gray-500 mt-1">Pasa el ratón sobre los puntos rojos en el mapa</p>
                 </div>
-              </section>
-
+                
+                <div ref={mapContainerRef} className="w-full grow flex items-center justify-center relative">
+                  <ComposableMap projection="geoMercator" projectionConfig={{ scale: 300, center: [-85, 30] }} className="w-full h-auto max-h-[350px]" aria-label="Mapa interactivo de sedes internacionales">
+                    <Geographies geography={geoUrl}>
+                      {({ geographies }) => geographies.map((geo) => (
+                        <Geography key={geo.rsmKey} geography={geo} fill="#457B9D" stroke="#FFFFFF" strokeWidth={0.5} style={{ default: { outline: "none" }, hover: { fill: "#1D3557", outline: "none" } }} />
+                      ))}
+                    </Geographies>
+                    {sedes.map((sede) => (
+                      <Marker key={sede.id} coordinates={sede.coords}>
+                        <g tabIndex="0" role="button" aria-label={`Sede en ${sede.pais}`} onMouseEnter={(e) => handleHover(sede, e)} onMouseLeave={() => setHoveredSede(null)} onFocus={(e) => showTooltipKeyboard(sede, e.target)} onBlur={() => setHoveredSede(null)} className="focus:outline-none cursor-pointer">
+                          <circle r={25} fill="transparent" className="cursor-pointer" />
+                          <circle r={25} fill="#B92F32" fillOpacity={0.1} className="animate-pulse pointer-events-none" />
+                          <circle r={10} fill="#B92F32" stroke="#FFFFFF" strokeWidth={2} className="pointer-events-none" />
+                        </g>
+                      </Marker>
+                    ))}
+                  </ComposableMap>
+                  
+                  {hoveredSede && (
+                    <div role="tooltip" className="absolute z-50 bg-white p-4 rounded-xl flex flex-col gap-2 w-60 shadow-xl border border-gray-100 pointer-events-none" style={{ top: `${tooltipPos.top}px`, left: `${tooltipPos.left}px` }}>
+                      <h4 className="text-lg font-semibold text-main-red uppercase tracking-tight border-b border-gray-50 pb-2">{hoveredSede.pais}</h4>
+                      <p className="text-xs text-gray-700 leading-relaxed font-medium">{hoveredSede.info}</p>
+                    </div>
+                  )}
+                </div>
+              </Paper>
             </div>
           </div>
-        </section>
 
-        <section id="organigrama" className="bg-main-blue text-white py-14 px-6 relative z-20 scroll-mt-32 mt-12" aria-labelledby="organigrama-titulo">
-          <div className="max-w-5xl mx-auto">
-            <h2 id="organigrama-titulo" className="text-3xl font-semibold text-center mb-10 uppercase">
-              Organigrama y Estructura
-            </h2>
-            <div className="text-base md:text-lg text-gray-200 leading-relaxed text-justify space-y-6 mb-16 font-light max-w-4xl mx-auto">
-              <p>
-                La estructura organizacional del IIRESODH tiene como máxima figura de autoridad formal a la Presidencia, a la cual están adscritas todas las unidades internas.
+          <div className="w-20 h-1 bg-main-red mx-auto mt-16 mb-16 rounded-full"></div>
+
+          {/* BLOQUE 2: HISTORIA */}
+          <div id="historia-section" className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify mb-20 animate-fade-in-up">
+            <p>
+              El <strong className="font-semibold text-main-blue">IIRESODH</strong> nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.
+            </p>
+            <p>
+              Desde su creación fue una entidad con claridad en sus objetivos para el fortalecimiento, promoción y protección de los derechos humanos, y con ello incidir en una cultura donde el respeto sea asumido por las empresas e instituciones públicas como una forma de desarrollo directo.
+            </p>
+            <p>
+              Contamos con acuerdos de cooperación con el CCPR-Centre en Ginebra, la Comisión Interamericana de Derechos Humanos, la Universidad Nacional de La Plata y el Instituto Universitario de Yucatán. Nuestro personal cuenta con amplia experiencia en el sistema interamericano y universal de Naciones Unidas.
+            </p>
+            <p>
+              Desde 2013 hemos capacitado a más de 1500 personas en América Latina y Europa. En 2021 abrimos el instituto de altos estudios universitarios (U-IIRESODH) en México para ofrecer maestrías especializadas.
+            </p>
+            <p>
+              Desde 2019 implementamos proyectos de cooperación orientados a la incidencia y al litigio estratégico en Nicaragua, Venezuela, Costa Rica y Colombia, con el apoyo de donantes como las embajadas de Reino Unido y Suiza, y el PNUD.
+            </p>
+          </div>
+
+          <div className="w-16 h-1 bg-main-red mx-auto mt-12 mb-12 rounded-full"></div>
+
+          {/* BLOQUE 3: MISIÓN Y VISIÓN */}
+          <div id="mision-vision" className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20 scroll-mt-32">
+            <article className="bg-gray-50 border-l-4 border-main-red p-8 md:p-10 rounded-r-2xl shadow-sm hover:shadow-md transition-shadow">
+              <h2 className="text-2xl font-extrabold text-main-blue mb-4 uppercase tracking-wider flex items-center gap-3">
+                <span className="bg-main-red text-white w-10 h-10 flex items-center justify-center rounded-xl text-lg font-black shadow-sm" aria-hidden="true">M</span>
+                Misión
+              </h2>
+              <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
+                Promover el respeto y cumplimiento de los estándares internacionales en derechos humanos a través del litigio estratégico y proyectos de capacitación, brindando acompañamiento al sector público y privado en materia de responsabilidad social.
               </p>
-              <p>
-                Se aplica un criterio funcional para las unidades estructurales y un criterio territorial para reflejar nuestras oficinas en distintos países del mundo, ambas subordinadas a la Presidencia.
+            </article>
+            <article className="bg-pale-blue/10 border-l-4 border-light-blue p-8 md:p-10 rounded-r-2xl shadow-sm hover:shadow-md transition-shadow">
+              <h2 className="text-2xl font-extrabold text-main-blue mb-4 uppercase tracking-wider flex items-center gap-3">
+                <span className="bg-light-blue text-white w-10 h-10 flex items-center justify-center rounded-xl text-lg font-black shadow-sm" aria-hidden="true">V</span>
+                Visión
+              </h2>
+              <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
+                Ser una institución que impulse el respeto y la inclusión de los derechos humanos mediante estrategias de defensa y capacitación, con la finalidad de construir una sociedad democrática y participativa.
               </p>
+            </article>
+          </div>
+
+          <div className="w-16 h-1 bg-main-red mx-auto mt-12 mb-12 rounded-full"></div>
+
+          {/* BLOQUE 4: PRINCIPIOS RECTORES */}
+          <section id="principios-rectores" className="scroll-mt-32 mb-16" aria-labelledby="principios-titulo">
+            <div className="text-center mb-12">
+              <h2 id="principios-titulo" className="text-3xl md:text-4xl font-black text-main-blue uppercase tracking-tighter">
+                Principios Rectores
+              </h2>
+              <div className="w-16 h-1 bg-main-red mx-auto mt-4 rounded-full"></div>
             </div>
             
-            <div className="bg-white p-8 md:p-12 rounded-xl overflow-x-auto" role="img" aria-label="Diagrama de flujo que muestra la estructura del organigrama institucional">
-              <div className="min-w-175 flex flex-col items-center">
-                <div className="bg-main-red text-white font-bold py-3 px-10 rounded-lg z-10 relative">
-                  PRESIDENCIA
-                </div>
-                <div className="w-1 h-8 bg-light-blue" aria-hidden="true"></div>
-                <div className="w-3/4 h-1 bg-light-blue" aria-hidden="true"></div>
-                <div className="flex justify-between w-3/4 mt-0" aria-hidden="true">
-                  <div className="w-1 h-8 bg-light-blue"></div>
-                  <div className="w-1 h-8 bg-light-blue"></div>
-                  <div className="w-1 h-8 bg-light-blue"></div>
-                </div>
-                <div className="flex justify-between w-full mt-0 gap-4">
-                  <div className="flex-1 flex flex-col items-center">
-                    <div className="bg-main-blue text-white font-bold py-2 px-4 rounded text-center w-full text-sm">
-                      Unidades Funcionales
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" role="list">
+              {principiosRectores.map((principio, index) => (
+                <Paper key={index} elevation={0} className="flex flex-col bg-gray-50/50 p-8 border border-gray-100 hover:border-main-red/30 hover:shadow-md transition-all duration-300 h-full" sx={{ borderRadius: '20px' }} role="listitem">
+                  <h3 className="text-xl font-bold text-main-blue mb-3 flex items-center gap-3 tracking-tight">
+                    <div className="w-2.5 h-2.5 rounded-full bg-main-red shrink-0" aria-hidden="true"></div>
+                    {principio.titulo}
+                  </h3>
+                  <p className="text-gray-500 font-light leading-relaxed text-sm">
+                    {principio.texto}
+                  </p>
+                </Paper>
+              ))}
+            </div>
+          </section>
+
+          {/* BLOQUE 5: ORGANIGRAMA */}
+          <section id="organigrama" className="relative z-20 scroll-mt-32 mt-8" aria-labelledby="organigrama-titulo">
+            <div className="max-w-5xl mx-auto">
+              <h2 id="organigrama-titulo" className="text-3xl md:text-4xl font-black text-center mb-8 uppercase tracking-tighter text-main-blue">
+                Organigrama Institucional
+              </h2>
+              <div className="text-base md:text-lg text-gray-600 leading-relaxed text-justify space-y-6 mb-12 font-light max-w-4xl mx-auto">
+                <p>
+                  La estructura organizacional del IIRESODH tiene como máxima figura de autoridad formal a la Presidencia, a la cual están adscritas todas las unidades internas.
+                </p>
+                <p>
+                  Se aplica un criterio funcional para las unidades estructurales y un criterio territorial para reflejar nuestras oficinas en distintos países del mundo, ambas subordinadas a la Presidencia.
+                </p>
+              </div>
+              
+              {/* Contenedor del diagrama plano */}
+              <div className="bg-gray-50 p-8 md:p-12 rounded-[2rem] overflow-x-auto border border-gray-100" role="img" aria-label="Diagrama de flujo que muestra la estructura del organigrama institucional">
+                <div className="min-w-[700px] flex flex-col items-center">
+                  <div className="bg-main-red text-white font-black py-4 px-12 rounded-xl z-10 relative shadow-sm tracking-widest uppercase">
+                    PRESIDENCIA
+                  </div>
+                  <div className="w-1 h-8 bg-light-blue" aria-hidden="true"></div>
+                  <div className="w-3/4 h-1 bg-light-blue" aria-hidden="true"></div>
+                  <div className="flex justify-between w-3/4 mt-0" aria-hidden="true">
+                    <div className="w-1 h-8 bg-light-blue"></div>
+                    <div className="w-1 h-8 bg-light-blue"></div>
+                    <div className="w-1 h-8 bg-light-blue"></div>
+                  </div>
+                  <div className="flex justify-between w-full mt-0 gap-6">
+                    <div className="flex-1 flex flex-col items-center">
+                      <div className="rounded-lg p-3 text-center w-full text-sm font-bold border border-gray-200 bg-white text-main-blue shadow-sm">
+                        Unidades Funcionales
+                      </div>
+                    </div>
+                    <div className="flex-1 flex flex-col items-center">
+                      <div className="rounded-lg p-3 text-center w-full text-sm font-bold border border-gray-200 bg-white text-main-blue shadow-sm">
+                        Oficinas Territoriales
+                      </div>
+                    </div>
+                    <div className="flex-1 flex flex-col items-center">
+                      <div className="rounded-lg p-3 text-center w-full text-sm font-bold border border-gray-200 bg-white text-main-blue shadow-sm">
+                        Proyectos Transversales
+                      </div>
                     </div>
                   </div>
-                  <div className="flex-1 flex flex-col items-center">
-                    <div className="bg-main-blue text-white font-bold py-2 px-4 rounded text-center w-full text-sm">
-                      Oficinas Territoriales
+                  <div className="mt-12 flex items-center gap-4 border-2 border-dashed border-gray-300 p-8 rounded-2xl bg-white relative w-full justify-center">
+                    <div className="bg-pale-blue text-main-blue font-black py-4 px-10 rounded-xl shadow-sm tracking-wide border border-pale-blue">
+                      U-IIRESODH (Altos Estudios Universitarios)
                     </div>
-                  </div>
-                  <div className="flex-1 flex flex-col items-center">
-                    <div className="bg-light-blue text-white font-bold py-2 px-4 rounded text-center w-full text-sm">
-                      Proyectos Transversales
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-10 flex items-center gap-4 border-2 border-dashed border-gray-300 p-6 rounded-lg bg-gray-50 relative w-full justify-center">
-                  <div className="bg-pale-blue text-main-blue font-bold py-3 px-8 rounded">
-                    U-IIRESODH (Altos Estudios Universitarios)
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </section>
+
         </section>
 
       </div>

@@ -1,5 +1,5 @@
 // src/pages/Home.jsx
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { collection, query, orderBy, limit, getDocs, where } from "firebase/firestore";
 import { db, functions } from "../firebase/config";
 import { httpsCallable } from "firebase/functions";
@@ -11,11 +11,7 @@ import { Autoplay, EffectFade } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/effect-fade';
 
-// Mapa
-import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
-
 // Imágenes y Recursos
-import posterVideo from "../assets/Isotipo-color-512.png";
 import isotipoFondo from "../assets/Isotipo-color-512.png"; 
 
 // UI Propia (Tus componentes)
@@ -23,11 +19,9 @@ import AdminTextField from "../components/ui/AdminTextField";
 import ToastAlert from "../components/ui/ToastAlert";
 
 // UI Externa (Material UI)
-import { Button, Paper } from "@mui/material";
+import { Button } from "@mui/material";
 
 import { useTranslation } from 'react-i18next';
-
-const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 export const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
@@ -56,19 +50,8 @@ export default function Home() {
   const { t } = useTranslation(); 
   const [noticias, setNoticias] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [hoveredSede, setHoveredSede] = useState(null);
-  const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
   const [contacto, setContacto] = useState({ nombre: "", correo: "", mensaje: "" });
   const [estadoEnvio, setEstadoEnvio] = useState("idle");
-  const mapContainerRef = useRef(null);
-
-  const sedes = [
-    { id: 'ca', pais: 'Canadá', coords: [-71.1743, 46.8033], info: 'Atención virtual o presencial previa cita en la ciudad de Lévis, Québec. En Toronto vinculado con Waldman & Associates. Email: contacto@iiresodh.org' },
-    { id: 'mx', pais: 'México', coords: [-99.1332, 19.4326], info: 'Atención virtual o presencial previa cita. Email: contacto@iiresodh.org' },
-    { id: 'gt', pais: 'Guatemala', coords: [-90.5069, 14.6349], info: 'Diagonal 6 12-42, Edificio Design Center. Oficina No. 506, Torre 1, Zona 10. Ciudad de Guatemala. Teléfono: +502 5557 7466' },
-    { id: 'cr', pais: 'Costa Rica', coords: [-84.0833, 9.9333], info: 'Centro Corporativo San Rafael, nivel 3. San Rafael de Escazú, San José. CP 10201. Teléfono: +506 4703 5727' },
-    { id: 'co', pais: 'Colombia', coords: [-74.0636, 4.6243], info: 'Carrera. 11C No. 117-05. Oficina 5. Bogotá, Colombia. Teléfono: Bogotá +7461964. Móvil: +57 301 4844324' }
-  ];
 
   useEffect(() => {
     const fetchNoticias = async () => {
@@ -94,28 +77,6 @@ export default function Home() {
     };
     fetchNoticias();
   }, []);
-
-  const handleHover = (sede, e) => {
-    if (!mapContainerRef.current) return;
-    const rect = mapContainerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const leftPos = x > rect.width / 2 ? x - 260 : x + 20;
-    const topPos = y < 150 ? y + 20 : y - 140;
-    setTooltipPos({ top: topPos, left: leftPos });
-    setHoveredSede(sede);
-  };
-
-  const showTooltipKeyboard = (sede, target) => {
-    const rect = target.getBoundingClientRect();
-    const mapRect = mapContainerRef.current.getBoundingClientRect();
-    const x = rect.left + rect.width / 2 - mapRect.left;
-    const y = rect.top + rect.height / 2 - mapRect.top;
-    const leftPos = x > mapRect.width / 2 ? x - 260 : x + 20;
-    const topPos = y < 150 ? y + 20 : y - 140;
-    setTooltipPos({ top: topPos, left: leftPos });
-    setHoveredSede(sede);
-  };
 
   const handleEnviarContacto = async (e) => {
     e.preventDefault();
@@ -215,10 +176,12 @@ export default function Home() {
             )}
           </section>
 
-          {/* BLOQUE 3: BENTO BOX PILARES Y FORMULARIO DE CONTACTO */}
+          {/* BENTO BOX PILARES Y FORMULARIO DE CONTACTO */}
           <div className="pt-12 pb-8 bg-white border-t border-gray-100">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-              <div className="lg:col-span-7">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+              
+              {/* IZQUIERDA: Titular y Pilares */}
+              <div className="lg:col-span-7 flex flex-col">
                 <div className="mb-8">
                   <span className="text-main-red font-black tracking-[0.3em] uppercase text-xs mb-3 block">Nuestra Labor</span>
                   <h2 className="text-4xl md:text-5xl font-black text-main-blue tracking-tighter mb-4 leading-tight">
@@ -254,65 +217,31 @@ export default function Home() {
                   </Link>
                 </div>
               </div>
-              <div className="lg:col-span-5 w-full flex flex-col">
-                <div className="bg-gray-50 rounded-[3rem] p-8 md:p-10 border border-gray-100 shadow-sm">
+              
+              {/* DERECHA: Formulario como tarjeta paralela */}
+              <div className="lg:col-span-5 w-full h-full flex flex-col">
+                <div className="bg-white rounded-3xl p-8 md:p-10 border border-gray-100 shadow-xl h-full">
                   <h3 className="text-3xl font-black text-main-blue mb-3">¿Hablamos?</h3>
                   <p className="text-gray-500 font-light mb-8 text-lg leading-tight">Estamos aquí para colaborar y responder tus dudas.</p>
+                  
                   <ToastAlert open={estadoEnvio === "exito"} message="¡Mensaje enviado con éxito!" isError={false} onClose={() => setEstadoEnvio("idle")} />
                   <ToastAlert open={estadoEnvio === "error"} message="Ocurrió un error al enviar el mensaje." isError={true} onClose={() => setEstadoEnvio("idle")} />
-                  <form onSubmit={handleEnviarContacto} className="space-y-6">
+                  
+                  <form onSubmit={handleEnviarContacto} className="space-y-6 flex flex-col grow">
                     <div className="flex flex-col gap-6">
-                      <AdminTextField label="Nombre" required value={contacto.nombre} onChange={(e) => setContacto({...contacto, nombre: e.target.value})} />
-                      <AdminTextField label="Email" type="email" required value={contacto.correo} onChange={(e) => setContacto({...contacto, correo: e.target.value})} />
+                      <AdminTextField label="Nombre *" required value={contacto.nombre} onChange={(e) => setContacto({...contacto, nombre: e.target.value})} />
+                      <AdminTextField label="Email *" type="email" required value={contacto.correo} onChange={(e) => setContacto({...contacto, correo: e.target.value})} />
                     </div>
-                    <AdminTextField label="Mensaje" required multiline rows={6} value={contacto.mensaje} onChange={(e) => setContacto({...contacto, mensaje: e.target.value})} />
-                    <Button type="submit" variant="contained" color="secondary" disabled={estadoEnvio === "enviando"} sx={{ py: 2, px: 8, width: '100%', borderRadius: '12px', fontWeight: 'bold', textTransform: 'uppercase', tracking: '0.1em' }}>
+                    <div className="grow">
+                      <AdminTextField label="Mensaje *" required multiline rows={6} value={contacto.mensaje} onChange={(e) => setContacto({...contacto, mensaje: e.target.value})} />
+                    </div>
+                    <Button type="submit" variant="contained" color="secondary" disabled={estadoEnvio === "enviando"} sx={{ py: 2, px: 8, width: '100%', borderRadius: '12px', fontWeight: 'bold', textTransform: 'uppercase', tracking: '0.1em', marginTop: 'auto' }}>
                       {estadoEnvio === "enviando" ? "Enviando..." : "Enviar Mensaje"}
                     </Button>
                   </form>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* SECCIÓN VIDEO Y SEDES OFICIALES */}
-          <div className="pt-12 border-t border-gray-100 bg-white">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-              <div className="w-full flex justify-center lg:justify-start items-center">
-                <Paper elevation={3} className="w-full max-w-xl aspect-video rounded-3xl overflow-hidden border border-gray-100 bg-white" sx={{ borderRadius: '24px', overflow: 'hidden' }}>
-                  <video src="https://storage.googleapis.com/videos-iire/IIRESODH.webm" controls className="w-full h-full object-cover bg-white" poster={posterVideo} />
-                </Paper>
-              </div>
-              <div className="w-full flex flex-col">
-                <div className="text-center lg:text-left mb-6">
-                  <h2 className="text-3xl font-black text-main-blue uppercase tracking-tighter">Sedes Oficiales</h2>
-                  <p className="text-sm text-gray-500 mt-1">Pasa el ratón sobre los puntos rojos en el mapa</p>
-                </div>
-                <div ref={mapContainerRef} className="w-full relative bg-white rounded-[3rem] p-4 border border-gray-100 flex items-center justify-center shadow-sm">
-                  <ComposableMap projection="geoMercator" projectionConfig={{ scale: 300, center: [-85, 30] }} className="w-full h-auto" aria-label="Mapa interactivo de sedes internacionales">
-                    <Geographies geography={geoUrl}>
-                      {({ geographies }) => geographies.map((geo) => (
-                        <Geography key={geo.rsmKey} geography={geo} fill="#457B9D" stroke="#FFFFFF" strokeWidth={0.5} style={{ default: { outline: "none" }, hover: { fill: "#1D3557", outline: "none" } }} />
-                      ))}
-                    </Geographies>
-                    {sedes.map((sede) => (
-                      <Marker key={sede.id} coordinates={sede.coords}>
-                        <g tabIndex="0" role="button" aria-label={`Sede en ${sede.pais}`} onMouseEnter={(e) => handleHover(sede, e)} onMouseLeave={() => setHoveredSede(null)} onFocus={(e) => showTooltipKeyboard(sede, e.target)} onBlur={() => setHoveredSede(null)} className="focus:outline-none cursor-pointer">
-                          <circle r={25} fill="transparent" className="cursor-pointer" />
-                          <circle r={25} fill="#B92F32" fillOpacity={0.1} className="animate-pulse pointer-events-none" />
-                          <circle r={10} fill="#B92F32" stroke="#FFFFFF" strokeWidth={2} className="pointer-events-none" />
-                        </g>
-                      </Marker>
-                    ))}
-                  </ComposableMap>
-                  {hoveredSede && (
-                    <div role="tooltip" className="absolute z-50 bg-white p-4 rounded-xl flex flex-col gap-2 w-60 shadow-xl border border-gray-200 pointer-events-none" style={{ top: `${tooltipPos.top}px`, left: `${tooltipPos.left}px` }}>
-                      <h3 className="text-lg font-semibold text-main-red uppercase tracking-tight border-b border-gray-100 pb-2">{hoveredSede.pais}</h3>
-                      <p className="text-xs text-gray-700 leading-relaxed font-medium">{hoveredSede.info}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
           </div>
 
