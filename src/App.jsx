@@ -6,7 +6,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Login from "./components/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
-import PidaChat from "./components/PidaChat"; // <-- 1. Importamos a PIDA
+import PidaChat from "./components/PidaChat";
 
 // Páginas Actuales
 import Home from "./pages/Home";
@@ -21,14 +21,14 @@ import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound"; 
 import InformesAnuales from "./pages/InformesAnuales";
 
-// Nuevas Páginas
+// Nuevas Páginas y Componente Dinámico
+import PaginaPais from "./pages/PaginaPais"; // <-- IMPORTANTE: Esta era la pieza que faltaba
 import CooperacionInternacional from "./pages/CooperacionInternacional";
-import Colombia from "./pages/Colombia";
 import Cursos from "./pages/Cursos";
 import Equipo from "./pages/Equipo";
 import ArticulosAcademicos from "./pages/ArticulosAcademicos";
 import ArticuloDetalle from "./pages/ArticuloDetalle";
-import ComprarLibro from "./pages/ComprarLibro"; // <-- NUEVA IMPORTACIÓN
+import ComprarLibro from "./pages/ComprarLibro";
 
 function PublicLayout() {
   return (
@@ -39,7 +39,7 @@ function PublicLayout() {
       </div>
       <Footer />
       
-      {/* <-- 2. Colocamos a PIDA aquí para que solo salga en el lado público --> */}
+      {/* PidaChat visible solo en la interfaz pública */}
       <PidaChat />
     </div>
   );
@@ -49,7 +49,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* RUTAS PÚBLICAS */}
+        {/* RUTAS PÚBLICAS (Con Navbar, Footer y PidaChat) */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/quienes-somos" element={<QuienesSomos />} />
@@ -57,7 +57,14 @@ function App() {
           <Route path="/equipo" element={<Equipo />} />
           <Route path="/litigio-estrategico" element={<LitigioEstrategico />} />
           <Route path="/cooperacion-internacional" element={<CooperacionInternacional />} />
-          <Route path="/colombia" element={<Colombia />} />
+          
+          {/* RUTAS DINÁMICAS POR PAÍS */}
+          <Route path="/canada" element={<PaginaPais paisKey="canada" />} />
+          <Route path="/mexico" element={<PaginaPais paisKey="mexico" />} />
+          <Route path="/guatemala" element={<PaginaPais paisKey="guatemala" />} />
+          <Route path="/costa-rica" element={<PaginaPais paisKey="costa-rica" />} />
+          <Route path="/colombia" element={<PaginaPais paisKey="colombia" />} />
+          
           <Route path="/cursos" element={<Cursos />} />
           <Route path="/donaciones" element={<Donaciones />} />
           <Route path="/noticias" element={<Noticias />} />
@@ -67,16 +74,16 @@ function App() {
           <Route path="/articulos-academicos" element={<ArticulosAcademicos />} />
           <Route path="/articulos-academicos/:slug" element={<ArticuloDetalle />} />
           
-          {/* NUEVA RUTA PARA LA TIENDA (OPCIONAL SLUG) */}
+          {/* TIENDA */}
           <Route path="/comprar-libro/:slug?" element={<ComprarLibro />} />
           
           <Route path="*" element={<NotFound />} />
         </Route>
 
-        {/* RUTAS SIN LAYOUT / LOGIN */}
+        {/* RUTAS SIN LAYOUT (Sin Navbar ni Footer) */}
         <Route path="/login" element={<Login />} />
         
-        {/* RUTAS PRIVADAS (Protegidas) */}
+        {/* RUTAS PRIVADAS (Panel Administrativo) */}
         <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
         
       </Routes>

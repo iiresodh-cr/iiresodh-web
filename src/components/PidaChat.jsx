@@ -1,6 +1,6 @@
 // src/components/PidaChat.jsx
 import { useState, useRef, useEffect } from "react";
-import pidaImg from "../assets/PIDA_bot.webp"; 
+import pidaImg from "../assets/IRENE-80.webp"; 
 import { functions } from "../firebase/config";
 import { httpsCallable } from "firebase/functions";
 
@@ -8,7 +8,7 @@ import { httpsCallable } from "firebase/functions";
 import { Paper, InputBase, IconButton, Tooltip, Button, Zoom } from '@mui/material';
 
 const MENSAJE_INICIAL = { 
-  text: "¡Hola! Soy PIDA, el asistente virtual de IIRESODH. ¿En qué te puedo ayudar hoy?", 
+  text: "¡Hola! Soy IRENE, asistente virtual de IIRESODH. ¿En qué te puedo ayudar hoy?", 
   isBot: true 
 };
 
@@ -112,12 +112,12 @@ export default function PidaChat() {
     <div className="fixed bottom-6 right-6 z-50 font-sans">
       {/* BOTÓN FLOTANTE (TOGGLE) CON MUI */}
       {!isOpen && (
-        <Tooltip title="Chatea con PIDA" placement="left" arrow TransitionComponent={Zoom}>
+        <Tooltip title="Chatea con IRENE" placement="left" arrow TransitionComponent={Zoom}>
           <Paper 
             component="button"
             onClick={toggleChat}
             elevation={4}
-            aria-label="Abrir asistente PIDA"
+            aria-label="Abrir asistente IRENE"
             sx={{
               display: 'flex',
               alignItems: 'center',
@@ -167,7 +167,7 @@ export default function PidaChat() {
               </div>
               <h3 className="text-lg font-bold text-gray-800 mb-2">¿Empezar de cero?</h3>
               <p className="text-sm text-gray-500 mb-6">
-                PIDA olvidará la conversación actual y comenzarán una nueva.
+                IRENE olvidará la conversación actual y comenzarán una nueva.
               </p>
               <div className="flex gap-3 w-full">
                 <Button 
@@ -193,13 +193,13 @@ export default function PidaChat() {
           )}
 
           {/* CABECERA */}
-          <div className="bg-main-red p-4 flex items-center justify-between text-white shadow-md z-10 border-b border-white/10">
+          <div className="bg-main-blue p-4 flex items-center justify-between text-white shadow-md z-10 border-b border-white/10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center overflow-hidden border border-white/20">
                 <img src={pidaImg} alt="PIDA Avatar" className="w-8 h-8 object-contain mt-1" />
               </div>
               <div>
-                <h3 className="font-bold text-base leading-tight">PIDA</h3>
+                <h3 className="font-bold text-base leading-tight">IRENE</h3>
                 <p className="text-xs text-white/80">Asistente Virtual IIRESODH</p>
               </div>
             </div>
