@@ -229,11 +229,11 @@ export default function Home() {
                   
                   <form onSubmit={handleEnviarContacto} className="space-y-6 flex flex-col grow">
                     <div className="flex flex-col gap-6">
-                      <AdminTextField label="Nombre *" required value={contacto.nombre} onChange={(e) => setContacto({...contacto, nombre: e.target.value})} />
-                      <AdminTextField label="Email *" type="email" required value={contacto.correo} onChange={(e) => setContacto({...contacto, correo: e.target.value})} />
+                      <AdminTextField label="Nombre" required value={contacto.nombre} onChange={(e) => setContacto({...contacto, nombre: e.target.value})} />
+                      <AdminTextField label="Email" type="email" required value={contacto.correo} onChange={(e) => setContacto({...contacto, correo: e.target.value})} />
                     </div>
                     <div className="grow">
-                      <AdminTextField label="Mensaje *" required multiline rows={6} value={contacto.mensaje} onChange={(e) => setContacto({...contacto, mensaje: e.target.value})} />
+                      <AdminTextField label="Mensaje" required multiline rows={6} value={contacto.mensaje} onChange={(e) => setContacto({...contacto, mensaje: e.target.value})} />
                     </div>
                     <Button type="submit" variant="contained" color="secondary" disabled={estadoEnvio === "enviando"} sx={{ py: 2, px: 8, width: '100%', borderRadius: '12px', fontWeight: 'bold', textTransform: 'uppercase', tracking: '0.1em', marginTop: 'auto' }}>
                       {estadoEnvio === "enviando" ? "Enviando..." : "Enviar Mensaje"}
