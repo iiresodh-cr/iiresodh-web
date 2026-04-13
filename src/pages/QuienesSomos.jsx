@@ -115,7 +115,7 @@ export default function QuienesSomos() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch">
             {/* IZQUIERDA: VIDEO INSTITUCIONAL */}
             <div className="w-full flex flex-col h-full">
-              <Paper elevation={0} className="w-full h-full min-h-[300px] aspect-video rounded-3xl overflow-hidden border border-gray-100 bg-black flex items-center justify-center" sx={{ borderRadius: '24px' }}>
+              <Paper elevation={0} className="w-full h-full min-h-75 aspect-video rounded-3xl overflow-hidden border border-gray-100 bg-black flex items-center justify-center" sx={{ borderRadius: '24px' }}>
                 <video src="https://storage.googleapis.com/videos-iire/IIRESODH.webm" controls className="w-full h-full object-cover" poster={posterVideo} />
               </Paper>
             </div>
@@ -129,7 +129,7 @@ export default function QuienesSomos() {
                 </div>
                 
                 <div ref={mapContainerRef} className="w-full grow flex items-center justify-center relative">
-                  <ComposableMap projection="geoMercator" projectionConfig={{ scale: 300, center: [-85, 30] }} className="w-full h-auto max-h-[350px]" aria-label="Mapa interactivo de sedes internacionales">
+                  <ComposableMap projection="geoMercator" projectionConfig={{ scale: 300, center: [-85, 30] }} className="w-full h-auto max-h-87.5" aria-label="Mapa interactivo de sedes internacionales">
                     <Geographies geography={geoUrl}>
                       {({ geographies }) => geographies.map((geo) => (
                         <Geography key={geo.rsmKey} geography={geo} fill="#457B9D" stroke="#FFFFFF" strokeWidth={0.5} style={{ default: { outline: "none" }, hover: { fill: "#1D3557", outline: "none" } }} />
@@ -244,8 +244,8 @@ export default function QuienesSomos() {
               </div>
               
               {/* Contenedor del diagrama plano */}
-              <div className="bg-gray-50 p-8 md:p-12 rounded-[2rem] overflow-x-auto border border-gray-100" role="img" aria-label="Diagrama de flujo que muestra la estructura del organigrama institucional">
-                <div className="min-w-[700px] flex flex-col items-center">
+              <div className="bg-gray-50 p-8 md:p-12 rounded-4xl overflow-x-auto border border-gray-100" role="img" aria-label="Diagrama de flujo que muestra la estructura del organigrama institucional">
+                <div className="min-w-175 flex flex-col items-center">
                   <div className="bg-main-red text-white font-black py-4 px-12 rounded-xl z-10 relative shadow-sm tracking-widest uppercase">
                     PRESIDENCIA
                   </div>
