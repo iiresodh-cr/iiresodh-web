@@ -84,7 +84,7 @@ export default function Footer() {
             </Tooltip>
           </div>
 
-          <Link to="/donaciones" className="bg-main-red text-white text-xs font-bold uppercase tracking-[0.15em] py-3 px-6 rounded-lg hover:bg-red-800 transition-colors shadow-lg shadow-main-red/20 w-full text-center lg:w-auto">
+          <Link to="/tienda" className="bg-main-red text-white text-xs font-bold uppercase tracking-[0.15em] py-3 px-6 rounded-lg hover:bg-red-800 transition-colors shadow-lg shadow-main-red/20 w-full text-center lg:w-auto">
             Apoyar Nuestra Labor
           </Link>
         </div>
