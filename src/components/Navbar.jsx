@@ -249,25 +249,25 @@ export default function Navbar() {
                 </div>
               </div>
 
-              {/* DROPDOWN PUBLICACIONES */}
+              {/* DROPDOWN ACTUALIDAD */}
               <div className="relative group w-full md:w-auto" onMouseLeave={() => setActiveDropdown(null)}>
                 <button 
                   className="flex items-center justify-between md:justify-center w-full gap-1.5 hover:text-light-blue transition-colors py-3 md:py-2 cursor-pointer whitespace-nowrap" 
-                  onClick={() => toggleDropdown('noticias')}
+                  onClick={() => toggleDropdown('actualidad')}
                   aria-haspopup="true"
-                  aria-expanded={activeDropdown === 'noticias'}
-                  aria-controls="dropdown-noticias"
+                  aria-expanded={activeDropdown === 'actualidad'}
+                  aria-controls="dropdown-actualidad"
                 >
-                  NOVEDADES 
-                  <svg className={`w-4 h-4 text-pale-blue transition-transform duration-300 ${activeDropdown === 'noticias' ? 'rotate-180' : ''} md:group-hover:rotate-180`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                  ACTUALIDAD 
+                  <svg className={`w-4 h-4 text-pale-blue transition-transform duration-300 ${activeDropdown === 'actualidad' ? 'rotate-180' : ''} md:group-hover:rotate-180`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
                 <div 
-                  id="dropdown-noticias"
-                  className={`${activeDropdown === 'noticias' ? 'block' : 'hidden'} md:block md:absolute md:left-0 md:top-full md:w-64 md:bg-white md:shadow-xl md:rounded-b md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300 md:border-t-4 md:border-main-red w-full bg-gray-50 border-l-4 border-main-red md:border-l-0 z-50`}
+                  id="dropdown-actualidad"
+                  className={`${activeDropdown === 'actualidad' ? 'block' : 'hidden'} md:block md:absolute md:left-0 md:top-full md:w-56 md:bg-white md:shadow-xl md:rounded-b md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300 md:border-t-4 md:border-main-red w-full bg-gray-50 border-l-4 border-main-red md:border-l-0 z-50`}
                 >
                   <ul className="py-2 flex flex-col">
                     <li><Link to="/noticias" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Noticias</Link></li>
-                    <li><Link to="/articulos-academicos" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Artículos Académicos</Link></li>
+                    <li><Link to="/articulos-academicos" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Artículos</Link></li>
                   </ul>
                 </div>
               </div>
