@@ -276,7 +276,7 @@ export default function Navbar() {
               </div>
 
               {/* ENLACE DIRECTO A TIENDA */}
-              <Link to="/comprar-libro" className="hover:text-light-blue py-3 md:py-2 transition-colors whitespace-nowrap">
+              <Link to="/tienda" className="hover:text-light-blue py-3 md:py-2 transition-colors whitespace-nowrap">
                 TIENDA
               </Link>
 

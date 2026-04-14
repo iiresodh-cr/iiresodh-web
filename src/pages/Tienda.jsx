@@ -366,7 +366,7 @@ export default function ComprarLibro() {
   if (!slug) {
     return (
       <main className="bg-white min-h-screen flex flex-col font-sans">
-        <PageHeader titulo="Tienda Editorial" subtitulo="Adquiere nuestras publicaciones académicas oficiales." />
+        <PageHeader titulo="Tienda IIRESODH" subtitulo="Adquiere nuestras publicaciones y merchandising oficiales." />
         
         <div className="relative overflow-hidden grow pb-20">
           <div className="bg-watermark" aria-hidden="true"></div>
@@ -374,7 +374,7 @@ export default function ComprarLibro() {
           <section className="relative pt-4 md:pt-6 px-0 z-10">
             <div className="max-w-7xl mx-auto bg-white overflow-hidden">
               <div className="px-6 md:px-12 lg:px-16 pt-4 md:pt-6 pb-12 animate-fade-in-up w-full">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-16 items-start">
+                <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-12 lg:gap-16 items-start">
                   {listaLibros.map((l) => {
                     const esMXN = moneda === "MXN" && l.precioMXN;
                     const precioMostrar = esMXN ? l.precioMXN : l.precio;

@@ -28,7 +28,7 @@ import Cursos from "./pages/Cursos";
 import Equipo from "./pages/Equipo";
 import ArticulosAcademicos from "./pages/ArticulosAcademicos";
 import ArticuloDetalle from "./pages/ArticuloDetalle";
-import ComprarLibro from "./pages/ComprarLibro";
+import Tienda from "./pages/Tienda";
 import Incidencia from "./pages/Incidencia";
 
 function PublicLayout() {
@@ -77,7 +77,7 @@ function App() {
           <Route path="/incidencia" element={<Incidencia />} />
           
           {/* TIENDA */}
-          <Route path="/comprar-libro/:slug?" element={<ComprarLibro />} />
+          <Route path="/tienda/:slug?" element={<Tienda />} />
           
           <Route path="*" element={<NotFound />} />
         </Route>
