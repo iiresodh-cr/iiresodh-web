@@ -5,6 +5,7 @@ import { collection, query, where, orderBy, limit, getDocs } from "firebase/fire
 import { db } from "../firebase/config";
 import { Link } from "react-router-dom";
 import { Paper } from "@mui/material";
+import PageHeader from "../components/PageHeader"; // <-- Importamos el mismo header de las otras páginas
 
 const CONFIG_PAISES = {
   "canada": { tag: "Canadá", titulo: "Canadá", contacto: "Ciudad de Lévis, Québec. Toronto: Waldman & Associates. contacto@iiresodh.org" },
@@ -57,19 +58,11 @@ export default function PaginaPais({ paisKey: propsPaisKey }) {
   return (
     <main className="bg-white min-h-screen flex flex-col font-sans overflow-x-hidden">
       
-      {/* HERO / CABECERA */}
-      <section className="bg-main-blue py-16 md:py-24 px-6 relative z-20 text-center">
-        <div className="max-w-7xl mx-auto relative z-10">
-          <span className="text-main-red font-black tracking-[0.3em] uppercase text-xs mb-4 block">Presencia Internacional</span>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 tracking-tighter">
-            IIRESODH <span className="text-pale-blue">{data.titulo}</span>
-          </h1>
-          <div className="w-24 h-1.5 bg-main-red mx-auto rounded-full mb-6" aria-hidden="true"></div>
-          <p className="text-gray-300 text-lg md:text-xl font-light max-w-3xl mx-auto leading-relaxed">
-            Actividad y presencia institucional en {data.titulo}.
-          </p>
-        </div>
-      </section>
+      {/* Usamos tu componente estandarizado para que mida exactamente igual */}
+      <PageHeader 
+        titulo={`IIRESODH ${data.titulo}`} 
+        subtitulo={`Actividad y presencia institucional en ${data.titulo}.`} 
+      />
 
       {/* CONTENEDOR CON MARCA DE AGUA */}
       <div className="relative overflow-hidden grow pb-20">
