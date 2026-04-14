@@ -211,7 +211,7 @@ export default function Navbar() {
                 >
                   <ul className="py-2 flex flex-col">
                     <li><Link to="/quienes-somos" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">¿Quiénes somos?</Link></li>
-                    <li><Link to="/equipo" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Equipo de Trabajo</Link></li>
+                    <li><Link to="/equipo" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Nuestro Equipo</Link></li>
                     <li><Link to="/informes-anuales" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Informes Anuales</Link></li>
                   </ul>
                 </div>
@@ -228,12 +228,16 @@ export default function Navbar() {
                 </button>
                 <div className={`${activeDropdown === 'areas' ? 'block' : 'hidden'} md:block md:absolute md:left-0 md:top-full md:w-80 md:bg-white md:shadow-xl md:rounded-b md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300 md:border-t-4 md:border-main-red w-full bg-gray-50 border-l-4 border-main-red md:border-l-0 z-50`}>
                   <ul className="py-2 flex flex-col">
+                    
+                    {/* Elementos Principales al mismo nivel */}
                     <li><Link to="/litigio-estrategico" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Litigio Estratégico</Link></li>
+                    <li><Link to="/cursos" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors mt-1">Formación Especializada</Link></li>
+                    
                     
                     {/* Sección Internacional Agrupada */}
                     <li className="flex flex-col">
-                      <Link to="/cooperacion-internacional" className="block w-full px-5 py-3 md:py-2 bg-gray-50/50 font-black text-main-blue border-y border-gray-100">
-                        Actividad Internacional
+                      <Link to="/cooperacion-internacional" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">
+                        Actividad Global
                       </Link>
                       <div className="grid grid-cols-1 gap-0">
                         <Link to="/canada" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ Canadá</Link>
@@ -243,8 +247,7 @@ export default function Navbar() {
                         <Link to="/mexico" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ México</Link>
                       </div>
                     </li>
-                    
-                    <li><Link to="/cursos" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Cursos</Link></li>
+                    <li><Link to="/incidencia" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Incidencia</Link></li>
                   </ul>
                 </div>
               </div>

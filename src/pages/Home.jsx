@@ -242,7 +242,7 @@ export default function Home() {
                     </div>
                     <div>
                       <h3 className="text-2xl font-bold text-white mb-2">Formación Especializada</h3>
-                      <p className="text-gray-300 font-light text-lg">Maestrías, certificaciones y programas académicos diseñados para los líderes del cambio social.</p>
+                      <p className="text-gray-300 font-light text-lg">Certificaciones y programas académicos diseñados para los líderes del cambio social.</p>
                     </div>
                   </Link>
                 </div>
