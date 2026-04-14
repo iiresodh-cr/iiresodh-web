@@ -162,7 +162,7 @@ export default function PidaChat() {
           {/* MODAL DE CONFIRMACIÓN INTERNO (Mantiene confinamiento para no romper el widget) */}
           {mostrarConfirmacion && (
             <div className="absolute inset-0 z-20 bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center animate-fade-in-up">
-              <div className="w-16 h-16 bg-blue-50 text-main-blue rounded-full flex items-center justify-center mb-4">
+              <div className="w-16 h-16 bg-blue-50 text-main-red rounded-full flex items-center justify-center mb-4">
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               </div>
               <h3 className="text-lg font-bold text-gray-800 mb-2">¿Empezar de cero?</h3>
@@ -182,7 +182,7 @@ export default function PidaChat() {
                 <Button 
                   onClick={confirmarReinicio} 
                   variant="contained" 
-                  color="primary" // Usará el azul institucional (main-blue) de tu ThemeProvider
+                  color="primary" // Usará el azul institucional (main-) de tu ThemeProvider
                   fullWidth 
                   sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 600, py: 1, boxShadow: 'none' }}
                 >
@@ -193,7 +193,7 @@ export default function PidaChat() {
           )}
 
           {/* CABECERA */}
-          <div className="bg-main-blue p-4 flex items-center justify-between text-white shadow-md z-10 border-b border-white/10">
+          <div className="bg-main-red p-4 flex items-center justify-between text-white shadow-md z-10 border-b border-white/10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center overflow-hidden border border-white/20">
                 <img src={pidaImg} alt="PIDA Avatar" className="w-8 h-8 object-contain mt-1" />
@@ -236,7 +236,7 @@ export default function PidaChat() {
                 <div className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm whitespace-pre-line ${
                   msg.isBot 
                     ? 'bg-white border border-gray-100 text-gray-700 rounded-tl-sm leading-relaxed' 
-                    : 'bg-main-blue text-white rounded-tr-sm leading-relaxed'
+                    : 'bg-main-red text-white rounded-tr-sm leading-relaxed'
                 }`}>
                   {formatearMensaje(msg.text)}
                 </div>
