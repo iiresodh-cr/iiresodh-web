@@ -29,6 +29,7 @@ import Equipo from "./pages/Equipo";
 import ArticulosAcademicos from "./pages/ArticulosAcademicos";
 import ArticuloDetalle from "./pages/ArticuloDetalle";
 import ComprarLibro from "./pages/ComprarLibro";
+import Incidencia from "./pages/Incidencia";
 
 function PublicLayout() {
   return (
@@ -73,6 +74,7 @@ function App() {
           <Route path="/privacidad" element={<Privacidad />} />
           <Route path="/articulos-academicos" element={<ArticulosAcademicos />} />
           <Route path="/articulos-academicos/:slug" element={<ArticuloDetalle />} />
+          <Route path="/incidencia" element={<Incidencia />} />
           
           {/* TIENDA */}
           <Route path="/comprar-libro/:slug?" element={<ComprarLibro />} />
