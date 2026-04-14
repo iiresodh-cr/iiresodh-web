@@ -7,23 +7,24 @@ import { Link } from "react-router-dom";
 
 // Swiper
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, EffectFade } from 'swiper/modules'; 
+import { Autoplay, EffectFade, Navigation } from 'swiper/modules'; 
 import 'swiper/css';
 import 'swiper/css/effect-fade';
 
 // Imágenes y Recursos
 import isotipoFondo from "../assets/Isotipo-color-512.png"; 
 
-// UI Propia (Tus componentes)
+// UI Propia
 import AdminTextField from "../components/ui/AdminTextField";
 import ToastAlert from "../components/ui/ToastAlert";
 
-// UI Externa (Material UI)
+// UI Externa
 import { Button } from "@mui/material";
 
 import { useTranslation } from 'react-i18next';
 
 export const formatearTextoConLinksYHashtags = (texto) => {
+  // ... (se mantiene tu función intacta)
   if (!texto) return "";
   let procesado = texto.replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const linksGuardados = []; 
@@ -94,7 +95,7 @@ export default function Home() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-white flex items-center justify-center font-bold text-main-blue text-xl">Cargando IIRESODH...</div>;
+  // ¡HEMOS ELIMINADO EL BLOQUEO TOTAL DE PANTALLA AQUÍ!
 
   return (
     <main className="bg-white flex flex-col min-h-screen font-sans overflow-x-hidden">
@@ -103,15 +104,15 @@ export default function Home() {
 
         <div className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-4 md:pt-6 pb-12 flex flex-col">
           
-          {/* HERO SECTION */}
-          <section className="relative pt-8 pb-12 lg:pt-16 lg:pb-24 overflow-visible">
+          {/* HERO SECTION - Ahora carga al instante */}
+          <section className="relative pt-2 pb-12 lg:pt-6 lg:pb-24 overflow-visible">
             <div className="absolute top-0 right-0 -mr-24 -mt-16 opacity-10 pointer-events-none hidden md:block">
               <img src={isotipoFondo} alt="" className="w-200 object-cover" />
             </div>
             <div className="relative z-10 max-w-4xl text-left">
-              <span className="text-main-red font-bold tracking-[0.3em] uppercase text-xs md:text-sm mb-4 block">
+              {/* <span className="text-main-red font-bold tracking-[0.3em] uppercase text-xs md:text-sm mb-4 block">
                 {t('home.hero_badge', 'Instituto Internacional')}
-              </span>
+              </span> */}
               <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-main-blue leading-[1.05] mb-6 tracking-tighter">
                 Defendiendo <br className="hidden md:block"/>
                 la dignidad y los <br className="hidden md:block"/>
@@ -132,7 +133,7 @@ export default function Home() {
           </section>
 
           {/* CARRUSEL DE NOTICIAS */}
-          <section id="noticias-recientes" className="pt-8 pb-12 scroll-mt-24 border-t border-gray-100">
+          <section id="noticias-recientes" className="pt-8 pb-12 scroll-mt-24 border-t border-gray-100 relative">
             <div className="flex items-end justify-between mb-8">
               <div>
                 <h2 className="text-3xl md:text-4xl font-black text-main-blue tracking-tight">
@@ -144,43 +145,72 @@ export default function Home() {
                 Explorar archivo <span aria-hidden="true" className="text-lg">&rarr;</span>
               </Link>
             </div>
-            {noticias.length > 0 && (
-              <Swiper 
-                modules={[Autoplay, EffectFade]} 
-                effect="fade"
-                fadeEffect={{ crossFade: true }}
-                autoplay={{ delay: 7000, disableOnInteraction: false, pauseOnMouseEnter: true }} 
-                loop={true}
-                speed={1200}
-                className="w-full rounded-[2.5rem] overflow-hidden shadow-2xl"
-              >
-                {noticias.map((noticia) => (
-                  <SwiperSlide key={noticia.id}>
-                    <article className="group relative w-full h-125 md:h-150 lg:h-160 overflow-hidden bg-main-blue cursor-pointer" onClick={() => window.location.href = `/noticias/${noticia.slug || noticia.id}`}>
-                      <img src={noticia.imagenPrincipalUrl} alt="" className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-4000 group-hover:scale-105" />
-                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-1000"></div>
-                      <div className="absolute bottom-4 left-4 right-4 md:bottom-10 md:left-10 md:right-auto w-[90%] md:w-[75%] lg:w-[65%] h-80 md:h-96 lg:h-112 p-6 md:p-10 lg:p-12 bg-white/30 backdrop-blur-xl shadow-2xl rounded-3xl border border-white/30 z-10 flex flex-col justify-end transform transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-main-blue/20">
-                        <div className="flex flex-wrap gap-2 mb-4 md:mb-6">
-                          {noticia.tags?.map(tag => (
-                            <span key={tag} className="bg-white/40 border border-white/50 text-main-blue text-[10px] md:text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-widest">{tag}</span>
-                          ))}
+            
+            {/* ESTADO DE CARGA LOCALIZADO (SKELETON) */}
+            {loading ? (
+              <div className="w-full h-125 md:h-150 lg:h-160 rounded-[2.5rem] bg-gray-100 animate-pulse flex flex-col justify-end p-6 md:p-10 lg:p-12 shadow-inner">
+                <div className="w-1/4 h-4 bg-gray-300 rounded mb-4"></div>
+                <div className="w-3/4 h-10 bg-gray-300 rounded mb-4"></div>
+                <div className="w-full h-6 bg-gray-200 rounded mb-2"></div>
+                <div className="w-5/6 h-6 bg-gray-200 rounded"></div>
+              </div>
+            ) : noticias.length > 0 ? (
+              <div className="relative group">
+                <Swiper 
+                  modules={[Autoplay, EffectFade, Navigation]} 
+                  effect="fade"
+                  fadeEffect={{ crossFade: true }}
+                  autoplay={{ delay: 7000, disableOnInteraction: false, pauseOnMouseEnter: true }} 
+                  loop={true}
+                  speed={1200}
+                  navigation={{
+                    prevEl: '.swiper-btn-prev',
+                    nextEl: '.swiper-btn-next',
+                  }}
+                  className="w-full rounded-[2.5rem] overflow-hidden shadow-2xl"
+                >
+                  {noticias.map((noticia) => (
+                    <SwiperSlide key={noticia.id}>
+                      <article className="group relative w-full h-125 md:h-150 lg:h-160 overflow-hidden bg-main-blue cursor-pointer" onClick={() => window.location.href = `/noticias/${noticia.slug || noticia.id}`}>
+                        <div 
+                          className="absolute inset-0 w-full h-full bg-cover bg-top bg-no-repeat transition-transform duration-4000 group-hover:scale-105 bg-gray-200"
+                          style={{ backgroundImage: `url(${noticia.imagenPrincipalUrl})` }}
+                          role="img"
+                          aria-label={noticia.titulo || "Imagen de la noticia"}
+                        />
+                        
+                        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-1000"></div>
+                        <div className="absolute bottom-4 left-4 right-4 md:bottom-10 md:left-10 md:right-auto w-[90%] md:w-[75%] lg:w-[65%] h-80 md:h-96 lg:h-112 p-6 md:p-10 lg:p-12 bg-white/30 backdrop-blur-xl shadow-2xl rounded-3xl border border-white/30 z-10 flex flex-col justify-end transform transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-main-blue/20">
+                          <div className="flex flex-wrap gap-2 mb-4 md:mb-6">
+                            {noticia.tags?.map(tag => (
+                              <span key={tag} className="bg-white/40 border border-white/50 text-main-blue text-[10px] md:text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-widest">{tag}</span>
+                            ))}
+                          </div>
+                          <h3 className="text-2xl md:text-4xl lg:text-5xl font-black text-main-blue mb-4 leading-[1.15] tracking-tight group-hover:text-main-red transition-colors line-clamp-3">{noticia.titulo}</h3>
+                          <p className="text-gray-800 line-clamp-2 md:line-clamp-3 mb-6 md:mb-8 text-sm md:text-lg font-medium leading-relaxed drop-shadow-sm">{noticia.resumen}</p>
+                          <div className="text-main-red font-black flex items-center gap-2 uppercase text-xs md:text-sm tracking-[0.2em] group-hover:gap-4 transition-all">Leer artículo <span aria-hidden="true" className="text-lg md:text-xl leading-none">&rarr;</span></div>
                         </div>
-                        <h3 className="text-2xl md:text-4xl lg:text-5xl font-black text-main-blue mb-4 leading-[1.15] tracking-tight group-hover:text-main-red transition-colors line-clamp-3">{noticia.titulo}</h3>
-                        <p className="text-gray-800 line-clamp-2 md:line-clamp-3 mb-6 md:mb-8 text-sm md:text-lg font-medium leading-relaxed drop-shadow-sm">{noticia.resumen}</p>
-                        <div className="text-main-red font-black flex items-center gap-2 uppercase text-xs md:text-sm tracking-[0.2em] group-hover:gap-4 transition-all">Leer artículo <span aria-hidden="true" className="text-lg md:text-xl leading-none">&rarr;</span></div>
-                      </div>
-                    </article>
-                  </SwiperSlide>
-                ))}
-              </Swiper>
-            )}
+                      </article>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+
+                {/* CONTROLES DEL CARRUSEL */}
+                <button className="swiper-btn-prev absolute top-1/2 left-2 md:-left-6 z-20 -translate-y-1/2 w-10 h-10 md:w-14 md:h-14 bg-white/90 shadow-xl rounded-full text-main-red hover:bg-main-red hover:text-white hover:scale-110 transition-all duration-300 outline-none flex items-center justify-center cursor-pointer" aria-label="Ver noticia anterior">
+                  <svg className="w-5 h-5 md:w-7 md:h-7" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <button className="swiper-btn-next absolute top-1/2 right-2 md:-right-6 z-20 -translate-y-1/2 w-10 h-10 md:w-14 md:h-14 bg-white/90 shadow-xl rounded-full text-main-red hover:bg-main-red hover:text-white hover:scale-110 transition-all duration-300 outline-none flex items-center justify-center cursor-pointer" aria-label="Ver siguiente noticia">
+                  <svg className="w-5 h-5 md:w-7 md:h-7" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                </button>
+              </div>
+            ) : null}
           </section>
 
           {/* BENTO BOX PILARES Y FORMULARIO DE CONTACTO */}
           <div className="pt-12 pb-8 bg-white border-t border-gray-100">
+            {/* ... Todo el contenido del Bento Box y el Formulario se mantiene igual ... */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
               
-              {/* IZQUIERDA: Titular y Pilares */}
               <div className="lg:col-span-7 flex flex-col">
                 <div className="mb-8">
                   <span className="text-main-red font-black tracking-[0.3em] uppercase text-xs mb-3 block">Nuestra Labor</span>
@@ -218,7 +248,6 @@ export default function Home() {
                 </div>
               </div>
               
-              {/* DERECHA: Formulario como tarjeta paralela */}
               <div className="lg:col-span-5 w-full h-full flex flex-col">
                 <div className="bg-white rounded-3xl p-8 md:p-10 border border-gray-100 shadow-xl h-full">
                   <h3 className="text-3xl font-black text-main-blue mb-3">¿Hablamos?</h3>

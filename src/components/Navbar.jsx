@@ -1,7 +1,7 @@
 // src/components/Navbar.jsx
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import logo from "../assets/Logo_Oficiale_200w-trim.png"; 
+import logo from "../assets/Logo Oficial_IIRESODH-224.webp"; 
 
 // Importaciones de MUI para mejorar la UX
 import { Paper, InputBase, IconButton, Tooltip } from '@mui/material';
@@ -67,7 +67,7 @@ export default function Navbar() {
         {/* LOGO E INDICADOR MÓVIL */}
         <div className="shrink-0 flex items-center justify-between px-6 py-4 md:pr-8 bg-white relative z-20">
           <Link to="/" className="flex items-center" aria-label="Ir a la página de inicio de IIRESODH">
-            <img src={logo} alt="Logotipo oficial de IIRESODH" className="h-16 md:h-28 lg:h-32 w-auto object-contain" />
+            <img src={logo} alt="Logotipo oficial de IIRESODH" className="h-14 md:h-24 lg:h-28 w-auto object-contain" />
           </Link>
           
           {/* Botón Hamburguesa oculto en md (768px) en adelante */}
