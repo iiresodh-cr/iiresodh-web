@@ -314,40 +314,27 @@ export default function AdminPanel() {
 
   const handleEditarItem = (item) => {
     setEditandoId(item.id);
-    setTitulo(item.titulo);
-    setResumen(item.resumen || "");
-    setContenido(item.contenido || "");
-
-    // Cargar tags y persistencia
-    if (vistaActiva === "comunicaciones") {
-      setTagsSeleccionados(item.tags || []);
-      setPersistente(item.persistente || false);
-    }
-
-    if (item.fechaPublicacion) {
-      const date = item.fechaPublicacion.toDate();
-      const localISOTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-      setFechaPersonalizada(localISOTime);
-    }
-
-    if (vistaActiva === "libros") {
 
     if (vistaActiva === 'equipo') {
+      // Cargar datos para el formulario de Equipo
       setNombre(item.nombre || "");
       setCargo(item.cargo || "");
       setBio(item.bio || "");
       setDestacado(item.destacado || false);
       setOrden(item.orden || 0);
+      // Usar 'fotoUrl' para la imagen del equipo
       setMainImagePreviewUrl(item.fotoUrl || null);
       setImagenPrincipalAnterior(item.fotoUrl || null);
     } else {
-      setTitulo(item.titulo);
+      // Cargar datos para Comunicaciones, Artículos y Libros
+      setTitulo(item.titulo || "");
       setResumen(item.resumen || "");
       setContenido(item.contenido || "");
 
       if (vistaActiva === "comunicaciones") {
         setTagsSeleccionados(item.tags || []);
         setPersistente(item.persistente || false);
+        setCarruselExistente(item.imagenesCarruselUrls || []);
       }
 
       if (item.fechaPublicacion) {
@@ -356,28 +343,25 @@ export default function AdminPanel() {
         setFechaPersonalizada(localISOTime);
       }
 
-      setPrecio(item.precio || "");
-      setPrecioMXN(item.precioMXN || ""); // NUEVO
-      setAutor(item.autor || ""); 
-      setArchivoLibroAnterior(item.archivoLibroUrl || null);
-      setRutaStorageAnterior(item.rutaStorage || null);
-
       if (vistaActiva === "libros") {
+        setPrecio(item.precio || "");
+        setPrecioMXN(item.precioMXN || "");
+        setAutor(item.autor || "");
         setArchivoLibroAnterior(item.archivoLibroUrl || null);
         setRutaStorageAnterior(item.rutaStorage || null);
       }
+      
+      // Usar 'imagenPrincipalUrl' para los demás
+      setImagenPrincipalAnterior(item.imagenPrincipalUrl || null);
       setMainImagePreviewUrl(item.imagenPrincipalUrl || null);
     }
 
-    setImagenPrincipalAnterior(item.imagenPrincipalUrl || null);
-    setMainImagePreviewUrl(item.imagenPrincipalUrl || null); 
-    setCarruselExistente(item.imagenesCarruselUrls || []);
-  }
-    setImagenPrincipalAnterior(item.imagenPrincipalUrl || null);
-    setMainImagePreviewUrl(item.imagenPrincipalUrl || null); 
-    setCarruselExistente(item.imagenesCarruselUrls || []);
+    // Limpiar campos de subida de archivos para evitar re-subidas accidentales
     setImagenesCarrusel([]); 
     setArchivosAdjuntos([]);
+    setImagenPrincipal(null);
+    setArchivoLibro(null);
+    setArchivoLibroNombre("");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
