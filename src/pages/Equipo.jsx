@@ -123,10 +123,10 @@ export default function Equipo() {
                           overflow: 'hidden',
                           bgcolor: '#F9FAFB',
                           border: '1px solid #F3F4F6',
-                          transition: 'all 0.5s ease',
+                          transition: 'all 0.3s ease-in-out',
                           '&:hover': {
-                            transform: 'translateY(-8px)',
-                            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', // shadow-xl
+                            transform: 'translateY(-4px)',
+                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)', // shadow-lg
                           },
                           // Este selector mantiene la funcionalidad de escala de grises de Tailwind
                           '&:hover img': {
@@ -137,7 +137,7 @@ export default function Equipo() {
                         <img 
                           src={miembro.fotoUrl} 
                           alt={`Retrato de ${miembro.nombre}`} 
-                          className="w-full h-full object-cover grayscale transition-all duration-700" 
+                          className="w-full h-full object-cover grayscale transition-all duration-300" 
                         />
                       </Paper>
                       <div className="px-2">
