@@ -1,15 +1,8 @@
 // src/pages/Equipo.jsx
 import { useEffect, useState } from "react";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { db } from "../firebase/config";
 import PageHeader from "../components/PageHeader";
-// Importamos las imágenes desde la carpeta assets
-import noFoto from "../assets/NoFoto.png";
-import fotoPresidente from "../assets/victor.webp";
-import fotoFabiola from "../assets/fabiola-galaviz.webp"
-import fotoDavid from "../assets/David_Urquilla-IIRE.webp";
-import fotoJIR from "../assets/Juan-Ignacio-Rodriguez.webp";
-import fotoRandall from "../assets/Randall.webp";
-import fotoRoxanne from "../assets/Roxanne-Cabrera.webp";
-import fotoFabricio from "../assets/Fabricio-Soley.webp";
 
 // Importaciones de MUI
 import { CircularProgress, Paper } from "@mui/material";
@@ -20,80 +13,28 @@ export default function Equipo() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    
-    const mockupData = [
-      {
-        id: "pres-1",
-        nombre: "Dr. Víctor Rodríguez Rescia",
-        cargo: "Presidente del IIRESODH",
-        bio: "Actual miembro del Mecanismo Internacional de Expertos Independientes para Promover la Justicia e Igualdad Racial en la Aplicación de la Ley. Ex miembro del Comité de Derechos Humanos de Naciones Unidas y su Relator Especial para seguimiento de cumplimiento de comunicaciones, ex Presidente del Subcomité para la Prevención de la Tortura de las Naciones Unidas, ex Secretario Adjunto de la Corte Interamericana de Derechos Humanos y ex Director del Centro de Derechos Humanos para las Américas, DePaul University, Chicago, U.S.A. Sede Costa Rica. Además, es miembro de la Asamblea General del Instituto Interamericano de Derechos Humanos, de la Asamblea de la Comisión Internacional de Juristas, Ginebra (ICJ) y profesor invitado en diversas universidades de América Latina y Europa, entre ellas Columbia University, New York, USA y Universidad de Verona, Italia. Ha realizado múltiples publicaciones en materia de derechos humanos, litigio estratégico, acceso a la justicia y responsabilidad social. Cuenta con vasta experiencia como consultor independiente y como evaluador de proyectos y programas de desarrollo y derechos humanos. Actualmente ocupa el cargo de Presidente del Centro de Derechos Civiles y Políticos con sede en Ginebra, Suiza y del Instituto Internacional de Responsabilidad Social y Derechos Humanos.",
-        fotoUrl: fotoPresidente,
-        destacado: true,
-        orden: 1
-      },
-      {
-        id: "dir-1",
-        nombre: "Fabiola Galaviz",
-        cargo: "Direcctora Ejecutiva",
-        fotoUrl: fotoFabiola,
-        destacado: false,
-        orden: 2
-      },
-      {
-        id: "staff-1",
-        nombre: "David Urquilla",
-        cargo: "Coordinador de tecnología y Abogado",
-        fotoUrl: fotoDavid,
-        destacado: false,
-        orden: 6
-      },
-      {
-        id: "staff-2",
-        nombre: "Juan Ignacio Rodríguez",
-        cargo: "Coordinador de Litigio Estratégico",
-        fotoUrl: fotoJIR,
-        destacado: false,
-        orden: 4
-      },
-      {
-        id: "staff-3",
-        nombre: "Randall Quirós Soto",
-        cargo: "Coordinador de Administración",
-        fotoUrl: fotoRandall,
-        destacado: false,
-        orden: 5
-      },
-      {
-        id: "staff-4",
-        nombre: "Roxanne Cabrera Baptista",
-        cargo: "Coordinadora de Cooperación Internacional y Abogada",
-        fotoUrl: fotoRoxanne,
-        destacado: false,
-        orden: 7
-      },
-      {
-        id: "staff-5",
-        nombre: "Fabricio Soley Rojas",
-        cargo: "Abogado de Litigio Estratégico",
-        fotoUrl: fotoFabricio,
-        destacado: false,
-        orden: 8
-      },
-      {
-        id: "dir-2",
-        nombre: "Jessica Bellanger",
-        cargo: "Asistente de Presidencia",
-        fotoUrl: noFoto,
-        destacado: false,
-        orden: 3
-      }
-    ];
 
-    // Simulamos un pequeño tiempo de carga para que la animación de MUI sea visible y fluida
-    setTimeout(() => {
-      setEquipo(mockupData);
-      setLoading(false);
-    }, 400);
+    const fetchEquipo = async () => {
+      try {
+        // 1. Creamos la consulta a la colección 'equipo', ordenada por el campo 'orden'.
+        const q = query(collection(db, "equipo"), orderBy("orden", "asc"));
+        const querySnapshot = await getDocs(q);
+
+        // 2. Mapeamos los documentos al formato que el componente ya espera.
+        const equipoData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        setEquipo(equipoData);
+      } catch (error) {
+        console.error("Error al cargar el equipo desde Firestore:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEquipo();
   }, []);
 
   // ESTADO DE CARGA MEJORADO CON MUI

@@ -12,7 +12,7 @@ import logoColor from "../assets/Logo_Oficiale_200w-trim.png";
 import AdminTextField from "../components/ui/AdminTextField";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import ToastAlert from "../components/ui/ToastAlert";
-
+// prettier-ignore
 import { Button, Checkbox, FormControlLabel, Box, Chip} from "@mui/material";
 
 const generarSlug = (texto) => {
@@ -116,6 +116,14 @@ export default function AdminPanel() {
   const [resumen, setResumen] = useState("");
   const [contenido, setContenido] = useState("");
   const [fechaPersonalizada, setFechaPersonalizada] = useState(""); 
+
+  // NUEVOS ESTADOS PARA EQUIPO
+  const [nombre, setNombre] = useState("");
+  const [cargo, setCargo] = useState("");
+  const [bio, setBio] = useState("");
+  const [destacado, setDestacado] = useState(false);
+  const [orden, setOrden] = useState(0);
+
   
   // NUEVOS ESTADOS PARA LIBROS
   const [precio, setPrecio] = useState("");
@@ -182,6 +190,7 @@ export default function AdminPanel() {
   const obtenerColeccionActiva = () => {
     if (vistaActiva === "articulos") return "articulos_academicos";
     if (vistaActiva === "libros") return "libros";
+    if (vistaActiva === "equipo") return "equipo";
     return "noticias";
   };
 
@@ -229,21 +238,27 @@ export default function AdminPanel() {
 
   const cargarItems = () => {
     const coleccion = obtenerColeccionActiva();
-    const q = query(collection(db, coleccion), orderBy("fechaPublicacion", "desc"), limit(ITEMS_POR_PAGINA));
+    const orderByField = vistaActiva === 'equipo' ? 'orden' : 'fechaPublicacion';
+    const orderByDirection = vistaActiva === 'equipo' ? 'asc' : 'desc';
+    const q = query(collection(db, coleccion), orderBy(orderByField, orderByDirection), limit(ITEMS_POR_PAGINA));
     cargarItemsBatch(q, "inicio");
   };
 
   const paginaSiguiente = () => {
     if (!ultimoDoc) return;
     const coleccion = obtenerColeccionActiva();
-    const q = query(collection(db, coleccion), orderBy("fechaPublicacion", "desc"), startAfter(ultimoDoc), limit(ITEMS_POR_PAGINA));
+    const orderByField = vistaActiva === 'equipo' ? 'orden' : 'fechaPublicacion';
+    const orderByDirection = vistaActiva === 'equipo' ? 'asc' : 'desc';
+    const q = query(collection(db, coleccion), orderBy(orderByField, orderByDirection), startAfter(ultimoDoc), limit(ITEMS_POR_PAGINA));
     cargarItemsBatch(q, "sig");
   };
 
   const paginaAnterior = () => {
     if (!primerDoc) return;
     const coleccion = obtenerColeccionActiva();
-    const q = query(collection(db, coleccion), orderBy("fechaPublicacion", "desc"), endBefore(primerDoc), limitToLast(ITEMS_POR_PAGINA));
+    const orderByField = vistaActiva === 'equipo' ? 'orden' : 'fechaPublicacion';
+    const orderByDirection = vistaActiva === 'equipo' ? 'asc' : 'desc';
+    const q = query(collection(db, coleccion), orderBy(orderByField, orderByDirection), endBefore(primerDoc), limitToLast(ITEMS_POR_PAGINA));
     cargarItemsBatch(q, "ant");
   };
 
@@ -299,28 +314,40 @@ export default function AdminPanel() {
 
   const handleEditarItem = (item) => {
     setEditandoId(item.id);
-    setTitulo(item.titulo);
-    setResumen(item.resumen || "");
-    setContenido(item.contenido || "");
 
-    // Cargar tags y persistencia
-    if (vistaActiva === "comunicaciones") {
-      setTagsSeleccionados(item.tags || []);
-      setPersistente(item.persistente || false);
-    }
+    if (vistaActiva === 'equipo') {
+      setNombre(item.nombre || "");
+      setCargo(item.cargo || "");
+      setBio(item.bio || "");
+      setDestacado(item.destacado || false);
+      setOrden(item.orden || 0);
+      setMainImagePreviewUrl(item.fotoUrl || null);
+      setImagenPrincipalAnterior(item.fotoUrl || null);
+    } else {
+      setTitulo(item.titulo);
+      setResumen(item.resumen || "");
+      setContenido(item.contenido || "");
 
-    if (item.fechaPublicacion) {
-      const date = item.fechaPublicacion.toDate();
-      const localISOTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-      setFechaPersonalizada(localISOTime);
-    }
+      if (vistaActiva === "comunicaciones") {
+        setTagsSeleccionados(item.tags || []);
+        setPersistente(item.persistente || false);
+      }
 
-    if (vistaActiva === "libros") {
+      if (item.fechaPublicacion) {
+        const date = item.fechaPublicacion.toDate();
+        const localISOTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        setFechaPersonalizada(localISOTime);
+      }
+
       setPrecio(item.precio || "");
       setPrecioMXN(item.precioMXN || ""); // NUEVO
       setAutor(item.autor || ""); 
-      setArchivoLibroAnterior(item.archivoLibroUrl || null);
-      setRutaStorageAnterior(item.rutaStorage || null);
+
+      if (vistaActiva === "libros") {
+        setArchivoLibroAnterior(item.archivoLibroUrl || null);
+        setRutaStorageAnterior(item.rutaStorage || null);
+      }
+      setMainImagePreviewUrl(item.imagenPrincipalUrl || null);
     }
 
     setImagenPrincipalAnterior(item.imagenPrincipalUrl || null);
@@ -337,6 +364,13 @@ export default function AdminPanel() {
     setResumen("");
     setContenido("");
     setFechaPersonalizada("");
+
+    // Limpiar campos de equipo
+    setNombre("");
+    setCargo("");
+    setBio("");
+    setDestacado(false);
+    setOrden(0);
     // Limpiar nuevos campos
     setTagsSeleccionados([]);
     setPersistente(false);
@@ -474,7 +508,7 @@ export default function AdminPanel() {
     setMensaje(editandoId ? "Actualizando información..." : "Publicando contenido...");
 
     try {
-      const carpeta = vistaActiva === "articulos" ? "articulos" : (vistaActiva === "libros" ? "libros" : "noticias");
+      const carpeta = vistaActiva === "articulos" ? "articulos" : (vistaActiva === "libros" ? "libros" : (vistaActiva === 'equipo' ? 'equipo' : "noticias"));
       
       // 1. Subir Portada (convertida a WebP)
       let finalPrincipalUrl = imagenPrincipalAnterior;
@@ -506,43 +540,56 @@ export default function AdminPanel() {
         }
       }
       
-      const slugGenerado = generarSlug(titulo);
       const coleccion = obtenerColeccionActiva();
+      let datos;
 
-      const datos = {
-        titulo, 
-        resumen, 
-        contenido,
-        slug: slugGenerado, 
-        imagenPrincipalUrl: finalPrincipalUrl || null,
-        fechaPublicacion: fechaPersonalizada ? Timestamp.fromDate(new Date(fechaPersonalizada)) : serverTimestamp(),
-        activa: true
-      };
+      if (vistaActiva === 'equipo') {
+        datos = {
+          nombre,
+          cargo,
+          orden: Number(orden || 0),
+          destacado,
+          fotoUrl: finalPrincipalUrl || null,
+          bio: destacado ? bio : ""
+        };
+      } else {
+        const slugGenerado = generarSlug(titulo);
+        datos = {
+          titulo, 
+          resumen, 
+          contenido,
+          slug: slugGenerado, 
+          imagenPrincipalUrl: finalPrincipalUrl || null,
+          fechaPublicacion: fechaPersonalizada ? Timestamp.fromDate(new Date(fechaPersonalizada)) : serverTimestamp(),
+          activa: true
+        };
 
-      if (vistaActiva === "comunicaciones") {
-        datos.imagenesCarruselUrls = [...carruselExistente, ...nuevasUrls];
-        // GUARDAMOS LOS NUEVOS CAMPOS
-        datos.tags = tagsSeleccionados;
-        datos.persistente = persistente;
-      } else if (vistaActiva === "libros") {
-        datos.precio = parseFloat(precio) || 0;
-        datos.precioMXN = parseFloat(precioMXN) || 0; // NUEVO
-        datos.autor = autor; 
-        datos.archivoLibroUrl = finalArchivoLibroUrl;
-        
-        if (rutaStorageLibro) {
-          datos.rutaStorage = rutaStorageLibro;
-        } else if (rutaStorageAnterior) {
-          datos.rutaStorage = rutaStorageAnterior;
+        if (vistaActiva === "comunicaciones") {
+          datos.imagenesCarruselUrls = [...carruselExistente, ...nuevasUrls];
+          datos.tags = tagsSeleccionados;
+          datos.persistente = persistente;
+        } else if (vistaActiva === "libros") {
+          datos.precio = parseFloat(precio) || 0;
+          datos.precioMXN = parseFloat(precioMXN) || 0;
+          datos.autor = autor; 
+          datos.archivoLibroUrl = finalArchivoLibroUrl;
+          
+          if (rutaStorageLibro) {
+            datos.rutaStorage = rutaStorageLibro;
+          } else if (rutaStorageAnterior) {
+            datos.rutaStorage = rutaStorageAnterior;
+          }
         }
       }
 
       if (editandoId) {
         await updateDoc(doc(db, coleccion, editandoId), datos);
-        setMensaje("¡Contenido actualizado con éxito!");
+        const mensajeExito = vistaActiva === 'equipo' ? "¡Miembro del equipo actualizado!" : "¡Contenido actualizado con éxito!";
+        setMensaje(mensajeExito);
       } else {
         await addDoc(collection(db, coleccion), datos);
-        setMensaje("¡Contenido publicado con éxito!");
+        const mensajeExito = vistaActiva === 'equipo' ? "¡Miembro del equipo agregado!" : "¡Contenido publicado con éxito!";
+        setMensaje(mensajeExito);
       }
 
       limpiarFormulario();
@@ -587,7 +634,7 @@ export default function AdminPanel() {
               <h1 id="admin-title" className="text-3xl md:text-4xl font-bold text-main-blue tracking-tight mb-2">Bienvenido al Panel</h1>
               <p className="text-gray-500 text-lg">Selecciona el módulo que deseas administrar hoy.</p>
             </div>
-            <nav className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8" aria-label="Departamentos administrativos">
+            <nav className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8" aria-label="Departamentos administrativos">
               <button onClick={() => setVistaActiva("comunicaciones")} className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-main-blue/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center">
                 <div className="p-4 bg-blue-50 text-main-blue rounded-2xl group-hover:bg-main-blue group-hover:text-white transition-colors duration-300">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 8h8M8 12h8M8 16h4"></path></svg>
@@ -617,11 +664,21 @@ export default function AdminPanel() {
                   <p className="text-sm text-gray-500">Venta de libros y manuales (PDF)</p>
                 </div>
               </button>
+
+              <button onClick={() => setVistaActiva("equipo")} className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-purple-500/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center">
+                <div className="p-4 bg-purple-50 text-purple-600 rounded-2xl group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
+                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-800 mb-1">Equipo de Trabajo</h2>
+                  <p className="text-sm text-gray-500">Gestión de miembros y cargos</p>
+                </div>
+              </button>
             </nav>
           </section>
         )}
 
-        {(vistaActiva === "comunicaciones" || vistaActiva === "articulos" || vistaActiva === "libros") && (
+        {(vistaActiva !== "inicio") && (
           <div className="animate-fade-in-up">
             <button onClick={() => { limpiarFormulario(); setVistaActiva("inicio"); }} className="mb-8 flex items-center gap-2 text-gray-500 font-medium hover:text-main-blue transition-colors cursor-pointer group">
               <div className="bg-white p-1.5 rounded-full shadow-sm group-hover:shadow border border-gray-100 transition-all">
@@ -643,14 +700,39 @@ export default function AdminPanel() {
                   <header className="mb-8 flex items-center justify-between">
                     <div>
                       <h2 id="form-title" className={`text-2xl md:text-3xl font-bold tracking-tight ${editandoId ? 'text-main-red' : 'text-gray-800'}`}>
-                        {editandoId ? "Editando Publicación" : (vistaActiva === "libros" ? "Registrar Nuevo Libro" : "Crear Nueva Publicación")}
+                        {editandoId ? 
+                          (vistaActiva === 'equipo' ? "Editando Miembro" : "Editando Publicación") : 
+                          (vistaActiva === "libros" ? "Registrar Nuevo Libro" : (vistaActiva === 'equipo' ? "Agregar Miembro" : "Crear Nueva Publicación"))
+                        }
                       </h2>
-                      <p className="text-sm text-gray-500 mt-1">Módulo: {vistaActiva === "comunicaciones" ? "Noticias institucionales" : (vistaActiva === "articulos" ? "Artículos de investigación" : "Tienda Editorial")}</p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Módulo: {
+                          vistaActiva === "comunicaciones" ? "Noticias institucionales" :
+                          vistaActiva === "articulos" ? "Artículos de investigación" :
+                          vistaActiva === "libros" ? "Tienda Editorial" :
+                          "Equipo de Trabajo"
+                        }
+                      </p>
                     </div>
                     {editandoId && <span className="bg-red-50 text-main-red text-xs font-bold px-3 py-1 rounded-full border border-red-100">MODO EDICIÓN</span>}
                   </header>
 
                   <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* FORMULARIO PARA EQUIPO */}
+                    {vistaActiva === 'equipo' && (<>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <AdminTextField label="Nombre Completo" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
+                        <AdminTextField label="Cargo" value={cargo} onChange={(e) => setCargo(e.target.value)} required />
+                      </div>
+                      <AdminTextField label="Orden (número para ordenar)" type="number" value={orden} onChange={(e) => setOrden(e.target.value)} required />
+                      <FormControlLabel control={<Checkbox checked={destacado} onChange={(e) => setDestacado(e.target.checked)} />} label="Miembro Destacado (Presidente)" />
+                      {destacado && (
+                        <AdminTextField label="Biografía (solo para miembro destacado)" multiline rows={8} value={bio} onChange={(e) => setBio(e.target.value)} />
+                      )}
+                    </>)}
+
+                    {/* FORMULARIO PARA NOTICIAS, ARTÍCULOS Y LIBROS */}
+                    {vistaActiva !== 'equipo' && (<>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div className={vistaActiva === "libros" ? "md:col-span-1" : "md:col-span-2"}>
                         <AdminTextField 
@@ -804,10 +886,11 @@ export default function AdminPanel() {
                         onChange={(e) => setContenido(e.target.value)}
                         placeholder={vistaActiva === "libros" ? "Índice o descripción del libro..." : "Escribe o pega el desarrollo de la publicación aquí..."}
                       />
-                    </div>
+                    </div></>
+                    )}
 
                     {vistaActiva === "comunicaciones" && contenido.length > 0 && (
-                      <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 shadow-inner">
+                      <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 shadow-inner mt-6">
                         <p className="flex text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 items-center gap-2">
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg> Simulación en Portada (Espacio Visible)
                         </p>
@@ -825,7 +908,7 @@ export default function AdminPanel() {
                       <h3 className="text-sm font-semibold text-gray-800 mb-4 border-b border-gray-100 pb-2">Archivos Multimedia</h3>
                       
                       <div className="mb-6">
-                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3" id="portada-label">
                           {vistaActiva === "libros" ? "Portada del Libro" : "Portada principal"}
                         </label>
                         <div className="flex flex-col sm:flex-row items-start gap-4">
@@ -847,7 +930,7 @@ export default function AdminPanel() {
                             </div>
                           )}
                           <div className="flex-1">
-                            <input type="file" accept="image/*" required={!editandoId && !imagenPrincipalAnterior} onChange={handleSeleccionPrincipal} className="sr-only" id="input-portada-principal" />
+                            <input type="file" accept="image/*" required={!editandoId && !imagenPrincipalAnterior} onChange={handleSeleccionPrincipal} className="sr-only" id="input-portada-principal" aria-labelledby="portada-label" />
                             <label htmlFor="input-portada-principal" className="text-sm bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium cursor-pointer inline-block hover:bg-gray-50 transition-colors shadow-sm">Examinar archivos...</label>
                             <p className="text-xs text-gray-400 mt-2">Formatos recomendados: JPG, PNG. Se optimizará a WebP.</p>
                           </div>
@@ -1020,9 +1103,8 @@ export default function AdminPanel() {
                       listaItems.map((n) => (
                         <article key={n.id} className={`group flex flex-col p-4 rounded-xl border transition-all duration-200 cursor-default ${editandoId === n.id ? 'bg-red-50 border-main-red shadow-sm' : n.persistente ? 'bg-blue-50/30 border-main-blue/40 shadow-sm' : 'bg-white border-gray-100 hover:border-main-blue/30 hover:shadow-sm'}`}>
                           <div className="flex gap-3 items-start mb-3">
-                            {/* Se agregó 'relative' al div de la imagen para posicionar el pin */}
                             <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-gray-100 border border-gray-200 flex items-center justify-center">
-                              {n.imagenPrincipalUrl ? <img src={n.imagenPrincipalUrl} className="w-full h-full object-cover" alt="Miniatura" /> : <span className="text-[10px] font-bold text-gray-400">TXT</span>}
+                              {(n.imagenPrincipalUrl || n.fotoUrl) ? <img src={n.imagenPrincipalUrl || n.fotoUrl} className="w-full h-full object-cover" alt="Miniatura" /> : <span className="text-[10px] font-bold text-gray-400">TXT</span>}
                               
                               {/* Nuevo: Ícono de pin para las persistentes */}
                               {n.persistente && (
@@ -1036,16 +1118,17 @@ export default function AdminPanel() {
                             
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col gap-1">
-                                <div className="flex items-start gap-2">
-                                  {/* Nuevo: Etiqueta "Fijada" */}
+                                <div className="flex items-center gap-2">
                                   {n.persistente && (
                                     <span className="text-[9px] font-black text-main-blue uppercase tracking-tighter bg-white px-1.5 py-0.5 rounded border border-main-blue/30 mt-0.5">
                                       Fijada
                                     </span>
                                   )}
-                                  <h3 className="font-semibold text-sm text-gray-800 line-clamp-2 leading-snug" title={n.titulo}>{n.titulo}</h3>
+                                  <h3 className="font-semibold text-sm text-gray-800 line-clamp-2 leading-snug" title={n.titulo || n.nombre}>{n.titulo || n.nombre}</h3>
                                 </div>
-                                <p className="text-[10px] text-gray-400 truncate">/{vistaActiva === "articulos" ? "articulos-academicos" : (vistaActiva === "libros" ? "libros" : "noticias")}/{n.slug || n.id}</p>
+                                <p className="text-[10px] text-gray-400 truncate">
+                                  {vistaActiva === 'equipo' ? `Orden: ${n.orden} - ${n.cargo}` : `/${obtenerColeccionActiva()}/${n.slug || n.id}`}
+                                </p>
                                 
                                 {/* Nuevo: Muestra de Tags si existen */}
                                 {n.tags && n.tags.length > 0 && (
@@ -1062,7 +1145,7 @@ export default function AdminPanel() {
                           </div>
                           <div className="flex gap-2 w-full">
                             <button onClick={() => handleEditarItem(n)} className="flex-1 bg-white border border-gray-200 text-gray-600 hover:text-main-blue hover:border-main-blue hover:bg-blue-50 py-1.5 rounded-lg text-xs font-semibold transition-colors">Editar</button>
-                            <button onClick={() => pedirConfirmacionBorrado(n.id, n.titulo)} className="px-3 bg-white border border-gray-200 text-gray-400 hover:text-main-red hover:border-main-red hover:bg-red-50 py-1.5 rounded-lg transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                            <button onClick={() => pedirConfirmacionBorrado(n.id, n.titulo || n.nombre)} className="px-3 bg-white border border-gray-200 text-gray-400 hover:text-main-red hover:border-main-red hover:bg-red-50 py-1.5 rounded-lg transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                           </div>
                         </article>
                       ))
