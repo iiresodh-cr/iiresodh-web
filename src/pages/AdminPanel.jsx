@@ -314,6 +314,23 @@ export default function AdminPanel() {
 
   const handleEditarItem = (item) => {
     setEditandoId(item.id);
+    setTitulo(item.titulo);
+    setResumen(item.resumen || "");
+    setContenido(item.contenido || "");
+
+    // Cargar tags y persistencia
+    if (vistaActiva === "comunicaciones") {
+      setTagsSeleccionados(item.tags || []);
+      setPersistente(item.persistente || false);
+    }
+
+    if (item.fechaPublicacion) {
+      const date = item.fechaPublicacion.toDate();
+      const localISOTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      setFechaPersonalizada(localISOTime);
+    }
+
+    if (vistaActiva === "libros") {
 
     if (vistaActiva === 'equipo') {
       setNombre(item.nombre || "");
@@ -342,6 +359,8 @@ export default function AdminPanel() {
       setPrecio(item.precio || "");
       setPrecioMXN(item.precioMXN || ""); // NUEVO
       setAutor(item.autor || ""); 
+      setArchivoLibroAnterior(item.archivoLibroUrl || null);
+      setRutaStorageAnterior(item.rutaStorage || null);
 
       if (vistaActiva === "libros") {
         setArchivoLibroAnterior(item.archivoLibroUrl || null);
@@ -350,6 +369,10 @@ export default function AdminPanel() {
       setMainImagePreviewUrl(item.imagenPrincipalUrl || null);
     }
 
+    setImagenPrincipalAnterior(item.imagenPrincipalUrl || null);
+    setMainImagePreviewUrl(item.imagenPrincipalUrl || null); 
+    setCarruselExistente(item.imagenesCarruselUrls || []);
+  }
     setImagenPrincipalAnterior(item.imagenPrincipalUrl || null);
     setMainImagePreviewUrl(item.imagenPrincipalUrl || null); 
     setCarruselExistente(item.imagenesCarruselUrls || []);
