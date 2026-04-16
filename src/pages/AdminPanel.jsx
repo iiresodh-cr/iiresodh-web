@@ -394,9 +394,13 @@ export default function AdminPanel() {
     setArchivoLibroNombre("");
     setArchivoLibroAnterior(null);
     setRutaStorageAnterior(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleCancel = () => {
+    limpiarFormulario();
     setMensaje("Operación cancelada. Formulario en blanco.");
     setTimeout(() => setMensaje(""), 3000);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const pedirConfirmacionBorrado = (id, tituloItem) => {
@@ -1085,7 +1089,7 @@ export default function AdminPanel() {
                     </div>
 
                     <div className="flex flex-col-reverse sm:flex-row gap-4 pt-4">
-                      <button type="button" onClick={limpiarFormulario} className="w-full sm:w-1/3 text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 font-semibold py-3.5 rounded-xl transition-colors cursor-pointer border border-transparent">Cancelar</button>
+                      <button type="button" onClick={handleCancel} className="w-full sm:w-1/3 text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 font-semibold py-3.5 rounded-xl transition-colors cursor-pointer border border-transparent">Cancelar</button>
                       <button type="submit" disabled={loading} className={`w-full sm:w-2/3 text-white font-bold py-3.5 rounded-xl transition-all shadow-sm flex justify-center items-center gap-2 cursor-pointer ${editandoId ? 'bg-main-red hover:bg-red-700' : 'bg-main-blue hover:bg-light-blue hover:shadow-md'} ${loading ? 'opacity-70 cursor-wait' : ''}`}>
                         {loading && <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>}
                         {loading ? "Procesando..." : (editandoId ? "Actualizar Cambios" : "Publicar Ahora")}
