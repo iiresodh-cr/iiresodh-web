@@ -92,7 +92,7 @@ export default function Equipo() {
                       </Paper>
                     </div>
                     
-                    <div className="w-full md:w-3/5 text-justify">
+                    <div className="w-full md:w-3/5">
                       <span className="text-xs font-black text-main-red uppercase tracking-[0.4em] mb-4 block">Alta Dirección</span>
                       <h2 id="presidente-nombre" className="text-3xl md:text-5xl font-semibold text-main-blue mb-4 tracking-tighter uppercase leading-tight">
                         {presidente.nombre}
@@ -100,7 +100,7 @@ export default function Equipo() {
                       <p className="text-xl font-bold text-light-blue mb-8 italic">
                         {presidente.cargo}
                       </p>
-                      <p className="text-gray-600 font-light leading-relaxed text-lg">
+                      <p className="text-gray-600 font-light leading-relaxed text-lg text-justify">
                         {presidente.bio}
                       </p>
                     </div>
