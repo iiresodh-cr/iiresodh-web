@@ -1,5 +1,6 @@
 // src/components/Login.jsx
 import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
+import { auth, db } from "../firebase/config";
 import { auth } from "../firebase/config";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -16,23 +17,25 @@ export default function Login() {
 
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
-    // FORZAMOS a Google a mostrar el selector de cuentas siempre
     provider.setCustomParameters({ prompt: 'select_account' });
 
     try {
       const result = await signInWithPopup(auth, provider);
-      
-      // VALIDACIÓN ESTRICTA DEL CORREO
-      if (result.user.email === "webmaster@iiresodh.org") {
+      const userEmail = result.user.email;
+
+      // 1. Consultamos en Firestore si existe un documento con este correo
+      const adminRef = doc(db, "admins", userEmail);
+      const adminSnap = await getDoc(adminRef);
+
+      // 2. Evaluamos la respuesta
+      if (adminSnap.exists()) {
         navigate("/admin"); 
       } else {
-        // Bloqueo agresivo: Destruimos la sesión generada por Google inmediatamente
         await signOut(auth);
-        setError(`Acceso denegado: El correo ${result.user.email} no tiene permisos de administración.`);
+        setError(`Acceso denegado: El correo ${userEmail} no tiene permisos de administración.`);
       }
     } catch (err) {
       console.error("Error al iniciar sesión:", err);
-      // Solo mostramos error si el usuario no cerró el popup a propósito
       if (err.code !== 'auth/popup-closed-by-user') {
         setError("Hubo un problema al autenticar con Google.");
       }
