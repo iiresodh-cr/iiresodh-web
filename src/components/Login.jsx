@@ -21,6 +21,9 @@ export default function Login() {
 
     try {
       const result = await signInWithPopup(auth, provider);
+      const userEmail = result.user.email.toLowerCase();
+      const adminRef = doc(db, "admins", userEmail);
+      const adminSnap = await getDoc(adminRef);
       const userEmail = result.user.email;
 
       // 1. Consultamos en Firestore si existe un documento con este correo
