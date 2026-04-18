@@ -159,10 +159,7 @@ export default function AdminPanel() {
   const [ultimoDoc, setUltimoDoc] = useState(null);
   const [paginaActual, setPaginaActual] = useState(1);
   const [hayMas, setHayMas] = useState(true);
-  const ITEMS_POR_PAGINA = 10;
-
-  const contenidoPreviewRef = useRef(null);
-  const [showReadMoreWarning, setShowReadMoreWarning] = useState(false);
+  const ITEMS_POR_PAGINA = 10;  
 
   const handleLogout = () => {
     navigate("/"); 
@@ -267,24 +264,6 @@ export default function AdminPanel() {
       cargarItems();
     }
   }, [vistaActiva]);
-
-  useEffect(() => {
-    return () => {
-      if (mainImagePreviewUrl && mainImagePreviewUrl.startsWith("blob:")) {
-        URL.revokeObjectURL(mainImagePreviewUrl);
-      }
-    };
-  }, [mainImagePreviewUrl]);
-
-  useEffect(() => {
-    const checkOverflow = () => {
-      if (contenidoPreviewRef.current) {
-        const { scrollHeight, clientHeight } = contenidoPreviewRef.current;
-        setShowReadMoreWarning(scrollHeight > clientHeight + 2);
-      }
-    };
-    checkOverflow();
-  }, [contenido, vistaActiva]);
 
   const handleAutoResumen = async () => {
     if (!contenido || contenido.trim().length < 20) {
@@ -902,19 +881,39 @@ export default function AdminPanel() {
                     </div></>
                     )}
 
-                    {vistaActiva === "comunicaciones" && contenido.length > 0 && (
-                      <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 shadow-inner mt-6">
+                    {vistaActiva === 'comunicaciones' && (
+                      <div className="mt-8">
                         <p className="flex text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 items-center gap-2">
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg> Simulación en Portada (Espacio Visible)
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg> 
+                          Simulación en Portada (Carrusel Home)
                         </p>
-                        <div ref={contenidoPreviewRef} className="text-gray-600 text-sm md:text-base font-light leading-relaxed noticia-content max-h-80 overflow-hidden bg-white p-5 rounded-lg border border-gray-100" dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(contenido) }} />
-                        <div className="mt-3" role="status">
-                          {showReadMoreWarning 
-                            ? <p className="text-main-red font-bold text-sm">⚠️ El texto superó el límite visible de la tarjeta. Verán "Leer más".</p> 
-                            : <p className="text-green-600 font-bold text-sm">✓ El texto cabe perfectamente en la tarjeta inicial.</p>
-                          }
+                        <div className="w-full rounded-2xl overflow-hidden shadow-lg border border-gray-100">
+                            <article className="group relative w-full h-[450px] overflow-hidden bg-main-blue cursor-default">
+                                <div
+                                    className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat bg-gray-200"
+                                    style={{ backgroundImage: `url(${mainImagePreviewUrl || 'https://via.placeholder.com/800x600.png?text=Sin+Portada'})` }}
+                                    role="img"
+                                    aria-label={titulo || "Vista previa de la noticia"}
+                                />
+
+                                <div className="absolute inset-0 bg-black/10"></div>
+                                <div className="absolute bottom-6 left-6 right-6 w-auto md:w-[80%] p-6 bg-white/30 backdrop-blur-xl shadow-2xl rounded-2xl border border-white/30 z-10 flex flex-col justify-end">
+                                    <div className="flex flex-wrap gap-2 mb-4">
+                                        {tagsSeleccionados.map(tag => (
+                                            <span key={tag} className="bg-white/40 border border-white/50 text-main-blue text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest">{tag}</span>
+                                        ))}
+                                    </div>
+                                    <h3 className="text-2xl lg:text-3xl font-black text-main-blue mb-3 leading-[1.15] tracking-tight line-clamp-3" style={{ whiteSpace: 'pre-wrap' }}>
+                                        {titulo || "Título de la noticia..."}
+                                    </h3>
+                                    <p className="text-gray-800 line-clamp-2 text-sm lg:text-base font-medium leading-relaxed drop-shadow-sm mb-6">
+                                        {resumen || "Resumen corto de la noticia..."}
+                                    </p>
+                                    <div className="text-main-red font-black flex items-center gap-2 uppercase text-xs md:text-sm tracking-[0.2em]">Leer artículo <span aria-hidden="true" className="text-lg md:text-xl leading-none">&rarr;</span></div>
+                                </div>
+                            </article>
                         </div>
-                      </div>
+                    </div>
                     )}
 
                     <div className="bg-white border border-gray-200 rounded-xl p-6">
