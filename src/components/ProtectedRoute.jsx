@@ -2,26 +2,50 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "../firebase/config";
+import { auth, db } from "../firebase/config"; // Agregamos db
+import { doc, getDoc } from "firebase/firestore"; // Agregamos utilidades de Firestore
 
 export default function ProtectedRoute({ children }) {
-  const [user, setUser] = useState(null);
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        // DOBLE FILTRO: Validamos el correo ANTES de aprobar el acceso a la ruta
-        if (currentUser.email !== "webmaster@iiresodh.org") {
-          await signOut(auth); // Lo expulsamos del sistema localmente
-          setUser(null);
-        } else {
-          setUser(currentUser); // Es el administrador, lo dejamos pasar
+        try {
+          // Sanitizamos el correo
+          const userEmail = currentUser.email.toLowerCase().trim();
+          
+          // Consultamos a la base de datos (la misma verificación que en Login)
+          const adminRef = doc(db, "admins", userEmail);
+          const adminSnap = await getDoc(adminRef);
+
+          if (adminSnap.exists()) {
+            const adminData = adminSnap.data();
+            
+            // Verificamos si tiene el estatus 'activo'
+            if (adminData.activo === true || adminData.active === true) {
+              setIsAuthorized(true); // Es administrador y está activo, lo dejamos pasar
+            } else {
+              console.warn("ProtectedRoute: Usuario inactivo. Expulsando.");
+              await signOut(auth);
+              setIsAuthorized(false);
+            }
+          } else {
+            console.warn("ProtectedRoute: Usuario no existe en colección admins. Expulsando.");
+            await signOut(auth); // Lo expulsamos del sistema localmente
+            setIsAuthorized(false);
+          }
+        } catch (error) {
+          console.error("Error al verificar credenciales en la base de datos:", error);
+          await signOut(auth);
+          setIsAuthorized(false);
         }
       } else {
-        setUser(null);
+        setIsAuthorized(false);
       }
-      setLoading(false);
+      
+      setLoading(false); // Terminó la verificación
     });
     
     return () => unsubscribe();
@@ -36,8 +60,8 @@ export default function ProtectedRoute({ children }) {
     </div>
   );
   
-  // Si no hay usuario (o si fue expulsado arriba), redirige de inmediato
-  if (!user) return <Navigate to="/login" replace />;
+  // Si no está autorizado (no hay sesión o no pasó el filtro de Firestore), redirige de inmediato
+  if (!isAuthorized) return <Navigate to="/login" replace />;
 
   return children;
 }
