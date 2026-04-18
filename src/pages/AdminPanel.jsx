@@ -888,9 +888,9 @@ export default function AdminPanel() {
                           Simulación en Portada (Carrusel Home)
                         </p>
                         <div className="w-full rounded-2xl overflow-hidden shadow-lg border border-gray-100">
-                            <article className="group relative w-full h-[450px] overflow-hidden bg-main-blue cursor-default">
+                            <article className="group relative w-full h-112.5 overflow-hidden bg-main-blue cursor-default">
                                 <div
-                                    className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat bg-gray-200"
+                                    className="absolute inset-0 w-full h-full bg-cover bg-top bg-no-repeat bg-gray-200"
                                     style={{ backgroundImage: `url(${mainImagePreviewUrl || 'https://via.placeholder.com/800x600.png?text=Sin+Portada'})` }}
                                     role="img"
                                     aria-label={titulo || "Vista previa de la noticia"}
