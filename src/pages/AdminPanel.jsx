@@ -160,6 +160,12 @@ export default function AdminPanel() {
   const [filtroUsuario, setFiltroUsuario] = useState("todos");
   const [ordenActividad, setOrdenActividad] = useState("desc");
 
+  // ESTADOS PARA PAGINACIÓN DE ACTIVIDADES
+  const [ultimoDocActividad, setUltimoDocActividad] = useState(null);
+  const [hayMasActividades, setHayMasActividades] = useState(true);
+  const [cargandoMas, setCargandoMas] = useState(false);
+  const ACTIVIDADES_POR_PAGINA = 50;
+
 
   const [modalBorrar, setModalBorrar] = useState({ isOpen: false, id: null, titulo: "" });
 
@@ -168,6 +174,21 @@ export default function AdminPanel() {
   const [paginaActual, setPaginaActual] = useState(1);
   const [hayMas, setHayMas] = useState(true);
   const ITEMS_POR_PAGINA = 10;  
+
+  const logActividad = async (accion) => {
+    const usuario = auth.currentUser;
+    if (!usuario) return;
+
+    try {
+      await addDoc(collection(db, "auditoria_actividad"), {
+        usuarioEmail: usuario.email,
+        accion: accion,
+        timestamp: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error("Error al registrar actividad:", error);
+    }
+  };
 
   const handleLogout = () => {
     navigate("/"); 
@@ -204,24 +225,44 @@ const cargarUsuariosUnicos = async () => {
   }
 };
 
-const cargarActividades = async () => {
-  setCargandoActividades(true);
+const cargarActividades = async (isLoadMore = false) => {
+  if (!isLoadMore) {
+    setCargandoActividades(true);
+    setActividades([]); // Limpiar en nueva búsqueda
+  } else {
+    setCargandoMas(true);
+  }
   setMensaje("Cargando registros de actividad...");
+
   try {
     const constraints = [orderBy("timestamp", ordenActividad)];
     if (filtroUsuario !== "todos") {
       constraints.push(where("usuarioEmail", "==", filtroUsuario));
     }
-    const q = query(collection(db, "auditoria_actividad"), ...constraints, limit(100));
+    if (isLoadMore && ultimoDocActividad) {
+      constraints.push(startAfter(ultimoDocActividad));
+    }
+    constraints.push(limit(ACTIVIDADES_POR_PAGINA));
+
+    const q = query(collection(db, "auditoria_actividad"), ...constraints);
     const snapshot = await getDocs(q);
-    const acts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    setActividades(acts);
-    setMensaje(acts.length > 0 ? `Se cargaron ${acts.length} registros.` : "No se encontraron registros con los filtros aplicados.");
+
+    if (snapshot.empty) {
+      setHayMasActividades(false);
+      setMensaje(isLoadMore ? "No hay más registros." : "No se encontraron registros con los filtros aplicados.");
+    } else {
+      const acts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setActividades(prev => isLoadMore ? [...prev, ...acts] : acts);
+      setUltimoDocActividad(snapshot.docs[snapshot.docs.length - 1]);
+      setHayMasActividades(snapshot.docs.length === ACTIVIDADES_POR_PAGINA);
+      setMensaje(`Se cargaron ${acts.length} registros.`);
+    }
   } catch (error) {
     console.error("Error cargando actividades:", error);
     setMensaje("Error al cargar las actividades.");
   } finally {
     setCargandoActividades(false);
+    setCargandoMas(false);
     setTimeout(() => setMensaje(""), 4000);
   }
 };
@@ -231,6 +272,15 @@ useEffect(() => {
     cargarUsuariosUnicos();
   }
 }, [vistaActiva]);
+
+// Nuevo useEffect para resetear al cambiar filtros
+useEffect(() => {
+  if (vistaActiva === 'adminWeb') {
+    setActividades([]);
+    setUltimoDocActividad(null);
+    setHayMasActividades(true);
+  }
+}, [filtroUsuario, ordenActividad]);
 
   const obtenerColeccionActiva = () => {
     if (vistaActiva === "articulos") return "articulos_academicos";
@@ -439,6 +489,7 @@ useEffect(() => {
     try {
       const coleccion = obtenerColeccionActiva();
       await deleteDoc(doc(db, coleccion, modalBorrar.id));
+      await logActividad(`Eliminó un item de "${vistaActiva}": ${modalBorrar.titulo} (ID: ${modalBorrar.id})`);
       cargarItems(); 
       setMensaje("¡Contenido eliminado con éxito!");
     } catch (error) {
@@ -622,10 +673,12 @@ useEffect(() => {
 
       if (editandoId) {
         await updateDoc(doc(db, coleccion, editandoId), datos);
+        await logActividad(`Actualizó un item en "${vistaActiva}": ${datos.titulo || datos.nombre}`);
         const mensajeExito = vistaActiva === 'equipo' ? "¡Miembro del equipo actualizado!" : "¡Contenido actualizado con éxito!";
         setMensaje(mensajeExito);
       } else {
         await addDoc(collection(db, coleccion), datos);
+        await logActividad(`Creó un nuevo item en "${vistaActiva}": ${datos.titulo || datos.nombre}`);
         const mensajeExito = vistaActiva === 'equipo' ? "¡Miembro del equipo agregado!" : "¡Contenido publicado con éxito!";
         setMensaje(mensajeExito);
       }
