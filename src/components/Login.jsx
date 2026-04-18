@@ -26,6 +26,8 @@ export default function Login() {
       // Forzamos el correo a minúsculas para evitar problemas de compatibilidad
       const userEmail = result.user.email.toLowerCase(); 
 
+      console.log("TESTING - Correo capturado por Google:", userEmail);
+
       // 1. Consultamos en Firestore si existe un documento con este correo
       const adminRef = doc(db, "admins", userEmail);
       const adminSnap = await getDoc(adminRef);
