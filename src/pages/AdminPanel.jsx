@@ -1380,14 +1380,33 @@ useEffect(() => {
                   </Select>
                 </FormControl>
 
-                <Button onClick={cargarActividades} variant="contained" disabled={cargandoActividades} sx={{ py: 1.5, px: 4, whiteSpace: 'nowrap' }}>
-                  {cargandoActividades ? 'Cargando...' : 'Actividades'}
+                <Button onClick={() => cargarActividades(false)} variant="contained" disabled={cargandoActividades && !cargandoMas} sx={{ py: 1.5, px: 4, whiteSpace: 'nowrap' }}>
+                  {cargandoActividades && !cargandoMas ? 'Cargando...' : 'Cargar Actividades'}
                 </Button>
               </div>
 
-              <div className="space-y-3">
-                {cargandoActividades ? <div className="text-center py-10"><CircularProgress /></div> : actividades.length > 0 ? actividades.map(act => (<div key={act.id} className="p-4 rounded-lg bg-gray-50/70 border border-gray-100 flex justify-between items-center"><div><p className="font-bold text-main-blue">{act.accion}</p><p className="text-sm text-gray-600">{act.usuarioEmail}</p></div><p className="text-xs text-gray-400 font-medium">{act.timestamp?.toDate().toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p></div>)) : <p className="text-center text-gray-500 py-10">No hay actividades para mostrar. Presiona "Actividades" para empezar.</p>}
+              <div className="space-y-3 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
+                {cargandoActividades && !cargandoMas ? <div className="text-center py-10"><CircularProgress /></div> : actividades.length > 0 ? actividades.map(act => (
+                  <div key={act.id} className="p-4 rounded-lg bg-gray-50/70 border border-gray-100 flex justify-between items-start">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-main-blue break-words">{act.accion}</p>
+                      {act.detalles && (
+                        <p className="text-xs text-gray-500 mt-2 pl-3 border-l-2 border-gray-200 italic break-words">{act.detalles}</p>
+                      )}
+                      <p className="text-sm text-gray-600 mt-2">{act.usuarioEmail}</p>
+                    </div>
+                    <p className="text-xs text-gray-400 font-medium shrink-0 ml-4 text-right">{act.timestamp?.toDate().toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                  </div>
+                )) : <p className="text-center text-gray-500 py-10">No hay actividades para mostrar. Presiona "Cargar Actividades" para empezar.</p>}
               </div>
+
+              {actividades.length > 0 && hayMasActividades && (
+                <div className="mt-8 text-center">
+                  <Button onClick={() => cargarActividades(true)} variant="outlined" disabled={cargandoMas}>
+                    {cargandoMas ? 'Cargando...' : 'Cargar más actividades'}
+                  </Button>
+                </div>
+              )}
             </section>
           </div>
         )}
