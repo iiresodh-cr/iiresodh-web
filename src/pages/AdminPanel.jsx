@@ -887,7 +887,7 @@ export default function AdminPanel() {
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg> 
                           Simulación en Portada (Carrusel Home)
                         </p>
-                        <div className="w-full rounded-2xl overflow-hidden shadow-lg border border-gray-100">
+                        <div className="w-full rounded-[2.5rem] overflow-hidden shadow-2xl">
                             <article className="group relative w-full aspect-2/1 overflow-hidden bg-main-blue cursor-default">
                                 <div
                                     className="absolute inset-0 w-full h-full bg-cover bg-top bg-no-repeat transition-transform duration-4000 group-hover:scale-105 bg-gray-200"
@@ -906,7 +906,7 @@ export default function AdminPanel() {
                                     <h3 className="text-3xl font-black text-main-blue mb-3 leading-[1.15] tracking-tight line-clamp-3 group-hover:text-main-red transition-colors" style={{ whiteSpace: 'pre-wrap' }}>
                                         {titulo || "Título de la noticia..."}
                                     </h3>
-                                    <p className="text-gray-800 line-clamp-2 text-base font-medium leading-relaxed drop-shadow-sm mb-6">
+                                    <p className="text-gray-800 line-clamp-3 text-base font-medium leading-relaxed drop-shadow-sm mb-6">
                                         {resumen || "Resumen corto de la noticia..."}
                                     </p>
                                     <div className="text-main-red font-black flex items-center gap-2 uppercase text-xs tracking-[0.2em] group-hover:gap-4 transition-all">Leer artículo <span aria-hidden="true" className="text-lg leading-none">&rarr;</span></div>
