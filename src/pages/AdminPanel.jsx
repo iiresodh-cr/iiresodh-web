@@ -888,7 +888,7 @@ export default function AdminPanel() {
                           Simulación en Portada (Carrusel Home)
                         </p>
                         <div className="w-full rounded-2xl overflow-hidden shadow-lg border border-gray-100">
-                            <article className="group relative w-full h-150 overflow-hidden bg-main-blue cursor-default">
+                            <article className="group relative w-full aspect-2/1 overflow-hidden bg-main-blue cursor-default">
                                 <div
                                     className="absolute inset-0 w-full h-full bg-cover bg-top bg-no-repeat transition-transform duration-4000 group-hover:scale-105 bg-gray-200"
                                     style={{ backgroundImage: `url(${mainImagePreviewUrl || 'https://via.placeholder.com/800x600.png?text=Sin+Portada'})` }}
@@ -897,19 +897,19 @@ export default function AdminPanel() {
                                 />
 
                                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-1000"></div>
-                                <div className="absolute bottom-10 left-10 right-auto w-[90%] md:w-[75%] h-96 p-10 bg-white/30 backdrop-blur-xl shadow-2xl rounded-3xl border border-white/30 z-10 flex flex-col justify-end transform transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-main-blue/20">
-                                    <div className="flex flex-wrap gap-2 mb-6">
+                                <div className="absolute bottom-6 left-6 right-auto w-[65%] h-[70%] p-6 bg-white/30 backdrop-blur-xl shadow-2xl rounded-3xl border border-white/30 z-10 flex flex-col justify-end transform transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-main-blue/20">
+                                    <div className="flex flex-wrap gap-2 mb-4">
                                         {tagsSeleccionados.map(tag => (
                                             <span key={tag} className="bg-white/40 border border-white/50 text-main-blue text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest">{tag}</span>
                                         ))}
                                     </div>
-                                    <h3 className="text-4xl font-black text-main-blue mb-4 leading-[1.15] tracking-tight line-clamp-3 group-hover:text-main-red transition-colors" style={{ whiteSpace: 'pre-wrap' }}>
+                                    <h3 className="text-3xl font-black text-main-blue mb-3 leading-[1.15] tracking-tight line-clamp-3 group-hover:text-main-red transition-colors" style={{ whiteSpace: 'pre-wrap' }}>
                                         {titulo || "Título de la noticia..."}
                                     </h3>
-                                    <p className="text-gray-800 line-clamp-3 text-lg font-medium leading-relaxed drop-shadow-sm mb-8">
+                                    <p className="text-gray-800 line-clamp-2 text-base font-medium leading-relaxed drop-shadow-sm mb-6">
                                         {resumen || "Resumen corto de la noticia..."}
                                     </p>
-                                    <div className="text-main-red font-black flex items-center gap-2 uppercase text-sm tracking-[0.2em] group-hover:gap-4 transition-all">Leer artículo <span aria-hidden="true" className="text-xl leading-none">&rarr;</span></div>
+                                    <div className="text-main-red font-black flex items-center gap-2 uppercase text-xs tracking-[0.2em] group-hover:gap-4 transition-all">Leer artículo <span aria-hidden="true" className="text-lg leading-none">&rarr;</span></div>
                                 </div>
                             </article>
                         </div>
