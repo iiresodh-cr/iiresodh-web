@@ -10,7 +10,7 @@ export default function CooperacionInternacional() {
       
       {/* ENCABEZADO Estandarizado */}
       <PageHeader 
-        titulo="Cooperación Internacional" 
+        titulo="Impacto Internacional" 
         subtitulo="Alianzas estratégicas para el fortalecimiento de los Derechos Humanos a nivel global." 
       />
 
