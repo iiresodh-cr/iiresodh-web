@@ -28,20 +28,16 @@ export default function Footer() {
 
         {/* Columna Central: Enlaces Rápidos */}
         <div className="flex flex-col items-start lg:items-center">
-          <div className="flex flex-col space-y-4">
-            <h3 className="text-sm font-bold tracking-[0.2em] text-white uppercase mb-2">Institucional</h3>
-            <Link to="/quienes-somos" className="text-gray-300 hover:text-white hover:translate-x-1 transition-all text-sm font-light flex items-center gap-2">
-              <span className="text-main-red text-xs">▹</span> ¿Quiénes Somos?
-            </Link>
-            <Link to="/litigio-estrategico" className="text-gray-300 hover:text-white hover:translate-x-1 transition-all text-sm font-light flex items-center gap-2">
-              <span className="text-main-red text-xs">▹</span> Nuestro Trabajo
-            </Link>
-            <Link to="/noticias" className="text-gray-300 hover:text-white hover:translate-x-1 transition-all text-sm font-light flex items-center gap-2">
-              <span className="text-main-red text-xs">▹</span> Noticias y Artículos
-            </Link>
-            <Link to="/cursos" className="text-gray-300 hover:text-white hover:translate-x-1 transition-all text-sm font-light flex items-center gap-2">
-              <span className="text-main-red text-xs">▹</span> Cursos y Maestría
-            </Link>
+          <div>
+            <h3 className="text-sm font-bold tracking-[0.2em] text-white uppercase mb-6">Instituciones Amigas</h3>
+            <div className="flex flex-col space-y-4">
+              <a href="https://pidh.ch" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white hover:translate-x-1 transition-all text-sm font-light flex items-center gap-2">
+                <span className="text-main-red text-xs">▹</span> PIDH
+              </a>
+              <a href="https://pida-ai.com" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white hover:translate-x-1 transition-all text-sm font-light flex items-center gap-2">
+                <span className="text-main-red text-xs">▹</span> PIDA
+              </a>
+            </div>
           </div>
         </div>
 
