@@ -726,7 +726,7 @@ useEffect(() => {
           </section>
         )}
 
-        {(vistaActiva !== "inicio") && (
+        {(vistaActiva !== "inicio" && vistaActiva !== "adminWeb") && (
           <div className="animate-fade-in-up">
             <button onClick={() => { limpiarFormulario(); setVistaActiva("inicio"); }} className="mb-8 flex items-center gap-2 text-gray-500 font-medium hover:text-main-blue transition-colors cursor-pointer group">
               <div className="bg-white p-1.5 rounded-full shadow-sm group-hover:shadow border border-gray-100 transition-all">
