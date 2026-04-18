@@ -22,8 +22,8 @@ import NotFound from "./pages/NotFound";
 import InformesAnuales from "./pages/InformesAnuales";
 
 // Nuevas Páginas y Componente Dinámico
-import PaginaPais from "./pages/PaginaPais"; // <-- IMPORTANTE: Esta era la pieza que faltaba
-import CooperacionInternacional from "./pages/CooperacionInternacional";
+import PaginaPais from "./pages/PaginaPais";
+import ImpactoInternacional from "./pages/ImpactoInternacional";
 import Cursos from "./pages/Cursos";
 import Equipo from "./pages/Equipo";
 import ArticulosAcademicos from "./pages/ArticulosAcademicos";
@@ -57,7 +57,7 @@ function App() {
           <Route path="/informes-anuales" element={<InformesAnuales />} />
           <Route path="/equipo" element={<Equipo />} />
           <Route path="/litigio-estrategico" element={<LitigioEstrategico />} />
-          <Route path="/cooperacion-internacional" element={<CooperacionInternacional />} />
+          <Route path="/impacto-internacional" element={<ImpactoInternacional />} />
           
           {/* RUTAS DINÁMICAS POR PAÍS */}
           <Route path="/canada" element={<PaginaPais paisKey="canada" />} />
