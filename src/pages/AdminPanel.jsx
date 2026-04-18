@@ -1389,9 +1389,9 @@ useEffect(() => {
                 {cargandoActividades && !cargandoMas ? <div className="text-center py-10"><CircularProgress /></div> : actividades.length > 0 ? actividades.map(act => (
                   <div key={act.id} className="p-4 rounded-lg bg-gray-50/70 border border-gray-100 flex justify-between items-start">
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-main-blue break-words">{act.accion}</p>
+                      <p className="font-bold text-main-blue wrap-break-word">{act.accion}</p>
                       {act.detalles && (
-                        <p className="text-xs text-gray-500 mt-2 pl-3 border-l-2 border-gray-200 italic break-words">{act.detalles}</p>
+                        <p className="text-xs text-gray-500 mt-2 pl-3 border-l-2 border-gray-200 italic wrap-break-word">{act.detalles}</p>
                       )}
                       <p className="text-sm text-gray-600 mt-2">{act.usuarioEmail}</p>
                     </div>
