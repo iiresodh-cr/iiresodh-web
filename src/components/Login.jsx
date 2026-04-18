@@ -17,14 +17,14 @@ export default function Login() {
 
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
+    // FORZAMOS a Google a mostrar el selector de cuentas siempre
     provider.setCustomParameters({ prompt: 'select_account' });
 
     try {
       const result = await signInWithPopup(auth, provider);
-      const userEmail = result.user.email.toLowerCase();
-      const adminRef = doc(db, "admins", userEmail);
-      const adminSnap = await getDoc(adminRef);
-      const userEmail = result.user.email;
+      
+      // Forzamos el correo a minúsculas para evitar problemas de compatibilidad
+      const userEmail = result.user.email.toLowerCase(); 
 
       // 1. Consultamos en Firestore si existe un documento con este correo
       const adminRef = doc(db, "admins", userEmail);
@@ -34,11 +34,13 @@ export default function Login() {
       if (adminSnap.exists()) {
         navigate("/admin"); 
       } else {
+        // Bloqueo agresivo: Destruimos la sesión generada por Google inmediatamente
         await signOut(auth);
         setError(`Acceso denegado: El correo ${userEmail} no tiene permisos de administración.`);
       }
     } catch (err) {
       console.error("Error al iniciar sesión:", err);
+      // Solo mostramos error si el usuario no cerró el popup a propósito
       if (err.code !== 'auth/popup-closed-by-user') {
         setError("Hubo un problema al autenticar con Google.");
       }
