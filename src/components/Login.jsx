@@ -26,43 +26,51 @@ export default function Login() {
       // Sanitizamos el correo: minúsculas y sin espacios accidentales
       const userEmail = result.user.email.toLowerCase().trim(); 
 
-      console.log("TESTING - Iniciando verificación en Firestore para:", userEmail);
+      // ==========================================
+      // 1. FILTRO DE DOMINIO INSTITUCIONAL
+      // ==========================================
+      if (!userEmail.endsWith("@iiresodh.org")) {
+        await signOut(auth); // Destruimos la sesión inmediatamente
+        setError(`Acceso bloqueado: Debes utilizar un correo institucional (@iiresodh.org).`);
+        return; // Detenemos la ejecución aquí
+      }
 
-      // 1. Consultamos en Firestore si existe un documento con este correo
+      // ==========================================
+      // 2. FILTRO DE PRIVILEGIOS EN FIRESTORE
+      // ==========================================
       const adminRef = doc(db, "admins", userEmail);
       
       try {
         const adminSnap = await getDoc(adminRef);
 
-        // 2. Evaluamos la existencia del documento y el estado de la cuenta
         if (adminSnap.exists()) {
           const adminData = adminSnap.data();
           
           // Verificamos explícitamente que la cuenta esté marcada como activa
           if (adminData.activo === true || adminData.active === true) {
-            console.log("Acceso autorizado y cuenta activa.");
             navigate("/admin"); 
           } else {
-            console.warn("Usuario encontrado, pero se encuentra inactivo.");
-            await signOut(auth); // Destruimos la sesión
-            setError(`Acceso denegado: La cuenta de ${userEmail} ha sido suspendida o está inactiva.`);
+            await signOut(auth); 
+            setError(`Acceso denegado: Tu cuenta institucional (${userEmail}) está suspendida del panel.`);
           }
         } else {
-          console.warn("El documento no existe en la colección 'admins'.");
-          await signOut(auth); // Destruimos la sesión
-          setError(`Acceso denegado: El correo ${userEmail} no cuenta con privilegios administrativos.`);
+          // ==========================================
+          // MENSAJE PARA COLEGAS SIN PERMISOS
+          // ==========================================
+          await signOut(auth); 
+          setError(`Acceso restringido: El correo ${userEmail} pertenece a la institución, pero no cuenta con privilegios de edición en la web.`);
         }
       } catch (firestoreError) {
         console.error("Error de permisos al leer Firestore:", firestoreError);
         await signOut(auth);
-        setError("Error de seguridad: No se pudo verificar tu identidad en la base de datos.");
+        setError("Error de conexión: No se pudo verificar tu identidad en la base de datos.");
       }
 
     } catch (err) {
       console.error("Error al iniciar sesión con Google:", err);
       // Solo mostramos error si el usuario no cerró el popup a propósito
       if (err.code !== 'auth/popup-closed-by-user') {
-        setError("Hubo un problema al autenticar con Google.");
+        setError("Hubo un problema al intentar conectar con Google.");
       }
     }
   };
