@@ -13,7 +13,7 @@ import AdminTextField from "../components/ui/AdminTextField";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import ToastAlert from "../components/ui/ToastAlert";
 // prettier-ignore
-import { Button, Checkbox, FormControlLabel, Box, Chip} from "@mui/material";
+import { Button, Checkbox, FormControlLabel, Box, Chip, Select, MenuItem, FormControl, InputLabel, CircularProgress } from "@mui/material";
 
 const generarSlug = (texto) => {
   if (!texto) return `item-${Math.random().toString(36).substring(2, 6)}`;
@@ -153,6 +153,14 @@ export default function AdminPanel() {
   const [tagsSeleccionados, setTagsSeleccionados] = useState([]);
   const [persistente, setPersistente] = useState(false);
 
+  // NUEVOS ESTADOS PARA ADMINISTRACIÓN WEB
+  const [actividades, setActividades] = useState([]);
+  const [cargandoActividades, setCargandoActividades] = useState(false);
+  const [usuariosUnicos, setUsuariosUnicos] = useState([]);
+  const [filtroUsuario, setFiltroUsuario] = useState("todos");
+  const [ordenActividad, setOrdenActividad] = useState("desc");
+
+
   const [modalBorrar, setModalBorrar] = useState({ isOpen: false, id: null, titulo: "" });
 
   const [primerDoc, setPrimerDoc] = useState(null);
@@ -183,6 +191,46 @@ export default function AdminPanel() {
       return "Archivo existente";
     }
   };
+
+const cargarUsuariosUnicos = async () => {
+  if (usuariosUnicos.length > 0) return; // No recargar si ya los tenemos
+  try {
+    const q = query(collection(db, "auditoria_actividad"));
+    const snapshot = await getDocs(q);
+    const emails = new Set(snapshot.docs.map(doc => doc.data().usuarioEmail));
+    setUsuariosUnicos(Array.from(emails).sort());
+  } catch (error) {
+    console.error("Error cargando lista de usuarios:", error);
+  }
+};
+
+const cargarActividades = async () => {
+  setCargandoActividades(true);
+  setMensaje("Cargando registros de actividad...");
+  try {
+    const constraints = [orderBy("timestamp", ordenActividad)];
+    if (filtroUsuario !== "todos") {
+      constraints.push(where("usuarioEmail", "==", filtroUsuario));
+    }
+    const q = query(collection(db, "auditoria_actividad"), ...constraints, limit(100));
+    const snapshot = await getDocs(q);
+    const acts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    setActividades(acts);
+    setMensaje(acts.length > 0 ? `Se cargaron ${acts.length} registros.` : "No se encontraron registros con los filtros aplicados.");
+  } catch (error) {
+    console.error("Error cargando actividades:", error);
+    setMensaje("Error al cargar las actividades.");
+  } finally {
+    setCargandoActividades(false);
+    setTimeout(() => setMensaje(""), 4000);
+  }
+};
+
+useEffect(() => {
+  if (vistaActiva === "adminWeb") {
+    cargarUsuariosUnicos();
+  }
+}, [vistaActiva]);
 
   const obtenerColeccionActiva = () => {
     if (vistaActiva === "articulos") return "articulos_academicos";
@@ -662,6 +710,16 @@ export default function AdminPanel() {
                 <div>
                   <h2 className="text-xl font-bold text-gray-800 mb-1">Equipo de Trabajo</h2>
                   <p className="text-sm text-gray-500">Gestión de miembros y cargos</p>
+                </div>
+              </button>
+
+              <button onClick={() => setVistaActiva("adminWeb")} className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-yellow-500/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center">
+                <div className="p-4 bg-yellow-50 text-yellow-600 rounded-2xl group-hover:bg-yellow-600 group-hover:text-white transition-colors duration-300">
+                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-800 mb-1">Administración Web</h2>
+                  <p className="text-sm text-gray-500">Auditoría y configuraciones</p>
                 </div>
               </button>
             </nav>
@@ -1167,6 +1225,66 @@ export default function AdminPanel() {
               </div>
 
             </div>
+          </div>
+        )}
+
+        {vistaActiva === "adminWeb" && (
+          <div className="animate-fade-in-up">
+            <button onClick={() => setVistaActiva("inicio")} className="mb-8 flex items-center gap-2 text-gray-500 font-medium hover:text-main-blue transition-colors cursor-pointer group">
+              <div className="bg-white p-1.5 rounded-full shadow-sm group-hover:shadow border border-gray-100 transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7"></path></svg>
+              </div>
+              Regresar al menú
+            </button>
+
+            <section className="bg-white p-8 md:p-10 rounded-2xl shadow-sm border border-gray-100">
+              <header className="mb-8">
+                <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-800">
+                  Auditoría de Actividad de Usuarios
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Revisa las últimas 100 acciones realizadas en el panel de control.
+                </p>
+              </header>
+
+              <div className="flex flex-col sm:flex-row gap-4 mb-8 p-4 bg-gray-50 rounded-xl border">
+                <FormControl size="small" fullWidth>
+                  <InputLabel id="filtro-usuario-label">Usuario</InputLabel>
+                  <Select
+                    labelId="filtro-usuario-label"
+                    value={filtroUsuario}
+                    label="Usuario"
+                    onChange={(e) => setFiltroUsuario(e.target.value)}
+                  >
+                    <MenuItem value="todos"><em>Todos los usuarios</em></MenuItem>
+                    {usuariosUnicos.map(email => (
+                      <MenuItem key={email} value={email}>{email}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <FormControl size="small" fullWidth>
+                  <InputLabel id="orden-actividad-label">Orden</InputLabel>
+                  <Select
+                    labelId="orden-actividad-label"
+                    value={ordenActividad}
+                    label="Orden"
+                    onChange={(e) => setOrdenActividad(e.target.value)}
+                  >
+                    <MenuItem value="desc">Más recientes primero</MenuItem>
+                    <MenuItem value="asc">Más antiguos primero</MenuItem>
+                  </Select>
+                </FormControl>
+
+                <Button onClick={cargarActividades} variant="contained" disabled={cargandoActividades} sx={{ py: 1.5, px: 4, whiteSpace: 'nowrap' }}>
+                  {cargandoActividades ? 'Cargando...' : 'Cargar Actividades'}
+                </Button>
+              </div>
+
+              <div className="space-y-3">
+                {cargandoActividades ? <div className="text-center py-10"><CircularProgress /></div> : actividades.length > 0 ? actividades.map(act => (<div key={act.id} className="p-4 rounded-lg bg-gray-50/70 border border-gray-100 flex justify-between items-center"><div><p className="font-bold text-main-blue">{act.accion}</p><p className="text-sm text-gray-600">{act.usuarioEmail}</p></div><p className="text-xs text-gray-400 font-medium">{act.timestamp?.toDate().toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p></div>)) : <p className="text-center text-gray-500 py-10">No hay actividades para mostrar. Presiona "Cargar Actividades" para empezar.</p>}
+              </div>
+            </section>
           </div>
         )}
       </div>
