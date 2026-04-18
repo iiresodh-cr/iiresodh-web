@@ -751,6 +751,8 @@ export default function AdminPanel() {
                           value={titulo}
                           onChange={(e) => setTitulo(e.target.value)}
                           required
+                          multiline={vistaActiva === 'comunicaciones'}
+                          rows={2}
                           placeholder="Ej: Nueva alianza internacional..."
                         />
                       </div>
