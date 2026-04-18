@@ -175,16 +175,20 @@ export default function AdminPanel() {
   const [hayMas, setHayMas] = useState(true);
   const ITEMS_POR_PAGINA = 10;  
 
-  const logActividad = async (accion) => {
+  const logActividad = async (accion, detalles = null) => {
     const usuario = auth.currentUser;
     if (!usuario) return;
 
     try {
-      await addDoc(collection(db, "auditoria_actividad"), {
+      const logData = {
         usuarioEmail: usuario.email,
         accion: accion,
         timestamp: serverTimestamp(),
-      });
+      };
+      if (detalles) {
+        logData.detalles = detalles;
+      }
+      await addDoc(collection(db, "auditoria_actividad"), logData);
     } catch (error) {
       console.error("Error al registrar actividad:", error);
     }
@@ -672,13 +676,55 @@ useEffect(() => {
       }
 
       if (editandoId) {
+        const itemOriginal = listaItems.find(item => item.id === editandoId);
+        const cambios = [];
+
+        if (itemOriginal) {
+            if (itemOriginal.titulo !== datos.titulo && datos.titulo !== undefined) cambios.push(`título`);
+            if (itemOriginal.resumen !== datos.resumen && datos.resumen !== undefined) cambios.push(`resumen`);
+            if (itemOriginal.contenido !== datos.contenido && datos.contenido !== undefined) cambios.push(`contenido`);
+            if (itemOriginal.nombre !== datos.nombre && datos.nombre !== undefined) cambios.push(`nombre`);
+            if (itemOriginal.cargo !== datos.cargo && datos.cargo !== undefined) cambios.push(`cargo`);
+            if (itemOriginal.bio !== datos.bio && datos.bio !== undefined) cambios.push(`biografía`);
+            if (itemOriginal.autor !== datos.autor && datos.autor !== undefined) cambios.push(`autor`);
+            if (Number(itemOriginal.orden) !== datos.orden && datos.orden !== undefined) cambios.push(`orden`);
+            if (Number(itemOriginal.precio) !== datos.precio && datos.precio !== undefined) cambios.push(`precio USD`);
+            if (Number(itemOriginal.precioMXN) !== datos.precioMXN && datos.precioMXN !== undefined) cambios.push(`precio MXN`);
+            if (itemOriginal.destacado !== datos.destacado && datos.destacado !== undefined) cambios.push(`destacado`);
+            if (itemOriginal.persistente !== datos.persistente && datos.persistente !== undefined) cambios.push(`fijado`);
+            
+            const tagsOriginales = itemOriginal.tags || [];
+            const tagsNuevos = datos.tags || [];
+            if (JSON.stringify(tagsOriginales.sort()) !== JSON.stringify(tagsNuevos.sort())) cambios.push('tags');
+
+            if (finalPrincipalUrl !== imagenPrincipalAnterior) cambios.push('imagen principal');
+            if (finalArchivoLibroUrl !== archivoLibroAnterior) cambios.push('archivo PDF');
+            if (nuevasUrls.length > 0 || carruselExistente.length !== (itemOriginal.imagenesCarruselUrls || []).length) cambios.push('galería');
+        }
+
+        const detallesUpdate = cambios.length > 0 ? `Campos modificados: ${cambios.join(', ')}.` : 'No se detectaron cambios en los campos principales.';
         await updateDoc(doc(db, coleccion, editandoId), datos);
-        await logActividad(`Actualizó un item en "${vistaActiva}": ${datos.titulo || datos.nombre}`);
+        await logActividad(`Actualizó un item en "${vistaActiva}": ${datos.titulo || datos.nombre}`, detallesUpdate);
         const mensajeExito = vistaActiva === 'equipo' ? "¡Miembro del equipo actualizado!" : "¡Contenido actualizado con éxito!";
         setMensaje(mensajeExito);
       } else {
+        let detallesCreacion = [];
+        if (vistaActiva === 'comunicaciones' && datos.tags.length > 0) {
+            detallesCreacion.push(`Tags: [${datos.tags.join(', ')}]`);
+        }
+        if (datos.persistente) {
+            detallesCreacion.push('Marcado como Fijo en Portada');
+        }
+        if (vistaActiva === 'libros') {
+            detallesCreacion.push(`Precio USD: ${datos.precio}, MXN: ${datos.precioMXN}`);
+        }
+        if (vistaActiva === 'equipo') {
+            detallesCreacion.push(`Cargo: ${datos.cargo}, Orden: ${datos.orden}`);
+            if (datos.destacado) detallesCreacion.push('Marcado como Destacado');
+        }
+        const detallesString = detallesCreacion.length > 0 ? detallesCreacion.join('. ') + '.' : null;
         await addDoc(collection(db, coleccion), datos);
-        await logActividad(`Creó un nuevo item en "${vistaActiva}": ${datos.titulo || datos.nombre}`);
+        await logActividad(`Creó un item en "${vistaActiva}": ${datos.titulo || datos.nombre}`, detallesString);
         const mensajeExito = vistaActiva === 'equipo' ? "¡Miembro del equipo agregado!" : "¡Contenido publicado con éxito!";
         setMensaje(mensajeExito);
       }
