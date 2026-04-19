@@ -123,6 +123,7 @@ export default function AdminPanel() {
   const [bio, setBio] = useState("");
   const [destacado, setDestacado] = useState(false);
   const [orden, setOrden] = useState(0);
+  const [pais, setPais] = useState("Costa Rica");
 
   
   // NUEVOS ESTADOS PARA LIBROS
@@ -403,6 +404,7 @@ useEffect(() => {
       setBio(item.bio || "");
       setDestacado(item.destacado || false);
       setOrden(item.orden || 0);
+      setPais(item.pais || "Costa Rica");
       // Usar 'fotoUrl' para la imagen del equipo
       setMainImagePreviewUrl(item.fotoUrl || null);
       setImagenPrincipalAnterior(item.fotoUrl || null);
@@ -459,6 +461,7 @@ useEffect(() => {
     setBio("");
     setDestacado(false);
     setOrden(0);
+    setPais("Costa Rica");
     // Limpiar nuevos campos
     setTagsSeleccionados([]);
     setPersistente(false);
@@ -643,7 +646,8 @@ useEffect(() => {
           orden: Number(orden || 0),
           destacado,
           fotoUrl: finalPrincipalUrl || null,
-          bio: destacado ? bio : ""
+          bio: destacado ? bio : "",
+          pais
         };
       } else {
         const slugGenerado = generarSlug(titulo);
@@ -876,7 +880,25 @@ useEffect(() => {
                         <AdminTextField label="Nombre Completo" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
                         <AdminTextField label="Cargo" value={cargo} onChange={(e) => setCargo(e.target.value)} required />
                       </div>
-                      <AdminTextField label="Orden (número para ordenar)" type="number" value={orden} onChange={(e) => setOrden(e.target.value)} required />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <AdminTextField label="Orden (número para ordenar)" type="number" value={orden} onChange={(e) => setOrden(e.target.value)} required />
+                        <FormControl size="small" fullWidth>
+                          <InputLabel id="pais-label">Sección (País)</InputLabel>
+                          <Select
+                            labelId="pais-label"
+                            value={pais}
+                            label="Sección (País)"
+                            onChange={(e) => setPais(e.target.value)}
+                          >
+                            <MenuItem value="Costa Rica">Costa Rica</MenuItem>
+                            <MenuItem value="Colombia">Colombia</MenuItem>
+                            <MenuItem value="Guatemala">Guatemala</MenuItem>
+                            <MenuItem value="México">México</MenuItem>
+                            <MenuItem value="Canadá">Canadá</MenuItem>
+                            <MenuItem value="Otra">Otra</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </div>
                       <FormControlLabel control={<Checkbox checked={destacado} onChange={(e) => setDestacado(e.target.checked)} />} label="Miembro Destacado (Presidente)" />
                       {destacado && (
                         <AdminTextField label="Biografía (solo para miembro destacado)" multiline rows={8} value={bio} onChange={(e) => setBio(e.target.value)} />
