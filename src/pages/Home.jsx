@@ -156,15 +156,15 @@ export default function Home() {
                   <div className="flex flex-col gap-8">
                     <div>
                       <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra1}</span>
-                      <span className="text-[10px] font-bold tracking-[0.1em] text-gray-500 uppercase">{cifrasImpacto.texto1}</span>
+                      <span className="text-xs font-bold tracking-wider text-gray-500">{cifrasImpacto.texto1}</span>
                     </div>
                     <div>
                       <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra2}</span>
-                      <span className="text-[10px] font-bold tracking-[0.1em] text-gray-500 uppercase">{cifrasImpacto.texto2}</span>
+                      <span className="text-xs font-bold tracking-wider text-gray-500">{cifrasImpacto.texto2}</span>
                     </div>
                     <div>
                       <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra3}</span>
-                      <span className="text-[10px] font-bold tracking-[0.1em] text-gray-500 uppercase">{cifrasImpacto.texto3}</span>
+                      <span className="text-xs font-bold tracking-wider text-gray-500">{cifrasImpacto.texto3}</span>
                     </div>
                   </div>
                 </div>
