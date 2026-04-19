@@ -131,13 +131,6 @@ export default function Home() {
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center text-left">
               
               <div className="lg:col-span-8 max-w-4xl">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-8 h-px bg-main-red"></div>
-                  <span className="text-main-red font-bold tracking-[0.1em] uppercase text-xs md:text-sm">
-                    MISIÓN INSTITUCIONAL
-                  </span>
-                </div>
-                
                 <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-black text-[#0B1E40] leading-[1.05] mb-6 tracking-tighter">
                   Defendiendo la<br className="hidden md:block"/>
                   dignidad y los<br className="hidden md:block"/>
@@ -158,15 +151,8 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="lg:col-span-4 hidden lg:flex justify-end relative z-20">
-                <div className="bg-white shadow-[0_20px_50px_rgba(8,_112,_184,_0.07)] rounded-sm p-10 py-12 flex flex-col gap-10 min-w-[280px] border border-gray-50/50">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-main-red p-1.5 rounded-sm">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M16 8v8m-4-5v5m-4-2v2"></path></svg>
-                    </div>
-                    <span className="font-black text-[10px] tracking-[0.2em] text-gray-800">CIFRAS DE IMPACTO</span>
-                  </div>
-
+              <div className="lg:col-span-4 hidden lg:flex justify-end relative z-20 text-right">
+                <div className="bg-transparent pt-4 flex flex-col gap-10 min-w-[280px]">
                   <div className="flex flex-col gap-8">
                     <div>
                       <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra1}</span>
