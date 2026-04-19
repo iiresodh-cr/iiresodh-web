@@ -54,9 +54,9 @@ export default function Home() {
   const [contacto, setContacto] = useState({ nombre: "", correo: "", mensaje: "" });
   const [estadoEnvio, setEstadoEnvio] = useState("idle");
   const [cifrasImpacto, setCifrasImpacto] = useState({
-    cifra1: "500+", texto1: "CASOS ATENDIDOS",
-    cifra2: "1500+", texto2: "PROFESIONALES ENTRENADOS",
-    cifra3: "13+", texto3: "AÑOS DE EXPERIENCIA"
+    cifra1: "", texto1: "",
+    cifra2: "", texto2: "",
+    cifra3: "", texto3: ""
   });
 
   useEffect(() => {

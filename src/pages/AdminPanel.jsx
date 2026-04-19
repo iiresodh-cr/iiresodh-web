@@ -169,9 +169,9 @@ export default function AdminPanel() {
 
   // NUEVOS ESTADOS PARA CIFRAS DE IMPACTO
   const [cifrasImpacto, setCifrasImpacto] = useState({
-    cifra1: "500+", texto1: "CASOS ATENDIDOS",
-    cifra2: "1500+", texto2: "PROFESIONALES ENTRENADOS",
-    cifra3: "13+", texto3: "AÑOS DE EXPERIENCIA"
+    cifra1: "", texto1: "",
+    cifra2: "", texto2: "",
+    cifra3: "", texto3: ""
   });
   const [cargandoCifras, setCargandoCifras] = useState(false);
   const [guardandoCifras, setGuardandoCifras] = useState(false);
