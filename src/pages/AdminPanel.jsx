@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { signOut } from "firebase/auth";
 import { auth, db, storage, functions } from "../firebase/config";
-import { collection, addDoc, updateDoc, serverTimestamp, doc, deleteDoc, getDocs, query, orderBy, Timestamp, limit, startAfter, endBefore, limitToLast, where } from "firebase/firestore";
+import { collection, addDoc, updateDoc, serverTimestamp, doc, deleteDoc, getDocs, query, orderBy, Timestamp, limit, startAfter, endBefore, limitToLast, where, setDoc, getDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { httpsCallable } from "firebase/functions";
 
@@ -167,6 +167,14 @@ export default function AdminPanel() {
   const [cargandoMas, setCargandoMas] = useState(false);
   const ACTIVIDADES_POR_PAGINA = 50;
 
+  // NUEVOS ESTADOS PARA CIFRAS DE IMPACTO
+  const [cifrasImpacto, setCifrasImpacto] = useState({
+    cifra1: "500+", texto1: "CASOS ATENDIDOS",
+    cifra2: "1500+", texto2: "PROFESIONALES ENTRENADOS",
+    cifra3: "13+", texto3: "AÑOS DE EXPERIENCIA"
+  });
+  const [cargandoCifras, setCargandoCifras] = useState(false);
+  const [guardandoCifras, setGuardandoCifras] = useState(false);
 
   const [modalBorrar, setModalBorrar] = useState({ isOpen: false, id: null, titulo: "" });
 
@@ -743,6 +751,40 @@ useEffect(() => {
       setTimeout(() => setMensaje(""), 3000);
     }
   };
+
+  const cargarCifrasImpacto = async () => {
+    setCargandoCifras(true);
+    try {
+      const docRef = doc(db, "configuracion", "home_impacto");
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setCifrasImpacto(docSnap.data());
+      }
+    } catch (e) {
+      console.error("Error al cargar cifras:", e);
+    }
+    setCargandoCifras(false);
+  };
+
+  const guardarCifrasImpacto = async (e) => {
+    e.preventDefault();
+    setGuardandoCifras(true);
+    try {
+      await setDoc(doc(db, "configuracion", "home_impacto"), cifrasImpacto);
+      setMensaje("¡Cifras de impacto actualizadas con éxito!");
+    } catch (e) {
+      console.error("Error al guardar cifras:", e);
+      setMensaje("Error al guardar las cifras de impacto.");
+    }
+    setGuardandoCifras(false);
+    setTimeout(() => setMensaje(""), 3000);
+  };
+
+  useEffect(() => {
+    if (vistaActiva === "adminWeb") {
+      cargarCifrasImpacto();
+    }
+  }, [vistaActiva]);
 
   const user = auth.currentUser;
 
@@ -1362,6 +1404,38 @@ useEffect(() => {
               </div>
               Regresar al menú
             </button>
+
+            <section className="bg-white p-8 md:p-10 rounded-2xl shadow-sm border border-gray-100 mb-8">
+              <header className="mb-6 flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold tracking-tight text-gray-800">Configuración Visual (Home)</h2>
+                  <p className="text-sm text-gray-500 mt-1">Modifica las cifras de impacto mostradas en la portada principal del sitio.</p>
+                </div>
+              </header>
+              {cargandoCifras ? (
+                <div className="flex justify-center p-4"><CircularProgress /></div>
+              ) : (
+                <form onSubmit={guardarCifrasImpacto} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-gray-100">
+                    <AdminTextField label="Cifra 1 (Ej. 500+)" value={cifrasImpacto.cifra1 || ""} onChange={e => setCifrasImpacto({...cifrasImpacto, cifra1: e.target.value})} required />
+                    <AdminTextField label="Texto Cifra 1 (Ej. CASOS ATENDIDOS)" value={cifrasImpacto.texto1 || ""} onChange={e => setCifrasImpacto({...cifrasImpacto, texto1: e.target.value})} required />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-gray-100">
+                    <AdminTextField label="Cifra 2 (Ej. 1500+)" value={cifrasImpacto.cifra2 || ""} onChange={e => setCifrasImpacto({...cifrasImpacto, cifra2: e.target.value})} required />
+                    <AdminTextField label="Texto Cifra 2 (Ej. PROFESIONALES ENTRENADOS)" value={cifrasImpacto.texto2 || ""} onChange={e => setCifrasImpacto({...cifrasImpacto, texto2: e.target.value})} required />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-gray-100">
+                    <AdminTextField label="Cifra 3 (Ej. 13+)" value={cifrasImpacto.cifra3 || ""} onChange={e => setCifrasImpacto({...cifrasImpacto, cifra3: e.target.value})} required />
+                    <AdminTextField label="Texto Cifra 3 (Ej. AÑOS DE EXPERIENCIA)" value={cifrasImpacto.texto3 || ""} onChange={e => setCifrasImpacto({...cifrasImpacto, texto3: e.target.value})} required />
+                  </div>
+                  <div className="flex justify-end">
+                    <Button type="submit" variant="contained" disabled={guardandoCifras} sx={{ px: 4, py: 1.5, bgcolor: '#1D3557', '&:hover': { bgcolor: '#457B9D' } }}>
+                      {guardandoCifras ? "Guardando..." : "Guardar Cifras de Impacto"}
+                    </Button>
+                  </div>
+                </form>
+              )}
+            </section>
 
             <section className="bg-white p-8 md:p-10 rounded-2xl shadow-sm border border-gray-100">
               <header className="mb-8">
