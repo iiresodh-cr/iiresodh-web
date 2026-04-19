@@ -23,7 +23,6 @@ import InformesAnuales from "./pages/InformesAnuales";
 
 // Nuevas Páginas y Componente Dinámico
 import PaginaPais from "./pages/PaginaPais";
-import ImpactoInternacional from "./pages/ImpactoInternacional";
 import Cursos from "./pages/Cursos";
 import Equipo from "./pages/Equipo";
 import ArticulosAcademicos from "./pages/ArticulosAcademicos";
@@ -57,14 +56,12 @@ function App() {
           <Route path="/informes-anuales" element={<InformesAnuales />} />
           <Route path="/equipo" element={<Equipo />} />
           <Route path="/litigio-estrategico" element={<LitigioEstrategico />} />
-          <Route path="/impacto-internacional" element={<ImpactoInternacional />} />
-          
           {/* RUTAS DINÁMICAS POR PAÍS */}
-          <Route path="/canada" element={<PaginaPais paisKey="canada" />} />
-          <Route path="/mexico" element={<PaginaPais paisKey="mexico" />} />
-          <Route path="/guatemala" element={<PaginaPais paisKey="guatemala" />} />
-          <Route path="/costa-rica" element={<PaginaPais paisKey="costa-rica" />} />
-          <Route path="/colombia" element={<PaginaPais paisKey="colombia" />} />
+          <Route path="/incidencia-internacional/canada" element={<PaginaPais paisKey="canada" />} />
+          <Route path="/incidencia-internacional/mexico" element={<PaginaPais paisKey="mexico" />} />
+          <Route path="/incidencia-internacional/guatemala" element={<PaginaPais paisKey="guatemala" />} />
+          <Route path="/incidencia-internacional/costa-rica" element={<PaginaPais paisKey="costa-rica" />} />
+          <Route path="/incidencia-internacional/colombia" element={<PaginaPais paisKey="colombia" />} />
           
           <Route path="/cursos" element={<Cursos />} />
           <Route path="/donaciones" element={<Donaciones />} />
@@ -74,7 +71,7 @@ function App() {
           <Route path="/privacidad" element={<Privacidad />} />
           <Route path="/articulos-academicos" element={<ArticulosAcademicos />} />
           <Route path="/articulos-academicos/:slug" element={<ArticuloDetalle />} />
-          <Route path="/incidencia" element={<Incidencia />} />
+          <Route path="/incidencia-internacional" element={<Incidencia />} />
           
           {/* TIENDA */}
           <Route path="/tienda/:slug?" element={<Tienda />} />

@@ -122,8 +122,8 @@ export default function Home() {
                 Fomentamos el cumplimiento de estándares internacionales mediante la participación ciudadana y gubernamental.
               </p>
               <div className="flex flex-col sm:flex-row gap-5">
-                <Link to="/impacto-internacional" className="bg-main-red text-white font-bold py-4 px-10 rounded-xl hover:bg-red-800 hover:shadow-2xl hover:-translate-y-1 transition-all text-center uppercase tracking-widest text-sm">
-                  Nuestro Impacto
+                <Link to="/incidencia-internacional" className="bg-main-red text-white font-bold py-4 px-10 rounded-xl hover:bg-red-800 hover:shadow-2xl hover:-translate-y-1 transition-all text-center uppercase tracking-widest text-sm">
+                  Incidencia Internacional
                 </Link>
                 <a href="#noticias-recientes" className="bg-white text-main-blue border-2 border-gray-100 font-bold py-4 px-10 rounded-xl hover:border-main-blue transition-all text-center uppercase tracking-widest text-sm">
                   Ver Novedades
