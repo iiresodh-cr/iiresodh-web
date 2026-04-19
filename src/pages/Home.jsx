@@ -55,7 +55,7 @@ export default function Home() {
   const [estadoEnvio, setEstadoEnvio] = useState("idle");
   const [cifrasImpacto, setCifrasImpacto] = useState({
     cifra1: "500+", texto1: "CASOS ATENDIDOS",
-    cifra2: "1500+", texto2: "PROFESSIONALS TRAINED",
+    cifra2: "1500+", texto2: "PROFESIONALES ENTRENADOS",
     cifra3: "13+", texto3: "AÑOS DE EXPERIENCIA"
   });
 
