@@ -816,6 +816,12 @@ useEffect(() => {
       </header>
 
       <div className="p-6 md:p-10 max-w-7xl mx-auto relative z-10">
+        <ToastAlert 
+          open={!!mensaje} 
+          message={mensaje} 
+          isError={mensaje.includes("Error")} 
+          onClose={() => setMensaje("")} 
+        />
         {vistaActiva === "inicio" && (
           <section className="animate-fade-in-up" aria-labelledby="admin-title">
             <div className="mb-10 text-center md:text-left">
@@ -885,12 +891,7 @@ useEffect(() => {
               Regresar al menú
             </button>
 
-            <ToastAlert 
-              open={!!mensaje} 
-              message={mensaje} 
-              isError={mensaje.includes("Error")} 
-              onClose={() => setMensaje("")} 
-            />
+
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               <div className="lg:col-span-8 space-y-8">

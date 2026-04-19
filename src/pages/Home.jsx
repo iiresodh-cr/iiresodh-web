@@ -145,9 +145,9 @@ export default function Home() {
                   <Link to="/incidencia-internacional" className="bg-[#B91C1C] text-white font-bold py-3.5 px-8 rounded-md hover:bg-main-red transition-all text-center uppercase tracking-widest text-xs shadow-md">
                     Incidencia Internacional
                   </Link>
-                  <a href="#noticias-recientes" className="bg-white text-[#0B1E40] border border-gray-200 font-bold py-3.5 px-8 rounded-md hover:border-gray-400 transition-all text-center uppercase tracking-widest text-xs flex items-center justify-center gap-2">
-                    Ver Novedades &rarr;
-                  </a>
+                  <Link to="/noticias" className="bg-white text-[#0B1E40] border border-gray-200 font-bold py-3.5 px-8 rounded-md hover:border-gray-400 transition-all text-center uppercase tracking-widest text-xs flex items-center justify-center gap-2">
+                    Noticias &rarr;
+                  </Link>
                 </div>
               </div>
 
