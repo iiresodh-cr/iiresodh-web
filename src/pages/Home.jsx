@@ -178,12 +178,12 @@ export default function Home() {
             <div className="flex items-end justify-between mb-8">
               <div>
                 <h2 className="text-3xl md:text-4xl font-black text-main-blue tracking-tight">
-                  Novedades Destacadas
+                  Actualidad
                 </h2>
                 <div className="w-20 h-1.5 bg-main-red mt-4 rounded-full"></div>
               </div>
               <Link to="/noticias" className="hidden md:flex text-xs font-black text-gray-400 hover:text-main-red transition-colors uppercase tracking-[0.2em] items-center gap-2">
-                Explorar archivo <span aria-hidden="true" className="text-lg">&rarr;</span>
+                Archivo de Noticias <span aria-hidden="true" className="text-lg">&rarr;</span>
               </Link>
             </div>
             
@@ -270,12 +270,12 @@ export default function Home() {
                     <h3 className="text-2xl font-bold text-main-blue mb-3">Litigio Estratégico</h3>
                     <p className="text-gray-500 font-light leading-relaxed">Defensa jurídica ante tribunales internacionales para sentar precedentes en la protección de derechos.</p>
                   </Link>
-                  <Link to="/cooperacion-internacional" className="group bg-gray-50 rounded-3xl p-8 border border-gray-100 hover:bg-white hover:shadow-xl transition-all duration-300">
+                  <Link to="/Incidencia-internacional" className="group bg-gray-50 rounded-3xl p-8 border border-gray-100 hover:bg-white hover:shadow-xl transition-all duration-300">
                     <div className="w-14 h-14 bg-light-blue text-white rounded-2xl flex items-center justify-center mb-6 shadow-md shadow-light-blue/20 group-hover:scale-110 transition-transform">
                       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
                     </div>
-                    <h3 className="text-2xl font-bold text-main-blue mb-3">Cooperación Global</h3>
-                    <p className="text-gray-500 font-light leading-relaxed">Alianzas con organismos internacionales para fortalecer las capacidades democráticas locales.</p>
+                    <h3 className="text-2xl font-bold text-main-blue mb-3">Incidencia Internacional</h3>
+                    <p className="text-gray-500 font-light leading-relaxed">Investigaciones, informes de impacto y documentos de litigio estratégico.</p>
                   </Link>
                   <Link to="/cursos" className="md:col-span-2 group bg-main-blue rounded-3xl p-8 md:p-10 flex flex-col md:flex-row gap-8 items-center hover:shadow-2xl transition-all duration-300">
                     <div className="w-20 h-20 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-main-red group-hover:border-main-red transition-all">
