@@ -152,7 +152,7 @@ export default function Home() {
               </div>
 
               <div className="lg:col-span-4 hidden lg:flex justify-end relative z-20 text-right">
-                <div className="bg-transparent pt-4 flex flex-col gap-10 min-w-[280px]">
+                <div className="bg-transparent pt-4 flex flex-col gap-10 min-w-70">
                   <div className="flex flex-col gap-8">
                     <div>
                       <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra1}</span>
