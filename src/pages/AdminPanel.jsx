@@ -339,7 +339,14 @@ useEffect(() => {
     const coleccion = obtenerColeccionActiva();
     const orderByField = vistaActiva === 'equipo' ? 'orden' : 'fechaPublicacion';
     const orderByDirection = vistaActiva === 'equipo' ? 'asc' : 'desc';
-    const q = query(collection(db, coleccion), orderBy(orderByField, orderByDirection), limit(ITEMS_POR_PAGINA));
+
+    const constraints = [orderBy(orderByField, orderByDirection)];
+    // Para la vista de equipo, no aplicamos límite para que se muestren todos.
+    if (vistaActiva !== 'equipo') {
+      constraints.push(limit(ITEMS_POR_PAGINA));
+    }
+
+    const q = query(collection(db, coleccion), ...constraints);
     cargarItemsBatch(q, "inicio");
   };
 
