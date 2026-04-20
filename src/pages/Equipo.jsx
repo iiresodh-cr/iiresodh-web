@@ -52,7 +52,7 @@ export default function Equipo() {
   const presidente = equipo.find(m => m.destacado);
   const staff = equipo.filter(m => !m.destacado).sort((a, b) => a.orden - b.orden);
 
-  const secciones = ['Costa Rica', 'Colombia', 'Guatemala', 'México', 'Canadá', 'Otra'];
+  const secciones = ['Canadá', 'Colombia', 'Costa Rica', 'Guatemala', 'México', 'Otra'];
   const staffPorPais = staff.reduce((acc, miembro) => {
     const pais = miembro.pais || 'Otra';
     if (!acc[pais]) acc[pais] = [];
