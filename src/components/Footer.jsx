@@ -1,31 +1,10 @@
 // src/components/Footer.jsx
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import logoBlanco from "../assets/logo.png";
 import { Tooltip, Zoom } from '@mui/material'; 
 
 export default function Footer() {
   const sugefText = `"Se advierte al público que la Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos es supervisada solamente en materia de prevención de legitimación de capitales, financiamiento al terrorismo y financiamiento de la proliferación de armas de destrucción masiva, y además se encuentra sujeta a disposiciones vinculantes de la Unidad de Inteligencia Financiera de Instituto Costarricense sobre Drogas. Por lo tanto, la Sugef no supervisa en materia financiera a la Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos, ni los negocios que ofrece, ni su seguridad, estabilidad o solvencia".`;
-
-  // EFECTO LIMPIO PARA EL WIDGET
-  useEffect(() => {
-    const targetId = 'ngos-ed-on-file-widget-script-17336c1f-917d-492b-bc53-225c95e103da';
-    const container = document.getElementById(targetId);
-
-    // Evitamos inyectarlo múltiples veces si React se vuelve a renderizar
-    if (container && !container.hasAttribute('data-script-loaded')) {
-      const script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.async = true;
-      const theUrl = 'https://www.ngosource.org/sites/default/files/ngos_ed_on_file_widget.js';
-      
-      // NGOsource evalúa la URL de producción aquí:
-      script.src = theUrl + (theUrl.indexOf("?") >= 0 ? "&" : "?") + 'ref=' + encodeURIComponent(window.location.href);
-      
-      container.appendChild(script);
-      container.setAttribute('data-script-loaded', 'true');
-    }
-  }, []);
 
   return (
     <footer className="flex flex-col relative z-40 bg-main-blue text-white mt-auto">
@@ -42,18 +21,9 @@ export default function Footer() {
               className="w-full max-w-50 object-contain opacity-95 hover:opacity-100 transition-opacity"
             />
           </Link>
-          {/* <p className="text-sm font-light text-gray-300 leading-relaxed max-w-sm">
+          <p className="text-sm font-light text-gray-300 leading-relaxed max-w-sm">
             Fomentamos el cumplimiento de estándares internacionales en derechos humanos a través del litigio estratégico, cooperación técnica y formación académica.
-          </p> - SE ELIMINÓ PARA DAR MÁS PROTAGONISMO AL WIDGET DE NGOsource*/}
-          
-          {/* CONTENEDOR DEL WIDGET NGOSOURCE */}
-          <div 
-            id="ngos-ed-on-file-widget-script-17336c1f-917d-492b-bc53-225c95e103da" 
-            className="mt-4 min-h-15"
-          >
-            {/* Si estás en localhost y quieres ver cómo quedará el espacio, descomenta la siguiente línea temporalmente */}
-            <div className="w-45 h-15 bg-white/10 border border-white/20 rounded-md flex items-center justify-center text-[10px] text-white/50 text-center px-2">Sello NGOsource (Solo visible en Producción)</div>
-          </div>
+          </p>
         </div>
 
         {/* Columna Central: Enlaces Rápidos */}
