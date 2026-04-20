@@ -327,6 +327,18 @@ useEffect(() => {
         });
       }
 
+      // ORDENAMIENTO PARA EQUIPO
+      if (vistaActiva === "equipo") {
+        data.sort((a, b) => {
+          // El presidente (destacado: true) siempre va primero.
+          if (a.destacado && !b.destacado) return -1;
+          if (!a.destacado && b.destacado) return 1;
+          
+          // Para los demás, orden alfabético por nombre.
+          return (a.nombre || "").localeCompare(b.nombre || "");
+        });
+      }
+
       setListaItems(data);
       setHayMas(querySnapshot.docs.length === ITEMS_POR_PAGINA);
 
