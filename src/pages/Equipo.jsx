@@ -124,7 +124,7 @@ export default function Equipo() {
                   return (
                     <section aria-label={`Equipo de ${pais}`} key={pais}>
                       <h3 className="text-2xl font-black text-main-blue uppercase tracking-tight mb-8 border-b-2 border-main-red inline-block pb-2">
-                        {pais === 'Otra' ? 'Otros Miembros' : `Sede ${pais}`}
+                        {pais === 'Otra' ? 'Otros Miembros' : `${pais}`}
                       </h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
                         {miembrosPais.map((miembro) => (
