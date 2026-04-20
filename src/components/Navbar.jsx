@@ -235,17 +235,16 @@ export default function Navbar() {
                     
                     
                     {/* Sección Internacional Agrupada */}
-                    <li><Link to="/incidencia" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Incidencia</Link></li>
                     <li className="flex flex-col">
-                      <Link to="/impacto-internacional" className="block w-full pl-10 px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">
-                        Impacto Internacional
+                      <Link to="/incidencia-internacional" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">
+                        Incidencia Internacional
                       </Link>
                       <div className="grid grid-cols-1 gap-0">
-                        <Link to="/canada" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ Canadá</Link>
-                        <Link to="/colombia" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ Colombia</Link>
-                        <Link to="/costa-rica" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ Costa Rica (Sede)</Link>
-                        <Link to="/guatemala" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ Guatemala</Link>
-                        <Link to="/mexico" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ México</Link>
+                        <Link to="/incidencia-internacional/canada" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ Canadá</Link>
+                        <Link to="/incidencia-internacional/colombia" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ Colombia</Link>
+                        <Link to="/incidencia-internacional/costa-rica" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ Costa Rica (Sede)</Link>
+                        <Link to="/incidencia-internacional/guatemala" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ Guatemala</Link>
+                        <Link to="/incidencia-internacional/mexico" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ México</Link>
                       </div>
                     </li>
                   </ul>

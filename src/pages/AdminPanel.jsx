@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { signOut } from "firebase/auth";
 import { auth, db, storage, functions } from "../firebase/config";
-import { collection, addDoc, updateDoc, serverTimestamp, doc, deleteDoc, getDocs, query, orderBy, Timestamp, limit, startAfter, endBefore, limitToLast, where } from "firebase/firestore";
+import { collection, addDoc, updateDoc, serverTimestamp, doc, deleteDoc, getDocs, query, orderBy, Timestamp, limit, startAfter, endBefore, limitToLast, where, setDoc, getDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { httpsCallable } from "firebase/functions";
 
@@ -123,6 +123,7 @@ export default function AdminPanel() {
   const [bio, setBio] = useState("");
   const [destacado, setDestacado] = useState(false);
   const [orden, setOrden] = useState(0);
+  const [pais, setPais] = useState("Costa Rica");
 
   
   // NUEVOS ESTADOS PARA LIBROS
@@ -166,6 +167,14 @@ export default function AdminPanel() {
   const [cargandoMas, setCargandoMas] = useState(false);
   const ACTIVIDADES_POR_PAGINA = 50;
 
+  // NUEVOS ESTADOS PARA CIFRAS DE IMPACTO
+  const [cifrasImpacto, setCifrasImpacto] = useState({
+    cifra1: "", texto1: "",
+    cifra2: "", texto2: "",
+    cifra3: "", texto3: ""
+  });
+  const [cargandoCifras, setCargandoCifras] = useState(false);
+  const [guardandoCifras, setGuardandoCifras] = useState(false);
 
   const [modalBorrar, setModalBorrar] = useState({ isOpen: false, id: null, titulo: "" });
 
@@ -410,6 +419,7 @@ useEffect(() => {
       setBio(item.bio || "");
       setDestacado(item.destacado || false);
       setOrden(item.orden || 0);
+      setPais(item.pais || "Costa Rica");
       // Usar 'fotoUrl' para la imagen del equipo
       setMainImagePreviewUrl(item.fotoUrl || null);
       setImagenPrincipalAnterior(item.fotoUrl || null);
@@ -466,6 +476,7 @@ useEffect(() => {
     setBio("");
     setDestacado(false);
     setOrden(0);
+    setPais("Costa Rica");
     // Limpiar nuevos campos
     setTagsSeleccionados([]);
     setPersistente(false);
@@ -650,7 +661,8 @@ useEffect(() => {
           orden: Number(orden || 0),
           destacado,
           fotoUrl: finalPrincipalUrl || null,
-          bio: destacado ? bio : ""
+          bio: destacado ? bio : "",
+          pais
         };
       } else {
         const slugGenerado = generarSlug(titulo);
@@ -747,6 +759,40 @@ useEffect(() => {
     }
   };
 
+  const cargarCifrasImpacto = async () => {
+    setCargandoCifras(true);
+    try {
+      const docRef = doc(db, "configuracion", "home_impacto");
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setCifrasImpacto(docSnap.data());
+      }
+    } catch (e) {
+      console.error("Error al cargar cifras:", e);
+    }
+    setCargandoCifras(false);
+  };
+
+  const guardarCifrasImpacto = async (e) => {
+    e.preventDefault();
+    setGuardandoCifras(true);
+    try {
+      await setDoc(doc(db, "configuracion", "home_impacto"), cifrasImpacto);
+      setMensaje("¡Cifras de impacto actualizadas con éxito!");
+    } catch (e) {
+      console.error("Error al guardar cifras:", e);
+      setMensaje("Error al guardar las cifras de impacto.");
+    }
+    setGuardandoCifras(false);
+    setTimeout(() => setMensaje(""), 3000);
+  };
+
+  useEffect(() => {
+    if (vistaActiva === "adminWeb") {
+      cargarCifrasImpacto();
+    }
+  }, [vistaActiva]);
+
   const user = auth.currentUser;
 
   return (
@@ -777,6 +823,12 @@ useEffect(() => {
       </header>
 
       <div className="p-6 md:p-10 max-w-7xl mx-auto relative z-10">
+        <ToastAlert 
+          open={!!mensaje} 
+          message={mensaje} 
+          isError={mensaje.includes("Error")} 
+          onClose={() => setMensaje("")} 
+        />
         {vistaActiva === "inicio" && (
           <section className="animate-fade-in-up" aria-labelledby="admin-title">
             <div className="mb-10 text-center md:text-left">
@@ -846,12 +898,7 @@ useEffect(() => {
               Regresar al menú
             </button>
 
-            <ToastAlert 
-              open={!!mensaje} 
-              message={mensaje} 
-              isError={mensaje.includes("Error")} 
-              onClose={() => setMensaje("")} 
-            />
+
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               <div className="lg:col-span-8 space-y-8">
@@ -883,7 +930,25 @@ useEffect(() => {
                         <AdminTextField label="Nombre Completo" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
                         <AdminTextField label="Cargo" value={cargo} onChange={(e) => setCargo(e.target.value)} required />
                       </div>
-                      <AdminTextField label="Orden (número para ordenar)" type="number" value={orden} onChange={(e) => setOrden(e.target.value)} required />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <AdminTextField label="Orden (número para ordenar)" type="number" value={orden} onChange={(e) => setOrden(e.target.value)} required />
+                        <FormControl size="small" fullWidth>
+                          <InputLabel id="pais-label">Sección (País)</InputLabel>
+                          <Select
+                            labelId="pais-label"
+                            value={pais}
+                            label="Sección (País)"
+                            onChange={(e) => setPais(e.target.value)}
+                          >
+                            <MenuItem value="Costa Rica">Costa Rica</MenuItem>
+                            <MenuItem value="Colombia">Colombia</MenuItem>
+                            <MenuItem value="Guatemala">Guatemala</MenuItem>
+                            <MenuItem value="México">México</MenuItem>
+                            <MenuItem value="Canadá">Canadá</MenuItem>
+                            <MenuItem value="Otra">Otra</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </div>
                       <FormControlLabel control={<Checkbox checked={destacado} onChange={(e) => setDestacado(e.target.checked)} />} label="Miembro Destacado (Presidente)" />
                       {destacado && (
                         <AdminTextField label="Biografía (solo para miembro destacado)" multiline rows={8} value={bio} onChange={(e) => setBio(e.target.value)} />
@@ -1347,6 +1412,38 @@ useEffect(() => {
               </div>
               Regresar al menú
             </button>
+
+            <section className="bg-white p-8 md:p-10 rounded-2xl shadow-sm border border-gray-100 mb-8">
+              <header className="mb-6 flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold tracking-tight text-gray-800">Configuración Visual (Home)</h2>
+                  <p className="text-sm text-gray-500 mt-1">Modifica las cifras de impacto mostradas en la portada principal del sitio.</p>
+                </div>
+              </header>
+              {cargandoCifras ? (
+                <div className="flex justify-center p-4"><CircularProgress /></div>
+              ) : (
+                <form onSubmit={guardarCifrasImpacto} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-gray-100">
+                    <AdminTextField label="Cifra 1 (Ej. 500+)" value={cifrasImpacto.cifra1 || ""} onChange={e => setCifrasImpacto({...cifrasImpacto, cifra1: e.target.value})} required />
+                    <AdminTextField label="Texto Cifra 1 (Ej. CASOS ATENDIDOS)" value={cifrasImpacto.texto1 || ""} onChange={e => setCifrasImpacto({...cifrasImpacto, texto1: e.target.value})} required />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-gray-100">
+                    <AdminTextField label="Cifra 2 (Ej. 1500+)" value={cifrasImpacto.cifra2 || ""} onChange={e => setCifrasImpacto({...cifrasImpacto, cifra2: e.target.value})} required />
+                    <AdminTextField label="Texto Cifra 2 (Ej. PROFESIONALES ENTRENADOS)" value={cifrasImpacto.texto2 || ""} onChange={e => setCifrasImpacto({...cifrasImpacto, texto2: e.target.value})} required />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-gray-100">
+                    <AdminTextField label="Cifra 3 (Ej. 13+)" value={cifrasImpacto.cifra3 || ""} onChange={e => setCifrasImpacto({...cifrasImpacto, cifra3: e.target.value})} required />
+                    <AdminTextField label="Texto Cifra 3 (Ej. AÑOS DE EXPERIENCIA)" value={cifrasImpacto.texto3 || ""} onChange={e => setCifrasImpacto({...cifrasImpacto, texto3: e.target.value})} required />
+                  </div>
+                  <div className="flex justify-end">
+                    <Button type="submit" variant="contained" disabled={guardandoCifras} sx={{ px: 4, py: 1.5, bgcolor: '#1D3557', '&:hover': { bgcolor: '#457B9D' } }}>
+                      {guardandoCifras ? "Guardando..." : "Guardar Cifras de Impacto"}
+                    </Button>
+                  </div>
+                </form>
+              )}
+            </section>
 
             <section className="bg-white p-8 md:p-10 rounded-2xl shadow-sm border border-gray-100">
               <header className="mb-8">

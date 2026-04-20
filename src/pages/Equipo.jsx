@@ -52,6 +52,14 @@ export default function Equipo() {
   const presidente = equipo.find(m => m.destacado);
   const staff = equipo.filter(m => !m.destacado).sort((a, b) => a.orden - b.orden);
 
+  const secciones = ['Costa Rica', 'Colombia', 'Guatemala', 'México', 'Canadá', 'Otra'];
+  const staffPorPais = staff.reduce((acc, miembro) => {
+    const pais = miembro.pais || 'Otra';
+    if (!acc[pais]) acc[pais] = [];
+    acc[pais].push(miembro);
+    return acc;
+  }, {});
+
   return (
     <main className="bg-white min-h-screen flex flex-col font-sans">
       
@@ -108,50 +116,61 @@ export default function Equipo() {
                 </section>
               )}
 
-              {/* SECCIÓN STAFF MEJORADA CON MUI PAPER */}
-              <section aria-label="Miembros del equipo">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
-                  {staff.map((miembro) => (
-                    <article key={miembro.id} className="flex flex-col group cursor-default">
-                      <Paper
-                        elevation={1}
-                        sx={{
-                          aspectRatio: '4/5',
-                          width: '100%',
-                          mb: 3,
-                          borderRadius: '16px',
-                          overflow: 'hidden',
-                          bgcolor: '#F9FAFB',
-                          border: '1px solid #F3F4F6',
-                          transition: 'all 0.3s ease-in-out',
-                          '&:hover': {
-                            transform: 'translateY(-4px)',
-                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)', // shadow-lg
-                          },
-                          // Este selector mantiene la funcionalidad de escala de grises de Tailwind
-                          '&:hover img': {
-                            filter: 'grayscale(0%)',
-                          }
-                        }}
-                      >
-                        <img 
-                          src={miembro.fotoUrl} 
-                          alt={`Retrato de ${miembro.nombre}`} 
-                          className="w-full h-full object-cover grayscale transition-all duration-300" 
-                        />
-                      </Paper>
-                      <div className="px-2">
-                        <h3 className="text-xl font-semibold text-main-blue leading-tight mb-1 group-hover:text-main-red transition-colors uppercase tracking-tight">
-                          {miembro.nombre}
-                        </h3>
-                        <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">
-                          {miembro.cargo}
-                        </p>
+              {/* SECCIONES DEL STAFF POR PAÍS */}
+              <div className="flex flex-col gap-16">
+                {secciones.map(pais => {
+                  const miembrosPais = staffPorPais[pais];
+                  if (!miembrosPais || miembrosPais.length === 0) return null;
+                  return (
+                    <section aria-label={`Equipo de ${pais}`} key={pais}>
+                      <h3 className="text-2xl font-black text-main-blue uppercase tracking-tight mb-8 border-b-2 border-main-red inline-block pb-2">
+                        {pais === 'Otra' ? 'Otros Miembros' : `Sede ${pais}`}
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+                        {miembrosPais.map((miembro) => (
+                          <article key={miembro.id} className="flex flex-col group cursor-default">
+                            <Paper
+                              elevation={1}
+                              sx={{
+                                aspectRatio: '4/5',
+                                width: '100%',
+                                mb: 3,
+                                borderRadius: '16px',
+                                overflow: 'hidden',
+                                bgcolor: '#F9FAFB',
+                                border: '1px solid #F3F4F6',
+                                transition: 'all 0.3s ease-in-out',
+                                '&:hover': {
+                                  transform: 'translateY(-4px)',
+                                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)', // shadow-lg
+                                },
+                                // Este selector mantiene la funcionalidad de escala de grises de Tailwind
+                                '&:hover img': {
+                                  filter: 'grayscale(0%)',
+                                }
+                              }}
+                            >
+                              <img 
+                                src={miembro.fotoUrl} 
+                                alt={`Retrato de ${miembro.nombre}`} 
+                                className="w-full h-full object-cover grayscale transition-all duration-300" 
+                              />
+                            </Paper>
+                            <div className="px-2">
+                              <h3 className="text-xl font-semibold text-main-blue leading-tight mb-1 group-hover:text-main-red transition-colors uppercase tracking-tight">
+                                {miembro.nombre}
+                              </h3>
+                              <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                                {miembro.cargo}
+                              </p>
+                            </div>
+                          </article>
+                        ))}
                       </div>
-                    </article>
-                  ))}
-                </div>
-              </section>
+                    </section>
+                  );
+                })}
+              </div>
 
             </div>
           </div>

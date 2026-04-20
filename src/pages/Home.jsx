@@ -1,6 +1,6 @@
 // src/pages/Home.jsx
 import { useEffect, useState } from "react";
-import { collection, query, orderBy, limit, getDocs, where } from "firebase/firestore";
+import { collection, query, orderBy, limit, getDocs, where, doc, getDoc } from "firebase/firestore";
 import { db, functions } from "../firebase/config";
 import { httpsCallable } from "firebase/functions";
 import { Link } from "react-router-dom";
@@ -53,8 +53,25 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [contacto, setContacto] = useState({ nombre: "", correo: "", mensaje: "" });
   const [estadoEnvio, setEstadoEnvio] = useState("idle");
+  const [cifrasImpacto, setCifrasImpacto] = useState({
+    cifra1: "", texto1: "",
+    cifra2: "", texto2: "",
+    cifra3: "", texto3: ""
+  });
 
   useEffect(() => {
+    const fetchCifras = async () => {
+      try {
+        const docRef = doc(db, "configuracion", "home_impacto");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setCifrasImpacto(docSnap.data());
+        }
+      } catch (e) {
+        console.error("Error fetching cifras", e);
+      }
+    };
+
     const fetchNoticias = async () => {
       try {
         const qPersistentes = query(collection(db, "noticias"), where("persistente", "==", true));
@@ -77,6 +94,7 @@ export default function Home() {
       finally { setLoading(false); }
     };
     fetchNoticias();
+    fetchCifras();
   }, []);
 
   const handleEnviarContacto = async (e) => {
@@ -109,26 +127,49 @@ export default function Home() {
             <div className="absolute top-0 right-0 -mr-24 -mt-16 opacity-10 pointer-events-none hidden md:block">
               <img src={isotipoFondo} alt="" className="w-200 object-cover" />
             </div>
-            <div className="relative z-10 max-w-4xl text-left">
-              {/* <span className="text-main-red font-bold tracking-[0.3em] uppercase text-xs md:text-sm mb-4 block">
-                {t('home.hero_badge', 'Instituto Internacional')}
-              </span> */}
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-main-blue leading-[1.05] mb-6 tracking-tighter">
-                Defendiendo <br className="hidden md:block"/>
-                la dignidad y los <br className="hidden md:block"/>
-                <span className="text-main-red">Derechos Humanos</span>
-              </h1>
-              <p className="text-lg md:text-2xl text-gray-500 font-light mb-10 leading-relaxed max-w-2xl">
-                Fomentamos el cumplimiento de estándares internacionales mediante la participación ciudadana y gubernamental.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-5">
-                <Link to="/impacto-internacional" className="bg-main-red text-white font-bold py-4 px-10 rounded-xl hover:bg-red-800 hover:shadow-2xl hover:-translate-y-1 transition-all text-center uppercase tracking-widest text-sm">
-                  Nuestro Impacto
-                </Link>
-                <a href="#noticias-recientes" className="bg-white text-main-blue border-2 border-gray-100 font-bold py-4 px-10 rounded-xl hover:border-main-blue transition-all text-center uppercase tracking-widest text-sm">
-                  Ver Novedades
-                </a>
+
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center text-left">
+              
+              <div className="lg:col-span-8 max-w-4xl">
+                <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-black text-[#0B1E40] leading-[1.05] mb-6 tracking-tighter">
+                  Defendiendo la<br className="hidden md:block"/>
+                  dignidad y los<br className="hidden md:block"/>
+                  Derechos Humanos
+                </h1>
+                
+                <p className="text-lg md:text-xl text-gray-600 font-medium mb-10 leading-relaxed max-w-2xl">
+                  Fomentamos el cumplimiento de estándares internacionales mediante la participación ciudadana y gubernamental.
+                </p>
+                
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Link to="/incidencia-internacional" className="bg-[#B91C1C] text-white font-bold py-3.5 px-8 rounded-md hover:bg-main-red transition-all text-center uppercase tracking-widest text-xs shadow-md">
+                    Incidencia Internacional
+                  </Link>
+                  <Link to="/noticias" className="bg-white text-[#0B1E40] border border-gray-200 font-bold py-3.5 px-8 rounded-md hover:border-gray-400 transition-all text-center uppercase tracking-widest text-xs flex items-center justify-center gap-2">
+                    Noticias &rarr;
+                  </Link>
+                </div>
               </div>
+
+              <div className="lg:col-span-4 hidden lg:flex justify-end relative z-20 text-right">
+                <div className="bg-transparent pt-4 flex flex-col gap-10 min-w-[280px]">
+                  <div className="flex flex-col gap-8">
+                    <div>
+                      <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra1}</span>
+                      <span className="text-xs font-bold tracking-wider text-gray-500">{cifrasImpacto.texto1}</span>
+                    </div>
+                    <div>
+                      <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra2}</span>
+                      <span className="text-xs font-bold tracking-wider text-gray-500">{cifrasImpacto.texto2}</span>
+                    </div>
+                    <div>
+                      <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra3}</span>
+                      <span className="text-xs font-bold tracking-wider text-gray-500">{cifrasImpacto.texto3}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </section>
 
