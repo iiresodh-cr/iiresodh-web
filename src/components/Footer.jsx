@@ -49,10 +49,10 @@ export default function Footer() {
           {/* CONTENEDOR DEL WIDGET NGOSOURCE */}
           <div 
             id="ngos-ed-on-file-widget-script-17336c1f-917d-492b-bc53-225c95e103da" 
-            className="mt-4 min-h-[60px]"
+            className="mt-4 min-h-15"
           >
             {/* Si estás en localhost y quieres ver cómo quedará el espacio, descomenta la siguiente línea temporalmente */}
-            <div className="w-[180px] h-[60px] bg-white/10 border border-white/20 rounded-md flex items-center justify-center text-[10px] text-white/50 text-center px-2">Sello NGOsource (Solo visible en Producción)</div>
+            <div className="w-45 h-15 bg-white/10 border border-white/20 rounded-md flex items-center justify-center text-[10px] text-white/50 text-center px-2">Sello NGOsource (Solo visible en Producción)</div>
           </div>
         </div>
 
