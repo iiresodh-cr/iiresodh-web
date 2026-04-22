@@ -103,8 +103,8 @@ const convertirAWebp = (file, calidad = 0.8) => {
 // Para agregar más, simplemente escribe aquí:
 // ==========================================
 const TAGS_DISPONIBLES = [
-  "Canadá", "México", "Guatemala", 
-  "Costa Rica", "Colombia", "Institucional"
+  "IIRESODH", "Noticia", "Anuncio", "Artículo", "Canadá", "Colombia", "Costa Rica", 
+  "Guatemala", "México", "Institucional", "Evento"
 ];
 
 export default function AdminPanel() {
