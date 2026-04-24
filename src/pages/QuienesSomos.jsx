@@ -103,61 +103,6 @@ export default function QuienesSomos() {
 
         {/* Sección plana y continua, sin sombras ni bordes envolventes */}
         <section className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-12 pb-16">
-          
-          {/* BLOQUE 1: Presencia (Video/Map) */}
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <span className="text-main-red font-black tracking-[0.3em] uppercase text-xs mb-3 block">Nuestra Presencia</span>
-            <h2 className="text-3xl md:text-4xl font-black text-main-blue tracking-tighter">
-              Impacto Global, Acción Local
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch">
-            {/* IZQUIERDA: VIDEO INSTITUCIONAL */}
-            <div className="w-full flex flex-col h-full">
-              <Paper elevation={0} className="w-full h-full min-h-75 aspect-video rounded-3xl overflow-hidden border border-gray-100 bg-black flex items-center justify-center" sx={{ borderRadius: '24px' }}>
-                <video src="https://storage.googleapis.com/videos-iire/IIRESODH.webm" controls className="w-full h-full object-cover" poster={posterVideo} />
-              </Paper>
-            </div>
-
-            {/* DERECHA: SEDES OFICIALES (MAPA) */}
-            <div className="w-full flex flex-col h-full">
-              <Paper elevation={0} className="w-full relative bg-gray-50 rounded-3xl p-6 border border-gray-100 flex flex-col items-center justify-center h-full" sx={{ borderRadius: '24px' }}>
-                <div className="text-center mb-4 w-full">
-                  <h3 className="text-xl font-black text-main-blue uppercase tracking-tight">Sedes Oficiales</h3>
-                  <p className="text-xs text-gray-500 mt-1">Pasa el ratón sobre los puntos rojos en el mapa</p>
-                </div>
-                
-                <div ref={mapContainerRef} className="w-full grow flex items-center justify-center relative">
-                  <ComposableMap projection="geoMercator" projectionConfig={{ scale: 300, center: [-85, 30] }} className="w-full h-auto max-h-87.5" aria-label="Mapa interactivo de sedes internacionales">
-                    <Geographies geography={geoUrl}>
-                      {({ geographies }) => geographies.map((geo) => (
-                        <Geography key={geo.rsmKey} geography={geo} fill="#457B9D" stroke="#FFFFFF" strokeWidth={0.5} style={{ default: { outline: "none" }, hover: { fill: "#1D3557", outline: "none" } }} />
-                      ))}
-                    </Geographies>
-                    {sedes.map((sede) => (
-                      <Marker key={sede.id} coordinates={sede.coords}>
-                        <g tabIndex="0" role="button" aria-label={`Sede en ${sede.pais}`} onMouseEnter={(e) => handleHover(sede, e)} onMouseLeave={() => setHoveredSede(null)} onFocus={(e) => showTooltipKeyboard(sede, e.target)} onBlur={() => setHoveredSede(null)} className="focus:outline-none cursor-pointer">
-                          <circle r={25} fill="transparent" className="cursor-pointer" />
-                          <circle r={25} fill="#B92F32" fillOpacity={0.1} className="animate-pulse pointer-events-none" />
-                          <circle r={10} fill="#B92F32" stroke="#FFFFFF" strokeWidth={2} className="pointer-events-none" />
-                        </g>
-                      </Marker>
-                    ))}
-                  </ComposableMap>
-                  
-                  {hoveredSede && (
-                    <div role="tooltip" className="absolute z-50 bg-white p-4 rounded-xl flex flex-col gap-2 w-60 shadow-xl border border-gray-100 pointer-events-none" style={{ top: `${tooltipPos.top}px`, left: `${tooltipPos.left}px` }}>
-                      <h4 className="text-lg font-semibold text-main-red uppercase tracking-tight border-b border-gray-50 pb-2">{hoveredSede.pais}</h4>
-                      <p className="text-xs text-gray-700 leading-relaxed font-medium">{hoveredSede.info}</p>
-                    </div>
-                  )}
-                </div>
-              </Paper>
-            </div>
-          </div>
-
-          <div className="w-20 h-1 bg-main-red mx-auto mt-16 mb-16 rounded-full"></div>
 
           {/* BLOQUE 2: HISTORIA */}
           <div id="historia-section" className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify mb-20 animate-fade-in-up">
@@ -176,6 +121,59 @@ export default function QuienesSomos() {
             <p>
               Desde 2019 implementamos proyectos de cooperación orientados a la incidencia y al litigio estratégico en Nicaragua, Venezuela, Costa Rica y Colombia, con el apoyo de donantes como las embajadas de Reino Unido y Suiza, y el PNUD.
             </p>
+          </div>
+
+          <div className="w-20 h-1 bg-main-red mx-auto mt-16 mb-16 rounded-full"></div>
+
+          {/* BLOQUE 1: Presencia (Video/Map) */}
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <span className="text-main-red font-black tracking-[0.3em] uppercase text-xs mb-3 block">Nuestra Presencia</span>
+            <h2 className="text-3xl md:text-4xl font-black text-main-blue tracking-tighter">
+              Impacto Global, Acción Local
+            </h2>
+          </div>
+
+          {/* VIDEO INSTITUCIONAL */}
+          <div className="max-w-5xl mx-auto mb-16">
+            <Paper elevation={4} className="w-full aspect-video rounded-3xl overflow-hidden shadow-lg bg-black" sx={{ borderRadius: '24px' }}>
+              <video src="https://storage.googleapis.com/videos-iire/IIRESODH.webm" controls className="w-full h-full object-contain" poster={posterVideo} />
+            </Paper>
+          </div>
+
+          {/* SEDES OFICIALES (MAPA) */}
+          <div className="max-w-5xl mx-auto">
+            <Paper elevation={0} className="w-full relative bg-gray-50 rounded-3xl p-6 border border-gray-100 flex flex-col items-center justify-center h-full" sx={{ borderRadius: '24px' }}>
+              <div className="text-center mb-4 w-full">
+                <h3 className="text-xl font-black text-main-blue uppercase tracking-tight">Sedes Oficiales</h3>
+                <p className="text-xs text-gray-500 mt-1">Pasa el ratón sobre los puntos rojos en el mapa</p>
+              </div>
+              
+              <div ref={mapContainerRef} className="w-full grow flex items-center justify-center relative">
+                <ComposableMap projection="geoMercator" projectionConfig={{ scale: 300, center: [-85, 30] }} className="w-full h-auto max-h-96" aria-label="Mapa interactivo de sedes internacionales">
+                  <Geographies geography={geoUrl}>
+                    {({ geographies }) => geographies.map((geo) => (
+                      <Geography key={geo.rsmKey} geography={geo} fill="#457B9D" stroke="#FFFFFF" strokeWidth={0.5} style={{ default: { outline: "none" }, hover: { fill: "#1D3557", outline: "none" } }} />
+                    ))}
+                  </Geographies>
+                  {sedes.map((sede) => (
+                    <Marker key={sede.id} coordinates={sede.coords}>
+                      <g tabIndex="0" role="button" aria-label={`Sede en ${sede.pais}`} onMouseEnter={(e) => handleHover(sede, e)} onMouseLeave={() => setHoveredSede(null)} onFocus={(e) => showTooltipKeyboard(sede, e.target)} onBlur={() => setHoveredSede(null)} className="focus:outline-none cursor-pointer">
+                        <circle r={25} fill="transparent" className="cursor-pointer" />
+                        <circle r={25} fill="#B92F32" fillOpacity={0.1} className="animate-pulse pointer-events-none" />
+                        <circle r={10} fill="#B92F32" stroke="#FFFFFF" strokeWidth={2} className="pointer-events-none" />
+                      </g>
+                    </Marker>
+                  ))}
+                </ComposableMap>
+                
+                {hoveredSede && (
+                  <div role="tooltip" className="absolute z-50 bg-white p-4 rounded-xl flex flex-col gap-2 w-60 shadow-xl border border-gray-100 pointer-events-none" style={{ top: `${tooltipPos.top}px`, left: `${tooltipPos.left}px` }}>
+                    <h4 className="text-lg font-semibold text-main-red uppercase tracking-tight border-b border-gray-50 pb-2">{hoveredSede.pais}</h4>
+                    <p className="text-xs text-gray-700 leading-relaxed font-medium">{hoveredSede.info}</p>
+                  </div>
+                )}
+              </div>
+            </Paper>
           </div>
 
           <div className="w-16 h-1 bg-main-red mx-auto mt-12 mb-12 rounded-full"></div>
