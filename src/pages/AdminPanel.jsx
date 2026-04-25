@@ -154,6 +154,9 @@ export default function AdminPanel() {
   const [generandoResumen, setGenerandoResumen] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [listaItems, setListaItems] = useState([]);
+
+  // NUEVOS ESTADOS PARA CURSOS
+  const [enlaceInscripcion, setEnlaceInscripcion] = useState("");
   
   // ESTADOS PARA COMUNICACIONES
   const [tagsSeleccionados, setTagsSeleccionados] = useState([]);
@@ -304,6 +307,7 @@ useEffect(() => {
     if (vistaActiva === "libros") return "libros";
     if (vistaActiva === "equipo") return "equipo";
     if (vistaActiva === "informes") return "informes";
+    if (vistaActiva === "cursos") return "cursos";
     return "noticias";
   };
 
@@ -462,6 +466,10 @@ useEffect(() => {
         setAño(item.año || "");
         setArchivoInformeAnterior(item.archivoInformeUrl || null);
       }
+
+      if (vistaActiva === "cursos") {
+        setEnlaceInscripcion(item.enlaceInscripcion || "");
+      }
       
       setImagenPrincipalAnterior(item.imagenPrincipalUrl || null);
       setMainImagePreviewUrl(item.imagenPrincipalUrl || null);
@@ -511,6 +519,7 @@ useEffect(() => {
     setArchivoInforme(null);
     setArchivoInformeNombre("");
     setArchivoInformeAnterior(null);
+    setEnlaceInscripcion("");
     
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -721,6 +730,12 @@ useEffect(() => {
           delete datos.contenido; 
           delete datos.resumen;
           delete datos.fechaPublicacion;
+        
+
+        } else if (vistaActiva === "cursos") {
+          datos.enlaceInscripcion = enlaceInscripcion || null;
+          // Eliminamos el contenido largo porque en la UI de cursos solo usamos resumen e imagen
+          delete datos.contenido; 
         }
       }
 
@@ -742,6 +757,7 @@ useEffect(() => {
             if (Number(itemOriginal.precioMXN) !== datos.precioMXN && datos.precioMXN !== undefined) cambios.push(`precio MXN`);
             if (itemOriginal.destacado !== datos.destacado && datos.destacado !== undefined) cambios.push(`destacado`);
             if (itemOriginal.persistente !== datos.persistente && datos.persistente !== undefined) cambios.push(`fijado`);
+            if (itemOriginal.enlaceInscripcion !== datos.enlaceInscripcion && datos.enlaceInscripcion !== undefined) cambios.push(`enlace de inscripción`);
             
             const tagsOriginales = itemOriginal.tags || [];
             const tagsNuevos = datos.tags || [];
@@ -775,6 +791,9 @@ useEffect(() => {
         if (vistaActiva === 'equipo') {
             detallesCreacion.push(`Cargo: ${datos.cargo}, Orden: ${datos.orden}`);
             if (datos.destacado) detallesCreacion.push('Marcado como Destacado');
+        }
+        if (vistaActiva === 'cursos') {
+            if (datos.enlaceInscripcion) detallesCreacion.push(`Con enlace de inscripción activo`);
         }
         const detallesString = detallesCreacion.length > 0 ? detallesCreacion.join('. ') + '.' : null;
         await addDoc(collection(db, coleccion), datos);
@@ -930,6 +949,16 @@ useEffect(() => {
                   <p className="text-sm text-gray-500">Auditoría y configuraciones</p>
                 </div>
               </button>
+
+              <button onClick={() => setVistaActiva("cursos")} className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-orange-500/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center">
+                <div className="p-4 bg-orange-50 text-orange-600 rounded-2xl group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
+                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 14l9-5-9-5-9 5 9 5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-800 mb-1">Cursos</h2>
+                  <p className="text-sm text-gray-500">Oferta y capacitación</p>
+                </div>
+              </button>
             </nav>
           </section>
         )}
@@ -1059,8 +1088,20 @@ useEffect(() => {
                             InputLabelProps={{ shrink: true }}
                           />
                         </div>
+                        
                       )}
                     </div>
+                    {vistaActiva === "cursos" && (
+                      <div className="md:col-span-3">
+                        <AdminTextField 
+                          label="Enlace de Inscripción (Opcional - Google Forms, Zoom, etc.)"
+                          type="url"
+                          value={enlaceInscripcion}
+                          onChange={(e) => setEnlaceInscripcion(e.target.value)}
+                          placeholder="https://forms.gle/..."
+                        />
+                      </div>
+                    )}
 
                     {vistaActiva === "libros" && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
