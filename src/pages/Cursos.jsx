@@ -61,7 +61,7 @@ export default function Cursos() {
               Capacitación Continua
             </h2>
             <p>
-              Nuestra oferta académica está diseñada para empoderar a profesionales, activistas y estudiantes con herramientas prácticas y conocimientos actualizados en materia de Derechos Humanos.
+              Nuestra oferta académica está diseñada para empoderar a profesionales, defensores de derechos humanos y estudiantes con herramientas prácticas y conocimientos actualizados en materia de Derechos Humanos.
             </p>
           </div>
 
