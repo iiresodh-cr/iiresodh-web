@@ -451,7 +451,7 @@ useEffect(() => {
     } else {
       // Cargar datos para Comunicaciones, Artículos, Libros e Informes
       setTitulo(item.titulo || "");
-      setResumen(item.resumen || item.descripcion || "");
+      setResumen(item.resumen || "");
       setContenido(item.contenido || "");
 
       if (vistaActiva === "comunicaciones") {
@@ -740,10 +740,10 @@ useEffect(() => {
           }
         } else if (vistaActiva === "informes") {
           datos.año = Number(año);
-          datos.descripcion = resumen; // Usamos el texto de resumen como descripcion
           datos.archivoInformeUrl = finalArchivoInformeUrl || null;
           datos.tipo = "PDF";
-          delete datos.contenido; // Informes no usa campo de contenido largo
+          delete datos.contenido; 
+          delete datos.resumen;
         }
       }
 
@@ -1104,6 +1104,8 @@ useEffect(() => {
                       </div>
                     )}
 
+                    {/* Resumen y Auto-completar: Oculto en Informes */}
+                    {vistaActiva !== "informes" && (
                     <div>
                       <div className="flex justify-between items-end mb-1.5">
                         <div className="w-full flex justify-end">
@@ -1113,7 +1115,7 @@ useEffect(() => {
                         </div>
                       </div>
                       <AdminTextField 
-                        label={vistaActiva === "informes" ? "Descripción Breve" : "Resumen corto"}
+                        label="Resumen corto"
                         required
                         multiline
                         rows={2}
@@ -1123,6 +1125,7 @@ useEffect(() => {
                         inputProps={{ maxLength: 250 }}
                       />
                     </div>
+                    )}
 
                     {vistaActiva === "comunicaciones" && (
                       <div className="bg-gray-50/80 p-5 rounded-xl border border-dashed border-gray-300">
