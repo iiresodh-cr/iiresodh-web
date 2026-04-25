@@ -1429,7 +1429,7 @@ useEffect(() => {
                             <article key={n.id} className={`group relative overflow-hidden rounded-xl border transition-all duration-300 h-32 flex flex-col justify-end p-4 ${editandoId === n.id ? 'border-main-red shadow-md ring-2 ring-red-100' : 'border-gray-200 hover:border-main-blue hover:shadow-lg'}`}>
                               {/* Background Image */}
                               <div className="absolute inset-0 bg-cover bg-top transition-transform duration-700 group-hover:scale-110" style={{ backgroundImage: `url(${n.imagenPrincipalUrl || 'https://via.placeholder.com/400x300?text=Sin+Portada'})` }}></div>
-                              <div className="absolute inset-0 bg-gradient-to-t from-main-blue via-main-blue/70 to-transparent opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                              <div className="absolute inset-0 bg-linear-to-t from-main-blue via-main-blue/70 to-transparent opacity-90 group-hover:opacity-100 transition-opacity"></div>
                               
                               <div className="relative z-10 w-full flex justify-between items-end">
                                 <div>

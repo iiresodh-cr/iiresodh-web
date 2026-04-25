@@ -85,7 +85,7 @@ export default function InformesAnuales() {
                 <Paper 
                   key={informe.id} 
                   elevation={0} 
-                  className="group relative overflow-hidden aspect-[3/4] border border-gray-100 shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer"
+                  className="group relative overflow-hidden aspect-3/4 border border-gray-100 shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer"
                   sx={{ borderRadius: '24px' }}
                 >
                   {/* Imagen de fondo (Portada del informe) */}
@@ -96,7 +96,7 @@ export default function InformesAnuales() {
                   />
                   
                   {/* Filtro oscuro para legibilidad */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-main-blue via-main-blue/50 to-transparent opacity-90 group-hover:opacity-75 transition-opacity duration-500" />
+                  <div className="absolute inset-0 bg-linear-to-t from-main-blue via-main-blue/50 to-transparent opacity-90 group-hover:opacity-75 transition-opacity duration-500" />
                   
                   {/* Contenido de la tarjeta */}
                   <div className="absolute inset-0 p-6 flex flex-col justify-end">
