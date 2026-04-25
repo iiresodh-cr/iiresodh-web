@@ -125,7 +125,6 @@ export default function AdminPanel() {
   const [orden, setOrden] = useState(0);
   const [pais, setPais] = useState("Costa Rica");
 
-  
   // NUEVOS ESTADOS PARA LIBROS
   const [precio, setPrecio] = useState("");
   const [precioMXN, setPrecioMXN] = useState(""); // NUEVO CAMPO MONEDA LOCAL
@@ -134,6 +133,12 @@ export default function AdminPanel() {
   const [archivoLibroNombre, setArchivoLibroNombre] = useState("");
   const [archivoLibroAnterior, setArchivoLibroAnterior] = useState(null);
   const [rutaStorageAnterior, setRutaStorageAnterior] = useState(null);
+
+  // NUEVOS ESTADOS PARA INFORMES ANUALES
+  const [año, setAño] = useState("");
+  const [archivoInforme, setArchivoInforme] = useState(null);
+  const [archivoInformeNombre, setArchivoInformeNombre] = useState("");
+  const [archivoInformeAnterior, setArchivoInformeAnterior] = useState(null);
   
   const [imagenPrincipal, setImagenPrincipal] = useState(null);
   const [mainImagePreviewUrl, setMainImagePreviewUrl] = useState(null);
@@ -299,6 +304,7 @@ useEffect(() => {
     if (vistaActiva === "articulos") return "articulos_academicos";
     if (vistaActiva === "libros") return "libros";
     if (vistaActiva === "equipo") return "equipo";
+    if (vistaActiva === "informes") return "informes";
     return "noticias";
   };
 
@@ -339,6 +345,13 @@ useEffect(() => {
         });
       }
 
+      // ORDENAMIENTO PARA INFORMES
+      if (vistaActiva === "informes") {
+        data.sort((a, b) => {
+          return (b.año || 0) - (a.año || 0);
+        });
+      }
+
       setListaItems(data);
       setHayMas(querySnapshot.docs.length === ITEMS_POR_PAGINA);
 
@@ -358,12 +371,12 @@ useEffect(() => {
 
   const cargarItems = () => {
     const coleccion = obtenerColeccionActiva();
-    const orderByField = vistaActiva === 'equipo' ? 'orden' : 'fechaPublicacion';
+    const orderByField = vistaActiva === 'equipo' ? 'orden' : (vistaActiva === 'informes' ? 'año' : 'fechaPublicacion');
     const orderByDirection = vistaActiva === 'equipo' ? 'asc' : 'desc';
 
     const constraints = [orderBy(orderByField, orderByDirection)];
-    // Para la vista de equipo, no aplicamos límite para que se muestren todos.
-    if (vistaActiva !== 'equipo') {
+    // Para la vista de equipo e informes, no aplicamos límite para que se muestren todos o sea más fácil su gestión.
+    if (vistaActiva !== 'equipo' && vistaActiva !== 'informes') {
       constraints.push(limit(ITEMS_POR_PAGINA));
     }
 
@@ -374,7 +387,7 @@ useEffect(() => {
   const paginaSiguiente = () => {
     if (!ultimoDoc) return;
     const coleccion = obtenerColeccionActiva();
-    const orderByField = vistaActiva === 'equipo' ? 'orden' : 'fechaPublicacion';
+    const orderByField = vistaActiva === 'equipo' ? 'orden' : (vistaActiva === 'informes' ? 'año' : 'fechaPublicacion');
     const orderByDirection = vistaActiva === 'equipo' ? 'asc' : 'desc';
     const q = query(collection(db, coleccion), orderBy(orderByField, orderByDirection), startAfter(ultimoDoc), limit(ITEMS_POR_PAGINA));
     cargarItemsBatch(q, "sig");
@@ -383,7 +396,7 @@ useEffect(() => {
   const paginaAnterior = () => {
     if (!primerDoc) return;
     const coleccion = obtenerColeccionActiva();
-    const orderByField = vistaActiva === 'equipo' ? 'orden' : 'fechaPublicacion';
+    const orderByField = vistaActiva === 'equipo' ? 'orden' : (vistaActiva === 'informes' ? 'año' : 'fechaPublicacion');
     const orderByDirection = vistaActiva === 'equipo' ? 'asc' : 'desc';
     const q = query(collection(db, coleccion), orderBy(orderByField, orderByDirection), endBefore(primerDoc), limitToLast(ITEMS_POR_PAGINA));
     cargarItemsBatch(q, "ant");
@@ -436,9 +449,9 @@ useEffect(() => {
       setMainImagePreviewUrl(item.fotoUrl || null);
       setImagenPrincipalAnterior(item.fotoUrl || null);
     } else {
-      // Cargar datos para Comunicaciones, Artículos y Libros
+      // Cargar datos para Comunicaciones, Artículos, Libros e Informes
       setTitulo(item.titulo || "");
-      setResumen(item.resumen || "");
+      setResumen(item.resumen || item.descripcion || "");
       setContenido(item.contenido || "");
 
       if (vistaActiva === "comunicaciones") {
@@ -460,6 +473,11 @@ useEffect(() => {
         setArchivoLibroAnterior(item.archivoLibroUrl || null);
         setRutaStorageAnterior(item.rutaStorage || null);
       }
+
+      if (vistaActiva === "informes") {
+        setAño(item.año || "");
+        setArchivoInformeAnterior(item.archivoInformeUrl || null);
+      }
       
       // Usar 'imagenPrincipalUrl' para los demás
       setImagenPrincipalAnterior(item.imagenPrincipalUrl || null);
@@ -472,6 +490,8 @@ useEffect(() => {
     setImagenPrincipal(null);
     setArchivoLibro(null);
     setArchivoLibroNombre("");
+    setArchivoInforme(null);
+    setArchivoInformeNombre("");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -505,6 +525,13 @@ useEffect(() => {
     setArchivoLibroNombre("");
     setArchivoLibroAnterior(null);
     setRutaStorageAnterior(null);
+    
+    // Limpiar campos de informes
+    setAño("");
+    setArchivoInforme(null);
+    setArchivoInformeNombre("");
+    setArchivoInformeAnterior(null);
+    
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -631,7 +658,7 @@ useEffect(() => {
     setMensaje(editandoId ? "Actualizando información..." : "Publicando contenido...");
 
     try {
-      const carpeta = vistaActiva === "articulos" ? "articulos" : (vistaActiva === "libros" ? "libros" : (vistaActiva === 'equipo' ? 'equipo' : "noticias"));
+      const carpeta = vistaActiva === "articulos" ? "articulos" : (vistaActiva === "libros" ? "libros" : (vistaActiva === 'equipo' ? 'equipo' : (vistaActiva === 'informes' ? 'informes' : "noticias")));
       
       // 1. Subir Portada (convertida a WebP)
       let finalPrincipalUrl = imagenPrincipalAnterior;
@@ -651,6 +678,14 @@ useEffect(() => {
         await uploadBytes(refLibro, archivoLibro);
         finalArchivoLibroUrl = await getDownloadURL(refLibro);
         rutaStorageLibro = rutaCompleta; 
+      }
+
+      // 3. Subir Archivo PDF de Informes
+      let finalArchivoInformeUrl = archivoInformeAnterior;
+      if (vistaActiva === "informes" && archivoInforme) {
+        const refInf = ref(storage, `informes/archivos/${Date.now()}_${archivoInforme.name}`);
+        await uploadBytes(refInf, archivoInforme);
+        finalArchivoInformeUrl = await getDownloadURL(refInf);
       }
 
       const nuevasUrls = [];
@@ -703,6 +738,12 @@ useEffect(() => {
           } else if (rutaStorageAnterior) {
             datos.rutaStorage = rutaStorageAnterior;
           }
+        } else if (vistaActiva === "informes") {
+          datos.año = Number(año);
+          datos.descripcion = resumen; // Usamos el texto de resumen como descripcion
+          datos.archivoInformeUrl = finalArchivoInformeUrl || null;
+          datos.tipo = "PDF";
+          delete datos.contenido; // Informes no usa campo de contenido largo
         }
       }
 
@@ -719,6 +760,7 @@ useEffect(() => {
             if (itemOriginal.bio !== datos.bio && datos.bio !== undefined) cambios.push(`biografía`);
             if (itemOriginal.autor !== datos.autor && datos.autor !== undefined) cambios.push(`autor`);
             if (Number(itemOriginal.orden) !== datos.orden && datos.orden !== undefined) cambios.push(`orden`);
+            if (Number(itemOriginal.año) !== datos.año && datos.año !== undefined) cambios.push(`año`);
             if (Number(itemOriginal.precio) !== datos.precio && datos.precio !== undefined) cambios.push(`precio USD`);
             if (Number(itemOriginal.precioMXN) !== datos.precioMXN && datos.precioMXN !== undefined) cambios.push(`precio MXN`);
             if (itemOriginal.destacado !== datos.destacado && datos.destacado !== undefined) cambios.push(`destacado`);
@@ -729,7 +771,8 @@ useEffect(() => {
             if (JSON.stringify(tagsOriginales.sort()) !== JSON.stringify(tagsNuevos.sort())) cambios.push('tags');
 
             if (finalPrincipalUrl !== imagenPrincipalAnterior) cambios.push('imagen principal');
-            if (finalArchivoLibroUrl !== archivoLibroAnterior) cambios.push('archivo PDF');
+            if (finalArchivoLibroUrl !== archivoLibroAnterior) cambios.push('archivo PDF libro');
+            if (finalArchivoInformeUrl !== archivoInformeAnterior) cambios.push('archivo PDF informe');
             if (nuevasUrls.length > 0 || carruselExistente.length !== (itemOriginal.imagenesCarruselUrls || []).length) cambios.push('galería');
         }
 
@@ -748,6 +791,9 @@ useEffect(() => {
         }
         if (vistaActiva === 'libros') {
             detallesCreacion.push(`Precio USD: ${datos.precio}, MXN: ${datos.precioMXN}`);
+        }
+        if (vistaActiva === 'informes') {
+            detallesCreacion.push(`Año: ${datos.año}`);
         }
         if (vistaActiva === 'equipo') {
             detallesCreacion.push(`Cargo: ${datos.cargo}, Orden: ${datos.orden}`);
@@ -888,6 +934,17 @@ useEffect(() => {
                 </div>
               </button>
 
+              {/* NUEVO BOTÓN PARA INFORMES ANUALES */}
+              <button onClick={() => setVistaActiva("informes")} className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-teal-500/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center">
+                <div className="p-4 bg-teal-50 text-teal-600 rounded-2xl group-hover:bg-teal-600 group-hover:text-white transition-colors duration-300">
+                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-800 mb-1">Informes Anuales</h2>
+                  <p className="text-sm text-gray-500">Gestión de memorias de gestión</p>
+                </div>
+              </button>
+
               <button onClick={() => setVistaActiva("adminWeb")} className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-yellow-500/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center">
                 <div className="p-4 bg-yellow-50 text-yellow-600 rounded-2xl group-hover:bg-yellow-600 group-hover:text-white transition-colors duration-300">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
@@ -919,8 +976,8 @@ useEffect(() => {
                     <div>
                       <h2 id="form-title" className={`text-2xl md:text-3xl font-bold tracking-tight ${editandoId ? 'text-main-red' : 'text-gray-800'}`}>
                         {editandoId ? 
-                          (vistaActiva === 'equipo' ? "Editando Miembro" : "Editando Publicación") : 
-                          (vistaActiva === "libros" ? "Registrar Nuevo Libro" : (vistaActiva === 'equipo' ? "Agregar Miembro" : "Crear Nueva Publicación"))
+                          (vistaActiva === 'equipo' ? "Editando Miembro" : (vistaActiva === 'informes' ? "Editando Informe" : "Editando Publicación")) : 
+                          (vistaActiva === "libros" ? "Registrar Nuevo Libro" : (vistaActiva === 'equipo' ? "Agregar Miembro" : (vistaActiva === 'informes' ? "Cargar Nuevo Informe" : "Crear Nueva Publicación")))
                         }
                       </h2>
                       <p className="text-sm text-gray-500 mt-1">
@@ -928,6 +985,7 @@ useEffect(() => {
                           vistaActiva === "comunicaciones" ? "Noticias institucionales" :
                           vistaActiva === "articulos" ? "Artículos de investigación" :
                           vistaActiva === "libros" ? "Tienda Editorial" :
+                          vistaActiva === "informes" ? "Informes Anuales" :
                           "Equipo de Trabajo"
                         }
                       </p>
@@ -967,20 +1025,33 @@ useEffect(() => {
                       )}
                     </>)}
 
-                    {/* FORMULARIO PARA NOTICIAS, ARTÍCULOS Y LIBROS */}
+                    {/* FORMULARIO PARA NOTICIAS, ARTÍCULOS, LIBROS E INFORMES */}
                     {vistaActiva !== 'equipo' && (<>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className={vistaActiva === "libros" ? "md:col-span-1" : "md:col-span-2"}>
+                      <div className={(vistaActiva === "libros" || vistaActiva === "informes") ? "md:col-span-1" : "md:col-span-2"}>
                         <AdminTextField 
-                          label={vistaActiva === "articulos" ? "Título del Artículo" : (vistaActiva === "libros" ? "Título del Libro" : "Título de la Noticia")}
+                          label={vistaActiva === "informes" ? "Título del Informe" : (vistaActiva === "articulos" ? "Título del Artículo" : (vistaActiva === "libros" ? "Título del Libro" : "Título de la Noticia"))}
                           value={titulo}
                           onChange={(e) => setTitulo(e.target.value)}
                           required
                           multiline={vistaActiva === 'comunicaciones'}
                           rows={2}
-                          placeholder="Ej: Nueva alianza internacional..."
+                          placeholder={vistaActiva === "informes" ? "Ej: Informe de Gestión..." : "Ej: Nueva alianza internacional..."}
                         />
                       </div>
+
+                      {vistaActiva === "informes" && (
+                        <div className="md:col-span-1">
+                          <AdminTextField 
+                            label="Año del Informe"
+                            type="number"
+                            required
+                            value={año}
+                            onChange={(e) => setAño(e.target.value)}
+                            placeholder="Ej: 2024"
+                          />
+                        </div>
+                      )}
 
                       {vistaActiva === "libros" && (
                         <div className="md:col-span-1">
@@ -1042,7 +1113,7 @@ useEffect(() => {
                         </div>
                       </div>
                       <AdminTextField 
-                        label="Resumen corto"
+                        label={vistaActiva === "informes" ? "Descripción Breve" : "Resumen corto"}
                         required
                         multiline
                         rows={2}
@@ -1083,37 +1154,43 @@ useEffect(() => {
                       </div>
                     )}
 
-                    {vistaActiva === "libros" && (
+                    {(vistaActiva === "libros" || vistaActiva === "informes") && (
                       <div className="bg-blue-50/50 p-5 rounded-xl border border-dashed border-blue-200">
-                        <label className="block text-sm font-semibold text-main-blue mb-2">Archivo del Libro (PDF) *</label>
-                        <p className="text-xs text-gray-500 mb-4">Este es el archivo real que se enviará automáticamente al comprador. No se generarán links públicos.</p>
+                        <label className="block text-sm font-semibold text-main-blue mb-2">Archivo PDF *</label>
+                        <p className="text-xs text-gray-500 mb-4">Sube el documento final del {vistaActiva === "libros" ? "libro" : "informe"}.</p>
                         
                         <input 
                           type="file" 
                           accept=".pdf" 
-                          id="input-libro-pdf"
+                          id="input-archivo-pdf"
                           className="sr-only"
-                          required={!editandoId && !archivoLibroAnterior}
+                          required={!editandoId && !archivoLibroAnterior && !archivoInformeAnterior}
                           onChange={(e) => {
                             if(e.target.files[0]) {
-                              setArchivoLibro(e.target.files[0]);
-                              setArchivoLibroNombre(e.target.files[0].name);
+                              if(vistaActiva === "libros") {
+                                setArchivoLibro(e.target.files[0]);
+                                setArchivoLibroNombre(e.target.files[0].name);
+                              } else {
+                                setArchivoInforme(e.target.files[0]);
+                                setArchivoInformeNombre(e.target.files[0].name);
+                              }
                             }
                           }}
                         />
                         <div className="flex items-center gap-3">
-                          <label htmlFor="input-libro-pdf" className="inline-block bg-white border border-gray-300 text-main-blue px-4 py-2 rounded-lg text-sm font-medium cursor-pointer hover:bg-gray-50 transition-colors shadow-sm">
+                          <label htmlFor="input-archivo-pdf" className="inline-block bg-white border border-gray-300 text-main-blue px-4 py-2 rounded-lg text-sm font-medium cursor-pointer hover:bg-gray-50 transition-colors shadow-sm">
                             Seleccionar PDF...
                           </label>
-                          {(archivoLibroNombre || archivoLibroAnterior) && (
+                          {(archivoLibroNombre || archivoLibroAnterior || archivoInformeNombre || archivoInformeAnterior) && (
                             <span className="text-xs text-gray-600 font-medium truncate max-w-50 md:max-w-xs bg-white px-3 py-2 rounded-md border border-gray-200">
-                              {archivoLibroNombre || "Archivo guardado (puedes reemplazarlo)"}
+                              {archivoLibroNombre || archivoInformeNombre || "Archivo guardado (puedes reemplazarlo)"}
                             </span>
                           )}
                         </div>
                       </div>
                     )}
 
+                    {vistaActiva !== "informes" && (
                     <div>
                       <AdminTextField 
                         label={vistaActiva === "libros" ? "Descripción Larga" : "Cuerpo del texto"}
@@ -1124,8 +1201,9 @@ useEffect(() => {
                         onChange={(e) => setContenido(e.target.value)}
                         placeholder={vistaActiva === "libros" ? "Índice o descripción del libro..." : "Escribe o pega el desarrollo de la publicación aquí..."}
                       />
-                    </div></>
+                    </div>
                     )}
+                    </>)}
 
                     {vistaActiva === 'comunicaciones' && (
                       <div className="mt-8">
@@ -1167,7 +1245,7 @@ useEffect(() => {
                       
                       <div className="mb-6">
                         <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3" id="portada-label">
-                          {vistaActiva === "libros" ? "Portada del Libro" : "Portada principal"}
+                          {vistaActiva === "libros" ? "Portada del Libro" : (vistaActiva === "informes" ? "Portada del Informe" : "Portada principal")}
                         </label>
                         <div className="flex flex-col sm:flex-row items-start gap-4">
                           {mainImagePreviewUrl ? (
@@ -1385,7 +1463,7 @@ useEffect(() => {
                                   <h3 className="font-semibold text-sm text-gray-800 line-clamp-2 leading-snug" title={n.titulo || n.nombre}>{n.titulo || n.nombre}</h3>
                                 </div>
                                 <p className="text-[10px] text-gray-400 truncate">
-                                  {vistaActiva === 'equipo' ? `Orden: ${n.orden} - ${n.cargo}` : `/${obtenerColeccionActiva()}/${n.slug || n.id}`}
+                                  {vistaActiva === 'equipo' ? `Orden: ${n.orden} - ${n.cargo}` : (vistaActiva === 'informes' ? `Año: ${n.año}` : `/${obtenerColeccionActiva()}/${n.slug || n.id}`)}
                                 </p>
                                 
                                 {/* Nuevo: Muestra de Tags si existen */}
