@@ -100,7 +100,6 @@ const convertirAWebp = (file, calidad = 0.8) => {
 
 // ==========================================
 // CONFIGURACIÓN DE TAGS
-// Para agregar más, simplemente escribe aquí:
 // ==========================================
 const TAGS_DISPONIBLES = [
   "IIRESODH", "Noticia", "Anuncio", "Artículo", "Canadá", "Colombia", "Costa Rica", 
@@ -117,7 +116,7 @@ export default function AdminPanel() {
   const [contenido, setContenido] = useState("");
   const [fechaPersonalizada, setFechaPersonalizada] = useState(""); 
 
-  // NUEVOS ESTADOS PARA EQUIPO
+  // ESTADOS PARA EQUIPO
   const [nombre, setNombre] = useState("");
   const [cargo, setCargo] = useState("");
   const [bio, setBio] = useState("");
@@ -125,16 +124,16 @@ export default function AdminPanel() {
   const [orden, setOrden] = useState(0);
   const [pais, setPais] = useState("Costa Rica");
 
-  // NUEVOS ESTADOS PARA LIBROS
+  // ESTADOS PARA LIBROS
   const [precio, setPrecio] = useState("");
-  const [precioMXN, setPrecioMXN] = useState(""); // NUEVO CAMPO MONEDA LOCAL
+  const [precioMXN, setPrecioMXN] = useState("");
   const [autor, setAutor] = useState(""); 
   const [archivoLibro, setArchivoLibro] = useState(null);
   const [archivoLibroNombre, setArchivoLibroNombre] = useState("");
   const [archivoLibroAnterior, setArchivoLibroAnterior] = useState(null);
   const [rutaStorageAnterior, setRutaStorageAnterior] = useState(null);
 
-  // NUEVOS ESTADOS PARA INFORMES ANUALES
+  // ESTADOS PARA INFORMES ANUALES
   const [año, setAño] = useState("");
   const [archivoInforme, setArchivoInforme] = useState(null);
   const [archivoInformeNombre, setArchivoInformeNombre] = useState("");
@@ -155,11 +154,12 @@ export default function AdminPanel() {
   const [generandoResumen, setGenerandoResumen] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [listaItems, setListaItems] = useState([]);
-  // NUEVOS ESTADOS PARA COMUNICACIONES
+  
+  // ESTADOS PARA COMUNICACIONES
   const [tagsSeleccionados, setTagsSeleccionados] = useState([]);
   const [persistente, setPersistente] = useState(false);
 
-  // NUEVOS ESTADOS PARA ADMINISTRACIÓN WEB
+  // ESTADOS PARA ADMINISTRACIÓN WEB
   const [actividades, setActividades] = useState([]);
   const [cargandoActividades, setCargandoActividades] = useState(false);
   const [usuariosUnicos, setUsuariosUnicos] = useState([]);
@@ -172,7 +172,7 @@ export default function AdminPanel() {
   const [cargandoMas, setCargandoMas] = useState(false);
   const ACTIVIDADES_POR_PAGINA = 50;
 
-  // NUEVOS ESTADOS PARA CIFRAS DE IMPACTO
+  // ESTADOS PARA CIFRAS DE IMPACTO
   const [cifrasImpacto, setCifrasImpacto] = useState({
     cifra1: "", texto1: "",
     cifra2: "", texto2: "",
@@ -232,7 +232,7 @@ export default function AdminPanel() {
   };
 
 const cargarUsuariosUnicos = async () => {
-  if (usuariosUnicos.length > 0) return; // No recargar si ya los tenemos
+  if (usuariosUnicos.length > 0) return;
   try {
     const q = query(collection(db, "auditoria_actividad"));
     const snapshot = await getDocs(q);
@@ -246,7 +246,7 @@ const cargarUsuariosUnicos = async () => {
 const cargarActividades = async (isLoadMore = false) => {
   if (!isLoadMore) {
     setCargandoActividades(true);
-    setActividades([]); // Limpiar en nueva búsqueda
+    setActividades([]); 
   } else {
     setCargandoMas(true);
   }
@@ -291,7 +291,6 @@ useEffect(() => {
   }
 }, [vistaActiva]);
 
-// Nuevo useEffect para resetear al cambiar filtros
 useEffect(() => {
   if (vistaActiva === 'adminWeb') {
     setActividades([]);
@@ -317,35 +316,24 @@ useEffect(() => {
       
       let data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-      // ORDENAMIENTO LOCAL MEJORADO
       if (vistaActiva === "comunicaciones") {
         data.sort((a, b) => {
-          // 1. Prioridad: ¿Es persistente? (Las fijadas van arriba)
           if (a.persistente && !b.persistente) return -1;
           if (!a.persistente && b.persistente) return 1;
-          
-          // 2. Segunda prioridad: Fecha de publicación (Las más recientes van primero)
-          // Usamos .seconds de los Timestamp de Firebase para comparar con precisión
           const tiempoA = a.fechaPublicacion?.seconds || 0;
           const tiempoB = b.fechaPublicacion?.seconds || 0;
-          
           return tiempoB - tiempoA;
         });
       }
 
-      // ORDENAMIENTO PARA EQUIPO
       if (vistaActiva === "equipo") {
         data.sort((a, b) => {
-          // El presidente (destacado: true) siempre va primero.
           if (a.destacado && !b.destacado) return -1;
           if (!a.destacado && b.destacado) return 1;
-          
-          // Para los demás, orden alfabético por nombre.
           return (a.nombre || "").localeCompare(b.nombre || "");
         });
       }
 
-      // ORDENAMIENTO PARA INFORMES
       if (vistaActiva === "informes") {
         data.sort((a, b) => {
           return (b.año || 0) - (a.año || 0);
@@ -375,7 +363,6 @@ useEffect(() => {
     const orderByDirection = vistaActiva === 'equipo' ? 'asc' : 'desc';
 
     const constraints = [orderBy(orderByField, orderByDirection)];
-    // Para la vista de equipo e informes, no aplicamos límite para que se muestren todos o sea más fácil su gestión.
     if (vistaActiva !== 'equipo' && vistaActiva !== 'informes') {
       constraints.push(limit(ITEMS_POR_PAGINA));
     }
@@ -438,18 +425,15 @@ useEffect(() => {
     setEditandoId(item.id);
 
     if (vistaActiva === 'equipo') {
-      // Cargar datos para el formulario de Equipo
       setNombre(item.nombre || "");
       setCargo(item.cargo || "");
       setBio(item.bio || "");
       setDestacado(item.destacado || false);
       setOrden(item.orden || 0);
       setPais(item.pais || "Costa Rica");
-      // Usar 'fotoUrl' para la imagen del equipo
       setMainImagePreviewUrl(item.fotoUrl || null);
       setImagenPrincipalAnterior(item.fotoUrl || null);
     } else {
-      // Cargar datos para Comunicaciones, Artículos, Libros e Informes
       setTitulo(item.titulo || "");
       setResumen(item.resumen || "");
       setContenido(item.contenido || "");
@@ -479,12 +463,10 @@ useEffect(() => {
         setArchivoInformeAnterior(item.archivoInformeUrl || null);
       }
       
-      // Usar 'imagenPrincipalUrl' para los demás
       setImagenPrincipalAnterior(item.imagenPrincipalUrl || null);
       setMainImagePreviewUrl(item.imagenPrincipalUrl || null);
     }
 
-    // Limpiar campos de subida de archivos para evitar re-subidas accidentales
     setImagenesCarrusel([]); 
     setArchivosAdjuntos([]);
     setImagenPrincipal(null);
@@ -502,14 +484,13 @@ useEffect(() => {
     setContenido("");
     setFechaPersonalizada("");
 
-    // Limpiar campos de equipo
     setNombre("");
     setCargo("");
     setBio("");
     setDestacado(false);
     setOrden(0);
     setPais("Costa Rica");
-    // Limpiar nuevos campos
+
     setTagsSeleccionados([]);
     setPersistente(false);
     setMainImagePreviewUrl(null);
@@ -519,14 +500,13 @@ useEffect(() => {
     setImagenesCarrusel([]);
     setArchivosAdjuntos([]);
     setPrecio("");
-    setPrecioMXN(""); // NUEVO
+    setPrecioMXN(""); 
     setAutor(""); 
     setArchivoLibro(null);
     setArchivoLibroNombre("");
     setArchivoLibroAnterior(null);
     setRutaStorageAnterior(null);
     
-    // Limpiar campos de informes
     setAño("");
     setArchivoInforme(null);
     setArchivoInformeNombre("");
@@ -632,7 +612,6 @@ useEffect(() => {
     e.preventDefault();
     setLoading(true);
 
-    // VALIDACIÓN DE LÍMITE DE NOTICIAS PERSISTENTES
     if (vistaActiva === "comunicaciones" && persistente) {
       try {
         const qPersistentes = query(collection(db, "noticias"), where("persistente", "==", true));
@@ -640,7 +619,6 @@ useEffect(() => {
         
         let cantidadFijas = snapPersistentes.docs.length;
         
-        // Si estamos editando una noticia que YA estaba fijada, no la sumamos como nueva
         if (editandoId && snapPersistentes.docs.some(doc => doc.id === editandoId)) {
           cantidadFijas -= 1; 
         }
@@ -660,7 +638,6 @@ useEffect(() => {
     try {
       const carpeta = vistaActiva === "articulos" ? "articulos" : (vistaActiva === "libros" ? "libros" : (vistaActiva === 'equipo' ? 'equipo' : (vistaActiva === 'informes' ? 'informes' : "noticias")));
       
-      // 1. Subir Portada (convertida a WebP)
       let finalPrincipalUrl = imagenPrincipalAnterior;
       if (imagenPrincipal) {
         const refImg = ref(storage, `${carpeta}/portadas/${Date.now()}_${imagenPrincipal.name}`);
@@ -668,7 +645,6 @@ useEffect(() => {
         finalPrincipalUrl = await getDownloadURL(refImg);
       }
 
-      // 2. Subir Archivo PDF del Libro (Privado y seguro, sin sistema Link)
       let finalArchivoLibroUrl = archivoLibroAnterior;
       let rutaStorageLibro = null; 
 
@@ -680,7 +656,6 @@ useEffect(() => {
         rutaStorageLibro = rutaCompleta; 
       }
 
-      // 3. Subir Archivo PDF de Informes
       let finalArchivoInformeUrl = archivoInformeAnterior;
       if (vistaActiva === "informes" && archivoInforme) {
         const refInf = ref(storage, `informes/archivos/${Date.now()}_${archivoInforme.name}`);
@@ -740,10 +715,12 @@ useEffect(() => {
           }
         } else if (vistaActiva === "informes") {
           datos.año = Number(año);
+          datos.titulo = `Informe Anual ${año}`;
           datos.archivoInformeUrl = finalArchivoInformeUrl || null;
           datos.tipo = "PDF";
           delete datos.contenido; 
           delete datos.resumen;
+          delete datos.fechaPublicacion;
         }
       }
 
@@ -934,7 +911,6 @@ useEffect(() => {
                 </div>
               </button>
 
-              {/* NUEVO BOTÓN PARA INFORMES ANUALES */}
               <button onClick={() => setVistaActiva("informes")} className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-teal-500/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center">
                 <div className="p-4 bg-teal-50 text-teal-600 rounded-2xl group-hover:bg-teal-600 group-hover:text-white transition-colors duration-300">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
@@ -1028,22 +1004,27 @@ useEffect(() => {
                     {/* FORMULARIO PARA NOTICIAS, ARTÍCULOS, LIBROS E INFORMES */}
                     {vistaActiva !== 'equipo' && (<>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className={(vistaActiva === "libros" || vistaActiva === "informes") ? "md:col-span-1" : "md:col-span-2"}>
-                        <AdminTextField 
-                          label={vistaActiva === "informes" ? "Título del Informe" : (vistaActiva === "articulos" ? "Título del Artículo" : (vistaActiva === "libros" ? "Título del Libro" : "Título de la Noticia"))}
-                          value={titulo}
-                          onChange={(e) => setTitulo(e.target.value)}
-                          required
-                          multiline={vistaActiva === 'comunicaciones'}
-                          rows={2}
-                          placeholder={vistaActiva === "informes" ? "Ej: Informe de Gestión..." : "Ej: Nueva alianza internacional..."}
-                        />
-                      </div>
-
-                      {vistaActiva === "informes" && (
-                        <div className="md:col-span-1">
+                      
+                      {/* Ocultar el Título si es Informe, ya que se autogenera con el Año */}
+                      {vistaActiva !== "informes" && (
+                        <div className={(vistaActiva === "libros") ? "md:col-span-1" : "md:col-span-2"}>
                           <AdminTextField 
-                            label="Año del Informe"
+                            label={vistaActiva === "articulos" ? "Título del Artículo" : (vistaActiva === "libros" ? "Título del Libro" : "Título de la Noticia")}
+                            value={titulo}
+                            onChange={(e) => setTitulo(e.target.value)}
+                            required
+                            multiline={vistaActiva === 'comunicaciones'}
+                            rows={2}
+                            placeholder="Ej: Nueva alianza internacional..."
+                          />
+                        </div>
+                      )}
+
+                      {/* Para Informes, el campo del Año toma más protagonismo */}
+                      {vistaActiva === "informes" && (
+                        <div className="md:col-span-3">
+                          <AdminTextField 
+                            label="Año del Informe (P.ej. 2024)"
                             type="number"
                             required
                             value={año}
@@ -1067,18 +1048,20 @@ useEffect(() => {
                         </div>
                       )}
 
-                      <div className="md:col-span-1">
-                        <AdminTextField 
-                          label="Fecha (Opcional)"
-                          type="datetime-local"
-                          value={fechaPersonalizada}
-                          onChange={(e) => setFechaPersonalizada(e.target.value)}
-                          InputLabelProps={{ shrink: true }}
-                        />
-                      </div>
+                      {/* Ocultar la Fecha para los informes */}
+                      {vistaActiva !== "informes" && (
+                        <div className="md:col-span-1">
+                          <AdminTextField 
+                            label="Fecha (Opcional)"
+                            type="datetime-local"
+                            value={fechaPersonalizada}
+                            onChange={(e) => setFechaPersonalizada(e.target.value)}
+                            InputLabelProps={{ shrink: true }}
+                          />
+                        </div>
+                      )}
                     </div>
 
-                    {/* NUEVA FILA DE CAMPOS PARA LIBROS (AUTOR Y PRECIO MXN) */}
                     {vistaActiva === "libros" && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
@@ -1104,7 +1087,7 @@ useEffect(() => {
                       </div>
                     )}
 
-                    {/* Resumen y Auto-completar: Oculto en Informes */}
+                    {/* Ocultar el PIDA y la Descripción Breve para los Informes */}
                     {vistaActiva !== "informes" && (
                     <div>
                       <div className="flex justify-between items-end mb-1.5">
@@ -1367,7 +1350,7 @@ useEffect(() => {
                                   variant={isSelected ? "filled" : "outlined"}
                                   sx={{ 
                                     fontWeight: 'bold', 
-                                    borderRadius: '8px', // Le da un toque menos redondo y más moderno
+                                    borderRadius: '8px', 
                                     transition: 'all 0.2s ease',
                                     '&:hover': { 
                                       transform: 'scale(1.03)',
@@ -1387,10 +1370,10 @@ useEffect(() => {
                               <Checkbox
                                 checked={persistente}
                                 onChange={(e) => setPersistente(e.target.checked)}
-                                color="secondary" // Usa el color rojo definido en el ThemeProvider
+                                color="secondary" 
                                 sx={{
                                   '&.Mui-checked': {
-                                    color: 'secondary.main', // Asegura el rojo institucional al estar marcado
+                                    color: 'secondary.main', 
                                   },
                                 }}
                               />
@@ -1439,55 +1422,78 @@ useEffect(() => {
                         <p className="text-sm text-gray-500 font-medium">Bandeja vacía</p>
                       </div>
                     ) : (
-                      listaItems.map((n) => (
-                        <article key={n.id} className={`group flex flex-col p-4 rounded-xl border transition-all duration-200 cursor-default ${editandoId === n.id ? 'bg-red-50 border-main-red shadow-sm' : n.persistente ? 'bg-blue-50/30 border-main-blue/40 shadow-sm' : 'bg-white border-gray-100 hover:border-main-blue/30 hover:shadow-sm'}`}>
-                          <div className="flex gap-3 items-start mb-3">
-                            <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-gray-100 border border-gray-200 flex items-center justify-center">
-                              {(n.imagenPrincipalUrl || n.fotoUrl) ? <img src={n.imagenPrincipalUrl || n.fotoUrl} className="w-full h-full object-cover" alt="Miniatura" /> : <span className="text-[10px] font-bold text-gray-400">TXT</span>}
+                      listaItems.map((n) => {
+                        // Tarjeta especial para vista Informes
+                        if (vistaActiva === 'informes') {
+                          return (
+                            <article key={n.id} className={`group relative overflow-hidden rounded-xl border transition-all duration-300 h-32 flex flex-col justify-end p-4 ${editandoId === n.id ? 'border-main-red shadow-md ring-2 ring-red-100' : 'border-gray-200 hover:border-main-blue hover:shadow-lg'}`}>
+                              {/* Background Image */}
+                              <div className="absolute inset-0 bg-cover bg-top transition-transform duration-700 group-hover:scale-110" style={{ backgroundImage: `url(${n.imagenPrincipalUrl || 'https://via.placeholder.com/400x300?text=Sin+Portada'})` }}></div>
+                              <div className="absolute inset-0 bg-gradient-to-t from-main-blue via-main-blue/70 to-transparent opacity-90 group-hover:opacity-100 transition-opacity"></div>
                               
-                              {/* Nuevo: Ícono de pin para las persistentes */}
-                              {n.persistente && (
-                                <div className="absolute inset-0 bg-main-blue/20 flex items-center justify-center">
-                                  <svg className="w-5 h-5 text-main-blue drop-shadow-md" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v4l2 2v2h-7v5l-1 1-1-1v-5H4v-2l2-2V4z" />
-                                  </svg>
+                              <div className="relative z-10 w-full flex justify-between items-end">
+                                <div>
+                                  <span className="text-[10px] font-black uppercase text-white/70 tracking-widest block mb-0.5">Gestión</span>
+                                  <h3 className="text-white font-bold text-lg leading-none">Año {n.año}</h3>
                                 </div>
-                              )}
-                            </div>
-                            
-                            <div className="flex-1 min-w-0">
-                              <div className="flex flex-col gap-1">
-                                <div className="flex items-center gap-2">
-                                  {n.persistente && (
-                                    <span className="text-[9px] font-black text-main-blue uppercase tracking-tighter bg-white px-1.5 py-0.5 rounded border border-main-blue/30 mt-0.5">
-                                      Fijada
-                                    </span>
-                                  )}
-                                  <h3 className="font-semibold text-sm text-gray-800 line-clamp-2 leading-snug" title={n.titulo || n.nombre}>{n.titulo || n.nombre}</h3>
+                                <div className="flex gap-2">
+                                  <button onClick={() => handleEditarItem(n)} className="bg-white/20 hover:bg-white text-white hover:text-main-blue px-3 py-1.5 rounded backdrop-blur-sm text-xs font-bold transition-colors">Editar</button>
+                                  <button onClick={() => pedirConfirmacionBorrado(n.id, `Informe Anual ${n.año}`)} className="bg-main-red/80 hover:bg-main-red text-white px-2.5 py-1.5 rounded backdrop-blur-sm transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                                 </div>
-                                <p className="text-[10px] text-gray-400 truncate">
-                                  {vistaActiva === 'equipo' ? `Orden: ${n.orden} - ${n.cargo}` : (vistaActiva === 'informes' ? `Año: ${n.año}` : `/${obtenerColeccionActiva()}/${n.slug || n.id}`)}
-                                </p>
+                              </div>
+                            </article>
+                          );
+                        }
+
+                        // Tarjeta normal para los demás ítems
+                        return (
+                          <article key={n.id} className={`group flex flex-col p-4 rounded-xl border transition-all duration-200 cursor-default ${editandoId === n.id ? 'bg-red-50 border-main-red shadow-sm' : n.persistente ? 'bg-blue-50/30 border-main-blue/40 shadow-sm' : 'bg-white border-gray-100 hover:border-main-blue/30 hover:shadow-sm'}`}>
+                            <div className="flex gap-3 items-start mb-3">
+                              <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-gray-100 border border-gray-200 flex items-center justify-center">
+                                {(n.imagenPrincipalUrl || n.fotoUrl) ? <img src={n.imagenPrincipalUrl || n.fotoUrl} className="w-full h-full object-cover" alt="Miniatura" /> : <span className="text-[10px] font-bold text-gray-400">TXT</span>}
                                 
-                                {/* Nuevo: Muestra de Tags si existen */}
-                                {n.tags && n.tags.length > 0 && (
-                                  <div className="flex flex-wrap gap-1 mt-0.5">
-                                    {n.tags.map(t => (
-                                      <span key={t} className="text-[8px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-sm uppercase font-bold">
-                                        {t}
-                                      </span>
-                                    ))}
+                                {n.persistente && (
+                                  <div className="absolute inset-0 bg-main-blue/20 flex items-center justify-center">
+                                    <svg className="w-5 h-5 text-main-blue drop-shadow-md" fill="currentColor" viewBox="0 0 20 20">
+                                      <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v4l2 2v2h-7v5l-1 1-1-1v-5H4v-2l2-2V4z" />
+                                    </svg>
                                   </div>
                                 )}
                               </div>
+                              
+                              <div className="flex-1 min-w-0">
+                                <div className="flex flex-col gap-1">
+                                  <div className="flex items-center gap-2">
+                                    {n.persistente && (
+                                      <span className="text-[9px] font-black text-main-blue uppercase tracking-tighter bg-white px-1.5 py-0.5 rounded border border-main-blue/30 mt-0.5">
+                                        Fijada
+                                      </span>
+                                    )}
+                                    <h3 className="font-semibold text-sm text-gray-800 line-clamp-2 leading-snug" title={n.titulo || n.nombre}>{n.titulo || n.nombre}</h3>
+                                  </div>
+                                  <p className="text-[10px] text-gray-400 truncate">
+                                    {vistaActiva === 'equipo' ? `Orden: ${n.orden} - ${n.cargo}` : `/${obtenerColeccionActiva()}/${n.slug || n.id}`}
+                                  </p>
+                                  
+                                  {n.tags && n.tags.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mt-0.5">
+                                      {n.tags.map(t => (
+                                        <span key={t} className="text-[8px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-sm uppercase font-bold">
+                                          {t}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex gap-2 w-full">
-                            <button onClick={() => handleEditarItem(n)} className="flex-1 bg-white border border-gray-200 text-gray-600 hover:text-main-blue hover:border-main-blue hover:bg-blue-50 py-1.5 rounded-lg text-xs font-semibold transition-colors">Editar</button>
-                            <button onClick={() => pedirConfirmacionBorrado(n.id, n.titulo || n.nombre)} className="px-3 bg-white border border-gray-200 text-gray-400 hover:text-main-red hover:border-main-red hover:bg-red-50 py-1.5 rounded-lg transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                          </div>
-                        </article>
-                      ))
+                            <div className="flex gap-2 w-full">
+                              <button onClick={() => handleEditarItem(n)} className="flex-1 bg-white border border-gray-200 text-gray-600 hover:text-main-blue hover:border-main-blue hover:bg-blue-50 py-1.5 rounded-lg text-xs font-semibold transition-colors">Editar</button>
+                              <button onClick={() => pedirConfirmacionBorrado(n.id, n.titulo || n.nombre)} className="px-3 bg-white border border-gray-200 text-gray-400 hover:text-main-red hover:border-main-red hover:bg-red-50 py-1.5 rounded-lg transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                            </div>
+                          </article>
+                        );
+                      })
                     )}
                   </div>
                 </section>

@@ -14,7 +14,6 @@ export default function InformesAnuales() {
 
     const fetchInformes = async () => {
       try {
-        // Consultar la colección 'informes', ordenados por año (más reciente primero)
         const q = query(collection(db, "informes"), orderBy("año", "desc"));
         const querySnapshot = await getDocs(q);
         
@@ -39,7 +38,7 @@ export default function InformesAnuales() {
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 pt-20" role="status">
         <CircularProgress size={50} thickness={4} sx={{ color: '#1D3557' }} />
         <span className="text-main-blue font-bold text-sm uppercase tracking-widest animate-pulse">
-          Cargando informes...
+          Cargando archivo histórico...
         </span>
       </div>
     );
@@ -69,7 +68,7 @@ export default function InformesAnuales() {
             </p>
           </div>
 
-          <div className="w-16 h-1 bg-main-red mx-auto mt-8 mb-12 rounded-full"></div>
+          <div className="w-16 h-1 bg-main-red mx-auto mt-8 mb-16 rounded-full"></div>
 
           {informes.length === 0 ? (
              <div className="text-center py-10">
@@ -81,36 +80,47 @@ export default function InformesAnuales() {
                </p>
              </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {informes.map((informe) => (
                 <Paper 
                   key={informe.id} 
                   elevation={0} 
-                  className="group flex flex-col bg-gray-50/50 p-8 border border-gray-100 hover:border-main-red/30 hover:shadow-lg transition-all duration-300 h-full relative overflow-hidden" 
+                  className="group relative overflow-hidden aspect-[3/4] border border-gray-100 shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer"
                   sx={{ borderRadius: '24px' }}
                 >
-                  <div className="flex justify-between items-start mb-4">
-                    <span className="bg-pale-blue/20 text-main-blue text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-md border border-pale-blue/30">
+                  {/* Imagen de fondo (Portada del informe) */}
+                  <div 
+                    className="absolute inset-0 bg-cover bg-top transition-transform duration-700 group-hover:scale-110"
+                    style={{ backgroundImage: `url(${informe.imagenPrincipalUrl || 'https://via.placeholder.com/600x800?text=Sin+Portada'})` }}
+                    aria-label={`Portada del Informe ${informe.año}`}
+                  />
+                  
+                  {/* Filtro oscuro para legibilidad */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-main-blue via-main-blue/50 to-transparent opacity-90 group-hover:opacity-75 transition-opacity duration-500" />
+                  
+                  {/* Contenido de la tarjeta */}
+                  <div className="absolute inset-0 p-6 flex flex-col justify-end">
+                    <span className="self-start bg-main-red text-white text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-lg mb-auto shadow-lg">
                       Año {informe.año}
                     </span>
-                    <span className="text-gray-400 text-xs font-bold flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                      {informe.tipo || 'PDF'}
-                    </span>
-                  </div>
-                  <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-3 tracking-tight group-hover:text-main-red transition-colors">
-                    {informe.titulo}
-                  </h3>
-                  <p className="text-gray-500 font-light leading-relaxed text-sm mb-8 grow line-clamp-4">
-                    {informe.descripcion}
-                  </p>
-                  <div className="mt-auto pt-4 border-t border-gray-100">
-                    <a href={informe.archivoInformeUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-bold text-main-red uppercase tracking-widest hover:text-red-800 transition-colors">
+                    
+                    <h3 className="text-2xl md:text-3xl font-black text-white mb-2 leading-tight drop-shadow-md">
+                      Informe Anual de Gestión
+                    </h3>
+                    
+                    <div className="w-12 h-1 bg-main-red rounded-full mb-6 transition-all duration-500 group-hover:w-24"></div>
+
+                    <a 
+                      href={informe.archivoInformeUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white text-white hover:text-main-blue backdrop-blur-md border border-white/30 text-sm font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl transition-all duration-300 w-full shadow-lg"
+                    >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                      Descargar Informe
+                      Descargar PDF
                     </a>
                   </div>
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-main-red/5 rounded-bl-[100px] -z-10 transition-transform group-hover:scale-110"></div>
                 </Paper>
               ))}
             </div>
