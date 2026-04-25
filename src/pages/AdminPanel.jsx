@@ -598,6 +598,8 @@ useEffect(() => {
         console.error("Error al procesar imagen:", error);
         setMensaje("Error al optimizar la imagen.");
         setTimeout(() => setMensaje(""), 3000);
+      } finally {
+        e.target.value = ""; // <--- ESTA LÍNEA ES LA MAGIA
       }
     }
   };
@@ -1224,6 +1226,7 @@ useEffect(() => {
                                 setArchivoInforme(e.target.files[0]);
                                 setArchivoInformeNombre(e.target.files[0].name);
                               }
+                              e.target.value = ""; // <--- LIMPIAR INPUT AQUÍ TAMBIÉN
                             }
                           }}
                         />
@@ -1316,7 +1319,7 @@ useEffect(() => {
                             </div>
                           )}
                           <div className="flex-1">
-                            <input type="file" accept="image/*" required={!editandoId && !imagenPrincipalAnterior} onChange={handleSeleccionPrincipal} className="sr-only" id="input-portada-principal" aria-labelledby="portada-label" />
+                            <input type="file" accept="image/*" required={!editandoId && !imagenPrincipalAnterior} onChange={handleSeleccionPrincipal} className="sr-only" id="input-portada-principal" aria-labelledby="portada-label" key={`portada-${vistaActiva}-${editandoId || 'nueva'}`} />
                             <label htmlFor="input-portada-principal" className="text-sm bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium cursor-pointer inline-block hover:bg-gray-50 transition-colors shadow-sm">Examinar archivos...</label>
                             <p className="text-xs text-gray-400 mt-2">Formatos recomendados: JPG, PNG. Se optimizará a WebP.</p>
                           </div>
