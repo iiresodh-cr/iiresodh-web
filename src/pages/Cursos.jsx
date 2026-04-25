@@ -82,24 +82,22 @@ export default function Cursos() {
                 <Paper 
                   key={curso.id} 
                   elevation={0} 
-                  className="group flex flex-col bg-white border border-gray-100 hover:border-main-blue/30 hover:shadow-xl transition-all duration-300 h-full overflow-hidden" 
+                  className={`group flex flex-col bg-white border border-gray-100 hover:border-main-blue/30 hover:shadow-xl transition-all duration-300 h-full overflow-hidden ${!curso.cursoActivo ? 'opacity-90 grayscale-[0.3]' : ''}`} 
                   sx={{ borderRadius: '24px' }}
                 >
-                  {/* IMAGEN DEL CURSO */}
                   <div className="relative w-full aspect-video overflow-hidden bg-gray-100">
                     <img 
                       src={curso.imagenPrincipalUrl || 'https://via.placeholder.com/800x450?text=Curso+IIRESODH'} 
                       alt={`Portada del curso: ${curso.titulo}`}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
-                    <div className="absolute top-4 left-4 bg-main-blue text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-md shadow-md">
-                      Programa Educativo
+                    <div className={`absolute top-4 left-4 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-md shadow-md ${curso.cursoActivo ? 'bg-main-blue' : 'bg-gray-500'}`}>
+                      {curso.cursoActivo ? 'Inscripciones Abiertas' : 'Finalizado / Cerrado'}
                     </div>
                   </div>
 
-                  {/* CONTENIDO DEL CURSO */}
                   <div className="p-6 md:p-8 flex flex-col grow">
-                    <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-3 tracking-tight group-hover:text-main-blue transition-colors leading-snug">
+                    <h3 className={`text-xl md:text-2xl font-bold mb-3 tracking-tight transition-colors leading-snug ${curso.cursoActivo ? 'text-gray-800 group-hover:text-main-blue' : 'text-gray-500'}`}>
                       {curso.titulo}
                     </h3>
                     <p className="text-gray-500 font-light leading-relaxed text-sm mb-8 grow line-clamp-3">
@@ -107,19 +105,19 @@ export default function Cursos() {
                     </p>
                     
                     <div className="mt-auto pt-5 border-t border-gray-100 flex items-center justify-between">
-                      {curso.enlaceInscripcion ? (
+                      {curso.cursoActivo && curso.enlaceInscripcion ? (
                         <a 
                           href={curso.enlaceInscripcion} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className="bg-main-red hover:bg-red-800 text-white text-xs font-bold uppercase tracking-widest py-3 px-6 rounded-xl transition-colors w-full text-center shadow-md shadow-main-red/20"
+                          className="bg-main-red hover:bg-red-800 text-white text-xs font-bold uppercase tracking-widest py-3.5 px-6 rounded-xl transition-all w-full text-center shadow-md shadow-main-red/20 active:scale-95"
                         >
-                          Inscribirse / Más Info
+                          Inscribirse Ahora
                         </a>
                       ) : (
-                        <span className="bg-gray-100 text-gray-400 text-xs font-bold uppercase tracking-widest py-3 px-6 rounded-xl w-full text-center cursor-not-allowed">
-                          Inscripciones Cerradas
-                        </span>
+                        <div className="bg-gray-100 text-gray-400 text-[10px] font-black uppercase tracking-[0.15em] py-3.5 px-6 rounded-xl w-full text-center border border-gray-200">
+                          {curso.cursoActivo ? 'Enlace no disponible' : 'Periodo de inscripción cerrado'}
+                        </div>
                       )}
                     </div>
                   </div>

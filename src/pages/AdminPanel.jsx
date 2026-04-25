@@ -157,6 +157,7 @@ export default function AdminPanel() {
 
   // NUEVOS ESTADOS PARA CURSOS
   const [enlaceInscripcion, setEnlaceInscripcion] = useState("");
+  const [cursoActivo, setCursoActivo] = useState(true);
   
   // ESTADOS PARA COMUNICACIONES
   const [tagsSeleccionados, setTagsSeleccionados] = useState([]);
@@ -469,6 +470,7 @@ useEffect(() => {
 
       if (vistaActiva === "cursos") {
         setEnlaceInscripcion(item.enlaceInscripcion || "");
+        setCursoActivo(item.cursoActivo !== undefined ? item.cursoActivo : true);
       }
       
       setImagenPrincipalAnterior(item.imagenPrincipalUrl || null);
@@ -520,6 +522,7 @@ useEffect(() => {
     setArchivoInformeNombre("");
     setArchivoInformeAnterior(null);
     setEnlaceInscripcion("");
+    setCursoActivo(true);
     
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -734,8 +737,8 @@ useEffect(() => {
 
         } else if (vistaActiva === "cursos") {
           datos.enlaceInscripcion = enlaceInscripcion || null;
-          // Eliminamos el contenido largo porque en la UI de cursos solo usamos resumen e imagen
-          delete datos.contenido; 
+          datos.cursoActivo = cursoActivo;
+          delete datos.contenido;
         }
       }
 
@@ -1038,7 +1041,7 @@ useEffect(() => {
                       {vistaActiva !== "informes" && (
                         <div className={(vistaActiva === "libros") ? "md:col-span-1" : "md:col-span-2"}>
                           <AdminTextField 
-                            label={vistaActiva === "articulos" ? "Título del Artículo" : (vistaActiva === "libros" ? "Título del Libro" : "Título de la Noticia")}
+                            label={vistaActiva === "cursos" ? "Título del Curso" : (vistaActiva === "articulos" ? "Título del Artículo" : (vistaActiva === "libros" ? "Título del Libro" : "Título de la Noticia"))}
                             value={titulo}
                             onChange={(e) => setTitulo(e.target.value)}
                             required
@@ -1092,7 +1095,7 @@ useEffect(() => {
                       )}
                     </div>
                     {vistaActiva === "cursos" && (
-                      <div className="md:col-span-3">
+                      <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 bg-orange-50/50 p-6 rounded-2xl border border-orange-100">
                         <AdminTextField 
                           label="Enlace de Inscripción (Opcional - Google Forms, Zoom, etc.)"
                           type="url"
@@ -1100,6 +1103,24 @@ useEffect(() => {
                           onChange={(e) => setEnlaceInscripcion(e.target.value)}
                           placeholder="https://forms.gle/..."
                         />
+                        <div className="flex items-center gap-2 bg-white p-4 rounded-xl shadow-sm border border-orange-100">
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                checked={cursoActivo}
+                                onChange={(e) => setCursoActivo(e.target.checked)}
+                                color="primary"
+                              />
+                            }
+                            label={
+                              <Box>
+                                <span className="text-sm font-bold text-gray-700 block">¿Inscripciones Abiertas?</span>
+                                <span className="text-xs text-gray-500 block leading-tight mt-0.5">Si desmarcas esto, el botón se desactivará.</span>
+                              </Box>
+                            }
+                            sx={{ m: 0 }}
+                          />
+                        </div>
                       </div>
                     )}
 
@@ -1128,14 +1149,16 @@ useEffect(() => {
                       </div>
                     )}
 
-                    {/* Ocultar el PIDA y la Descripción Breve para los Informes */}
+                    {/* Ocultar el Resumen solo para Informes. Ocultar PIDA para Informes y Cursos */}
                     {vistaActiva !== "informes" && (
                     <div>
                       <div className="flex justify-between items-end mb-1.5">
                         <div className="w-full flex justify-end">
-                          <button type="button" onClick={handleAutoResumen} disabled={generandoResumen} className="text-xs font-semibold text-main-blue hover:text-light-blue bg-blue-50 hover:bg-blue-100 py-1.5 px-3 rounded-lg transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50 mb-2">
-                            {generandoResumen ? "Generando..." : "✨ Auto-completar con PIDA"}
-                          </button>
+                          {vistaActiva !== "cursos" && (
+                            <button type="button" onClick={handleAutoResumen} disabled={generandoResumen} className="text-xs font-semibold text-main-blue hover:text-light-blue bg-blue-50 hover:bg-blue-100 py-1.5 px-3 rounded-lg transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50 mb-2">
+                              {generandoResumen ? "Generando..." : "✨ Auto-completar con PIDA"}
+                            </button>
+                          )}
                         </div>
                       </div>
                       <AdminTextField 
@@ -1217,7 +1240,7 @@ useEffect(() => {
                       </div>
                     )}
 
-                    {vistaActiva !== "informes" && (
+                    {vistaActiva !== "informes" && vistaActiva !== "cursos" && (
                     <div>
                       <AdminTextField 
                         label={vistaActiva === "libros" ? "Descripción Larga" : "Cuerpo del texto"}
@@ -1272,7 +1295,7 @@ useEffect(() => {
                       
                       <div className="mb-6">
                         <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3" id="portada-label">
-                          {vistaActiva === "libros" ? "Portada del Libro" : (vistaActiva === "informes" ? "Portada del Informe" : "Portada principal")}
+                          {vistaActiva === "cursos" ? "Flyer o Portada del Curso" : (vistaActiva === "libros" ? "Portada del Libro" : (vistaActiva === "informes" ? "Portada del Informe" : "Portada principal"))}
                         </label>
                         <div className="flex flex-col sm:flex-row items-start gap-4">
                           {mainImagePreviewUrl ? (
