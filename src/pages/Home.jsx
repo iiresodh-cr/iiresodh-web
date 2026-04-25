@@ -221,13 +221,13 @@ export default function Home() {
                         />
                         
                         <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-1000"></div>
-                        <div className="absolute bottom-4 left-4 right-4 md:bottom-10 md:left-10 md:right-auto w-[90%] md:w-[75%] lg:w-[65%] h-80 md:h-96 lg:h-112 p-6 md:p-10 lg:p-12 bg-white/30 backdrop-blur-xl shadow-2xl rounded-3xl border border-white/30 z-10 flex flex-col justify-end transform transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-main-blue/20">
+                        <div className="absolute bottom-4 left-4 right-4 md:bottom-10 md:left-10 md:right-auto w-[90%] md:w-[75%] lg:w-[65%] h-auto min-h-[20rem] md:min-h-[24rem] lg:min-h-[28rem] p-6 md:p-10 lg:p-12 bg-white/30 backdrop-blur-xl shadow-2xl rounded-3xl border border-white/30 z-10 flex flex-col justify-end transform transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-main-blue/20">
                           <div className="flex flex-wrap gap-2 mb-4 md:mb-6">
                             {noticia.tags?.map(tag => (
                               <span key={tag} className="bg-white/40 border border-white/50 text-main-blue text-[10px] md:text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-widest">{tag}</span>
                             ))}
                           </div>
-                          <h3 className="text-2xl md:text-4xl lg:text-5xl font-black text-main-blue mb-4 leading-[1.15] tracking-tight group-hover:text-main-red transition-colors line-clamp-3">{noticia.titulo}</h3>
+                          <h3 className="text-2xl md:text-4xl lg:text-5xl font-black text-main-blue mb-4 pb-1 leading-tight tracking-tight group-hover:text-main-red transition-colors line-clamp-4">{noticia.titulo}</h3>
                           <p className="text-gray-800 line-clamp-2 md:line-clamp-3 mb-6 md:mb-8 text-sm md:text-lg font-medium leading-relaxed drop-shadow-sm">{noticia.resumen}</p>
                           <div className="text-main-red font-black flex items-center gap-2 uppercase text-xs md:text-sm tracking-[0.2em] group-hover:gap-4 transition-all">Leer artículo <span aria-hidden="true" className="text-lg md:text-xl leading-none">&rarr;</span></div>
                         </div>
