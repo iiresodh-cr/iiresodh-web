@@ -587,6 +587,8 @@ useEffect(() => {
 
   const handleSeleccionPrincipal = async (e) => {
     const file = e.target.files[0];
+    e.target.value = ""; // <--- LIMPIEZA INMEDIATA AQUÍ ARRIBA
+    
     if (file) {
       try {
         setMensaje("Optimizando imagen a WebP...");
@@ -598,8 +600,6 @@ useEffect(() => {
         console.error("Error al procesar imagen:", error);
         setMensaje("Error al optimizar la imagen.");
         setTimeout(() => setMensaje(""), 3000);
-      } finally {
-        e.target.value = ""; // <--- ESTA LÍNEA ES LA MAGIA
       }
     }
   };
@@ -624,6 +624,28 @@ useEffect(() => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // =================================================================
+    // VALIDACIÓN MANUAL DE ARCHIVOS (Evita el bloqueo silencioso del navegador)
+    // =================================================================
+    if (!editandoId) {
+      if (!imagenPrincipalAnterior && !imagenPrincipal) {
+        setMensaje("Error: Por favor selecciona una imagen para la portada.");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      if (vistaActiva === "libros" && !archivoLibroAnterior && !archivoLibro) {
+        setMensaje("Error: Por favor selecciona el archivo PDF del libro.");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      if (vistaActiva === "informes" && !archivoInformeAnterior && !archivoInforme) {
+        setMensaje("Error: Por favor selecciona el archivo PDF del informe.");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+    }
+
     setLoading(true);
 
     if (vistaActiva === "comunicaciones" && persistente) {
@@ -1216,7 +1238,6 @@ useEffect(() => {
                           accept=".pdf" 
                           id="input-archivo-pdf"
                           className="sr-only"
-                          required={!editandoId && !archivoLibroAnterior && !archivoInformeAnterior}
                           onChange={(e) => {
                             if(e.target.files[0]) {
                               if(vistaActiva === "libros") {
@@ -1319,7 +1340,14 @@ useEffect(() => {
                             </div>
                           )}
                           <div className="flex-1">
-                            <input type="file" accept="image/*" required={!editandoId && !imagenPrincipalAnterior} onChange={handleSeleccionPrincipal} className="sr-only" id="input-portada-principal" aria-labelledby="portada-label" key={`portada-${vistaActiva}-${editandoId || 'nueva'}`} />
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              onChange={handleSeleccionPrincipal} 
+                              className="sr-only" 
+                              id="input-portada-principal" 
+                              aria-labelledby="portada-label" 
+                            />
                             <label htmlFor="input-portada-principal" className="text-sm bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium cursor-pointer inline-block hover:bg-gray-50 transition-colors shadow-sm">Examinar archivos...</label>
                             <p className="text-xs text-gray-400 mt-2">Formatos recomendados: JPG, PNG. Se optimizará a WebP.</p>
                           </div>
