@@ -154,11 +154,14 @@ export default function AdminPanel() {
   const [generandoResumen, setGenerandoResumen] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [listaItems, setListaItems] = useState([]);
+  
+  // ESTADOS PARA SCROLL INFINITO Y BÚSQUEDA
   const ITEMS_POR_PAGINA = 10;
-  const [primerDoc, setPrimerDoc] = useState(null);
   const [ultimoDoc, setUltimoDoc] = useState(null);
-  const [paginaActual, setPaginaActual] = useState(1);
   const [hayMas, setHayMas] = useState(true);
+  const [cargandoLista, setCargandoLista] = useState(false);
+  const [busquedaTexto, setBusquedaTexto] = useState("");
+  const [busquedaFecha, setBusquedaFecha] = useState("");
 
   // NUEVOS ESTADOS PARA CURSOS
   const [enlaceInscripcion, setEnlaceInscripcion] = useState("");
@@ -311,93 +314,141 @@ useEffect(() => {
     return "noticias";
   };
 
-  const cargarItemsBatch = async (consulta, direccion) => {
-  try {
-    const querySnapshot = await getDocs(consulta);
-    if (!querySnapshot.empty) {
-      setPrimerDoc(querySnapshot.docs[0]);
-      setUltimoDoc(querySnapshot.docs[querySnapshot.docs.length - 1]);
-      
-      let data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const ordenarItemsLocales = (data) => {
+    if (vistaActiva === "comunicaciones") {
+      data.sort((a, b) => {
+        if (a.persistente && !b.persistente) return -1;
+        if (!a.persistente && b.persistente) return 1;
+        return (b.fechaPublicacion?.seconds || 0) - (a.fechaPublicacion?.seconds || 0);
+      });
+    } else if (vistaActiva === "equipo") {
+      data.sort((a, b) => {
+        if (a.destacado && !b.destacado) return -1;
+        if (!a.destacado && b.destacado) return 1;
+        return (a.nombre || "").localeCompare(b.nombre || "");
+      });
+    } else if (vistaActiva === "informes") {
+      data.sort((a, b) => (b.año || 0) - (a.año || 0));
+    }
+    return data;
+  };
 
-      if (vistaActiva === "comunicaciones") {
-        data.sort((a, b) => {
-          if (a.persistente && !b.persistente) return -1;
-          if (!a.persistente && b.persistente) return 1;
-          const tiempoA = a.fechaPublicacion?.seconds || 0;
-          const tiempoB = b.fechaPublicacion?.seconds || 0;
-          return tiempoB - tiempoA;
-        });
-      }
+  const cargarItems = async () => {
+    setCargandoLista(true);
+    const coleccion = obtenerColeccionActiva();
+    const orderByField = vistaActiva === 'equipo' ? 'orden' : (vistaActiva === 'informes' ? 'año' : 'fechaPublicacion');
+    const orderByDirection = vistaActiva === 'equipo' ? 'asc' : 'desc';
 
-      if (vistaActiva === "equipo") {
-        data.sort((a, b) => {
-          if (a.destacado && !b.destacado) return -1;
-          if (!a.destacado && b.destacado) return 1;
-          return (a.nombre || "").localeCompare(b.nombre || "");
-        });
-      }
+    const q = query(collection(db, coleccion), orderBy(orderByField, orderByDirection), limit(ITEMS_POR_PAGINA));
 
-      if (vistaActiva === "informes") {
-        data.sort((a, b) => {
-          return (b.año || 0) - (a.año || 0);
-        });
-      }
-
-      setListaItems(data);
-      setHayMas(querySnapshot.docs.length === ITEMS_POR_PAGINA);
-
-        if (direccion === "sig") setPaginaActual(prev => prev + 1);
-        if (direccion === "ant") setPaginaActual(prev => prev - 1);
-        if (direccion === "inicio") setPaginaActual(1);
+    try {
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        setUltimoDoc(querySnapshot.docs[querySnapshot.docs.length - 1]);
+        let data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setListaItems(ordenarItemsLocales(data));
+        setHayMas(querySnapshot.docs.length === ITEMS_POR_PAGINA);
       } else {
-        if (direccion === "inicio") {
-            setListaItems([]);
-            setHayMas(false);
-        }
+        setListaItems([]);
+        setHayMas(false);
       }
     } catch (error) {
       console.error("Error al cargar datos:", error);
+    } finally {
+      setCargandoLista(false);
     }
   };
 
-  const cargarItems = () => {
+  const cargarMasItems = async () => {
+    if (!hayMas || cargandoLista || !ultimoDoc || busquedaTexto || busquedaFecha) return;
+    setCargandoLista(true);
+    
     const coleccion = obtenerColeccionActiva();
     const orderByField = vistaActiva === 'equipo' ? 'orden' : (vistaActiva === 'informes' ? 'año' : 'fechaPublicacion');
     const orderByDirection = vistaActiva === 'equipo' ? 'asc' : 'desc';
 
-    const constraints = [orderBy(orderByField, orderByDirection)];
-    if (vistaActiva !== 'equipo' && vistaActiva !== 'informes') {
-      constraints.push(limit(ITEMS_POR_PAGINA));
-    }
-
-    const q = query(collection(db, coleccion), ...constraints);
-    cargarItemsBatch(q, "inicio");
-  };
-
-  const paginaSiguiente = () => {
-    if (!ultimoDoc) return;
-    const coleccion = obtenerColeccionActiva();
-    const orderByField = vistaActiva === 'equipo' ? 'orden' : (vistaActiva === 'informes' ? 'año' : 'fechaPublicacion');
-    const orderByDirection = vistaActiva === 'equipo' ? 'asc' : 'desc';
     const q = query(collection(db, coleccion), orderBy(orderByField, orderByDirection), startAfter(ultimoDoc), limit(ITEMS_POR_PAGINA));
-    cargarItemsBatch(q, "sig");
+
+    try {
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        setUltimoDoc(querySnapshot.docs[querySnapshot.docs.length - 1]);
+        let data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        setListaItems(prev => ordenarItemsLocales([...prev, ...data]));
+        setHayMas(querySnapshot.docs.length === ITEMS_POR_PAGINA);
+      } else {
+        setHayMas(false);
+      }
+    } catch (error) {
+      console.error("Error al cargar más datos:", error);
+    } finally {
+      setCargandoLista(false);
+    }
   };
 
-  const paginaAnterior = () => {
-    if (!primerDoc) return;
+  const handleBuscar = async () => {
+    setCargandoLista(true);
     const coleccion = obtenerColeccionActiva();
     const orderByField = vistaActiva === 'equipo' ? 'orden' : (vistaActiva === 'informes' ? 'año' : 'fechaPublicacion');
     const orderByDirection = vistaActiva === 'equipo' ? 'asc' : 'desc';
-    const q = query(collection(db, coleccion), orderBy(orderByField, orderByDirection), endBefore(primerDoc), limitToLast(ITEMS_POR_PAGINA));
-    cargarItemsBatch(q, "ant");
+
+    const q = query(collection(db, coleccion), orderBy(orderByField, orderByDirection));
+
+    try {
+      const querySnapshot = await getDocs(q);
+      let data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      if (busquedaTexto) {
+        const txt = busquedaTexto.toLowerCase();
+        data = data.filter(item => 
+          (item.titulo && item.titulo.toLowerCase().includes(txt)) ||
+          (item.nombre && item.nombre.toLowerCase().includes(txt)) ||
+          (item.resumen && item.resumen.toLowerCase().includes(txt))
+        );
+      }
+
+      if (busquedaFecha) {
+        data = data.filter(item => {
+          if (!item.fechaPublicacion) return false;
+          return item.fechaPublicacion.toDate().toISOString().startsWith(busquedaFecha);
+        });
+      }
+
+      setListaItems(ordenarItemsLocales(data));
+      setHayMas(false); 
+    } catch (error) {
+      console.error("Error en búsqueda:", error);
+    } finally {
+      setCargandoLista(false);
+    }
+  };
+
+  const handleScrollLista = (e) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+    if (scrollHeight - scrollTop <= clientHeight + 20) {
+      cargarMasItems();
+    }
   };
 
   useEffect(() => {
-    if (vistaActiva !== "inicio") {
-      cargarItems();
-    }
+    setBusquedaTexto("");
+    setBusquedaFecha("");
   }, [vistaActiva]);
+
+  useEffect(() => {
+    if (vistaActiva === "inicio" || vistaActiva === "adminWeb" || vistaActiva === "estadisticas") return;
+
+    const timeoutId = setTimeout(() => {
+      if (busquedaTexto || busquedaFecha) {
+        handleBuscar();
+      } else {
+        cargarItems();
+      }
+    }, 500); 
+
+    return () => clearTimeout(timeoutId);
+  }, [busquedaTexto, busquedaFecha, vistaActiva]);
 
   const handleAutoResumen = async () => {
     if (!contenido || contenido.trim().length < 20) {
@@ -1523,10 +1574,34 @@ useEffect(() => {
                   <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                     <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg> Publicaciones Recientes
                   </h2>
-                  <div className="space-y-3 max-h-150 overflow-y-auto custom-scrollbar pr-1">
-                    {listaItems.length === 0 ? (
+
+                  {/* NUEVO BUSCADOR */}
+                  <div className="mb-4 flex flex-col gap-2">
+                    <input
+                      type="text"
+                      placeholder="Buscar por palabra o nombre..."
+                      className="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-main-blue focus:ring-1 focus:ring-main-blue transition-colors"
+                      value={busquedaTexto}
+                      onChange={(e) => setBusquedaTexto(e.target.value)}
+                    />
+                    {vistaActiva !== 'equipo' && vistaActiva !== 'informes' && (
+                      <input
+                        type="date"
+                        className="w-full text-sm px-3 py-2 text-gray-600 border border-gray-200 rounded-lg focus:outline-none focus:border-main-blue transition-colors"
+                        value={busquedaFecha}
+                        onChange={(e) => setBusquedaFecha(e.target.value)}
+                      />
+                    )}
+                  </div>
+
+                  {/* CONTENEDOR CON SCROLL INFINITO */}
+                  <div 
+                    className="space-y-3 max-h-150 overflow-y-auto custom-scrollbar pr-1 relative"
+                    onScroll={handleScrollLista}
+                  >
+                    {listaItems.length === 0 && !cargandoLista ? (
                       <div className="text-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                        <p className="text-sm text-gray-500 font-medium">Bandeja vacía</p>
+                        <p className="text-sm text-gray-500 font-medium">Bandeja vacía o sin resultados</p>
                       </div>
                     ) : (
                       listaItems.map((n) => {
@@ -1534,7 +1609,6 @@ useEffect(() => {
                         if (vistaActiva === 'informes') {
                           return (
                             <article key={n.id} className={`group relative overflow-hidden rounded-xl border transition-all duration-300 h-32 flex flex-col justify-end p-4 ${editandoId === n.id ? 'border-main-red shadow-md ring-2 ring-red-100' : 'border-gray-200 hover:border-main-blue hover:shadow-lg'}`}>
-                              {/* Background Image */}
                               <div className="absolute inset-0 bg-cover bg-top transition-transform duration-700 group-hover:scale-110" style={{ backgroundImage: `url(${n.imagenPrincipalUrl || 'https://via.placeholder.com/400x300?text=Sin+Portada'})` }}></div>
                               <div className="absolute inset-0 bg-linear-to-t from-main-blue via-main-blue/70 to-transparent opacity-90 group-hover:opacity-100 transition-opacity"></div>
                               
@@ -1544,8 +1618,8 @@ useEffect(() => {
                                   <h3 className="text-white font-bold text-lg leading-none">Año {n.año}</h3>
                                 </div>
                                 <div className="flex gap-2">
-                                  <button onClick={() => handleEditarItem(n)} className="bg-white/20 hover:bg-white text-white hover:text-main-blue px-3 py-1.5 rounded backdrop-blur-sm text-xs font-bold transition-colors">Editar</button>
-                                  <button onClick={() => pedirConfirmacionBorrado(n.id, `Informe Anual ${n.año}`)} className="bg-main-red/80 hover:bg-main-red text-white px-2.5 py-1.5 rounded backdrop-blur-sm transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                                  <button type="button" onClick={() => handleEditarItem(n)} className="bg-white/20 hover:bg-white text-white hover:text-main-blue px-3 py-1.5 rounded backdrop-blur-sm text-xs font-bold transition-colors">Editar</button>
+                                  <button type="button" onClick={() => pedirConfirmacionBorrado(n.id, `Informe Anual ${n.año}`)} className="bg-main-red/80 hover:bg-main-red text-white px-2.5 py-1.5 rounded backdrop-blur-sm transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                                 </div>
                               </div>
                             </article>
@@ -1561,9 +1635,7 @@ useEffect(() => {
                                 
                                 {n.persistente && (
                                   <div className="absolute inset-0 bg-main-blue/20 flex items-center justify-center">
-                                    <svg className="w-5 h-5 text-main-blue drop-shadow-md" fill="currentColor" viewBox="0 0 20 20">
-                                      <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v4l2 2v2h-7v5l-1 1-1-1v-5H4v-2l2-2V4z" />
-                                    </svg>
+                                    <svg className="w-5 h-5 text-main-blue drop-shadow-md" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v4l2 2v2h-7v5l-1 1-1-1v-5H4v-2l2-2V4z" /></svg>
                                   </div>
                                 )}
                               </div>
@@ -1572,35 +1644,30 @@ useEffect(() => {
                                 <div className="flex flex-col gap-1">
                                   <div className="flex items-center gap-2">
                                     {n.persistente && (
-                                      <span className="text-[9px] font-black text-main-blue uppercase tracking-tighter bg-white px-1.5 py-0.5 rounded border border-main-blue/30 mt-0.5">
-                                        Fijada
-                                      </span>
+                                      <span className="text-[9px] font-black text-main-blue uppercase tracking-tighter bg-white px-1.5 py-0.5 rounded border border-main-blue/30 mt-0.5">Fijada</span>
                                     )}
                                     <h3 className="font-semibold text-sm text-gray-800 line-clamp-2 leading-snug" title={n.titulo || n.nombre}>{n.titulo || n.nombre}</h3>
                                   </div>
                                   <p className="text-[10px] text-gray-400 truncate">
                                     {vistaActiva === 'equipo' ? `Orden: ${n.orden} - ${n.cargo}` : `/${obtenerColeccionActiva()}/${n.slug || n.id}`}
                                   </p>
-                                  
-                                  {n.tags && n.tags.length > 0 && (
-                                    <div className="flex flex-wrap gap-1 mt-0.5">
-                                      {n.tags.map(t => (
-                                        <span key={t} className="text-[8px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-sm uppercase font-bold">
-                                          {t}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  )}
                                 </div>
                               </div>
                             </div>
                             <div className="flex gap-2 w-full">
-                              <button onClick={() => handleEditarItem(n)} className="flex-1 bg-white border border-gray-200 text-gray-600 hover:text-main-blue hover:border-main-blue hover:bg-blue-50 py-1.5 rounded-lg text-xs font-semibold transition-colors">Editar</button>
-                              <button onClick={() => pedirConfirmacionBorrado(n.id, n.titulo || n.nombre)} className="px-3 bg-white border border-gray-200 text-gray-400 hover:text-main-red hover:border-main-red hover:bg-red-50 py-1.5 rounded-lg transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                              <button type="button" onClick={() => handleEditarItem(n)} className="flex-1 bg-white border border-gray-200 text-gray-600 hover:text-main-blue hover:border-main-blue hover:bg-blue-50 py-1.5 rounded-lg text-xs font-semibold transition-colors">Editar</button>
+                              <button type="button" onClick={() => pedirConfirmacionBorrado(n.id, n.titulo || n.nombre)} className="px-3 bg-white border border-gray-200 text-gray-400 hover:text-main-red hover:border-main-red hover:bg-red-50 py-1.5 rounded-lg transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                             </div>
                           </article>
                         );
                       })
+                    )}
+                    
+                    {/* Indicador de carga para el Scroll Infinito */}
+                    {cargandoLista && (
+                      <div className="flex justify-center py-4">
+                        <CircularProgress size={24} />
+                      </div>
                     )}
                   </div>
                 </section>
