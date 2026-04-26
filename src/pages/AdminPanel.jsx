@@ -431,9 +431,13 @@ useEffect(() => {
     }
   };
 
+  // Limpiar buscador y vaciar la lista al instante al cambiar de pestaña
   useEffect(() => {
     setBusquedaTexto("");
     setBusquedaFecha("");
+    setListaItems([]); // <-- Esto borra los ítems viejos al instante
+    setUltimoDoc(null);
+    setHayMas(true);
   }, [vistaActiva]);
 
   useEffect(() => {
