@@ -1758,7 +1758,7 @@ useEffect(() => {
                 </FormControl>
 
                 <Button onClick={() => cargarActividades(false)} variant="contained" disabled={cargandoActividades && !cargandoMas} sx={{ py: 1.5, px: 4, whiteSpace: 'nowrap' }}>
-                  {cargandoActividades && !cargandoMas ? 'Cargando...' : 'Cargar Actividades'}
+                  {cargandoActividades && !cargandoMas ? 'Cargando...' : 'Cargar'}
                 </Button>
               </div>
 
@@ -1774,7 +1774,7 @@ useEffect(() => {
                     </div>
                     <p className="text-xs text-gray-400 font-medium shrink-0 ml-4 text-right">{act.timestamp?.toDate().toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
                   </div>
-                )) : <p className="text-center text-gray-500 py-10">No hay actividades para mostrar. Presiona "Cargar Actividades" para empezar.</p>}
+                )) : <p className="text-center text-gray-500 py-10">No hay actividades para mostrar. Presiona "Cargar" para empezar.</p>}
               </div>
 
               {actividades.length > 0 && hayMasActividades && (
