@@ -187,12 +187,6 @@ export default function AdminPanel() {
 
   const [modalBorrar, setModalBorrar] = useState({ isOpen: false, id: null, titulo: "" });
 
-  const [primerDoc, setPrimerDoc] = useState(null);
-  const [ultimoDoc, setUltimoDoc] = useState(null);
-  const [paginaActual, setPaginaActual] = useState(1);
-  const [hayMas, setHayMas] = useState(true);
-  const ITEMS_POR_PAGINA = 10;  
-
   const logActividad = async (accion, detalles = null) => {
     const usuario = auth.currentUser;
     if (!usuario) return;
