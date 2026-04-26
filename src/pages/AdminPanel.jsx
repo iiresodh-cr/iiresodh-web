@@ -154,6 +154,11 @@ export default function AdminPanel() {
   const [generandoResumen, setGenerandoResumen] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [listaItems, setListaItems] = useState([]);
+  const ITEMS_POR_PAGINA = 10;
+  const [primerDoc, setPrimerDoc] = useState(null);
+  const [ultimoDoc, setUltimoDoc] = useState(null);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [hayMas, setHayMas] = useState(true);
 
   // NUEVOS ESTADOS PARA CURSOS
   const [enlaceInscripcion, setEnlaceInscripcion] = useState("");
