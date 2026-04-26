@@ -922,7 +922,7 @@ useEffect(() => {
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 8h8M8 12h8M8 16h4"></path></svg>
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-800 mb-1">Comunicaciones</h2>
+                  <h2 className="text-xl font-bold text-gray-800 mb-1">Noticias</h2>
                   <p className="text-sm text-gray-500">Gestión de noticias y comunicados</p>
                 </div>
               </button>
@@ -986,11 +986,23 @@ useEffect(() => {
                   <p className="text-sm text-gray-500">Oferta y capacitación</p>
                 </div>
               </button>
+
+              <button onClick={() => setVistaActiva("estadisticas")} className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-indigo-500/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center">
+                <div className="p-4 bg-indigo-50 text-indigo-600 rounded-2xl group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300">
+                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-800 mb-1">Estadísticas</h2>
+                  <p className="text-sm text-gray-500">Visitas y analítica web</p>
+                </div>
+              </button>
             </nav>
           </section>
         )}
 
-        {(vistaActiva !== "inicio" && vistaActiva !== "adminWeb") && (
+        {(vistaActiva !== "inicio" && vistaActiva !== "adminWeb" && vistaActiva !== "estadisticas") && (
           <div className="animate-fade-in-up">
             <button onClick={() => { limpiarFormulario(); setVistaActiva("inicio"); }} className="mb-8 flex items-center gap-2 text-gray-500 font-medium hover:text-main-blue transition-colors cursor-pointer group">
               <div className="bg-white p-1.5 rounded-full shadow-sm group-hover:shadow border border-gray-100 transition-all">
@@ -1705,6 +1717,40 @@ useEffect(() => {
                   </Button>
                 </div>
               )}
+            </section>
+          </div>
+        )}
+
+        {vistaActiva === "estadisticas" && (
+          <div className="animate-fade-in-up">
+            <button onClick={() => setVistaActiva("inicio")} className="mb-8 flex items-center gap-2 text-gray-500 font-medium hover:text-main-blue transition-colors cursor-pointer group">
+              <div className="bg-white p-1.5 rounded-full shadow-sm group-hover:shadow border border-gray-100 transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7"></path></svg>
+              </div>
+              Regresar al menú
+            </button>
+
+            <section className="bg-white p-8 md:p-10 rounded-2xl shadow-sm border border-gray-100">
+              <header className="mb-6">
+                <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-800">
+                  Estadísticas del Sitio Web
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Visualización de datos de Google Analytics.
+                </p>
+              </header>
+              
+              <div className="text-center py-20 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                <h3 className="text-lg font-semibold text-gray-600">
+                  Módulo de Estadísticas en Desarrollo
+                </h3>
+                <p className="text-sm text-gray-400 mt-2">
+                  Próximamente aquí podrás visualizar los datos de Google Analytics.
+                </p>
+              </div>
             </section>
           </div>
         )}
