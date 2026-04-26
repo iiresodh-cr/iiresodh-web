@@ -431,25 +431,31 @@ useEffect(() => {
     }
   };
 
-  // Limpiar buscador y vaciar la lista al instante al cambiar de pestaña
+  // 1. Limpieza inmediata al cambiar de sección
   useEffect(() => {
     setBusquedaTexto("");
     setBusquedaFecha("");
-    setListaItems([]); // <-- Esto borra los ítems viejos al instante
+    setListaItems([]);
     setUltimoDoc(null);
     setHayMas(true);
   }, [vistaActiva]);
 
+  // 2. Motor de carga inteligente (Instantáneo vs Retrasado)
   useEffect(() => {
     if (vistaActiva === "inicio" || vistaActiva === "adminWeb" || vistaActiva === "estadisticas") return;
 
+    // Si el buscador está vacío (porque cambiaste de pestaña o borraste el texto),
+    // carga los datos INSTANTÁNEAMENTE, sin esperar medio segundo.
+    if (!busquedaTexto && !busquedaFecha) {
+      cargarItems();
+      return; 
+    }
+
+    // Si hay texto en el buscador, SÍ esperamos 500ms para no saturar
+    // a la base de datos mientras el usuario sigue tecleando.
     const timeoutId = setTimeout(() => {
-      if (busquedaTexto || busquedaFecha) {
-        handleBuscar();
-      } else {
-        cargarItems();
-      }
-    }, 500); 
+      handleBuscar();
+    }, 500);
 
     return () => clearTimeout(timeoutId);
   }, [busquedaTexto, busquedaFecha, vistaActiva]);
