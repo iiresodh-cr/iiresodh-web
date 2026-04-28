@@ -25,6 +25,7 @@ export default function PidaChat() {
   const [escribiendo, setEscribiendo] = useState(false);
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
   const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
 
   // Guardamos cada actualización del chat
   useEffect(() => {
@@ -37,6 +38,14 @@ export default function PidaChat() {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [mensajes, escribiendo, isOpen]);
+
+  // Auto-focus en el input
+  useEffect(() => {
+    // Si el chat está abierto y el bot no está escribiendo, enfocar el input.
+    if (isOpen && !escribiendo && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [escribiendo, isOpen]); // Se ejecuta cuando el bot termina o cuando se abre el chat.
 
   const toggleChat = () => setIsOpen(!isOpen);
 
@@ -271,6 +280,7 @@ export default function PidaChat() {
             }}
           >
             <InputBase
+              inputRef={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Escribe tu mensaje aquí..."
