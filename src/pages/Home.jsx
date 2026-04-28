@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { collection, query, orderBy, limit, getDocs, where, doc, getDoc } from "firebase/firestore";
 import { db, functions } from "../firebase/config";
 import { httpsCallable } from "firebase/functions";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 // Swiper
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -49,6 +49,7 @@ export const formatearTextoConLinksYHashtags = (texto) => {
 
 export default function Home() {
   const { t } = useTranslation(); 
+  const navigate = useNavigate();
   const [noticias, setNoticias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [contacto, setContacto] = useState({ nombre: "", correo: "", mensaje: "" });
@@ -212,7 +213,7 @@ export default function Home() {
                 >
                   {noticias.map((noticia) => (
                     <SwiperSlide key={noticia.id}>
-                      <article className="group relative w-full h-125 md:h-150 lg:h-160 overflow-hidden bg-main-blue cursor-pointer" onClick={() => window.location.href = `/noticias/${noticia.slug || noticia.id}`}>
+                      <article className="group relative w-full h-125 md:h-150 lg:h-160 overflow-hidden bg-main-blue cursor-pointer" onClick={() => navigate(`/noticias/${noticia.slug || noticia.id}`, { state: { noticiaPreCargada: noticia } })}>
                         <div 
                           className="absolute inset-0 w-full h-full bg-cover bg-top bg-no-repeat transition-transform duration-4000 group-hover:scale-105 bg-gray-200"
                           style={{ backgroundImage: `url(${noticia.imagenPrincipalUrl})` }}

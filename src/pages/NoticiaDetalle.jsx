@@ -1,6 +1,6 @@
 // src/pages/NoticiaDetalle.jsx
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { doc, getDoc, collection, query, where, getDocs, limit } from "firebase/firestore";
 import { db } from "../firebase/config";
 
@@ -48,13 +48,27 @@ export const formatearTextoConLinksYHashtags = (texto) => {
 
 export default function NoticiaDetalle() {
   const { id } = useParams(); 
-  const [noticia, setNoticia] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [copiado, setCopiado] = useState(false); // Estado para el aviso de enlace copiado
+  const location = useLocation(); // <-- Agrega esto para leer lo que mandó el Home
+  
+  // Si Home nos pasó la noticia, la usamos como estado inicial
+  const noticiaInicial = location.state?.noticiaPreCargada || null;
+  
+  const [noticia, setNoticia] = useState(noticiaInicial);
+  // Si ya tenemos la noticia inicial, no necesitamos la pantalla de carga
+  const [loading, setLoading] = useState(!noticiaInicial); 
+  const [copiado, setCopiado] = useState(false); 
   const currentUrl = window.location.href;
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    // Si la noticia YA vino desde el Home, solo actualizamos el título y evitamos ir a Firebase
+    if (noticiaInicial) {
+      if (noticiaInicial.titulo) document.title = `${noticiaInicial.titulo} | IIRESODH`;
+      return; 
+    }
+
+    // El resto de tu fetchNoticia se mantiene igual para cuando alguien entra desde un link externo
     const fetchNoticia = async () => {
       try {
         const q = query(collection(db, "noticias"), where("slug", "==", id), limit(1));
@@ -81,8 +95,9 @@ export default function NoticiaDetalle() {
         setLoading(false);
       }
     };
+    
     fetchNoticia();
-  }, [id]);
+  }, [id, noticiaInicial]);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(currentUrl)
