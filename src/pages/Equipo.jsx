@@ -5,7 +5,42 @@ import { db } from "../firebase/config";
 import PageHeader from "../components/PageHeader";
 
 // Importaciones de MUI
-import { CircularProgress, Paper } from "@mui/material";
+import { CircularProgress, Paper, Skeleton } from "@mui/material";
+
+// ==========================================
+// NUEVO: COMPONENTE DE IMAGEN INTELIGENTE
+// ==========================================
+const ImagenConSkeleton = ({ src, alt, className, priority = false }) => {
+  const [cargada, setCargada] = useState(false);
+
+  return (
+    <div className="w-full h-full relative">
+      {/* Skeleton animado que se muestra mientras la imagen carga */}
+      {!cargada && (
+        <div className="absolute inset-0 z-10">
+          <Skeleton 
+            variant="rectangular" 
+            width="100%" 
+            height="100%" 
+            animation="wave" 
+            sx={{ bgcolor: 'rgba(0,0,0,0.04)' }} 
+          />
+        </div>
+      )}
+      
+      {/* Imagen real invisible hasta que cargue completamente */}
+      <img
+        src={src}
+        alt={alt}
+        loading={priority ? "eager" : "lazy"}
+        onLoad={() => setCargada(true)}
+        className={`${className} transition-opacity duration-700 ease-in-out ${
+          cargada ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
+    </div>
+  );
+};
 
 export default function Equipo() {
   const [equipo, setEquipo] = useState([]);
@@ -16,11 +51,9 @@ export default function Equipo() {
 
     const fetchEquipo = async () => {
       try {
-        // 1. Creamos la consulta a la colección 'equipo', ordenada por el campo 'orden'.
         const q = query(collection(db, "equipo"), orderBy("orden", "asc"));
         const querySnapshot = await getDocs(q);
 
-        // 2. Mapeamos los documentos al formato que el componente ya espera.
         const equipoData = querySnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
@@ -37,7 +70,6 @@ export default function Equipo() {
     fetchEquipo();
   }, []);
 
-  // ESTADO DE CARGA MEJORADO CON MUI
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 pt-20" role="status">
@@ -72,12 +104,11 @@ export default function Equipo() {
         <div className="bg-watermark" aria-hidden="true"></div>
 
         <section className="relative pt-4 md:pt-6 px-0 z-10">
-          {/* AQUÍ SE ELIMINARON LAS CLASES: shadow-sm border border-gray-50 */}
           <div className="max-w-7xl mx-auto bg-white overflow-hidden">
             
             <div className="px-6 md:px-12 lg:px-16 pt-4 md:pt-6 pb-12 animate-fade-in-up w-full">
               
-              {/* SECCIÓN PRESIDENTE MEJORADA CON MUI PAPER */}
+              {/* SECCIÓN PRESIDENTE */}
               {presidente && (
                 <section className="mb-24" aria-labelledby="presidente-nombre">
                   <div className="flex flex-col md:flex-row items-start gap-10 md:gap-20">
@@ -88,14 +119,16 @@ export default function Equipo() {
                           aspectRatio: '4/5', 
                           borderRadius: '16px', 
                           overflow: 'hidden',
-                          bgcolor: '#F9FAFB', // bg-gray-50
-                          border: '1px solid #E5E7EB' // border-gray-200
+                          bgcolor: '#F9FAFB', 
+                          border: '1px solid #E5E7EB' 
                         }}
                       >
-                        <img 
+                        {/* APLICAMOS EL NUEVO COMPONENTE AL PRESIDENTE (CON PRIORIDAD) */}
+                        <ImagenConSkeleton 
                           src={presidente.fotoUrl} 
                           alt={`Retrato de ${presidente.nombre}`} 
                           className="w-full h-full object-cover"
+                          priority={true}
                         />
                       </Paper>
                     </div>
@@ -142,18 +175,19 @@ export default function Equipo() {
                                 transition: 'all 0.3s ease-in-out',
                                 '&:hover': {
                                   transform: 'translateY(-4px)',
-                                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)', // shadow-lg
+                                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)', 
                                 },
-                                // Este selector mantiene la funcionalidad de escala de grises de Tailwind
                                 '&:hover img': {
                                   filter: 'grayscale(0%)',
                                 }
                               }}
                             >
-                              <img 
+                              {/* APLICAMOS EL NUEVO COMPONENTE AL STAFF (SIN PRIORIDAD) */}
+                              <ImagenConSkeleton 
                                 src={miembro.fotoUrl} 
                                 alt={`Retrato de ${miembro.nombre}`} 
-                                className="w-full h-full object-cover grayscale transition-all duration-300" 
+                                className="w-full h-full object-cover grayscale transition-all duration-300 group-hover:grayscale-0"
+                                priority={false}
                               />
                             </Paper>
                             <div className="px-2">
