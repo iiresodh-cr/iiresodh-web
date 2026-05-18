@@ -24,7 +24,6 @@ import { Button } from "@mui/material";
 import { useTranslation } from 'react-i18next';
 
 export const formatearTextoConLinksYHashtags = (texto) => {
-  // ... (se mantiene tu función intacta)
   if (!texto) return "";
   let procesado = texto.replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const linksGuardados = []; 
@@ -114,8 +113,6 @@ export default function Home() {
     }
   };
 
-  // ¡HEMOS ELIMINADO EL BLOQUEO TOTAL DE PANTALLA AQUÍ!
-
   return (
     <main className="bg-white flex flex-col min-h-screen font-sans overflow-x-hidden">
       <div className="relative grow pb-20">
@@ -123,7 +120,7 @@ export default function Home() {
 
         <div className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-4 md:pt-6 pb-12 flex flex-col">
           
-          {/* HERO SECTION - Ahora carga al instante */}
+          {/* HERO SECTION */}
           <section className="relative pt-2 pb-12 lg:pt-6 lg:pb-24 overflow-visible">
             <div className="absolute top-0 right-0 -mr-24 -mt-16 opacity-10 pointer-events-none hidden md:block">
               <img src={isotipoFondo} alt="" className="w-200 object-cover" />
@@ -133,21 +130,21 @@ export default function Home() {
               
               <div className="lg:col-span-8 max-w-4xl">
                 <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-black text-[#0B1E40] leading-[1.05] mb-6 tracking-tighter">
-                  Defendiendo la<br className="hidden md:block"/>
-                  dignidad y los<br className="hidden md:block"/>
-                  Derechos Humanos
+                  {t('home.hero_titulo_1', 'Defendiendo la')}<br className="hidden md:block"/>
+                  {t('home.hero_titulo_2', 'dignidad y los')}<br className="hidden md:block"/>
+                  {t('home.hero_titulo_3', 'Derechos Humanos')}
                 </h1>
                 
                 <p className="text-lg md:text-xl text-gray-600 font-medium mb-10 leading-relaxed max-w-2xl">
-                  Fomentamos el cumplimiento de estándares internacionales mediante la participación ciudadana y gubernamental.
+                  {t('home.hero_subtitulo', 'Fomentamos el cumplimiento de estándares internacionales mediante la participación ciudadana y gubernamental.')}
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link to="/incidencia-internacional" className="bg-[#B91C1C] text-white font-bold py-3.5 px-8 rounded-md hover:bg-main-red transition-all text-center uppercase tracking-widest text-xs shadow-md">
-                    Incidencia Internacional
+                    {t('home.btn_incidencia', 'Incidencia Internacional')}
                   </Link>
                   <Link to="/noticias" className="bg-white text-[#0B1E40] border border-gray-200 font-bold py-3.5 px-8 rounded-md hover:border-gray-400 transition-all text-center uppercase tracking-widest text-xs flex items-center justify-center gap-2">
-                    Noticias &rarr;
+                    {t('home.btn_noticias', 'Noticias')} &rarr;
                   </Link>
                 </div>
               </div>
@@ -179,12 +176,12 @@ export default function Home() {
             <div className="flex items-end justify-between mb-8">
               <div>
                 <h2 className="text-3xl md:text-4xl font-black text-main-blue tracking-tight">
-                  Actualidad
+                  {t('home.seccion_actualidad', 'Actualidad')}
                 </h2>
                 <div className="w-20 h-1.5 bg-main-red mt-4 rounded-full"></div>
               </div>
               <Link to="/noticias" className="hidden md:flex text-xs font-black text-gray-400 hover:text-main-red transition-colors uppercase tracking-[0.2em] items-center gap-2">
-                Archivo de Noticias <span aria-hidden="true" className="text-lg">&rarr;</span>
+                {t('home.archivo_noticias', 'Archivo de Noticias')} <span aria-hidden="true" className="text-lg">&rarr;</span>
               </Link>
             </div>
             
@@ -230,7 +227,7 @@ export default function Home() {
                           </div>
                           <h3 className="text-2xl md:text-4xl lg:text-5xl font-black text-main-blue mb-4 pb-1 leading-tight tracking-tight group-hover:text-main-red transition-colors line-clamp-4">{noticia.titulo}</h3>
                           <p className="text-gray-800 line-clamp-2 md:line-clamp-3 mb-6 md:mb-8 text-sm md:text-lg font-medium leading-relaxed drop-shadow-sm">{noticia.resumen}</p>
-                          <div className="text-main-red font-black flex items-center gap-2 uppercase text-xs md:text-sm tracking-[0.2em] group-hover:gap-4 transition-all">Leer artículo <span aria-hidden="true" className="text-lg md:text-xl leading-none">&rarr;</span></div>
+                          <div className="text-main-red font-black flex items-center gap-2 uppercase text-xs md:text-sm tracking-[0.2em] group-hover:gap-4 transition-all">{t('home.leer_articulo', 'Leer artículo')} <span aria-hidden="true" className="text-lg md:text-xl leading-none">&rarr;</span></div>
                         </div>
                       </article>
                     </SwiperSlide>
@@ -250,17 +247,16 @@ export default function Home() {
 
           {/* BENTO BOX PILARES Y FORMULARIO DE CONTACTO */}
           <div className="pt-12 pb-8 bg-white border-t border-gray-100">
-            {/* ... Todo el contenido del Bento Box y el Formulario se mantiene igual ... */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
               
               <div className="lg:col-span-7 flex flex-col">
                 <div className="mb-8">
-                  <span className="text-main-red font-black tracking-[0.3em] uppercase text-xs mb-3 block">Nuestra Labor</span>
+                  <span className="text-main-red font-black tracking-[0.3em] uppercase text-xs mb-3 block">{t('home.nuestra_labor', 'Nuestra Labor')}</span>
                   <h2 className="text-4xl md:text-5xl font-black text-main-blue tracking-tighter mb-4 leading-tight">
-                    ¿Qué hacemos en IIRESODH?
+                    {t('home.que_hacemos_titulo', '¿Qué hacemos en IIRESODH?')}
                   </h2>
                   <p className="text-gray-500 text-xl font-light leading-relaxed">
-                    Combinamos acción jurídica, cooperación técnica y formación académica para generar un impacto real en la sociedad.
+                    {t('home.que_hacemos_subtitulo', 'Combinamos acción jurídica, cooperación técnica y formación académica para generar un impacto real en la sociedad.')}
                   </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -268,23 +264,23 @@ export default function Home() {
                     <div className="w-14 h-14 bg-main-red text-white rounded-2xl flex items-center justify-center mb-6 shadow-md shadow-main-red/20 group-hover:scale-110 transition-transform">
                       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
                     </div>
-                    <h3 className="text-2xl font-bold text-main-blue mb-3">Litigio Estratégico</h3>
-                    <p className="text-gray-500 font-light leading-relaxed">Defensa jurídica ante tribunales internacionales para sentar precedentes en la protección de derechos.</p>
+                    <h3 className="text-2xl font-bold text-main-blue mb-3">{t('home.litigio_titulo', 'Litigio Estratégico')}</h3>
+                    <p className="text-gray-500 font-light leading-relaxed">{t('home.litigio_desc', 'Defensa jurídica ante tribunales internacionales para sentar precedentes en la protección de derechos.')}</p>
                   </Link>
-                  <Link to="/Incidencia-internacional" className="group bg-gray-50 rounded-3xl p-8 border border-gray-100 hover:bg-white hover:shadow-xl transition-all duration-300">
+                  <Link to="/incidencia-internacional" className="group bg-gray-50 rounded-3xl p-8 border border-gray-100 hover:bg-white hover:shadow-xl transition-all duration-300">
                     <div className="w-14 h-14 bg-light-blue text-white rounded-2xl flex items-center justify-center mb-6 shadow-md shadow-light-blue/20 group-hover:scale-110 transition-transform">
                       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
                     </div>
-                    <h3 className="text-2xl font-bold text-main-blue mb-3">Incidencia Internacional</h3>
-                    <p className="text-gray-500 font-light leading-relaxed">Investigaciones, informes de impacto y documentos de litigio estratégico.</p>
+                    <h3 className="text-2xl font-bold text-main-blue mb-3">{t('home.incidencia_titulo', 'Incidencia Internacional')}</h3>
+                    <p className="text-gray-500 font-light leading-relaxed">{t('home.incidencia_desc', 'Investigaciones, informes de impacto y documentos de litigio estratégico.')}</p>
                   </Link>
                   <Link to="/cursos" className="md:col-span-2 group bg-main-blue rounded-3xl p-8 md:p-10 flex flex-col md:flex-row gap-8 items-center hover:shadow-2xl transition-all duration-300">
                     <div className="w-20 h-20 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-main-red group-hover:border-main-red transition-all">
                       <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
                     </div>
                     <div>
-                      <h3 className="text-2xl font-bold text-white mb-2">Formación Especializada</h3>
-                      <p className="text-gray-300 font-light text-lg">Certificaciones y programas académicos diseñados para los líderes del cambio social.</p>
+                      <h3 className="text-2xl font-bold text-white mb-2">{t('home.formacion_titulo', 'Formación Especializada')}</h3>
+                      <p className="text-gray-300 font-light text-lg">{t('home.formacion_desc', 'Certificaciones y programas académicos diseñados para los líderes del cambio social.')}</p>
                     </div>
                   </Link>
                 </div>
@@ -292,22 +288,22 @@ export default function Home() {
               
               <div className="lg:col-span-5 w-full h-full flex flex-col">
                 <div className="bg-white rounded-3xl p-8 md:p-10 border border-gray-100 shadow-xl h-full">
-                  <h3 className="text-3xl font-black text-main-blue mb-3">¿Hablamos?</h3>
-                  <p className="text-gray-500 font-light mb-8 text-lg leading-tight">Estamos aquí para colaborar y responder tus dudas.</p>
+                  <h3 className="text-3xl font-black text-main-blue mb-3">{t('home.contacto_titulo', '¿Hablamos?')}</h3>
+                  <p className="text-gray-500 font-light mb-8 text-lg leading-tight">{t('home.contacto_subtitulo', 'Estamos aquí para colaborar y responder tus dudas.')}</p>
                   
-                  <ToastAlert open={estadoEnvio === "exito"} message="¡Mensaje enviado con éxito!" isError={false} onClose={() => setEstadoEnvio("idle")} />
-                  <ToastAlert open={estadoEnvio === "error"} message="Ocurrió un error al enviar el mensaje." isError={true} onClose={() => setEstadoEnvio("idle")} />
+                  <ToastAlert open={estadoEnvio === "exito"} message={t('home.msg_exito', '¡Mensaje enviado con éxito!')} isError={false} onClose={() => setEstadoEnvio("idle")} />
+                  <ToastAlert open={estadoEnvio === "error"} message={t('home.msg_error', 'Ocurrió un error al enviar el mensaje.')} isError={true} onClose={() => setEstadoEnvio("idle")} />
                   
                   <form onSubmit={handleEnviarContacto} className="space-y-6 flex flex-col grow">
                     <div className="flex flex-col gap-6">
-                      <AdminTextField label="Nombre" required value={contacto.nombre} onChange={(e) => setContacto({...contacto, nombre: e.target.value})} />
-                      <AdminTextField label="Email" type="email" required value={contacto.correo} onChange={(e) => setContacto({...contacto, correo: e.target.value})} />
+                      <AdminTextField label={t('home.form_nombre', 'Nombre')} required value={contacto.nombre} onChange={(e) => setContacto({...contacto, nombre: e.target.value})} />
+                      <AdminTextField label={t('home.form_email', 'Email')} type="email" required value={contacto.correo} onChange={(e) => setContacto({...contacto, correo: e.target.value})} />
                     </div>
                     <div className="grow">
-                      <AdminTextField label="Mensaje" required multiline rows={6} value={contacto.mensaje} onChange={(e) => setContacto({...contacto, mensaje: e.target.value})} />
+                      <AdminTextField label={t('home.form_mensaje', 'Mensaje')} required multiline rows={6} value={contacto.mensaje} onChange={(e) => setContacto({...contacto, mensaje: e.target.value})} />
                     </div>
                     <Button type="submit" variant="contained" color="secondary" disabled={estadoEnvio === "enviando"} sx={{ py: 2, px: 8, width: '100%', borderRadius: '12px', fontWeight: 'bold', textTransform: 'uppercase', tracking: '0.1em', marginTop: 'auto' }}>
-                      {estadoEnvio === "enviando" ? "Enviando..." : "Enviar Mensaje"}
+                      {estadoEnvio === "enviando" ? t('home.btn_enviando', 'Enviando...') : t('home.btn_enviar', 'Enviar Mensaje')}
                     </Button>
                   </form>
                 </div>
