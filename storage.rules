@@ -1,0 +1,68 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // ============================================================
+    // FUNCIÓN AUXILIAR: CLUB DE ADMINISTRADORES (VERSIÓN STORAGE)
+    // ============================================================
+    function esAdmin() {
+      return request.auth != null && 
+        firestore.exists(/databases/(default)/documents/admins/$(request.auth.token.email));
+    }
+    
+    // REGLAS ACTIVIDAD
+    match /auditoria_actividad/{document=**} {
+      allow read: if esAdmin();
+      allow write: if esAdmin();
+    }
+    
+    // REGLAS PARA EQUIPO
+    match /equipo/{allPaths=**} {
+      allow read: if true; 
+      allow write: if esAdmin();
+    }
+    
+    // REGLAS PARA NOTICIAS
+    match /noticias/{allPaths=**} {
+      allow read: if true; 
+      allow write: if esAdmin();
+    }
+
+    // REGLAS PARA ARTÍCULOS ACADÉMICOS
+    match /articulos/{allPaths=**} {
+      allow read: if true; 
+      allow write: if esAdmin();
+    }
+    
+    // REGLAS PARA INFORMES
+    match /informes/{allPaths=**} {
+      allow read: if true; 
+      allow write: if esAdmin();
+    }
+
+    // NUEVO: REGLAS PARA INCIDENCIA
+    match /incidencia/{allPaths=**} {
+      allow read: if true; 
+      allow write: if esAdmin();
+    }
+    
+    // REGLAS PARA CURSOS (Las portadas son públicas)
+    match /cursos/{allPaths=**} {
+      allow read: if true; 
+      allow write: if esAdmin();
+    }
+
+    // TIENDA DE LIBROS
+    match /libros {
+      match /portadas/{allPaths=**} {
+        allow read: if true;
+        allow write: if esAdmin();
+      }
+      
+      // Archivos PDF: PRIVADOS. 
+      match /archivos/{allPaths=**} {
+        allow read, write: if esAdmin();
+      }
+    }
+  }
+}
