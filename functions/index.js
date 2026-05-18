@@ -39,7 +39,7 @@ function getPidaFirestore() {
 }
 
 // ============================================================================
-// 1. FUNCIÓN DE INTELIGENCIA ARTIFICIAL (GEMINI)
+// 1. FUNCIÓN DE INTELIGENCIA ARTIFICIAL (GEMINI) - AHORA CON SOPORTE PDF
 // ============================================================================
 exports.generarResumenGemini = onCall({ 
   secrets: [geminiApiKey], 
@@ -55,9 +55,11 @@ exports.generarResumenGemini = onCall({
     throw new HttpsError("unauthenticated", "Usuario no autenticado.");
   }
 
-  const { contenido } = request.data;
-  if (!contenido) {
-    throw new HttpsError("invalid-argument", "Contenido faltante.");
+  const { contenido, archivoBase64, mimeType } = request.data;
+  
+  // Validamos que venga al menos un texto o un archivo
+  if (!contenido && !archivoBase64) {
+    throw new HttpsError("invalid-argument", "Contenido o archivo faltante.");
   }
 
   try {
@@ -70,17 +72,29 @@ exports.generarResumenGemini = onCall({
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    const prompt = `Actúa como un periodista experto. Genera un resumen atractivo de entre 15 y 20 palabras basado en el siguiente contenido.
+    const prompt = `Actúa como un periodista experto. Genera un resumen atractivo de entre 15 y 20 palabras basado en el contenido proporcionado.
     
     REGLAS ESTRICTAS E INQUEBRANTABLES:
     1. Devuelve ÚNICA y EXCLUSIVAMENTE el texto del resumen.
     2. ESTÁ PROHIBIDO incluir el conteo de palabras al final. NUNCA escribas "(15 palabras)" ni nada similar.
     3. NO uses comillas, ni negritas, ni saltos de línea.
-    
-    Contenido: 
-    ${contenido}`;
+    ${contenido ? `\nContenido del texto a resumir:\n${contenido}` : ""}`;
 
-    const result = await model.generateContent(prompt);
+    let result;
+
+    // Si viene un archivo (PDF), se lo pasamos a Gemini junto con las instrucciones
+    if (archivoBase64) {
+      const documentPart = {
+        inlineData: {
+          data: archivoBase64,
+          mimeType: mimeType || "application/pdf"
+        }
+      };
+      result = await model.generateContent([prompt, documentPart]);
+    } else {
+      // Flujo normal (solo texto)
+      result = await model.generateContent(prompt);
+    }
     
     let textoLimpio = result.response.text().trim();
     textoLimpio = textoLimpio.replace(/\s*\(\d+\s*palabras?\)$/i, '');

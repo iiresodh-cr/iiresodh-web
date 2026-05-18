@@ -463,16 +463,53 @@ useEffect(() => {
   }, [busquedaTexto, busquedaFecha, vistaActiva]);
 
   const handleAutoResumen = async () => {
-    if (!contenido || contenido.trim().length < 20) {
-      setMensaje("Escribe el contenido antes de generar un resumen.");
-      setTimeout(() => setMensaje(""), 3000);
-      return;
+    if (vistaActiva === "incidencia") {
+      if (!archivoIncidencia) {
+        setMensaje("Para resumir un documento, primero debes seleccionarlo (Subir PDF) desde tu computadora.");
+        setTimeout(() => setMensaje(""), 4000);
+        return;
+      }
+    } else {
+      if (!contenido || contenido.trim().length < 20) {
+        setMensaje("Escribe el contenido antes de generar un resumen.");
+        setTimeout(() => setMensaje(""), 3000);
+        return;
+      }
     }
+  
     setGenerandoResumen(true);
-    setMensaje("Consultando a PIDA...");
+    setMensaje("PIDA está leyendo el documento...");
+  
     try {
       const generarResumen = httpsCallable(functions, 'generarResumenGemini');
-      const resultado = await generarResumen({ contenido });
+      let payload = {};
+  
+      if (vistaActiva === "incidencia" && archivoIncidencia) {
+        // Límite de seguridad por restricciones de tamaño de envío a Cloud Functions
+        if (archivoIncidencia.size > 5 * 1024 * 1024) { 
+           setMensaje("El archivo PDF es demasiado grande para ser leído automáticamente por la IA (límite 5MB).");
+           setGenerandoResumen(false);
+           setTimeout(() => setMensaje(""), 4000);
+           return;
+        }
+  
+        // Convertimos el PDF a base64 para enviarlo al servidor
+        const base64String = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(archivoIncidencia);
+          reader.onload = () => {
+             const resultBase64 = reader.result.split(',')[1];
+             resolve(resultBase64);
+          };
+          reader.onerror = (error) => reject(error);
+        });
+        
+        payload = { archivoBase64: base64String, mimeType: archivoIncidencia.type || "application/pdf" };
+      } else {
+        payload = { contenido };
+      }
+  
+      const resultado = await generarResumen(payload);
       if (resultado.data && resultado.data.resumen) {
         setResumen(resultado.data.resumen);
         setMensaje("✨ Resumen inteligente generado por PIDA.");
@@ -481,10 +518,10 @@ useEffect(() => {
       }
     } catch (error) {
       console.error("Error:", error);
-      setMensaje("Error al conectar con PIDA.");
+      setMensaje("Error al conectar con PIDA o archivo ilegible.");
     } finally {
       setGenerandoResumen(false);
-      setTimeout(() => setMensaje(""), 3000);
+      setTimeout(() => setMensaje(""), 4000);
     }
   };
 
@@ -1291,12 +1328,12 @@ useEffect(() => {
                       </div>
                     )}
 
-                    {/* Ocultar el Resumen solo para Informes. Ocultar PIDA para Informes y Cursos */}
+                    {/* Ocultar el Resumen solo para Informes. */}
                     {vistaActiva !== "informes" && (
                     <div>
                       <div className="flex justify-between items-end mb-1.5">
                         <div className="w-full flex justify-end">
-                          {vistaActiva !== "cursos" && vistaActiva !== "incidencia" && (
+                          {vistaActiva !== "cursos" && (
                             <button type="button" onClick={handleAutoResumen} disabled={generandoResumen} className="text-xs font-semibold text-main-blue hover:text-light-blue bg-blue-50 hover:bg-blue-100 py-1.5 px-3 rounded-lg transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50 mb-2">
                               {generandoResumen ? "Generando..." : "✨ Auto-completar con PIDA"}
                             </button>
