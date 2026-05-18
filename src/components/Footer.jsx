@@ -98,7 +98,7 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-light text-gray-400">
           
           <div className="text-center md:text-left">
-            <span>IIRESODH© {new Date().getFullYear()} is licensed under CC BY-NC-ND 4.0</span>
+            <span>IIRESODH© {new Date().getFullYear()} {t('footer.licencia', 'está bajo licencia CC BY-NC-ND 4.0')}</span>
           </div>
           
           <div className="flex items-center gap-4">
