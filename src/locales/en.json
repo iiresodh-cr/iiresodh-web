@@ -1,11 +1,30 @@
 {
   "navbar": {
     "inicio": "Home",
-    "quienesSomos": "About Us",
-    "noticias": "News"
-  },
-  "home": {
-    "bienvenida": "Welcome to IIRESODH",
-    "descripcion": "Inter-American Institute of Social Responsibility and Human Rights"
+    "quienes_somos": "About Us",
+    "equipo": "Our Team",
+    "nuestro_trabajo": "Our Work",
+    "litigio": "Strategic Litigation",
+    "incidencia": "International Advocacy",
+    "cursos": "Courses",
+    "recursos": "Resources",
+    "noticias": "News",
+    "articulos": "Academic Articles",
+    "informes": "Annual Reports",
+    "tienda": "Store",
+    "donaciones": "Donate",
+    "contacto": "Contact",
+    "idioma": "Language",
+    "nosotros": "ABOUT US",
+    "formacion": "Specialized Training",
+    "actualidad": "NEWS & UPDATES",
+    "buscar_placeholder": "Search news, areas, info...",
+    "buscar_aria": "Search news or info on the site",
+    "volver": "BACK",
+    "canada": "Canada",
+    "colombia": "Colombia",
+    "costa_rica": "Costa Rica (HQ)",
+    "guatemala": "Guatemala",
+    "mexico": "Mexico"
   }
 }

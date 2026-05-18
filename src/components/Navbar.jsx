@@ -14,8 +14,8 @@ export default function Navbar() {
   const navigate = useNavigate();
   const isHome = location.pathname === "/";
   
-  // HOOK DE TRADUCCIÓN
-  const { i18n } = useTranslation();
+  // HOOK DE TRADUCCIÓN: Extraemos 't' (traductor) e 'i18n' (instancia)
+  const { t, i18n } = useTranslation();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -126,8 +126,8 @@ export default function Navbar() {
               >
                 <InputBase
                   sx={{ ml: 2, flex: 1, color: '#1D3557', fontSize: '0.875rem', fontFamily: '"Work Sans", sans-serif' }}
-                  placeholder="Buscar noticias, áreas, información..."
-                  inputProps={{ 'aria-label': 'Buscar noticias o información en el sitio' }}
+                  placeholder={t('navbar.buscar_placeholder', 'Buscar noticias, áreas, información...')}
+                  inputProps={{ 'aria-label': t('navbar.buscar_aria', 'Buscar noticias o información en el sitio') }}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -186,7 +186,7 @@ export default function Navbar() {
             <div className="w-full md:w-auto flex justify-start order-2 md:order-1 mt-4 md:mt-0 mb-4 md:mb-0">
               {!isHome ? (
                 <Link to="/" className="flex items-center gap-2 text-sm font-bold tracking-wider uppercase text-main-blue hover:text-light-blue transition-colors" aria-label="Regresar a la página principal">
-                  <span className="text-lg leading-none" aria-hidden="true">&larr;</span> VOLVER
+                  <span className="text-lg leading-none" aria-hidden="true">&larr;</span> {t('navbar.volver', 'VOLVER')}
                 </Link>
               ) : <span className="hidden md:block w-24"></span>}
             </div>
@@ -202,7 +202,7 @@ export default function Navbar() {
                   aria-expanded={activeDropdown === 'nosotros'}
                   aria-controls="dropdown-nosotros"
                 >
-                  NOSOTROS 
+                  {t('navbar.nosotros', 'NOSOTROS')}
                   <svg className={`w-4 h-4 text-pale-blue transition-transform duration-300 ${activeDropdown === 'nosotros' ? 'rotate-180' : ''} md:group-hover:rotate-180`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
                 <div 
@@ -210,9 +210,9 @@ export default function Navbar() {
                   className={`${activeDropdown === 'nosotros' ? 'block' : 'hidden'} md:block md:absolute md:left-0 md:top-full md:w-56 md:bg-white md:shadow-xl md:rounded-b md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300 md:border-t-4 md:border-main-red w-full bg-gray-50 border-l-4 border-main-red md:border-l-0 z-50`}
                 >
                   <ul className="py-2 flex flex-col">
-                    <li><Link to="/quienes-somos" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">¿Quiénes somos?</Link></li>
-                    <li><Link to="/equipo" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Nuestro Equipo</Link></li>
-                    <li><Link to="/informes-anuales" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Informes Anuales</Link></li>
+                    <li><Link to="/quienes-somos" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">{t('navbar.quienes_somos', '¿Quiénes somos?')}</Link></li>
+                    <li><Link to="/equipo" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">{t('navbar.equipo', 'Nuestro Equipo')}</Link></li>
+                    <li><Link to="/informes-anuales" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">{t('navbar.informes', 'Informes Anuales')}</Link></li>
                   </ul>
                 </div>
               </div>
@@ -223,28 +223,27 @@ export default function Navbar() {
                   className="flex items-center justify-between md:justify-center w-full gap-1.5 hover:text-light-blue transition-colors py-3 md:py-2 cursor-pointer" 
                   onClick={() => toggleDropdown('areas')}
                 >
-                  NUESTRO TRABAJO 
+                  {t('navbar.nuestro_trabajo', 'NUESTRO TRABAJO')}
                   <svg className={`w-4 h-4 text-pale-blue transition-transform duration-300 ${activeDropdown === 'areas' ? 'rotate-180' : ''} md:group-hover:rotate-180`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
                 <div className={`${activeDropdown === 'areas' ? 'block' : 'hidden'} md:block md:absolute md:left-0 md:top-full md:w-80 md:bg-white md:shadow-xl md:rounded-b md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300 md:border-t-4 md:border-main-red w-full bg-gray-50 border-l-4 border-main-red md:border-l-0 z-50`}>
                   <ul className="py-2 flex flex-col">
                     
                     {/* Elementos Principales al mismo nivel */}
-                    <li><Link to="/litigio-estrategico" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Litigio Estratégico</Link></li>
-                    <li><Link to="/cursos" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors mt-1">Formación Especializada</Link></li>
-                    
+                    <li><Link to="/litigio-estrategico" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">{t('navbar.litigio', 'Litigio Estratégico')}</Link></li>
+                    <li><Link to="/cursos" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors mt-1">{t('navbar.formacion', 'Formación Especializada')}</Link></li>
                     
                     {/* Sección Internacional Agrupada */}
                     <li className="flex flex-col">
                       <Link to="/incidencia-internacional" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">
-                        Incidencia Internacional
+                        {t('navbar.incidencia', 'Incidencia Internacional')}
                       </Link>
                       <div className="grid grid-cols-1 gap-0">
-                        <Link to="/incidencia-internacional/canada" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ Canadá</Link>
-                        <Link to="/incidencia-internacional/colombia" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ Colombia</Link>
-                        <Link to="/incidencia-internacional/costa-rica" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ Costa Rica (Sede)</Link>
-                        <Link to="/incidencia-internacional/guatemala" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ Guatemala</Link>
-                        <Link to="/incidencia-internacional/mexico" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ México</Link>
+                        <Link to="/incidencia-internacional/canada" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ {t('navbar.canada', 'Canadá')}</Link>
+                        <Link to="/incidencia-internacional/colombia" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ {t('navbar.colombia', 'Colombia')}</Link>
+                        <Link to="/incidencia-internacional/costa-rica" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ {t('navbar.costa_rica', 'Costa Rica (Sede)')}</Link>
+                        <Link to="/incidencia-internacional/guatemala" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ {t('navbar.guatemala', 'Guatemala')}</Link>
+                        <Link to="/incidencia-internacional/mexico" className="block w-full pl-10 pr-5 py-2 hover:bg-gray-100 text-gray-500 hover:text-main-red transition-all text-xs font-bold italic">└ {t('navbar.mexico', 'México')}</Link>
                       </div>
                     </li>
                   </ul>
@@ -260,7 +259,7 @@ export default function Navbar() {
                   aria-expanded={activeDropdown === 'actualidad'}
                   aria-controls="dropdown-actualidad"
                 >
-                  ACTUALIDAD 
+                  {t('navbar.actualidad', 'ACTUALIDAD')}
                   <svg className={`w-4 h-4 text-pale-blue transition-transform duration-300 ${activeDropdown === 'actualidad' ? 'rotate-180' : ''} md:group-hover:rotate-180`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
                 <div 
@@ -268,15 +267,15 @@ export default function Navbar() {
                   className={`${activeDropdown === 'actualidad' ? 'block' : 'hidden'} md:block md:absolute md:left-0 md:top-full md:w-56 md:bg-white md:shadow-xl md:rounded-b md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300 md:border-t-4 md:border-main-red w-full bg-gray-50 border-l-4 border-main-red md:border-l-0 z-50`}
                 >
                   <ul className="py-2 flex flex-col">
-                    <li><Link to="/noticias" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Noticias</Link></li>
-                    <li><Link to="/articulos-academicos" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">Artículos</Link></li>
+                    <li><Link to="/noticias" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">{t('navbar.noticias', 'Noticias')}</Link></li>
+                    <li><Link to="/articulos-academicos" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">{t('navbar.articulos', 'Artículos')}</Link></li>
                   </ul>
                 </div>
               </div>
 
               {/* ENLACE DIRECTO A TIENDA */}
               <Link to="/tienda" className="hover:text-light-blue py-3 md:py-2 transition-colors whitespace-nowrap">
-                TIENDA
+                {t('navbar.tienda', 'TIENDA')}
               </Link>
 
             </nav>

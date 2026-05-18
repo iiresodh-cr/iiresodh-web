@@ -1,11 +1,30 @@
 {
   "navbar": {
     "inicio": "Accueil",
-    "quienesSomos": "Qui Sommes-Nous",
-    "noticias": "Actualités"
-  },
-  "home": {
-    "bienvenida": "Bienvenue à IIRESODH",
-    "descripcion": "Institut Interaméricain de Responsabilité Sociale et des Droits de l'Homme"
+    "quienes_somos": "Qui Sommes-Nous",
+    "equipo": "Notre Équipe",
+    "nuestro_trabajo": "Notre Travail",
+    "litigio": "Litige Stratégique",
+    "incidencia": "Plaidoyer International",
+    "cursos": "Cours",
+    "recursos": "Ressources",
+    "noticias": "Actualités",
+    "articulos": "Articles Académiques",
+    "informes": "Rapports Annuels",
+    "tienda": "Boutique",
+    "donaciones": "Faire un Don",
+    "contacto": "Contact",
+    "idioma": "Langue",
+    "nosotros": "À PROPOS",
+    "formacion": "Formation Spécialisée",
+    "actualidad": "ACTUALITÉS",
+    "buscar_placeholder": "Rechercher des infos, domaines...",
+    "buscar_aria": "Rechercher des infos sur le site",
+    "volver": "RETOUR",
+    "canada": "Canada",
+    "colombia": "Colombie",
+    "costa_rica": "Costa Rica (Siège)",
+    "guatemala": "Guatemala",
+    "mexico": "Mexique"
   }
 }

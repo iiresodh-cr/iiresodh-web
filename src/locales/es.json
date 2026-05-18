@@ -1,11 +1,30 @@
 {
   "navbar": {
     "inicio": "Inicio",
-    "quienesSomos": "Quiénes Somos",
-    "noticias": "Noticias"
-  },
-  "home": {
-    "bienvenida": "Bienvenido a IIRESODH",
-    "descripcion": "Instituto Interamericano de Responsabilidad Social y Derechos Humanos"
+    "quienes_somos": "Quiénes Somos",
+    "equipo": "Equipo",
+    "nuestro_trabajo": "Nuestro Trabajo",
+    "litigio": "Litigio Estratégico",
+    "incidencia": "Incidencia Internacional",
+    "cursos": "Cursos",
+    "recursos": "Recursos",
+    "noticias": "Noticias",
+    "articulos": "Artículos Académicos",
+    "informes": "Informes Anuales",
+    "tienda": "Tienda",
+    "donaciones": "Donaciones",
+    "contacto": "Contacto",
+    "idioma": "Idioma",
+    "nosotros": "NOSOTROS",
+    "formacion": "Formación Especializada",
+    "actualidad": "ACTUALIDAD",
+    "buscar_placeholder": "Buscar noticias, áreas, información...",
+    "buscar_aria": "Buscar noticias o información en el sitio",
+    "volver": "VOLVER",
+    "canada": "Canadá",
+    "colombia": "Colombia",
+    "costa_rica": "Costa Rica (Sede)",
+    "guatemala": "Guatemala",
+    "mexico": "México"
   }
 }
