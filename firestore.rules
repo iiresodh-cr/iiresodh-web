@@ -36,12 +36,29 @@ service cloud.firestore {
       allow read: if true;
       allow write: if esAdmin();
     }
+    
+    // ===== FALTABAN ESTAS TRES COLECCIONES =====
+    match /informes/{docId=**} {
+      allow read: if true;
+      allow write: if esAdmin();
+    }
+
+    match /cursos/{docId=**} {
+      allow read: if true;
+      allow write: if esAdmin();
+    }
+
+    match /incidencia/{docId=**} {
+      allow read: if true;
+      allow write: if esAdmin();
+    }
+    // ===========================================
 
     match /compras/{docId=**} {
       allow read, write: if esAdmin();
     }
     
-    // NUEVO: Reglas para la colección configuración que permite que el Hero section pueda leer los números
+    // Reglas para la colección configuración que permite que el Hero section pueda leer los números
     match /configuracion/{docId=**} {
       allow read: if true;
       allow write: if esAdmin();
