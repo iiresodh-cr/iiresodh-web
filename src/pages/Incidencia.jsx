@@ -1,13 +1,18 @@
 // src/pages/Incidencia.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../firebase/config";
 import PageHeader from "../components/PageHeader";
-import { Paper, CircularProgress } from "@mui/material";
+import { Paper, CircularProgress, Pagination, Stack } from "@mui/material";
 
 export default function Incidencia() {
   const [documentos, setDocumentos] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // ESTADOS PARA PAGINACIÓN
+  const [paginaActual, setPaginaActual] = useState(1);
+  const documentosPorPagina = 10;
+  const listRef = useRef(null); // Referencia para hacer scroll al cambiar de página
 
   // Hacemos scroll al inicio siempre que se carga la página
   useEffect(() => {
@@ -40,6 +45,22 @@ export default function Incidencia() {
     // Formato: "Mes Año" (ej. Octubre 2023)
     return date.toLocaleDateString("es-ES", { year: "numeric", month: "long" });
   };
+
+  // MANEJADOR DE CAMBIO DE PÁGINA
+  const handleCambioPagina = (event, value) => {
+    setPaginaActual(value);
+    // Hacemos un scroll suave hacia el inicio de la lista
+    if (listRef.current) {
+      const yOffset = listRef.current.getBoundingClientRect().top + window.scrollY - 100;
+      window.scrollTo({ top: yOffset, behavior: 'smooth' });
+    }
+  };
+
+  // LÓGICA DE CORTE PARA LA PAGINACIÓN
+  const indiceUltimoDocumento = paginaActual * documentosPorPagina;
+  const indicePrimerDocumento = indiceUltimoDocumento - documentosPorPagina;
+  const documentosPaginados = documentos.slice(indicePrimerDocumento, indiceUltimoDocumento);
+  const totalPaginas = Math.ceil(documentos.length / documentosPorPagina);
 
   if (loading) {
     return (
@@ -78,7 +99,7 @@ export default function Incidencia() {
             </p>
           </div>
 
-          <div className="w-16 h-1 bg-main-red mx-auto mt-8 mb-12 rounded-full"></div>
+          <div ref={listRef} className="w-16 h-1 bg-main-red mx-auto mt-8 mb-12 rounded-full"></div>
 
           {/* LISTA DE DOCUMENTOS */}
           {documentos.length === 0 ? (
@@ -91,51 +112,78 @@ export default function Incidencia() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {documentos.map((doc) => (
-                <Paper 
-                  key={doc.id} 
-                  elevation={0} 
-                  className="group flex flex-col bg-gray-50/50 p-8 border border-gray-100 hover:border-main-red/30 hover:shadow-lg transition-all duration-300 h-full relative overflow-hidden" 
-                  sx={{ borderRadius: '24px' }}
-                >
-                  {/* Etiqueta superior */}
-                  <div className="flex justify-between items-start mb-4">
-                    <span className="bg-pale-blue/20 text-main-blue text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-md border border-pale-blue/30">
-                      {formatearFecha(doc.fechaPublicacion)}
-                    </span>
-                    <span className="text-gray-400 text-xs font-bold flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                      {doc.tipo || "Documento PDF"}
-                    </span>
-                  </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {documentosPaginados.map((doc) => (
+                  <Paper 
+                    key={doc.id} 
+                    elevation={0} 
+                    className="group flex flex-col bg-gray-50/50 p-8 border border-gray-100 hover:border-main-red/30 hover:shadow-lg transition-all duration-300 h-full relative overflow-hidden" 
+                    sx={{ borderRadius: '24px' }}
+                  >
+                    {/* Etiqueta superior */}
+                    <div className="flex justify-between items-start mb-4">
+                      <span className="bg-pale-blue/20 text-main-blue text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-md border border-pale-blue/30">
+                        {formatearFecha(doc.fechaPublicacion)}
+                      </span>
+                      <span className="text-gray-400 text-xs font-bold flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        {doc.tipo || "Documento PDF"}
+                      </span>
+                    </div>
 
-                  {/* Contenido */}
-                  <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-3 tracking-tight group-hover:text-main-red transition-colors">
-                    {doc.titulo}
-                  </h3>
-                  <p className="text-gray-500 font-light leading-relaxed text-sm mb-8 grow">
-                    {doc.resumen}
-                  </p>
+                    {/* Contenido */}
+                    <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-3 tracking-tight group-hover:text-main-red transition-colors">
+                      {doc.titulo}
+                    </h3>
+                    <p className="text-gray-500 font-light leading-relaxed text-sm mb-8 grow">
+                      {doc.resumen}
+                    </p>
 
-                  {/* Botón de acción */}
-                  <div className="mt-auto pt-4 border-t border-gray-100">
-                    <a 
-                      href={doc.archivoIncidenciaUrl || "#"} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-sm font-bold text-main-red uppercase tracking-widest hover:text-red-800 transition-colors"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                      Descargar Documento
-                    </a>
-                  </div>
+                    {/* Botón de acción */}
+                    <div className="mt-auto pt-4 border-t border-gray-100">
+                      <a 
+                        href={doc.archivoIncidenciaUrl || "#"} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-sm font-bold text-main-red uppercase tracking-widest hover:text-red-800 transition-colors"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Descargar Documento
+                      </a>
+                    </div>
 
-                  {/* Acento visual en hover */}
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-main-red/5 rounded-bl-[100px] -z-10 transition-transform group-hover:scale-110"></div>
-                </Paper>
-              ))}
-            </div>
+                    {/* Acento visual en hover */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-main-red/5 rounded-bl-[100px] -z-10 transition-transform group-hover:scale-110"></div>
+                  </Paper>
+                ))}
+              </div>
+
+              {/* CONTROLES DE PAGINACIÓN */}
+              {totalPaginas > 1 && (
+                <div className="mt-16 flex justify-center">
+                  <Stack spacing={2}>
+                    <Pagination 
+                      count={totalPaginas} 
+                      page={paginaActual} 
+                      onChange={handleCambioPagina} 
+                      color="primary" 
+                      size="large"
+                      sx={{
+                        '& .MuiPaginationItem-root': {
+                          fontFamily: 'inherit',
+                          fontWeight: 'bold',
+                        },
+                        '& .Mui-selected': {
+                          backgroundColor: '#1D3557 !important', // main-blue
+                          color: '#ffffff',
+                        }
+                      }}
+                    />
+                  </Stack>
+                </div>
+              )}
+            </>
           )}
 
         </section>
