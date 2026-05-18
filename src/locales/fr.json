@@ -26,5 +26,21 @@
     "costa_rica": "Costa Rica (Siège)",
     "guatemala": "Guatemala",
     "mexico": "Mexique"
+  },
+  "footer": {
+    "descripcion": "Nous favorisons le respect des normes internationales relatives aux droits de l'homme par le biais de litiges stratégiques, de la coopération technique et de la formation académique.",
+    "instituciones_amigas": "Institutions Partenaires",
+    "conecta": "Connectez-vous avec nous",
+    "apoyar": "Soutenir Notre Travail",
+    "privacidad": "Confidentialité et Conditions",
+    "aviso_sugef": "Avis SUGEF",
+    "sugef_texto": "\"Le public est averti que l'Association Institut International de Responsabilité Sociale et des Droits de l'Homme est supervisée uniquement en matière de prévention du blanchiment d'argent, du financement du terrorisme et du financement de la prolifération des armes de destruction massive, et est également soumise aux dispositions contraignantes de l'Unité de Renseignement Financier de l'Institut Costaricien sur les Drogues. Par conséquent, la SUGEF ne supervise pas financièrement l'Association, ni les affaires qu'elle propose, ni sa sécurité, sa stabilité ou sa solvabilité.\"",
+    "siguenos_facebook": "Suivez-nous sur Facebook",
+    "siguenos_instagram": "Suivez-nous sur Instagram",
+    "siguenos_x": "Suivez-nous sur X",
+    "siguenos_youtube": "Suivez-nous sur YouTube",
+    "siguenos_linkedin": "Suivez-nous sur LinkedIn",
+    "siguenos_tiktok": "Suivez-nous sur TikTok",
+    "logo_alt": "Logo institutionnel de l'IIRESODH"
   }
 }

@@ -26,5 +26,21 @@
     "costa_rica": "Costa Rica (HQ)",
     "guatemala": "Guatemala",
     "mexico": "Mexico"
+  },
+  "footer": {
+    "descripcion": "We promote compliance with international human rights standards through strategic litigation, technical cooperation, and academic training.",
+    "instituciones_amigas": "Partner Institutions",
+    "conecta": "Connect with us",
+    "apoyar": "Support Our Work",
+    "privacidad": "Privacy and Terms",
+    "aviso_sugef": "SUGEF Notice",
+    "sugef_texto": "\"The public is warned that the International Institute for Social Responsibility and Human Rights Association is supervised only in matters of prevention of money laundering, terrorist financing, and financing of the proliferation of weapons of mass destruction, and is also subject to binding provisions of the Financial Intelligence Unit of the Costa Rican Drug Institute. Therefore, SUGEF does not financially supervise the Association, nor the businesses it offers, nor its security, stability, or solvency.\"",
+    "siguenos_facebook": "Follow us on Facebook",
+    "siguenos_instagram": "Follow us on Instagram",
+    "siguenos_x": "Follow us on X",
+    "siguenos_youtube": "Follow us on YouTube",
+    "siguenos_linkedin": "Follow us on LinkedIn",
+    "siguenos_tiktok": "Follow us on TikTok",
+    "logo_alt": "IIRESODH institutional logo"
   }
 }
