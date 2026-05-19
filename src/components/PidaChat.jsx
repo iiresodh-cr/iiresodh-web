@@ -116,12 +116,13 @@ export default function PidaChat() {
       const charlarConPida = httpsCallable(functions, 'chatPida');
       const resultado = await charlarConPida({ 
         mensaje: textoUsuario,
-        historial: historialParaEnviar 
+        historial: historialParaEnviar,
+        idioma: i18n.language // <-- Le chismeamos a IRENE en qué idioma está la página
       });
       
       setMensajes((prev) => [...prev, { text: resultado.data.respuesta, isBot: true }]);
     } catch (error) {
-      console.error("Error consultando a PIDA:", error);
+      console.error("Error consultando a IRENE:", error);
       setMensajes((prev) => [...prev, { text: t('irene.error_mensaje', 'Ups, tuve un pequeño mareo en mis circuitos. ¿Puedes intentar de nuevo?'), isBot: true }]);
     } finally {
       setEscribiendo(false);
