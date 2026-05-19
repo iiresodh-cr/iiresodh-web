@@ -509,7 +509,11 @@
     "p_cooperacion_tit": "International Cooperation",
     "p_cooperacion_desc": "International cooperation projects and alliances.",
     "p_donaciones_tit": "Donations",
-    "p_donaciones_desc": "Support our cause and contribute to the defense of human rights."
+    "p_donaciones_desc": "Support our cause and contribute to the defense of human rights.",
+    "sec_articulos": "Academic Articles",
+    "sec_cursos": "Academic Offer and Courses",
+    "leer_articulo": "Read full article",
+    "ver_curso": "View academic offer"
   },
   "not_found": {
     "titulo": "Page not found",

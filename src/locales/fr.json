@@ -509,7 +509,11 @@
     "p_cooperacion_tit": "Coopération Internationale",
     "p_cooperacion_desc": "Projets de coopération internationale et alliances.",
     "p_donaciones_tit": "Dons",
-    "p_donaciones_desc": "Soutenez notre cause et contribuez à la défense des droits de l'homme."
+    "p_donaciones_desc": "Soutenez notre cause et contribuez à la défense des droits de l'homme.",
+    "sec_articulos": "Articles Académiques",
+    "sec_cursos": "Offre Académique et Cours",
+    "leer_articulo": "Lire l'article complet",
+    "ver_curso": "Voir l'offre académique"
   },
   "not_found": {
     "titulo": "Page introuvable",

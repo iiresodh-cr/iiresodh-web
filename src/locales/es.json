@@ -509,7 +509,11 @@
     "p_cooperacion_tit": "Cooperación Internacional",
     "p_cooperacion_desc": "Proyectos y alianzas de cooperación a nivel internacional.",
     "p_donaciones_tit": "Donaciones",
-    "p_donaciones_desc": "Apoya nuestra causa y contribuye a la defensa de los derechos humanos."
+    "p_donaciones_desc": "Apoya nuestra causa y contribuye a la defensa de los derechos humanos.",
+    "sec_articulos": "Artículos Académicos",
+    "sec_cursos": "Oferta Académica y Cursos",
+    "leer_articulo": "Leer artículo completo",
+    "ver_curso": "Ver oferta académica"
   },
   "not_found": {
     "titulo": "Página no encontrada",
