@@ -7,8 +7,9 @@ import PageHeader from "../components/PageHeader";
 // Importaciones de MUI
 import { CircularProgress, Paper, Skeleton } from "@mui/material";
 
-// IMPORTACIÓN PARA i18n
+// IMPORTACIONES PARA i18n Y TRADUCCIÓN DINÁMICA
 import { useTranslation } from 'react-i18next';
+import { obtenerTextoTraducido } from "../utils/traductorDinamico"; // <-- HELPER MÁGICO
 
 // ==========================================
 // COMPONENTE DE IMAGEN INTELIGENTE
@@ -44,7 +45,7 @@ const ImagenConSkeleton = ({ src, alt, className, priority = false }) => {
 };
 
 export default function Equipo() {
-  const { t } = useTranslation(); // HOOK DE TRADUCCIÓN
+  const { t, i18n } = useTranslation(); 
   const [equipo, setEquipo] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -94,7 +95,6 @@ export default function Equipo() {
     return acc;
   }, {});
 
-  // Función auxiliar para traducir los nombres de los países devueltos por la base de datos
   const traducirPais = (pais) => {
     switch(pais) {
       case 'Canadá': return t('equipo.canada', 'Canadá');
@@ -155,10 +155,10 @@ export default function Equipo() {
                         {presidente.nombre}
                       </h2>
                       <p className="text-xl font-bold text-light-blue mb-8 italic">
-                        {presidente.cargo}
+                        {obtenerTextoTraducido(presidente, 'cargo', i18n.language)}
                       </p>
                       <p className="text-gray-600 font-light leading-relaxed text-lg text-justify">
-                        {presidente.bio}
+                        {obtenerTextoTraducido(presidente, 'bio', i18n.language)}
                       </p>
                     </div>
                   </div>
@@ -210,7 +210,7 @@ export default function Equipo() {
                                 {miembro.nombre}
                               </h3>
                               <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">
-                                {miembro.cargo}
+                                {obtenerTextoTraducido(miembro, 'cargo', i18n.language)}
                               </p>
                             </div>
                           </article>
