@@ -155,7 +155,7 @@ body {
     overflow: hidden;
   }
 
-  .bg-watermark {
+  /* .bg-watermark {
     position: absolute;
     inset: 0;
     pointer-events: none;
@@ -165,7 +165,7 @@ body {
     background-size: 500px;
     opacity: 0.04;
     filter: invert(1);
-  }
+  } */
 
   .swiper-custom-pagination {
     --swiper-pagination-color: #B92F32;
