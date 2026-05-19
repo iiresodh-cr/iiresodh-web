@@ -513,7 +513,9 @@
     "sec_articulos": "Articles Académiques",
     "sec_cursos": "Offre Académique et Cours",
     "leer_articulo": "Lire l'article complet",
-    "ver_curso": "Voir l'offre académique"
+    "ver_curso": "Voir l'offre académique",
+    "sec_incidencia": "Plaidoyer International",
+    "ver_documento": "Voir le document"
   },
   "not_found": {
     "titulo": "Page introuvable",

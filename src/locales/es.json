@@ -513,7 +513,9 @@
     "sec_articulos": "Artículos Académicos",
     "sec_cursos": "Oferta Académica y Cursos",
     "leer_articulo": "Leer artículo completo",
-    "ver_curso": "Ver oferta académica"
+    "ver_curso": "Ver oferta académica",
+    "sec_incidencia": "Incidencia Internacional",
+    "ver_documento": "Ver documento"
   },
   "not_found": {
     "titulo": "Página no encontrada",

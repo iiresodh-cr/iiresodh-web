@@ -513,7 +513,9 @@
     "sec_articulos": "Academic Articles",
     "sec_cursos": "Academic Offer and Courses",
     "leer_articulo": "Read full article",
-    "ver_curso": "View academic offer"
+    "ver_curso": "View academic offer",
+    "sec_incidencia": "International Advocacy",
+    "ver_documento": "View document"
   },
   "not_found": {
     "titulo": "Page not found",

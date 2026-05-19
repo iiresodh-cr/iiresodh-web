@@ -25,6 +25,7 @@ export default function ResultadosBusqueda() {
   const [resultadosNoticias, setResultadosNoticias] = useState([]);
   const [resultadosArticulos, setResultadosArticulos] = useState([]);
   const [resultadosCursos, setResultadosCursos] = useState([]);
+  const [resultadosIncidencia, setResultadosIncidencia] = useState([]); // <-- NUEVO ESTADO
   const [loading, setLoading] = useState(true);
 
   const PAGINAS_ESTATICAS = [
@@ -100,6 +101,7 @@ export default function ResultadosBusqueda() {
         setResultadosNoticias([]);
         setResultadosArticulos([]);
         setResultadosCursos([]);
+        setResultadosIncidencia([]);
         setLoading(false);
         return;
       }
@@ -117,14 +119,15 @@ export default function ResultadosBusqueda() {
       setResultadosPaginas(paginasFiltradas);
 
       try {
-        // 2. Ejecutar consultas concurrentes a Firestore para máxima velocidad
-        const [snapNoticias, snapArticulos, snapCursos] = await Promise.all([
+        // 2. Ejecutar consultas concurrentes a Firestore para máxima velocidad (AHORA INCLUYE INCIDENCIA)
+        const [snapNoticias, snapArticulos, snapCursos, snapIncidencia] = await Promise.all([
           getDocs(query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"))),
           getDocs(query(collection(db, "articulos_academicos"), orderBy("fechaPublicacion", "desc"))),
-          getDocs(query(collection(db, "cursos"), orderBy("fechaPublicacion", "desc")))
+          getDocs(query(collection(db, "cursos"), orderBy("fechaPublicacion", "desc"))),
+          getDocs(query(collection(db, "incidencia"), orderBy("fechaPublicacion", "desc")))
         ]);
         
-        // 3. Filtrar colección de Noticias (respetando multilenguaje dinámico)
+        // 3. Filtrar colección de Noticias
         const noticiasFiltradas = [];
         snapNoticias.forEach((doc) => {
           const data = doc.data();
@@ -172,10 +175,26 @@ export default function ResultadosBusqueda() {
             cursosFiltrados.push({ id: doc.id, ...data });
           }
         });
+
+        // 6. Filtrar colección de Incidencia (NUEVO)
+        const incidenciaFiltrada = [];
+        snapIncidencia.forEach((doc) => {
+          const data = doc.data();
+          const tituloFinal = obtenerTextoTraducido(data, 'titulo', i18n.language);
+          const resumenFinal = obtenerTextoTraducido(data, 'resumen', i18n.language);
+
+          if (
+            normalizarTexto(tituloFinal).includes(terminoNormalizado) || 
+            normalizarTexto(resumenFinal).includes(terminoNormalizado)
+          ) {
+            incidenciaFiltrada.push({ id: doc.id, ...data });
+          }
+        });
         
         setResultadosNoticias(noticiasFiltradas);
         setResultadosArticulos(articulosFiltrados);
         setResultadosCursos(cursosFiltrados);
+        setResultadosIncidencia(incidenciaFiltrada);
       } catch (error) {
         console.error("Error al buscar en colecciones de Firestore:", error);
       } finally {
@@ -187,7 +206,7 @@ export default function ResultadosBusqueda() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [terminoBusqueda, i18n.language]);
 
-  const totalResultados = resultadosPaginas.length + resultadosNoticias.length + resultadosArticulos.length + resultadosCursos.length;
+  const totalResultados = resultadosPaginas.length + resultadosNoticias.length + resultadosArticulos.length + resultadosCursos.length + resultadosIncidencia.length;
 
   return (
     <main className="bg-white min-h-screen flex flex-col font-sans">
@@ -281,8 +300,12 @@ export default function ResultadosBusqueda() {
                           return (
                             <article key={noticia.id} role="listitem">
                               <Link to={`/noticias/${noticia.slug || noticia.id}`} className="group bg-white p-4 rounded-2xl border border-gray-100 flex flex-col sm:flex-row gap-6 hover:shadow-xl hover:border-pale-blue transition-all duration-300 h-full" aria-label={`Leer noticia: ${tituloTraducido}`}>
-                                <div className="w-full sm:w-48 shrink-0 aspect-4/5 bg-gray-50 rounded-xl overflow-hidden shadow-sm">
-                                  <img src={noticia.imagenPrincipalUrl} alt="" aria-hidden="true" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                <div className="w-full sm:w-48 shrink-0 aspect-4/5 bg-gray-50 rounded-xl overflow-hidden shadow-sm flex items-center justify-center">
+                                  {noticia.imagenPrincipalUrl ? (
+                                    <img src={noticia.imagenPrincipalUrl} alt="" aria-hidden="true" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                  ) : (
+                                    <svg className="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path></svg>
+                                  )}
                                 </div>
                                 <div className="flex flex-col justify-center grow">
                                   <h3 className="text-xl font-semibold text-main-blue group-hover:text-main-red transition-colors mb-3 line-clamp-2 leading-tight">
@@ -293,6 +316,48 @@ export default function ResultadosBusqueda() {
                                   </p>
                                   <span className="text-xs font-black text-main-red uppercase tracking-[0.2em] flex items-center gap-2">
                                     {t('busqueda.leer_noticia', 'Leer noticia completa')} <span className="text-lg" aria-hidden="true">&rarr;</span>
+                                  </span>
+                                </div>
+                              </Link>
+                            </article>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* SECCIÓN: INCIDENCIA INTERNACIONAL */}
+                  {resultadosIncidencia.length > 0 && (
+                    <section aria-labelledby="incidencia-results-title">
+                      <h2 id="incidencia-results-title" className="text-sm font-black text-main-red uppercase tracking-[0.3em] mb-8 flex items-center gap-4">
+                        {t('busqueda.sec_incidencia', 'Incidencia Internacional')}
+                        <div className="h-px bg-gray-100 grow" aria-hidden="true"></div>
+                      </h2>
+                      <div className="flex flex-col gap-6" role="list">
+                        {resultadosIncidencia.map(incidencia => {
+                          const tituloTraducido = obtenerTextoTraducido(incidencia, 'titulo', i18n.language);
+                          const resumenTraducido = obtenerTextoTraducido(incidencia, 'resumen', i18n.language);
+
+                          return (
+                            <article key={incidencia.id} role="listitem">
+                              {/* ASUMIENDO RUTA: Si existe una vista detalle de incidencia, ponla aquí. Si solo los listas en la página general, envíalos allá. */}
+                              <Link to={`/incidencia-internacional`} className="group bg-white p-4 rounded-2xl border border-gray-100 flex flex-col sm:flex-row gap-6 hover:shadow-xl hover:border-pale-blue transition-all duration-300 h-full" aria-label={`Ver documento: ${tituloTraducido}`}>
+                                <div className="w-full sm:w-48 shrink-0 aspect-video bg-gray-50 rounded-xl overflow-hidden shadow-sm flex items-center justify-center">
+                                  {incidencia.imagenPrincipalUrl ? (
+                                    <img src={incidencia.imagenPrincipalUrl} alt="" aria-hidden="true" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                  ) : (
+                                    <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                  )}
+                                </div>
+                                <div className="flex flex-col justify-center grow">
+                                  <h3 className="text-xl font-semibold text-main-blue group-hover:text-main-red transition-colors mb-3 line-clamp-2 leading-tight">
+                                    {tituloTraducido}
+                                  </h3>
+                                  <p className="text-gray-500 font-light text-sm line-clamp-2 mb-4 leading-relaxed">
+                                    {resumenTraducido}
+                                  </p>
+                                  <span className="text-xs font-black text-main-red uppercase tracking-[0.2em] flex items-center gap-2">
+                                    {t('busqueda.ver_documento', 'Ver documento')} <span className="text-lg" aria-hidden="true">&rarr;</span>
                                   </span>
                                 </div>
                               </Link>
@@ -318,9 +383,13 @@ export default function ResultadosBusqueda() {
                           return (
                             <article key={articulo.id} role="listitem">
                               <Link to={`/articulos-academicos/${articulo.slug || articulo.id}`} className="group bg-white p-4 rounded-2xl border border-gray-100 flex flex-col sm:flex-row gap-6 hover:shadow-xl hover:border-pale-blue transition-all duration-300 h-full" aria-label={`Leer artículo: ${tituloTraducido}`}>
-                                {articulo.imagenPrincipalUrl && (
+                                {articulo.imagenPrincipalUrl ? (
                                   <div className="w-full sm:w-48 shrink-0 aspect-video bg-gray-50 rounded-xl overflow-hidden shadow-sm self-center">
                                     <img src={articulo.imagenPrincipalUrl} alt="" aria-hidden="true" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                  </div>
+                                ) : (
+                                  <div className="w-full sm:w-48 shrink-0 aspect-video bg-gray-50 rounded-xl overflow-hidden shadow-sm flex items-center justify-center">
+                                    <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                                   </div>
                                 )}
                                 <div className="flex flex-col justify-center grow">
@@ -357,9 +426,13 @@ export default function ResultadosBusqueda() {
                           return (
                             <article key={curso.id} role="listitem">
                               <Link to="/cursos" className="group bg-white p-4 rounded-2xl border border-gray-100 flex flex-col sm:flex-row gap-6 hover:shadow-xl hover:border-pale-blue transition-all duration-300 h-full" aria-label={`Ver curso: ${tituloTraducido}`}>
-                                {curso.imagenPrincipalUrl && (
+                                {curso.imagenPrincipalUrl ? (
                                   <div className="w-full sm:w-48 shrink-0 aspect-video bg-gray-50 rounded-xl overflow-hidden shadow-sm self-center">
                                     <img src={curso.imagenPrincipalUrl} alt="" aria-hidden="true" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                  </div>
+                                ) : (
+                                  <div className="w-full sm:w-48 shrink-0 aspect-video bg-gray-50 rounded-xl overflow-hidden shadow-sm flex items-center justify-center">
+                                    <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 14l9-5-9-5-9 5 9 5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
                                   </div>
                                 )}
                                 <div className="flex flex-col justify-center grow">
