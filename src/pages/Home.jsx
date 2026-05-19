@@ -21,7 +21,9 @@ import ToastAlert from "../components/ui/ToastAlert";
 // UI Externa
 import { Button } from "@mui/material";
 
+// IMPORTACIONES PARA i18n Y TRADUCCIÓN DINÁMICA
 import { useTranslation } from 'react-i18next';
+import { obtenerTextoTraducido } from "../utils/traductorDinamico"; // <-- HELPER MÁGICO
 
 export const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
@@ -47,7 +49,7 @@ export const formatearTextoConLinksYHashtags = (texto) => {
 };
 
 export default function Home() {
-  const { t } = useTranslation(); 
+  const { t, i18n } = useTranslation(); // <-- Extraemos i18n para saber el idioma activo
   const navigate = useNavigate();
   const [noticias, setNoticias] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -185,7 +187,6 @@ export default function Home() {
               </Link>
             </div>
             
-            {/* ESTADO DE CARGA LOCALIZADO (SKELETON) */}
             {loading ? (
               <div className="w-full h-125 md:h-150 lg:h-160 rounded-[2.5rem] bg-gray-100 animate-pulse flex flex-col justify-end p-6 md:p-10 lg:p-12 shadow-inner">
                 <div className="w-1/4 h-4 bg-gray-300 rounded mb-4"></div>
@@ -208,30 +209,42 @@ export default function Home() {
                   }}
                   className="w-full rounded-[2.5rem] overflow-hidden shadow-2xl"
                 >
-                  {noticias.map((noticia) => (
-                    <SwiperSlide key={noticia.id}>
-                      <article className="group relative w-full h-125 md:h-150 lg:h-160 overflow-hidden bg-main-blue cursor-pointer" onClick={() => navigate(`/noticias/${noticia.slug || noticia.id}`, { state: { noticiaPreCargada: noticia } })}>
-                        <div 
-                          className="absolute inset-0 w-full h-full bg-cover bg-top bg-no-repeat transition-transform duration-4000 group-hover:scale-105 bg-gray-200"
-                          style={{ backgroundImage: `url(${noticia.imagenPrincipalUrl})` }}
-                          role="img"
-                          aria-label={noticia.titulo || "Imagen de la noticia"}
-                        />
-                        
-                        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-1000"></div>
-                        <div className="absolute bottom-4 left-4 right-4 md:bottom-10 md:left-10 md:right-auto w-[90%] md:w-[75%] lg:w-[65%] h-auto min-h-80 md:min-h-96 lg:min-h-112 p-6 md:p-10 lg:p-12 bg-white/30 backdrop-blur-xl shadow-2xl rounded-3xl border border-white/30 z-10 flex flex-col justify-end transform transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-main-blue/20">
-                          <div className="flex flex-wrap gap-2 mb-4 md:mb-6">
-                            {noticia.tags?.map(tag => (
-                              <span key={tag} className="bg-white/40 border border-white/50 text-main-blue text-[10px] md:text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-widest">{tag}</span>
-                            ))}
+                  {noticias.map((noticia) => {
+                    // ==========================================
+                    // TRADUCCIÓN DINÁMICA DEL CARRUSEL
+                    // ==========================================
+                    const tituloTraducido = obtenerTextoTraducido(noticia, 'titulo', i18n.language);
+                    const resumenTraducido = obtenerTextoTraducido(noticia, 'resumen', i18n.language);
+
+                    return (
+                      <SwiperSlide key={noticia.id}>
+                        <article className="group relative w-full h-125 md:h-150 lg:h-160 overflow-hidden bg-main-blue cursor-pointer" onClick={() => navigate(`/noticias/${noticia.slug || noticia.id}`, { state: { noticiaPreCargada: noticia } })}>
+                          <div 
+                            className="absolute inset-0 w-full h-full bg-cover bg-top bg-no-repeat transition-transform duration-4000 group-hover:scale-105 bg-gray-200"
+                            style={{ backgroundImage: `url(${noticia.imagenPrincipalUrl})` }}
+                            role="img"
+                            aria-label={tituloTraducido || "Imagen de la noticia"}
+                          />
+                          
+                          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-1000"></div>
+                          <div className="absolute bottom-4 left-4 right-4 md:bottom-10 md:left-10 md:right-auto w-[90%] md:w-[75%] lg:w-[65%] h-auto min-h-80 md:min-h-96 lg:min-h-112 p-6 md:p-10 lg:p-12 bg-white/30 backdrop-blur-xl shadow-2xl rounded-3xl border border-white/30 z-10 flex flex-col justify-end transform transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-main-blue/20">
+                            <div className="flex flex-wrap gap-2 mb-4 md:mb-6">
+                              {noticia.tags?.map(tag => (
+                                <span key={tag} className="bg-white/40 border border-white/50 text-main-blue text-[10px] md:text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-widest">{tag}</span>
+                              ))}
+                            </div>
+                            <h3 className="text-2xl md:text-4xl lg:text-5xl font-black text-main-blue mb-4 pb-1 leading-tight tracking-tight group-hover:text-main-red transition-colors line-clamp-4">
+                              {tituloTraducido}
+                            </h3>
+                            <p className="text-gray-800 line-clamp-2 md:line-clamp-3 mb-6 md:mb-8 text-sm md:text-lg font-medium leading-relaxed drop-shadow-sm">
+                              {resumenTraducido}
+                            </p>
+                            <div className="text-main-red font-black flex items-center gap-2 uppercase text-xs md:text-sm tracking-[0.2em] group-hover:gap-4 transition-all">{t('home.leer_articulo', 'Leer artículo')} <span aria-hidden="true" className="text-lg md:text-xl leading-none">&rarr;</span></div>
                           </div>
-                          <h3 className="text-2xl md:text-4xl lg:text-5xl font-black text-main-blue mb-4 pb-1 leading-tight tracking-tight group-hover:text-main-red transition-colors line-clamp-4">{noticia.titulo}</h3>
-                          <p className="text-gray-800 line-clamp-2 md:line-clamp-3 mb-6 md:mb-8 text-sm md:text-lg font-medium leading-relaxed drop-shadow-sm">{noticia.resumen}</p>
-                          <div className="text-main-red font-black flex items-center gap-2 uppercase text-xs md:text-sm tracking-[0.2em] group-hover:gap-4 transition-all">{t('home.leer_articulo', 'Leer artículo')} <span aria-hidden="true" className="text-lg md:text-xl leading-none">&rarr;</span></div>
-                        </div>
-                      </article>
-                    </SwiperSlide>
-                  ))}
+                        </article>
+                      </SwiperSlide>
+                    );
+                  })}
                 </Swiper>
 
                 {/* CONTROLES DEL CARRUSEL */}
