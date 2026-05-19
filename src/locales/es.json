@@ -148,5 +148,24 @@
     "tarjeta_titulo": "Informe Anual de Gestión",
     "btn_descargar": "Descargar PDF",
     "aria_portada": "Portada del Informe"
+  },
+  "litigio": {
+    "header_titulo": "Litigio Estratégico",
+    "header_subtitulo": "Defensa activa y capacitación en los sistemas universales y regionales de protección.",
+    "intro_p1": "fomenta activamente el litigio estratégico internacional en materia de derechos humanos. Capacitamos a ONGs, defensores de derechos humanos y otras organizaciones de la sociedad civil, con el fin de que hagan uso de los mecanismos judiciales y cuasi-judiciales que ofrecen los sistemas universales y regionales de protección.",
+    "intro_p2": "Las capacitaciones son impartidas por expertos de gran prestigio, así como por personas que trabajan en los principales organismos y tribunales internacionales. También litigamos casos de situaciones generalizadas de violaciones de derechos humanos en distintos países.",
+    "certificacion_titulo": "Certificación en Litigio Estratégico Internacional",
+    "cert_p1_pt1": "Por medio de la Certificación en litigio estratégico internacional,",
+    "cert_p1_pt2": "más de mil cuatrocientas personas",
+    "cert_p1_pt3": "cuentan ahora con la herramienta para litigar ante la Corte Interamericana y los Comités de la ONU, así como para acudir a los procedimientos especiales de Naciones Unidas.",
+    "cert_p2_pt1": "Impartimos también una",
+    "cert_p2_pt2": "Certificación de Litigio que se lleva a cabo en Europa",
+    "cert_p2_pt3": ", que profundiza en los mandatos de la Corte Internacional de Justicia, la Corte Penal Internacional y el Tribunal Europeo de Derechos Humanos.",
+    "impacto_titulo": "Nuestro Impacto Global",
+    "impacto_texto": "El trabajo del IIRESODH en el litigio estratégico ha tenido un impacto positivo en México, Panamá, Costa Rica, El Salvador, Colombia, Guatemala, Argentina y Nicaragua, así como en algunos países de África y Europa.",
+    "accion_nacional_titulo": "Acción a Nivel Nacional",
+    "accion_nacional_pt1": "Además, en",
+    "accion_nacional_pt2": "México, Costa Rica y El Salvador",
+    "accion_nacional_pt3": "realizamos litigios y asesorías en materia constitucional y afines."
   }
 }

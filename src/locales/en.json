@@ -148,5 +148,24 @@
     "tarjeta_titulo": "Annual Management Report",
     "btn_descargar": "Download PDF",
     "aria_portada": "Report Cover"
+  },
+  "litigio": {
+    "header_titulo": "Strategic Litigation",
+    "header_subtitulo": "Active defense and training in universal and regional protection systems.",
+    "intro_p1": "actively promotes international strategic litigation in the field of human rights. We train NGOs, human rights defenders, and other civil society organizations, so that they can make use of the judicial and quasi-judicial mechanisms offered by universal and regional protection systems.",
+    "intro_p2": "The training is provided by highly prestigious experts, as well as by people working in the main international organizations and courts. We also litigate cases of generalized situations of human rights violations in different countries.",
+    "certificacion_titulo": "Certification in International Strategic Litigation",
+    "cert_p1_pt1": "Through the Certification in international strategic litigation,",
+    "cert_p1_pt2": "more than one thousand four hundred people",
+    "cert_p1_pt3": "now have the tools to litigate before the Inter-American Court and the UN Committees, as well as to resort to the special procedures of the United Nations.",
+    "cert_p2_pt1": "We also offer a",
+    "cert_p2_pt2": "Litigation Certification held in Europe",
+    "cert_p2_pt3": ", which delves into the mandates of the International Court of Justice, the International Criminal Court, and the European Court of Human Rights.",
+    "impacto_titulo": "Our Global Impact",
+    "impacto_texto": "The work of IIRESODH in strategic litigation has had a positive impact in Mexico, Panama, Costa Rica, El Salvador, Colombia, Guatemala, Argentina, and Nicaragua, as well as in some countries in Africa and Europe.",
+    "accion_nacional_titulo": "Action at the National Level",
+    "accion_nacional_pt1": "Furthermore, in",
+    "accion_nacional_pt2": "Mexico, Costa Rica, and El Salvador",
+    "accion_nacional_pt3": "we carry out litigation and provide advice on constitutional and related matters."
   }
 }

@@ -148,5 +148,24 @@
     "tarjeta_titulo": "Rapport Annuel de Gestion",
     "btn_descargar": "Télécharger le PDF",
     "aria_portada": "Couverture du Rapport"
+  },
+  "litigio": {
+    "header_titulo": "Litige Stratégique",
+    "header_subtitulo": "Défense active et formation dans les systèmes de protection universels et régionaux.",
+    "intro_p1": "promeut activement les litiges stratégiques internationaux dans le domaine des droits de l'homme. Nous formons des ONG, des défenseurs des droits de l'homme et d'autres organisations de la société civile, afin qu'ils puissent utiliser les mécanismes judiciaires et quasi-judiciaires offerts par les systèmes de protection universels et régionaux.",
+    "intro_p2": "Les formations sont dispensées par des experts très prestigieux, ainsi que par des personnes travaillant dans les principales organisations et tribunaux internationaux. Nous plaidons également dans des affaires de situations généralisées de violations des droits de l'homme dans différents pays.",
+    "certificacion_titulo": "Certification en Litige Stratégique International",
+    "cert_p1_pt1": "Grâce à la Certification en litige stratégique international,",
+    "cert_p1_pt2": "plus de mille quatre cents personnes",
+    "cert_p1_pt3": "disposent désormais des outils pour plaider devant la Cour interaméricaine et les comités de l'ONU, ainsi que pour recourir aux procédures spéciales des Nations Unies.",
+    "cert_p2_pt1": "Nous proposons également une",
+    "cert_p2_pt2": "Certification en Litige qui se déroule en Europe",
+    "cert_p2_pt3": ", qui approfondit les mandats de la Cour Internationale de Justice, de la Cour Pénale Internationale et de la Cour Européenne des Droits de l'Homme.",
+    "impacto_titulo": "Notre Impact Mondial",
+    "impacto_texto": "Le travail de l'IIRESODH dans les litiges stratégiques a eu un impact positif au Mexique, au Panama, au Costa Rica, au Salvador, en Colombie, au Guatemala, en Argentine et au Nicaragua, ainsi que dans certains pays d'Afrique et d'Europe.",
+    "accion_nacional_titulo": "Action au Niveau National",
+    "accion_nacional_pt1": "De plus, au",
+    "accion_nacional_pt2": "Mexique, au Costa Rica et au Salvador",
+    "accion_nacional_pt3": "nous menons des litiges et fournissons des conseils sur les questions constitutionnelles et connexes."
   }
 }
