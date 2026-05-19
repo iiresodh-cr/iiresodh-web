@@ -125,7 +125,7 @@ export default function Home() {
           {/* HERO SECTION */}
           <section className="relative pt-2 pb-12 lg:pt-6 lg:pb-24 overflow-visible">
             <div className="absolute top-0 right-0 -mr-24 -mt-16 opacity-10 pointer-events-none hidden md:block">
-              {/* LAZY LOADING PARA EL ISOTIPO DECORATIVO */}
+              {/* Solo dejamos optimizado el isotipo, que ya era un img */}
               <img src={isotipoFondo} alt="" loading="lazy" className="w-200 object-cover" />
             </div>
 
@@ -210,8 +210,7 @@ export default function Home() {
                   }}
                   className="w-full rounded-[2.5rem] overflow-hidden shadow-2xl"
                 >
-                  {/* AQUÍ EXTRAEMOS EL INDEX PARA PRIORIZAR LA PRIMERA IMAGEN */}
-                  {noticias.map((noticia, index) => {
+                  {noticias.map((noticia) => {
                     const tituloTraducido = obtenerTextoTraducido(noticia, 'titulo', i18n.language);
                     const resumenTraducido = obtenerTextoTraducido(noticia, 'resumen', i18n.language);
 
@@ -219,13 +218,12 @@ export default function Home() {
                       <SwiperSlide key={noticia.id}>
                         <article className="group relative w-full h-125 md:h-150 lg:h-160 overflow-hidden bg-main-blue cursor-pointer" onClick={() => navigate(`/noticias/${noticia.slug || noticia.id}`, { state: { noticiaPreCargada: noticia } })}>
                           
-                          {/* CAMBIO CLAVE: De background-image a etiqueta <img> optimizada */}
-                          <img 
-                            src={noticia.imagenPrincipalUrl}
-                            alt={tituloTraducido}
-                            loading={index === 0 ? "eager" : "lazy"} 
-                            fetchPriority={index === 0 ? "high" : "auto"}
-                            className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-4000 group-hover:scale-105 bg-gray-200"
+                          {/* DEVUELTO A DIV CON BACKGROUND-IMAGE PARA EVITAR DEFORMACIONES */}
+                          <div 
+                            className="absolute inset-0 w-full h-full bg-cover bg-top bg-no-repeat transition-transform duration-4000 group-hover:scale-105 bg-gray-200"
+                            style={{ backgroundImage: `url(${noticia.imagenPrincipalUrl})` }}
+                            role="img"
+                            aria-label={tituloTraducido || "Imagen de la noticia"}
                           />
                           
                           <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-1000"></div>
