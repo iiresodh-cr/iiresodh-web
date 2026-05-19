@@ -235,7 +235,7 @@ exports.enviarFormularioContacto = onCall({
 });
 
 // ============================================================================
-// 4. FUNCIÓN CHATBOT IRENE (GEMINI) CON BUSCADOR INTEGRADO (RAG)
+// 4. FUNCIÓN CHATBOT IRENE (GEMINI)
 // ============================================================================
 exports.chatPida = onCall({ 
   secrets: [geminiApiKey], 
@@ -247,6 +247,7 @@ exports.chatPida = onCall({
   ]
 }, async (request) => {
   
+  // AHORA RECIBIMOS EL IDIOMA DEL FRONTEND
   const { mensaje, historial = [], idioma = 'es' } = request.data;
   
   if (!mensaje) {
@@ -254,65 +255,6 @@ exports.chatPida = onCall({
   }
 
   try {
-    // 1. INICIALIZAR BASE DE DATOS Y BÚSQUEDA DE CONTEXTO
-    const db = admin.firestore();
-    
-    // Simplificamos el mensaje del usuario para usarlo como palabras clave
-    const palabrasClave = mensaje.toLowerCase().split(' ').filter(word => word.length > 3);
-    
-    let contextoDB = "";
-    
-    // Solo buscamos si el usuario usó palabras descriptivas (evitamos buscar por "Hola" o "Gracias")
-    if (palabrasClave.length > 0) {
-      let resultadosEncontrados = [];
-      
-      // Función auxiliar para buscar en colecciones específicas
-      const buscarEnColeccion = async (nombreColeccion, baseUrl) => {
-        // En Firestore, sin motores externos como Algolia, la forma más rápida de buscar "algo" 
-        // es traer las publicaciones más recientes e inspeccionarlas en memoria, o usar índices si existen.
-        // Dado el límite de Firebase, traeremos los 10 documentos más recientes.
-        const snapshot = await db.collection(nombreColeccion)
-                                 .orderBy("fechaPublicacion", "desc")
-                                 .limit(10)
-                                 .get();
-        
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const textoCompleto = `${data.titulo || ''} ${data.resumen || ''} ${data.contenido || ''}`.toLowerCase();
-          
-          // Verificamos si alguna palabra clave del usuario coincide con este documento
-          const coincide = palabrasClave.some(palabra => textoCompleto.includes(palabra));
-          
-          if (coincide) {
-            resultadosEncontrados.push(`
-              - Título: ${data.titulo}
-              - Resumen: ${data.resumen ? data.resumen.substring(0, 150) + '...' : 'Sin resumen'}
-              - Enlace: https://iiresodh-web.web.app/${baseUrl}/${data.slug || doc.id}
-            `);
-          }
-        });
-      };
-
-      // Ejecutamos las búsquedas en paralelo
-      await Promise.all([
-        buscarEnColeccion('noticias', 'noticias'),
-        buscarEnColeccion('articulos_academicos', 'articulos-academicos')
-      ]);
-
-      // Si encontramos información, armamos el "acordeón" secreto para IRENE
-      if (resultadosEncontrados.length > 0) {
-        // Limitamos a los 3 mejores resultados para no saturar la memoria de Gemini
-        const topResultados = resultadosEncontrados.slice(0, 3).join('\n');
-        contextoDB = `
-        \nINFORMACIÓN EXTRAÍDA DE NUESTRA BASE DE DATOS JUSTO AHORA (Usa esto para responderle al usuario):
-        ${topResultados}
-        
-        IMPORTANTE: Si usas esta información, DEBES incluir el Enlace exacto que aparece arriba en tu respuesta para que el usuario pueda leer más. Usa el formato de Markdown para el enlace: [Título de la noticia](Enlace).
-        `;
-      }
-    }
-
-    // 2. INICIALIZAR GEMINI
     const apiKey = geminiApiKey.value();
     const genAI = new GoogleGenerativeAI(apiKey);
     
@@ -335,8 +277,7 @@ exports.chatPida = onCall({
         5. CÓDIGOS DE DESCUENTO: Si preguntan por descuentos, menciona que ocasionalmente ofrecemos códigos promocionales para la tienda. Invítalos a suscribirse a nuestro boletín para recibir noticias y ofertas exclusivas.
         6. GUÍA DE NAVEGACIÓN: Orienta a los usuarios sobre dónde encontrar Noticias, Artículos Académicos, Cursos o la Tienda en el menú superior.
         7. DONACIONES: Si preguntan cómo apoyar, agradéceles y guíalos a la sección de "Donaciones".
-        8. IDIOMA ESTRICTO: El usuario está navegando el sitio web en el idioma con código '${idioma}'. Debes comunicarte y responder SIEMPRE en ese idioma, a menos que el usuario te hable explícitamente en otro.
-        ${contextoDB}` // <-- ¡AQUÍ INYECTAMOS EL CONTEXTO DE LA BASE DE DATOS!
+        8. IDIOMA ESTRICTO: El usuario está navegando el sitio web en el idioma con código '${idioma}'. Debes comunicarte y responder SIEMPRE en ese idioma, a menos que el usuario te hable explícitamente en otro.`
     });
 
     const historialFormateado = historial.map(msg => ({
