@@ -282,5 +282,16 @@
     "compartir_noticia": "Compartir esta noticia",
     "copiar_enlace": "Copiar Enlace",
     "enlace_copiado": "¡Enlace copiado al portapapeles!"
+  },
+  "articulo_detalle": {
+    "cargando": "Cargando artículo...",
+    "no_encontrada_titulo": "Artículo no encontrado",
+    "no_encontrada_desc": "Es posible que el enlace sea incorrecto o la publicación haya sido eliminada.",
+    "etiqueta_default": "Artículo Académico",
+    "volver_repositorio": "Volver al repositorio",
+    "alt_imagen": "Imagen ilustrativa del artículo:",
+    "compartir_articulo": "Compartir este artículo",
+    "copiar_enlace": "Copiar Enlace",
+    "enlace_copiado": "¡Enlace copiado al portapapeles!"
   }
 }

@@ -282,5 +282,16 @@
     "compartir_noticia": "Share this news",
     "copiar_enlace": "Copy Link",
     "enlace_copiado": "Link copied to clipboard!"
+  },
+  "articulo_detalle": {
+    "cargando": "Loading article...",
+    "no_encontrada_titulo": "Article not found",
+    "no_encontrada_desc": "The link may be incorrect or the publication may have been deleted.",
+    "etiqueta_default": "Academic Article",
+    "volver_repositorio": "Back to repository",
+    "alt_imagen": "Illustrative image of the article:",
+    "compartir_articulo": "Share this article",
+    "copiar_enlace": "Copy Link",
+    "enlace_copiado": "Link copied to clipboard!"
   }
 }

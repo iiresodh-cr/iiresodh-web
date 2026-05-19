@@ -7,6 +7,9 @@ import { db } from "../firebase/config";
 // Importaciones de MUI
 import { CircularProgress, Button, Alert, Snackbar } from "@mui/material";
 
+// IMPORTACIÓN PARA i18n
+import { useTranslation } from 'react-i18next';
+
 // MOTOR ESTRUCTURAL PURO
 export const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
@@ -55,6 +58,7 @@ export const formatearTextoConLinksYHashtags = (texto) => {
 };
 
 export default function ArticuloDetalle() {
+  const { t, i18n } = useTranslation(); // HOOK DE TRADUCCIÓN E INSTANCIA
   const { slug } = useParams();
   const navigate = useNavigate();
   const [articulo, setArticulo] = useState(null);
@@ -97,7 +101,7 @@ export default function ArticuloDetalle() {
   const formatearFecha = (timestamp) => {
     if (!timestamp) return "";
     const date = timestamp.toDate();
-    return date.toLocaleDateString("es-ES", { year: "numeric", month: "long", day: "numeric" });
+    return date.toLocaleDateString(i18n.language || "es-ES", { year: "numeric", month: "long", day: "numeric" });
   };
 
   const handleCopyLink = () => {
@@ -112,7 +116,7 @@ export default function ArticuloDetalle() {
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 pt-20" role="status">
         <CircularProgress size={50} thickness={4} sx={{ color: '#1D3557' }} />
         <span className="text-main-blue font-bold text-sm uppercase tracking-widest animate-pulse">
-          Cargando artículo...
+          {t('articulo_detalle.cargando', 'Cargando artículo...')}
         </span>
       </div>
     );
@@ -123,8 +127,8 @@ export default function ArticuloDetalle() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6" role="alert">
         <Alert severity="error" variant="filled" sx={{ borderRadius: '12px', px: 4, py: 2 }}>
-          <span className="font-bold text-lg">Artículo no encontrado</span>
-          <p className="text-sm mt-1 opacity-90">Es posible que el enlace sea incorrecto o la publicación haya sido eliminada.</p>
+          <span className="font-bold text-lg">{t('articulo_detalle.no_encontrada_titulo', 'Artículo no encontrado')}</span>
+          <p className="text-sm mt-1 opacity-90">{t('articulo_detalle.no_encontrada_desc', 'Es posible que el enlace sea incorrecto o la publicación haya sido eliminada.')}</p>
         </Alert>
       </div>
     );
@@ -143,7 +147,7 @@ export default function ArticuloDetalle() {
       {/* CABECERA AZUL (FRANJA) AL ESTILO DE NOTICIAS */}
       <header className="bg-main-blue text-white py-14 px-6 text-center relative z-20">
         <span className="text-xs font-black text-main-red uppercase tracking-widest mb-4 block">
-          {formatearFecha(articulo.fechaPublicacion) || 'Artículo Académico'}
+          {formatearFecha(articulo.fechaPublicacion) || t('articulo_detalle.etiqueta_default', 'Artículo Académico')}
         </span>
         <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-8 max-w-5xl mx-auto leading-tight">
           {articulo.titulo}
@@ -179,7 +183,7 @@ export default function ArticuloDetalle() {
                 }}
                 aria-label="Regresar al repositorio de artículos"
               >
-                Volver al repositorio
+                {t('articulo_detalle.volver_repositorio', 'Volver al repositorio')}
               </Button>
             </div>
 
@@ -191,7 +195,7 @@ export default function ArticuloDetalle() {
                 <div className="mb-12 w-full rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center">
                   <img 
                     src={articulo.imagenPrincipalUrl} 
-                    alt={`Imagen ilustrativa del artículo: ${articulo.titulo}`} 
+                    alt={`${t('articulo_detalle.alt_imagen', 'Imagen ilustrativa del artículo:')} ${articulo.titulo}`} 
                     className="w-full max-h-150 object-contain block"
                   />
                 </div>
@@ -206,7 +210,7 @@ export default function ArticuloDetalle() {
               {/* PIE DE PÁGINA PARA COMPARTIR EN REDES SOCIALES (COMO EN NOTICIAS) */}
               <footer className="mt-12 pt-8 border-t border-gray-100">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 text-center lg:text-left">
-                  Compartir este artículo
+                  {t('articulo_detalle.compartir_articulo', 'Compartir este artículo')}
                 </p>
                 
                 <nav className="flex flex-wrap justify-center lg:justify-start gap-3" aria-label="Redes sociales para compartir">
@@ -329,7 +333,7 @@ export default function ArticuloDetalle() {
                       }
                     }}
                   >
-                    Copiar Enlace
+                    {t('articulo_detalle.copiar_enlace', 'Copiar Enlace')}
                   </Button>
 
                 </nav>
@@ -344,7 +348,7 @@ export default function ArticuloDetalle() {
         open={copiado}
         autoHideDuration={3000}
         onClose={() => setCopiado(false)}
-        message="¡Enlace copiado al portapapeles!"
+        message={t('articulo_detalle.enlace_copiado', '¡Enlace copiado al portapapeles!')}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       />
     </main>

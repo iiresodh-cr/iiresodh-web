@@ -282,5 +282,16 @@
     "compartir_noticia": "Partager cette actualité",
     "copiar_enlace": "Copier le lien",
     "enlace_copiado": "Lien copié dans le presse-papiers !"
+  },
+  "articulo_detalle": {
+    "cargando": "Chargement de l'article...",
+    "no_encontrada_titulo": "Article introuvable",
+    "no_encontrada_desc": "Le lien peut être incorrect ou la publication a peut-être été supprimée.",
+    "etiqueta_default": "Article Académique",
+    "volver_repositorio": "Retour au référentiel",
+    "alt_imagen": "Image illustrative de l'article :",
+    "compartir_articulo": "Partager cet article",
+    "copiar_enlace": "Copier le lien",
+    "enlace_copiado": "Lien copié dans le presse-papiers !"
   }
 }
