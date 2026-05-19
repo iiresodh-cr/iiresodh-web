@@ -167,5 +167,20 @@
     "accion_nacional_pt1": "De plus, au",
     "accion_nacional_pt2": "Mexique, au Costa Rica et au Salvador",
     "accion_nacional_pt3": "nous menons des litiges et fournissons des conseils sur les questions constitutionnelles et connexes."
+  },
+  "cursos": {
+    "cargando": "Chargement de l'offre académique...",
+    "header_titulo": "Offre Académique et Cours",
+    "header_subtitulo": "Formation spécialisée en Droits de l'Homme et Litige Stratégique.",
+    "seccion_titulo": "Formation Continue",
+    "seccion_desc": "Notre offre académique est conçue pour donner aux professionnels, aux défenseurs des droits de l'homme et aux étudiants des outils pratiques et des connaissances actualisées dans le domaine des droits de l'homme.",
+    "proximamente": "Prochainement",
+    "proximamente_desc": "Nous préparons de nouveaux cours et diplômes. Restez à l'écoute de nos réseaux sociaux.",
+    "badge_abierto": "Inscriptions Ouvertes",
+    "badge_cerrado": "Terminé / Fermé",
+    "alt_portada": "Couverture du cours :",
+    "btn_inscribirse": "S'inscrire Maintenant",
+    "btn_sin_enlace": "Lien non disponible",
+    "btn_cerrado": "Période d'inscription fermée"
   }
 }

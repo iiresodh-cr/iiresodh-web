@@ -5,7 +5,11 @@ import { Paper, CircularProgress } from "@mui/material";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../firebase/config";
 
+// IMPORTACIÓN PARA i18n
+import { useTranslation } from 'react-i18next';
+
 export default function Cursos() {
+  const { t } = useTranslation(); // HOOK DE TRADUCCIÓN
   const [cursos, setCursos] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,7 +42,7 @@ export default function Cursos() {
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 pt-20" role="status">
         <CircularProgress size={50} thickness={4} sx={{ color: '#1D3557' }} />
         <span className="text-main-blue font-bold text-sm uppercase tracking-widest animate-pulse">
-          Cargando oferta académica...
+          {t('cursos.cargando', 'Cargando oferta académica...')}
         </span>
       </div>
     );
@@ -47,8 +51,8 @@ export default function Cursos() {
   return (
     <main className="bg-white min-h-screen flex flex-col font-sans">
       <PageHeader 
-        titulo="Oferta Académica y Cursos" 
-        subtitulo="Formación especializada en Derechos Humanos y Litigio Estratégico." 
+        titulo={t('cursos.header_titulo', 'Oferta Académica y Cursos')} 
+        subtitulo={t('cursos.header_subtitulo', 'Formación especializada en Derechos Humanos y Litigio Estratégico.')} 
       />
 
       <div className="relative overflow-hidden grow pb-20">
@@ -58,10 +62,10 @@ export default function Cursos() {
           
           <div className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify mb-16 animate-fade-in-up">
             <h2 className="text-3xl font-black text-main-blue tracking-tighter mb-6 text-center md:text-left">
-              Capacitación Continua
+              {t('cursos.seccion_titulo', 'Capacitación Continua')}
             </h2>
             <p>
-              Nuestra oferta académica está diseñada para empoderar a profesionales, defensores de derechos humanos y estudiantes con herramientas prácticas y conocimientos actualizados en materia de Derechos Humanos.
+              {t('cursos.seccion_desc', 'Nuestra oferta académica está diseñada para empoderar a profesionales, defensores de derechos humanos y estudiantes con herramientas prácticas y conocimientos actualizados en materia de Derechos Humanos.')}
             </p>
           </div>
 
@@ -70,10 +74,10 @@ export default function Cursos() {
           {cursos.length === 0 ? (
              <div className="text-center py-10">
                <h2 className="text-2xl font-semibold text-main-blue mb-4 uppercase tracking-widest">
-                 Próximamente
+                 {t('cursos.proximamente', 'Próximamente')}
                </h2>
                <p className="text-gray-500 font-light max-w-2xl mx-auto leading-relaxed italic">
-                 Estamos preparando nuevos cursos y diplomados. Mantente atento a nuestras redes sociales.
+                 {t('cursos.proximamente_desc', 'Estamos preparando nuevos cursos y diplomados. Mantente atento a nuestras redes sociales.')}
                </p>
              </div>
           ) : (
@@ -88,11 +92,11 @@ export default function Cursos() {
                   <div className="relative w-full aspect-video overflow-hidden bg-gray-100">
                     <img 
                       src={curso.imagenPrincipalUrl || 'https://via.placeholder.com/800x450?text=Curso+IIRESODH'} 
-                      alt={`Portada del curso: ${curso.titulo}`}
+                      alt={`${t('cursos.alt_portada', 'Portada del curso:')} ${curso.titulo}`}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                     <div className={`absolute top-4 left-4 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-md shadow-md ${curso.cursoActivo ? 'bg-main-blue' : 'bg-gray-500'}`}>
-                      {curso.cursoActivo ? 'Inscripciones Abiertas' : 'Finalizado / Cerrado'}
+                      {curso.cursoActivo ? t('cursos.badge_abierto', 'Inscripciones Abiertas') : t('cursos.badge_cerrado', 'Finalizado / Cerrado')}
                     </div>
                   </div>
 
@@ -112,11 +116,11 @@ export default function Cursos() {
                           rel="noopener noreferrer" 
                           className="bg-main-red hover:bg-red-800 text-white text-xs font-bold uppercase tracking-widest py-3.5 px-6 rounded-xl transition-all w-full text-center shadow-md shadow-main-red/20 active:scale-95"
                         >
-                          Inscribirse Ahora
+                          {t('cursos.btn_inscribirse', 'Inscribirse Ahora')}
                         </a>
                       ) : (
                         <div className="bg-gray-100 text-gray-400 text-[10px] font-black uppercase tracking-[0.15em] py-3.5 px-6 rounded-xl w-full text-center border border-gray-200">
-                          {curso.cursoActivo ? 'Enlace no disponible' : 'Periodo de inscripción cerrado'}
+                          {curso.cursoActivo ? t('cursos.btn_sin_enlace', 'Enlace no disponible') : t('cursos.btn_cerrado', 'Periodo de inscripción cerrado')}
                         </div>
                       )}
                     </div>

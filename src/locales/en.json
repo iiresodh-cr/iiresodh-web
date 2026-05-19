@@ -167,5 +167,20 @@
     "accion_nacional_pt1": "Furthermore, in",
     "accion_nacional_pt2": "Mexico, Costa Rica, and El Salvador",
     "accion_nacional_pt3": "we carry out litigation and provide advice on constitutional and related matters."
+  },
+  "cursos": {
+    "cargando": "Loading academic offer...",
+    "header_titulo": "Academic Offer and Courses",
+    "header_subtitulo": "Specialized training in Human Rights and Strategic Litigation.",
+    "seccion_titulo": "Continuous Training",
+    "seccion_desc": "Our academic offer is designed to empower professionals, human rights defenders, and students with practical tools and updated knowledge in the field of Human Rights.",
+    "proximamente": "Coming soon",
+    "proximamente_desc": "We are preparing new courses and diplomas. Stay tuned to our social networks.",
+    "badge_abierto": "Registration Open",
+    "badge_cerrado": "Finished / Closed",
+    "alt_portada": "Course cover:",
+    "btn_inscribirse": "Enroll Now",
+    "btn_sin_enlace": "Link not available",
+    "btn_cerrado": "Registration period closed"
   }
 }

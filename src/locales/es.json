@@ -167,5 +167,20 @@
     "accion_nacional_pt1": "Además, en",
     "accion_nacional_pt2": "México, Costa Rica y El Salvador",
     "accion_nacional_pt3": "realizamos litigios y asesorías en materia constitucional y afines."
+  },
+  "cursos": {
+    "cargando": "Cargando oferta académica...",
+    "header_titulo": "Oferta Académica y Cursos",
+    "header_subtitulo": "Formación especializada en Derechos Humanos y Litigio Estratégico.",
+    "seccion_titulo": "Capacitación Continua",
+    "seccion_desc": "Nuestra oferta académica está diseñada para empoderar a profesionales, defensores de derechos humanos y estudiantes con herramientas prácticas y conocimientos actualizados en materia de Derechos Humanos.",
+    "proximamente": "Próximamente",
+    "proximamente_desc": "Estamos preparando nuevos cursos y diplomados. Mantente atento a nuestras redes sociales.",
+    "badge_abierto": "Inscripciones Abiertas",
+    "badge_cerrado": "Finalizado / Cerrado",
+    "alt_portada": "Portada del curso:",
+    "btn_inscribirse": "Inscribirse Ahora",
+    "btn_sin_enlace": "Enlace no disponible",
+    "btn_cerrado": "Periodo de inscripción cerrado"
   }
 }
