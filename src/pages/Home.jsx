@@ -126,7 +126,7 @@ export default function Home() {
           <section className="relative pt-2 pb-12 lg:pt-6 lg:pb-24 overflow-visible">
             <div className="absolute top-0 right-0 -mr-24 -mt-16 opacity-10 pointer-events-none hidden md:block">
               {/* Solo dejamos optimizado el isotipo, que ya era un img */}
-              <img src={isotipoFondo} alt="" loading="lazy" className="w-200 object-cover" />
+              <img src={isotipoFondo} alt="" fetchPriority="high" className="w-200 object-cover" />
             </div>
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center text-left">
