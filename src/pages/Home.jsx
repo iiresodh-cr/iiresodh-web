@@ -12,7 +12,7 @@ import 'swiper/css';
 import 'swiper/css/effect-fade';
 
 // Imágenes y Recursos
-import isotipoFondo from "../assets/Isotipo-color-512.png"; 
+import isotipoFondo from "../assets/Isotipo-color-512.webp"; 
 
 // UI Propia
 import AdminTextField from "../components/ui/AdminTextField";
