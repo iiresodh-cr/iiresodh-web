@@ -8,83 +8,88 @@ import PageHeader from "../components/PageHeader";
 // Importaciones de MUI
 import { CircularProgress, Button } from "@mui/material";
 
-const PAGINAS_ESTATICAS = [
-  { 
-    id: 'p1-general', 
-    titulo: '¿Quiénes somos? - Historia', 
-    ruta: '/quienes-somos', 
-    descripcion: 'Conoce la historia, trayectoria y participación ciudadana del IIRESODH.', 
-    palabrasClave: ['historia', 'nosotros', 'acerca', 'institucion', 'quienes', 'somos'] 
-  },
-  { 
-    id: 'p1-mision', 
-    titulo: 'Misión y Visión', 
-    ruta: '/quienes-somos#mision-vision', 
-    descripcion: 'Conoce nuestra misión y visión institucional.', 
-    palabrasClave: ['mision', 'vision', 'objetivos', 'proposito'] 
-  },
-  { 
-    id: 'p1-principios', 
-    titulo: 'Principios Rectores', 
-    ruta: '/quienes-somos#principios-rectores', 
-    descripcion: 'Descubre los valores y principios rectores que guían nuestro trabajo en la defensa de los derechos humanos.', 
-    palabrasClave: ['principios', 'rectores', 'principios rectores', 'valores', 'etica', 'moral', 'dignidad', 'equidad', 'inclusion'] 
-  },
-  { 
-    id: 'p1-organigrama', 
-    titulo: 'Organigrama y Estructura', 
-    ruta: '/quienes-somos#organigrama', 
-    descripcion: 'Estructura organizacional y territorial del IIRESODH.', 
-    palabrasClave: ['organigrama', 'estructura', 'presidencia', 'unidades', 'oficinas', 'territorial'] 
-  },
-  { 
-    id: 'p2', 
-    titulo: 'Equipo de Trabajo', 
-    ruta: '/equipo', 
-    descripcion: 'Conoce a los profesionales y expertos que conforman nuestro equipo.', 
-    palabrasClave: ['equipo', 'profesionales', 'staff', 'directiva', 'miembros', 'personas'] 
-  },
-  { 
-    id: 'p3', 
-    titulo: 'Informes Anuales', 
-    ruta: '/informes', 
-    descripcion: 'Revisa nuestros informes de gestión y transparencia anual.', 
-    palabrasClave: ['informes', 'anuales', 'transparencia', 'documentos', 'gestion', 'resultados'] 
-  },
-  { 
-    id: 'p4', 
-    titulo: 'Litigio Estratégico', 
-    ruta: '/litigio-estrategico', 
-    descripcion: 'Nuestra área de trabajo enfocada en el litigio estratégico para la defensa de los derechos humanos.', 
-    palabrasClave: ['litigio', 'estrategico', 'derechos', 'humanos', 'legal', 'corte', 'area', 'trabajo'] 
-  },
-  { 
-    id: 'p5', 
-    titulo: 'Cooperación Internacional', 
-    ruta: '/cooperacion-internacional', 
-    descripcion: 'Proyectos y alianzas de cooperación a nivel internacional.', 
-    palabrasClave: ['cooperacion', 'internacional', 'alianzas', 'proyectos', 'global', 'area', 'trabajo'] 
-  },
-  { 
-    id: 'p6', 
-    titulo: 'Donaciones', 
-    ruta: '/donaciones', 
-    descripcion: 'Apoya nuestra causa y contribuye a la defensa de los derechos humanos.', 
-    palabrasClave: ['donar', 'donaciones', 'apoyo', 'colaborar', 'aportar', 'ayuda'] 
-  }
-];
+// IMPORTACIÓN PARA i18n
+import { useTranslation } from 'react-i18next';
 
 const normalizarTexto = (texto) => {
   return texto ? texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
 };
 
 export default function ResultadosBusqueda() {
+  const { t } = useTranslation(); // HOOK DE TRADUCCIÓN
   const [searchParams] = useSearchParams();
   const terminoBusqueda = searchParams.get("q") || "";
   
   const [resultadosPaginas, setResultadosPaginas] = useState([]);
   const [resultadosNoticias, setResultadosNoticias] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Movimos PAGINAS_ESTATICAS aquí adentro para poder usar el t() en tiempo real
+  const PAGINAS_ESTATICAS = [
+    { 
+      id: 'p1-general', 
+      titulo: t('busqueda.p_historia_tit', '¿Quiénes somos? - Historia'), 
+      ruta: '/quienes-somos', 
+      descripcion: t('busqueda.p_historia_desc', 'Conoce la historia, trayectoria y participación ciudadana del IIRESODH.'), 
+      palabrasClave: ['historia', 'nosotros', 'acerca', 'institucion', 'quienes', 'somos', 'about', 'history', 'histoire', 'nous'] 
+    },
+    { 
+      id: 'p1-mision', 
+      titulo: t('busqueda.p_mision_tit', 'Misión y Visión'), 
+      ruta: '/quienes-somos#mision-vision', 
+      descripcion: t('busqueda.p_mision_desc', 'Conoce nuestra misión y visión institucional.'), 
+      palabrasClave: ['mision', 'vision', 'objetivos', 'proposito', 'mission', 'objectives', 'but'] 
+    },
+    { 
+      id: 'p1-principios', 
+      titulo: t('busqueda.p_principios_tit', 'Principios Rectores'), 
+      ruta: '/quienes-somos#principios-rectores', 
+      descripcion: t('busqueda.p_principios_desc', 'Descubre los valores y principios rectores que guían nuestro trabajo en la defensa de los derechos humanos.'), 
+      palabrasClave: ['principios', 'rectores', 'valores', 'etica', 'moral', 'dignidad', 'equidad', 'inclusion', 'principles', 'values', 'ethics', 'valeurs', 'principes'] 
+    },
+    { 
+      id: 'p1-organigrama', 
+      titulo: t('busqueda.p_org_tit', 'Organigrama y Estructura'), 
+      ruta: '/quienes-somos#organigrama', 
+      descripcion: t('busqueda.p_org_desc', 'Estructura organizacional y territorial del IIRESODH.'), 
+      palabrasClave: ['organigrama', 'estructura', 'presidencia', 'unidades', 'oficinas', 'territorial', 'structure', 'chart'] 
+    },
+    { 
+      id: 'p2', 
+      titulo: t('busqueda.p_equipo_tit', 'Equipo de Trabajo'), 
+      ruta: '/equipo', 
+      descripcion: t('busqueda.p_equipo_desc', 'Conoce a los profesionales y expertos que conforman nuestro equipo.'), 
+      palabrasClave: ['equipo', 'profesionales', 'staff', 'directiva', 'miembros', 'personas', 'team', 'equipe'] 
+    },
+    { 
+      id: 'p3', 
+      titulo: t('busqueda.p_informes_tit', 'Informes Anuales'), 
+      ruta: '/informes', 
+      descripcion: t('busqueda.p_informes_desc', 'Revisa nuestros informes de gestión y transparencia anual.'), 
+      palabrasClave: ['informes', 'anuales', 'transparencia', 'documentos', 'gestion', 'resultados', 'reports', 'annual', 'rapports'] 
+    },
+    { 
+      id: 'p4', 
+      titulo: t('busqueda.p_litigio_tit', 'Litigio Estratégico'), 
+      ruta: '/litigio-estrategico', 
+      descripcion: t('busqueda.p_litigio_desc', 'Nuestra área de trabajo enfocada en el litigio estratégico para la defensa de los derechos humanos.'), 
+      palabrasClave: ['litigio', 'estrategico', 'derechos', 'humanos', 'legal', 'corte', 'area', 'trabajo', 'litigation', 'litige'] 
+    },
+    { 
+      id: 'p5', 
+      titulo: t('busqueda.p_cooperacion_tit', 'Cooperación Internacional'), 
+      ruta: '/cooperacion-internacional', 
+      descripcion: t('busqueda.p_cooperacion_desc', 'Proyectos y alianzas de cooperación a nivel internacional.'), 
+      palabrasClave: ['cooperacion', 'internacional', 'alianzas', 'proyectos', 'global', 'cooperation', 'international'] 
+    },
+    { 
+      id: 'p6', 
+      titulo: t('busqueda.p_donaciones_tit', 'Donaciones'), 
+      ruta: '/donaciones', 
+      descripcion: t('busqueda.p_donaciones_desc', 'Apoya nuestra causa y contribuye a la defensa de los derechos humanos.'), 
+      palabrasClave: ['donar', 'donaciones', 'apoyo', 'colaborar', 'aportar', 'ayuda', 'donate', 'donations', 'dons'] 
+    }
+  ];
 
   useEffect(() => {
     const buscarDatos = async () => {
@@ -133,7 +138,7 @@ export default function ResultadosBusqueda() {
     };
 
     buscarDatos();
-  }, [terminoBusqueda]);
+  }, [terminoBusqueda]); // Volverá a buscar si cambia el idioma porque cambia el término o la renderización.
 
   const totalResultados = resultadosPaginas.length + resultadosNoticias.length;
 
@@ -141,8 +146,8 @@ export default function ResultadosBusqueda() {
     <main className="bg-white min-h-screen flex flex-col font-sans">
       
       <PageHeader 
-        titulo="Resultados de Búsqueda" 
-        subtitulo={`Mostrando resultados para: "${terminoBusqueda}"`} 
+        titulo={t('busqueda.header_titulo', 'Resultados de Búsqueda')} 
+        subtitulo={t('busqueda.header_subtitulo', 'Mostrando resultados para: "{{termino}}"').replace('{{termino}}', terminoBusqueda)} 
       />
 
       <div className="relative overflow-hidden grow pb-20">
@@ -156,19 +161,22 @@ export default function ResultadosBusqueda() {
               {loading ? (
                 <div className="flex flex-col justify-center items-center py-20 gap-4" role="status">
                   <CircularProgress size={50} thickness={4} sx={{ color: '#1D3557' }} />
-                  <span className="text-main-blue font-bold text-lg uppercase tracking-widest animate-pulse">Buscando coincidencias...</span>
+                  <span className="text-main-blue font-bold text-lg uppercase tracking-widest animate-pulse">
+                    {t('busqueda.cargando', 'Buscando coincidencias...')}
+                  </span>
                 </div>
               ) : totalResultados === 0 ? (
                 <div className="text-center py-12" role="alert">
                   <svg className="w-20 h-20 text-gray-200 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                   </svg>
-                  <h2 className="text-2xl font-semibold text-main-blue mb-4">No encontramos coincidencias para su búsqueda</h2>
+                  <h2 className="text-2xl font-semibold text-main-blue mb-4">
+                    {t('busqueda.sin_resultados_tit', 'No encontramos coincidencias para su búsqueda')}
+                  </h2>
                   <p className="text-gray-500 font-light mb-8 max-w-md mx-auto">
-                    Intente utilizar palabras clave más generales o revise la ortografía del término ingresado.
+                    {t('busqueda.sin_resultados_desc', 'Intente utilizar palabras clave más generales o revise la ortografía del término ingresado.')}
                   </p>
                   
-                  {/* BOTÓN DE VOLVER MEJORADO CON MUI */}
                   <Button 
                     component={Link}
                     to="/"
@@ -189,7 +197,7 @@ export default function ResultadosBusqueda() {
                     }}
                     aria-label="Regresar a la página de inicio"
                   >
-                    Volver al inicio
+                    {t('busqueda.btn_volver', 'Volver al inicio')}
                   </Button>
                 </div>
               ) : (
@@ -199,7 +207,7 @@ export default function ResultadosBusqueda() {
                   {resultadosPaginas.length > 0 && (
                     <section aria-labelledby="static-results-title">
                       <h2 id="static-results-title" className="text-sm font-black text-main-red uppercase tracking-[0.3em] mb-8 flex items-center gap-4">
-                        Secciones Institucionales
+                        {t('busqueda.sec_institucionales', 'Secciones Institucionales')}
                         <div className="h-px bg-gray-100 grow" aria-hidden="true"></div>
                       </h2>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6" role="list">
@@ -209,7 +217,7 @@ export default function ResultadosBusqueda() {
                               <h3 className="text-lg font-semibold text-main-blue group-hover:text-light-blue transition-colors mb-2">{pagina.titulo}</h3>
                               <p className="text-sm text-gray-600 font-light leading-relaxed">{pagina.descripcion}</p>
                               <div className="mt-4 text-main-red text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                                Ir a la sección <span aria-hidden="true">&rarr;</span>
+                                {t('busqueda.ir_seccion', 'Ir a la sección')} <span aria-hidden="true">&rarr;</span>
                               </div>
                             </Link>
                           </article>
@@ -222,7 +230,7 @@ export default function ResultadosBusqueda() {
                   {resultadosNoticias.length > 0 && (
                     <section aria-labelledby="news-results-title">
                       <h2 id="news-results-title" className="text-sm font-black text-main-red uppercase tracking-[0.3em] mb-8 flex items-center gap-4">
-                        Noticias y Comunicados
+                        {t('busqueda.sec_noticias', 'Noticias y Comunicados')}
                         <div className="h-px bg-gray-100 grow" aria-hidden="true"></div>
                       </h2>
                       <div className="flex flex-col gap-6" role="list">
@@ -240,7 +248,7 @@ export default function ResultadosBusqueda() {
                                   {noticia.resumen}
                                 </p>
                                 <span className="text-xs font-black text-main-red uppercase tracking-[0.2em] flex items-center gap-2">
-                                  Leer noticia completa <span className="text-lg" aria-hidden="true">&rarr;</span>
+                                  {t('busqueda.leer_noticia', 'Leer noticia completa')} <span className="text-lg" aria-hidden="true">&rarr;</span>
                                 </span>
                               </div>
                             </Link>
