@@ -209,9 +209,9 @@ export default function ArticuloDetalle() {
                 </div>
               )}
 
-              {/* CONTENIDO DEL ARTÍCULO TRADUCIDO */}
+              {/* CONTENIDO DEL ARTÍCULO TRADUCIDO ALINEADO A LA IZQUIERDA */}
               <div 
-                className="noticia-content"
+                className="noticia-content z-10 text-left [&>p]:text-left"
                 dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(contenidoTraducido) }}
               />
 

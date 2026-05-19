@@ -222,7 +222,7 @@ export default function NoticiaDetalle() {
                 </div>
 
                 <div 
-                  className="noticia-content z-10"
+                  className="noticia-content z-10 text-left [&>p]:text-left"
                   dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(contenidoTraducido) }}
                 />
                 
