@@ -182,5 +182,18 @@
     "btn_inscribirse": "S'inscrire Maintenant",
     "btn_sin_enlace": "Lien non disponible",
     "btn_cerrado": "Période d'inscription fermée"
+  },
+  "incidencia": {
+    "cargando": "Chargement des documents...",
+    "header_titulo": "Plaidoyer International",
+    "header_subtitulo": "Actions stratégiques et rapports présentés devant les systèmes de protection internationaux.",
+    "intro_titulo": "Documents et Déclarations",
+    "intro_p1_pt1": "Dans le cadre de notre engagement envers la défense de la dignité humaine, à l'",
+    "intro_p1_pt2": " nous générons des recherches, des rapports d'impact et des documents de litige stratégique.",
+    "intro_p2": "Ci-dessous, nous mettons à la disposition du public nos archives documentaires de plaidoyer international, conçues pour créer des précédents, informer l'opinion publique et fournir des outils juridiques devant des organisations telles que la CIDH et la Cour Interaméricaine.",
+    "no_docs_titulo": "Aucun document pour le moment",
+    "no_docs_desc": "Nous publierons prochainement nos documents de plaidoyer.",
+    "tipo_default": "Document PDF",
+    "btn_descargar": "Télécharger le Document"
   }
 }

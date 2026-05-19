@@ -182,5 +182,18 @@
     "btn_inscribirse": "Inscribirse Ahora",
     "btn_sin_enlace": "Enlace no disponible",
     "btn_cerrado": "Periodo de inscripción cerrado"
+  },
+  "incidencia": {
+    "cargando": "Cargando documentos...",
+    "header_titulo": "Incidencia Internacional",
+    "header_subtitulo": "Acciones estratégicas e informes presentados ante los sistemas internacionales de protección.",
+    "intro_titulo": "Documentos y Posicionamientos",
+    "intro_p1_pt1": "Como parte de nuestro compromiso con la defensa de la dignidad humana, desde el ",
+    "intro_p1_pt2": " generamos investigaciones, informes de impacto y documentos de litigio estratégico.",
+    "intro_p2": "A continuación, ponemos a disposición pública nuestro acervo documental de incidencia internacional, diseñado para sentar precedentes, informar a la opinión pública y aportar herramientas jurídicas ante organismos como la CIDH y la Corte Interamericana.",
+    "no_docs_titulo": "Aún no hay documentos",
+    "no_docs_desc": "Próximamente estaremos publicando nuestros documentos de incidencia.",
+    "tipo_default": "Documento PDF",
+    "btn_descargar": "Descargar Documento"
   }
 }

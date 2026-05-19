@@ -182,5 +182,18 @@
     "btn_inscribirse": "Enroll Now",
     "btn_sin_enlace": "Link not available",
     "btn_cerrado": "Registration period closed"
+  },
+  "incidencia": {
+    "cargando": "Loading documents...",
+    "header_titulo": "International Advocacy",
+    "header_subtitulo": "Strategic actions and reports presented before international protection systems.",
+    "intro_titulo": "Documents and Statements",
+    "intro_p1_pt1": "As part of our commitment to the defense of human dignity, at ",
+    "intro_p1_pt2": " we generate research, impact reports, and strategic litigation documents.",
+    "intro_p2": "Below, we make our documentary archive of international advocacy publicly available, designed to set precedents, inform public opinion, and provide legal tools before organizations such as the IACHR and the Inter-American Court.",
+    "no_docs_titulo": "No documents yet",
+    "no_docs_desc": "We will soon be publishing our advocacy documents.",
+    "tipo_default": "PDF Document",
+    "btn_descargar": "Download Document"
   }
 }

@@ -5,7 +5,11 @@ import { db } from "../firebase/config";
 import PageHeader from "../components/PageHeader";
 import { Paper, CircularProgress, Pagination, Stack } from "@mui/material";
 
+// IMPORTACIÓN PARA i18n
+import { useTranslation } from 'react-i18next';
+
 export default function Incidencia() {
+  const { t, i18n } = useTranslation(); // HOOK DE TRADUCCIÓN E INSTANCIA PARA EL IDIOMA ACTUAL
   const [documentos, setDocumentos] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -42,8 +46,8 @@ export default function Incidencia() {
   const formatearFecha = (timestamp) => {
     if (!timestamp) return "";
     const date = timestamp.toDate();
-    // Formato: "Mes Año" (ej. Octubre 2023)
-    return date.toLocaleDateString("es-ES", { year: "numeric", month: "long" });
+    // Formato: "Mes Año" adaptado al idioma seleccionado (ej. October 2023)
+    return date.toLocaleDateString(i18n.language || "es-ES", { year: "numeric", month: "long" });
   };
 
   // MANEJADOR DE CAMBIO DE PÁGINA
@@ -67,7 +71,7 @@ export default function Incidencia() {
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 pt-20" role="status">
         <CircularProgress size={50} thickness={4} sx={{ color: '#1D3557' }} />
         <span className="text-main-blue font-bold text-sm uppercase tracking-widest animate-pulse">
-          Cargando documentos...
+          {t('incidencia.cargando', 'Cargando documentos...')}
         </span>
       </div>
     );
@@ -77,8 +81,8 @@ export default function Incidencia() {
     <main className="bg-white min-h-screen flex flex-col font-sans overflow-x-hidden">
       
       <PageHeader 
-        titulo="Incidencia Internacional" 
-        subtitulo="Acciones estratégicas e informes presentados ante los sistemas internacionales de protección." 
+        titulo={t('incidencia.header_titulo', 'Incidencia Internacional')} 
+        subtitulo={t('incidencia.header_subtitulo', 'Acciones estratégicas e informes presentados ante los sistemas internacionales de protección.')} 
       />
 
       <div className="relative overflow-hidden grow pb-20">
@@ -89,13 +93,13 @@ export default function Incidencia() {
           {/* INTRODUCCIÓN */}
           <div className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify mb-16 animate-fade-in-up">
             <h2 className="text-3xl font-black text-main-blue tracking-tighter mb-6 text-center md:text-left">
-              Documentos y Posicionamientos
+              {t('incidencia.intro_titulo', 'Documentos y Posicionamientos')}
             </h2>
             <p>
-              Como parte de nuestro compromiso con la defensa de la dignidad humana, desde el <strong className="font-semibold text-main-blue">IIRESODH</strong> generamos investigaciones, informes de impacto y documentos de litigio estratégico.
+              {t('incidencia.intro_p1_pt1', 'Como parte de nuestro compromiso con la defensa de la dignidad humana, desde el ')}<strong className="font-semibold text-main-blue">IIRESODH</strong>{t('incidencia.intro_p1_pt2', ' generamos investigaciones, informes de impacto y documentos de litigio estratégico.')}
             </p>
             <p>
-              A continuación, ponemos a disposición pública nuestro acervo documental de incidencia internacional, diseñado para sentar precedentes, informar a la opinión pública y aportar herramientas jurídicas ante organismos como la CIDH y la Corte Interamericana.
+              {t('incidencia.intro_p2', 'A continuación, ponemos a disposición pública nuestro acervo documental de incidencia internacional, diseñado para sentar precedentes, informar a la opinión pública y aportar herramientas jurídicas ante organismos como la CIDH y la Corte Interamericana.')}
             </p>
           </div>
 
@@ -105,10 +109,10 @@ export default function Incidencia() {
           {documentos.length === 0 ? (
             <div className="text-center py-10">
               <h2 className="text-2xl font-semibold text-main-blue mb-4 uppercase tracking-widest">
-                Aún no hay documentos
+                {t('incidencia.no_docs_titulo', 'Aún no hay documentos')}
               </h2>
               <p className="text-gray-500 font-light max-w-2xl mx-auto leading-relaxed italic">
-                Próximamente estaremos publicando nuestros documentos de incidencia.
+                {t('incidencia.no_docs_desc', 'Próximamente estaremos publicando nuestros documentos de incidencia.')}
               </p>
             </div>
           ) : (
@@ -128,7 +132,7 @@ export default function Incidencia() {
                       </span>
                       <span className="text-gray-400 text-xs font-bold flex items-center gap-1">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                        {doc.tipo || "Documento PDF"}
+                        {doc.tipo || t('incidencia.tipo_default', 'Documento PDF')}
                       </span>
                     </div>
 
@@ -149,7 +153,7 @@ export default function Incidencia() {
                         className="inline-flex items-center gap-2 text-sm font-bold text-main-red uppercase tracking-widest hover:text-red-800 transition-colors"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                        Descargar Documento
+                        {t('incidencia.btn_descargar', 'Descargar Documento')}
                       </a>
                     </div>
 
