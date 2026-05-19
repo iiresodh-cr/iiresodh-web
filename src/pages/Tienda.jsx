@@ -1,4 +1,4 @@
-// src/pages/ComprarLibro.jsx
+// src/pages/Tienda.jsx
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { loadStripe } from "@stripe/stripe-js";
@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 const stripePromise = loadStripe("pk_test_51TG3Ix2cAGUeJe5mZ8VfsyNf1qmd7EYcncADyttNU7oZPLxpgi8VfjCWTVjOdluNcgeiyleaPgWmR1FQtZbwLj9E00RTW4N4Qs");
 
 const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
-  const { t } = useTranslation(); // HOOK DE TRADUCCIÓN
+  const { t } = useTranslation();
   const stripe = useStripe();
   const elements = useElements();
   const [loadingPago, setLoadingPago] = useState(false);
@@ -34,11 +34,9 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
   const [descuentoAplicado, setDescuentoAplicado] = useState(null);
   const [aceptarTerminos, setAceptarTerminos] = useState(false);
 
-  // Función para consultar Stripe y validar el descuento real
   const aplicarDescuento = async () => {
       if (!codigoDescuento.trim()) return;
       
-      // NUEVO: Validar que el usuario haya escrito su correo primero
       if (!email.trim()) {
           setErrorDescuento(t('tienda.error_correo_cupon', "Por favor, ingresa tu correo electrónico para validar este cupón."));
           return;
@@ -50,7 +48,6 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
 
       try {
           const validarCupon = httpsCallable(functions, 'validarCuponStripe');
-          // MODIFICADO: Enviamos el correo junto con el código
           const { data } = await validarCupon({ 
               codigo: codigoDescuento.trim(),
               emailUsuario: email.trim() 
@@ -137,7 +134,6 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
     },
   };
 
-  // Cálculo matemático del precio visual
   let precioFinal = precio;
   if (descuentoAplicado) {
       if (descuentoAplicado.porcentaje) {
@@ -148,7 +144,6 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
   }
   if (precioFinal < 0) precioFinal = 0;
 
-  // Lógica dinámica para el enlace de privacidad
   const esMexico = moneda === "MXN";
   const urlPrivacidad = esMexico ? "/privacidad?tab=mexico" : "/privacidad?tab=general";
   const textoPrivacidad = esMexico ? t('tienda.aviso_privacidad', "Aviso de Privacidad") : t('tienda.politica_privacidad', "Política de Privacidad");
@@ -176,8 +171,6 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 text-left">
-      
-      {/* SECCIÓN: CAMPOS DE TEXTO CON GAP INFALIBLE */}
       <div className="flex flex-col gap-6">
         <AdminTextField 
           label={t('tienda.label_nombre', "Nombre Completo")}
@@ -197,7 +190,6 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
         />
       </div>
 
-      {/* SECCIÓN: CÓDIGO DE DESCUENTO CON MUI */}
       <div>
          <div className="flex gap-3 items-stretch">
              <div className="grow">
@@ -237,7 +229,6 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
          )}
       </div>
 
-      {/* SECCIÓN: DATOS DE LA TARJETA */}
       <div className="bg-gray-50 border border-gray-200 p-5 rounded-xl text-left">
         <label className="block text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">{t('tienda.datos_pago', "Datos de Pago Seguro")}</label>
         <div className="bg-white p-4 rounded-lg border border-gray-300 shadow-inner">
@@ -245,7 +236,6 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
         </div>
       </div>
 
-      {/* SECCIÓN: CHECKBOX LEGAL DE TÉRMINOS CON MUI */}
       <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
         <FormControlLabel
           control={
@@ -273,7 +263,6 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
         </Alert>
       )}
 
-      {/* SECCIÓN: BOTÓN DE PAGO Y RESUMEN DE DESCUENTO */}
       <div className="pt-2">
         {descuentoAplicado && (
           <div className="flex justify-between items-center bg-green-50 p-4 rounded-xl border border-green-200 mb-5 shadow-sm animate-fade-in-up">
@@ -318,8 +307,8 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
   );
 };
 
-export default function ComprarLibro() {
-  const { t } = useTranslation(); // HOOK DE TRADUCCIÓN
+export default function Tienda() {
+  const { t } = useTranslation();
   const { slug } = useParams();
   const [libro, setLibro] = useState(null);
   const [listaLibros, setListaLibros] = useState([]);
@@ -388,7 +377,7 @@ export default function ComprarLibro() {
                     return (
                       <div key={l.id} className="flex flex-col group h-full">
                         <Link 
-                          to={`/comprar-libro/${l.slug}`} 
+                          to={`/tienda/${l.slug}`} 
                           className="w-full aspect-4/5 flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300"
                         >
                           {l.imagenPrincipalUrl ? (
@@ -404,14 +393,14 @@ export default function ComprarLibro() {
 
                         <div className="flex flex-col grow">
                           <span className="text-[10px] font-black text-main-red uppercase tracking-widest mb-2 block">{t('tienda.copia_digital', "Copia Digital (PDF)")}</span>
-                          <Link to={`/comprar-libro/${l.slug}`}>
+                          <Link to={`/tienda/${l.slug}`}>
                             <h3 className="text-xl md:text-2xl font-extrabold text-main-blue mb-2 leading-tight uppercase group-hover:text-light-blue transition-colors">{l.titulo}</h3>
                           </Link>
                           {l.autor && <p className="text-sm font-bold text-gray-700 mb-4">{t('tienda.por', "Por:")} {l.autor}</p>}
                           {l.resumen && <p className="text-sm text-gray-600 mb-6 leading-relaxed font-light italic">{l.resumen}</p>}
                           <div className="mt-auto pt-6 border-t border-gray-200 flex flex-wrap gap-4 items-center justify-between">
                             <span className="text-2xl font-black text-main-blue">${precioMostrar} <span className="text-sm font-medium text-gray-500">{monedaMostrar}</span></span>
-                            <Link to={`/comprar-libro/${l.slug}`} className="bg-main-blue hover:bg-light-blue text-white font-bold py-3 px-8 rounded-xl text-sm uppercase tracking-widest transition-colors shadow-sm">{t('tienda.comprar', "Comprar")}</Link>
+                            <Link to={`/tienda/${l.slug}`} className="bg-main-blue hover:bg-light-blue text-white font-bold py-3 px-8 rounded-xl text-sm uppercase tracking-widest transition-colors shadow-sm">{t('tienda.comprar', "Comprar")}</Link>
                           </div>
                         </div>
                       </div>
@@ -445,7 +434,7 @@ export default function ComprarLibro() {
         <section className="relative pt-4 md:pt-6 px-0 z-10">
           <div className="max-w-7xl mx-auto bg-white overflow-hidden">
             <div className="px-6 md:px-12 lg:px-16 pt-4 md:pt-6 pb-6 border-b border-gray-50">
-              <Link to="/comprar-libro" className="inline-flex items-center gap-2 text-xs font-bold text-main-red uppercase tracking-widest hover:text-main-blue transition-colors">
+              <Link to="/tienda" className="inline-flex items-center gap-2 text-xs font-bold text-main-red uppercase tracking-widest hover:text-main-blue transition-colors">
                 <span className="text-lg leading-none">&larr;</span> {t('tienda.volver_tienda', "Volver a la Tienda")}
               </Link>
             </div>
