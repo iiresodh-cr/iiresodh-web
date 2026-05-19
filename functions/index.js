@@ -684,10 +684,9 @@ exports.stripeWebhook = onRequest({
 });
 
 // ============================================================================
-// 8. TRADUCTOR
+// 8. TRADUCTOR AUTOMÁTICO (FIREBASE FUNCTIONS V2)
 // ============================================================================
-// --- INICIO MOTOR DE TRADUCCIÓN ---
-const functions = require('firebase-functions');
+const { onDocumentWritten } = require("firebase-functions/v2/firestore");
 const { Translate } = require('@google-cloud/translate').v2;
 const translate = new Translate(); 
 
@@ -695,21 +694,28 @@ const IDIOMAS_DESTINO = ['en', 'fr'];
 const CAMPOS_A_TRADUCIR = ['titulo', 'resumen', 'contenido', 'bio', 'cargo'];
 const COLECCIONES_PERMITIDAS = ['noticias', 'articulos_academicos', 'cursos', 'libros', 'incidencia', 'equipo'];
 
-exports.traductorAutomatico = functions.firestore
-  .document('{coleccion}/{documentoId}')
-  .onWrite(async (change, context) => {
-    const coleccionActual = context.params.coleccion;
+exports.traductorAutomatico = onDocumentWritten(
+  {
+    document: "{coleccion}/{documentoId}",
+    region: "us-central1"
+  }, 
+  async (event) => {
+    const coleccionActual = event.params.coleccion;
 
+    // 1. Verificamos si la colección está en nuestra lista blanca
     if (!COLECCIONES_PERMITIDAS.includes(coleccionActual)) return null;
 
-    const datosNuevos = change.after.exists ? change.after.data() : null;
-    const datosAnteriores = change.before.exists ? change.before.data() : null;
+    // 2. Extraemos datos (Sintaxis V2)
+    const datosNuevos = event.data.after.exists ? event.data.after.data() : null;
+    const datosAnteriores = event.data.before.exists ? event.data.before.data() : null;
 
+    // Si el documento se eliminó, no hay nada que traducir
     if (!datosNuevos) return null;
 
     let actualizaciones = {};
     let necesitaActualizar = false;
 
+    // 3. Revisamos y traducimos campos
     for (const campo of CAMPOS_A_TRADUCIR) {
       if (datosNuevos[campo]) {
         const textoCambio = !datosAnteriores || datosNuevos[campo] !== datosAnteriores[campo];
@@ -728,10 +734,11 @@ exports.traductorAutomatico = functions.firestore
       }
     }
 
+    // 4. Guardamos las traducciones en la BD
     if (necesitaActualizar) {
-      return change.after.ref.update(actualizaciones);
+      return event.data.after.ref.update(actualizaciones);
     }
 
     return null;
-  });
-// --- FIN MOTOR DE TRADUCCIÓN ---
+  }
+);
