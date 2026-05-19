@@ -7,4 +7,24 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          // Separar React y React Router
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-router-dom')) {
+            return 'react-vendor';
+          }
+          // Separar todo Material UI
+          if (id.includes('node_modules/@mui')) {
+            return 'mui-vendor';
+          }
+          // Separar Firebase
+          if (id.includes('node_modules/firebase')) {
+            return 'firebase-vendor';
+          }
+        }
+      }
+    }
+  }
 })
