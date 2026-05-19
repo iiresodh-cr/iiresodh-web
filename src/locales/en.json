@@ -272,5 +272,15 @@
     "volver_tienda": "Back to Store",
     "confirmacion_pedido": "Order Confirmation",
     "escrito_por": "Written by:"
+  },
+  "noticia_detalle": {
+    "cargando": "Loading News...",
+    "no_encontrada_titulo": "News not found",
+    "no_encontrada_desc": "The link may be incorrect or the publication may have been deleted.",
+    "comunicado_oficial": "Official Statement",
+    "volver_repositorio": "Back to repository",
+    "compartir_noticia": "Share this news",
+    "copiar_enlace": "Copy Link",
+    "enlace_copiado": "Link copied to clipboard!"
   }
 }

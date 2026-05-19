@@ -272,5 +272,15 @@
     "volver_tienda": "Retour à la Boutique",
     "confirmacion_pedido": "Confirmation de Commande",
     "escrito_por": "Écrit par :"
+  },
+  "noticia_detalle": {
+    "cargando": "Chargement de l'actualité...",
+    "no_encontrada_titulo": "Actualité introuvable",
+    "no_encontrada_desc": "Le lien peut être incorrect ou la publication a peut-être été supprimée.",
+    "comunicado_oficial": "Communiqué Officiel",
+    "volver_repositorio": "Retour au référentiel",
+    "compartir_noticia": "Partager cette actualité",
+    "copiar_enlace": "Copier le lien",
+    "enlace_copiado": "Lien copié dans le presse-papiers !"
   }
 }

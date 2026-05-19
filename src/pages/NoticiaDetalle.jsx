@@ -14,6 +14,9 @@ import 'swiper/css/effect-fade';
 // Importaciones de MUI
 import { CircularProgress, Button, Alert, Snackbar } from "@mui/material";
 
+// IMPORTACIÓN PARA i18n
+import { useTranslation } from 'react-i18next';
+
 // ==========================================
 // NUEVO MOTOR DE LINKS (INFALIBLE)
 // ==========================================
@@ -47,6 +50,7 @@ export const formatearTextoConLinksYHashtags = (texto) => {
 };
 
 export default function NoticiaDetalle() {
+  const { t, i18n } = useTranslation(); // HOOK DE TRADUCCIÓN E INSTANCIA
   const { id } = useParams(); 
   const location = useLocation(); // <-- Agrega esto para leer lo que mandó el Home
   
@@ -110,7 +114,7 @@ export default function NoticiaDetalle() {
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4" role="status">
         <CircularProgress size={50} thickness={4} sx={{ color: '#1D3557' }} />
         <span className="text-main-blue font-bold text-sm uppercase tracking-widest animate-pulse">
-          Cargando Noticia...
+          {t('noticia_detalle.cargando', 'Cargando Noticia...')}
         </span>
       </div>
     );
@@ -120,8 +124,8 @@ export default function NoticiaDetalle() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6" role="alert">
         <Alert severity="error" variant="filled" sx={{ borderRadius: '12px', px: 4, py: 2 }}>
-          <span className="font-bold text-lg">Noticia no encontrada</span>
-          <p className="text-sm mt-1 opacity-90">Es posible que el enlace sea incorrecto o la publicación haya sido eliminada.</p>
+          <span className="font-bold text-lg">{t('noticia_detalle.no_encontrada_titulo', 'Noticia no encontrada')}</span>
+          <p className="text-sm mt-1 opacity-90">{t('noticia_detalle.no_encontrada_desc', 'Es posible que el enlace sea incorrecto o la publicación haya sido eliminada.')}</p>
         </Alert>
       </div>
     );
@@ -140,8 +144,8 @@ export default function NoticiaDetalle() {
       <header className="bg-main-blue text-white py-14 px-6 text-center relative z-20">
         <span className="text-xs font-black text-main-red uppercase tracking-[0.3em] mb-4 block">
           {noticia.fechaPublicacion?.toDate ? 
-            noticia.fechaPublicacion.toDate().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }) 
-            : 'Comunicado Oficial'}
+            noticia.fechaPublicacion.toDate().toLocaleDateString(i18n.language || 'es-ES', { day: '2-digit', month: 'long', year: 'numeric' }) 
+            : t('noticia_detalle.comunicado_oficial', 'Comunicado Oficial')}
         </span>
         <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter mb-8 max-w-5xl mx-auto leading-[1.1]">
           {noticia.titulo}
@@ -177,16 +181,14 @@ export default function NoticiaDetalle() {
                 }}
                 aria-label="Regresar a las noticias"
               >
-                Volver al repositorio
+                {t('noticia_detalle.volver_repositorio', 'Volver al repositorio')}
               </Button>
             </div>
 
             <div className="px-6 md:px-12 lg:px-16 pb-12 md:pb-16 animate-fade-in-up w-full">
               
-              {/* CAMBIO: Eliminamos Flexbox y usamos un contenedor de bloque estándar */}
               <div className="block">
                 
-                {/* LA MAGIA: lg:float-left permite que el texto se envuelva y ensanche después de la imagen */}
                 <div className="w-full lg:w-1/2 lg:float-left lg:mr-12 lg:mb-8 z-20">
                   <Swiper 
                     modules={[Pagination, Autoplay, EffectFade]} 
@@ -211,16 +213,14 @@ export default function NoticiaDetalle() {
                   </Swiper>
                 </div>
 
-                {/* CAMBIO: Quitamos el lg:w-1/2 para que el texto fluya naturalmente alrededor del float */}
                 <div 
                   className="noticia-content z-10"
                   dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(noticia.contenido) }}
                 />
                 
-                {/* footer con clear-both para asegurar que los botones de compartir bajen al final de todo */}
                 <footer className="mt-12 pt-8 border-t border-gray-100 clear-both">
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 text-center lg:text-left">
-                    Compartir esta noticia
+                    {t('noticia_detalle.compartir_noticia', 'Compartir esta noticia')}
                   </p>
                   
                   <nav className="flex flex-wrap justify-center lg:justify-start gap-3" aria-label="Redes sociales para compartir">
@@ -339,7 +339,7 @@ export default function NoticiaDetalle() {
                         }
                       }}
                     >
-                      Copiar Enlace
+                      {t('noticia_detalle.copiar_enlace', 'Copiar Enlace')}
                     </Button>
 
                   </nav>
@@ -356,7 +356,7 @@ export default function NoticiaDetalle() {
         open={copiado}
         autoHideDuration={3000}
         onClose={() => setCopiado(false)}
-        message="¡Enlace copiado al portapapeles!"
+        message={t('noticia_detalle.enlace_copiado', '¡Enlace copiado al portapapeles!')}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       />
     </main>

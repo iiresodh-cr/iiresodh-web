@@ -272,5 +272,15 @@
     "volver_tienda": "Volver a la Tienda",
     "confirmacion_pedido": "Confirmación de Pedido",
     "escrito_por": "Escrito por:"
+  },
+  "noticia_detalle": {
+    "cargando": "Cargando Noticia...",
+    "no_encontrada_titulo": "Noticia no encontrada",
+    "no_encontrada_desc": "Es posible que el enlace sea incorrecto o la publicación haya sido eliminada.",
+    "comunicado_oficial": "Comunicado Oficial",
+    "volver_repositorio": "Volver al repositorio",
+    "compartir_noticia": "Compartir esta noticia",
+    "copiar_enlace": "Copiar Enlace",
+    "enlace_copiado": "¡Enlace copiado al portapapeles!"
   }
 }
