@@ -7,8 +7,9 @@ import { db } from "../firebase/config";
 // Importaciones de MUI
 import { CircularProgress, Button, Alert, Snackbar } from "@mui/material";
 
-// IMPORTACIÓN PARA i18n
+// IMPORTACIONES PARA i18n Y TRADUCCIÓN DINÁMICA
 import { useTranslation } from 'react-i18next';
+import { obtenerTextoTraducido } from "../utils/traductorDinamico";
 
 // MOTOR ESTRUCTURAL PURO
 export const formatearTextoConLinksYHashtags = (texto) => {
@@ -58,13 +59,13 @@ export const formatearTextoConLinksYHashtags = (texto) => {
 };
 
 export default function ArticuloDetalle() {
-  const { t, i18n } = useTranslation(); // HOOK DE TRADUCCIÓN E INSTANCIA
+  const { t, i18n } = useTranslation(); 
   const { slug } = useParams();
   const navigate = useNavigate();
   const [articulo, setArticulo] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [copiado, setCopiado] = useState(false); // Estado para el aviso de enlace copiado
-  const currentUrl = window.location.href; // Para compartir en redes sociales
+  const [copiado, setCopiado] = useState(false); 
+  const currentUrl = window.location.href; 
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -82,7 +83,6 @@ export default function ArticuloDetalle() {
           if (docSnap.exists()) {
             setArticulo({ id: docSnap.id, ...docSnap.data() });
           } else {
-            // Si no existe, evitamos el navigate automático para mostrar la alerta de MUI
             setArticulo(null);
           }
         }
@@ -110,6 +110,19 @@ export default function ArticuloDetalle() {
       .catch((err) => console.error("Error al copiar el enlace: ", err));
   };
 
+  // ==========================================
+  // TRADUCCIÓN DINÁMICA DEL ARTÍCULO
+  // ==========================================
+  const tituloTraducido = obtenerTextoTraducido(articulo, 'titulo', i18n.language);
+  const contenidoTraducido = obtenerTextoTraducido(articulo, 'contenido', i18n.language);
+
+  // Actualizar el título de la pestaña del navegador
+  useEffect(() => {
+    if (tituloTraducido) {
+      document.title = `${tituloTraducido} | IIRESODH`;
+    }
+  }, [tituloTraducido]);
+
   // ESTADO DE CARGA MEJORADO CON MUI
   if (loading) {
     return (
@@ -134,23 +147,23 @@ export default function ArticuloDetalle() {
     );
   }
 
-  // ENLACES PARA REDES SOCIALES
+  // ENLACES PARA REDES SOCIALES (usando el título traducido)
   const shareUrls = {
-    whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(articulo.titulo + " " + currentUrl)}`,
-    twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(articulo.titulo)}`,
+    whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(tituloTraducido + " " + currentUrl)}`,
+    twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(tituloTraducido)}`,
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`
   };
 
   return (
     <main className="bg-white min-h-screen flex flex-col font-sans">
       
-      {/* CABECERA AZUL (FRANJA) AL ESTILO DE NOTICIAS */}
+      {/* CABECERA AZUL */}
       <header className="bg-main-blue text-white py-14 px-6 text-center relative z-20">
         <span className="text-xs font-black text-main-red uppercase tracking-widest mb-4 block">
           {formatearFecha(articulo.fechaPublicacion) || t('articulo_detalle.etiqueta_default', 'Artículo Académico')}
         </span>
         <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-8 max-w-5xl mx-auto leading-tight">
-          {articulo.titulo}
+          {tituloTraducido}
         </h1>
         <div className="w-24 h-1.5 bg-main-red mx-auto rounded-full" aria-hidden="true"></div>
       </header>
@@ -158,13 +171,10 @@ export default function ArticuloDetalle() {
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark" aria-hidden="true"></div>
 
-        {/* CORRECCIÓN: pt-4 md:pt-6 y px-0 para subir el contenedor */}
         <section className="relative pt-4 md:pt-6 px-0 z-10">
           
-          {/* CORRECCIÓN: Quitar rounded-3xl para diseño plano y limpio */}
           <article className="max-w-7xl mx-auto bg-white overflow-hidden">
             
-            {/* BOTÓN DE VOLVER MEJORADO CON MUI */}
             <div className="px-6 md:px-12 lg:px-16 pt-4 md:pt-6 pb-6">
               <Button 
                 component={Link} 
@@ -187,27 +197,24 @@ export default function ArticuloDetalle() {
               </Button>
             </div>
 
-            {/* CORRECCIÓN: Contenido principal alineado */}
             <div className="px-6 md:px-12 lg:px-16 pb-12 animate-fade-in-up w-full">
 
-              {/* IMAGEN PRINCIPAL (SI EXISTE) */}
               {articulo.imagenPrincipalUrl && (
                 <div className="mb-12 w-full rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center">
                   <img 
                     src={articulo.imagenPrincipalUrl} 
-                    alt={`${t('articulo_detalle.alt_imagen', 'Imagen ilustrativa del artículo:')} ${articulo.titulo}`} 
+                    alt={`${t('articulo_detalle.alt_imagen', 'Imagen ilustrativa del artículo:')} ${tituloTraducido}`} 
                     className="w-full max-h-150 object-contain block"
                   />
                 </div>
               )}
 
-              {/* CONTENIDO DEL ARTÍCULO */}
+              {/* CONTENIDO DEL ARTÍCULO TRADUCIDO */}
               <div 
                 className="noticia-content"
-                dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(articulo.contenido) }}
+                dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(contenidoTraducido) }}
               />
 
-              {/* PIE DE PÁGINA PARA COMPARTIR EN REDES SOCIALES (COMO EN NOTICIAS) */}
               <footer className="mt-12 pt-8 border-t border-gray-100">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 text-center lg:text-left">
                   {t('articulo_detalle.compartir_articulo', 'Compartir este artículo')}
@@ -308,7 +315,6 @@ export default function ArticuloDetalle() {
                     X (Twitter)
                   </Button>
 
-                  {/* NUEVO BOTÓN: Copiar Enlace */}
                   <Button
                     onClick={handleCopyLink}
                     variant="outlined"

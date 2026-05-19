@@ -8,30 +8,28 @@ import PageHeader from "../components/PageHeader";
 // Importaciones de MUI
 import { CircularProgress, Button } from "@mui/material";
 
-// IMPORTACIÓN PARA i18n
+// IMPORTACIONES PARA i18n Y TRADUCCIÓN DINÁMICA
 import { useTranslation } from 'react-i18next';
+import { obtenerTextoTraducido } from "../utils/traductorDinamico";
 
 const ARTICULOS_POR_PAGINA = 10;
 
 export default function ArticulosAcademicos() {
-  const { t, i18n } = useTranslation(); // HOOK DE TRADUCCIÓN E INSTANCIA
+  const { t, i18n } = useTranslation(); 
   const [articulos, setArticulos] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Estados para Paginación
   const [firstVisible, setFirstVisible] = useState(null);
   const [lastVisible, setLastVisible] = useState(null);
   const [pagina, setPagina] = useState(1);
   const [hayMas, setHayMas] = useState(true);
 
-  // Función de carga genérica
   const fetchArticulos = async (consulta) => {
     setLoading(true);
     try {
       const querySnapshot = await getDocs(consulta);
       
       if (!querySnapshot.empty) {
-        // Guardamos los punteros para la paginación
         setFirstVisible(querySnapshot.docs[0]);
         setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
         
@@ -54,7 +52,6 @@ export default function ArticulosAcademicos() {
     }
   };
 
-  // Carga inicial
   useEffect(() => { 
     const q = query(
       collection(db, "articulos_academicos"), 
@@ -62,6 +59,7 @@ export default function ArticulosAcademicos() {
       limit(ARTICULOS_POR_PAGINA)
     );
     fetchArticulos(q);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const paginaSiguiente = () => {
@@ -94,7 +92,6 @@ export default function ArticulosAcademicos() {
     return date.toLocaleDateString(i18n.language || "es-ES", { year: "numeric", month: "long", day: "numeric" });
   };
 
-  // ESTADO DE CARGA HOMOLOGADO CON MUI
   if (loading && articulos.length === 0) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 pt-20" role="status">
@@ -134,43 +131,50 @@ export default function ArticulosAcademicos() {
               ) : (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" role="list">
-                    {articulos.map((articulo) => (
-                      <article key={articulo.id} role="listitem">
-                        <Link 
-                          to={`/articulos-academicos/${articulo.slug || articulo.id}`}
-                          className="bg-gray-50 rounded-2xl overflow-hidden border border-gray-200 hover:shadow-xl hover:border-pale-blue transition-all duration-300 flex flex-col group cursor-pointer h-full"
-                          aria-label={`${t('articulos.aria_leer_articulo', 'Leer artículo:')} ${articulo.titulo}`}
-                        >
-                          {articulo.imagenPrincipalUrl && (
-                            <div className="w-full aspect-video overflow-hidden bg-gray-200 shrink-0">
-                              <img 
-                                src={articulo.imagenPrincipalUrl} 
-                                alt="" 
-                                aria-hidden="true"
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                              />
+                    {articulos.map((articulo) => {
+                      // ==========================================
+                      // TRADUCCIÓN DINÁMICA DE LA BASE DE DATOS
+                      // ==========================================
+                      const tituloTraducido = obtenerTextoTraducido(articulo, 'titulo', i18n.language);
+                      const resumenTraducido = obtenerTextoTraducido(articulo, 'resumen', i18n.language);
+
+                      return (
+                        <article key={articulo.id} role="listitem">
+                          <Link 
+                            to={`/articulos-academicos/${articulo.slug || articulo.id}`}
+                            className="bg-gray-50 rounded-2xl overflow-hidden border border-gray-200 hover:shadow-xl hover:border-pale-blue transition-all duration-300 flex flex-col group cursor-pointer h-full"
+                            aria-label={`${t('articulos.aria_leer_articulo', 'Leer artículo:')} ${tituloTraducido}`}
+                          >
+                            {articulo.imagenPrincipalUrl && (
+                              <div className="w-full aspect-video overflow-hidden bg-gray-200 shrink-0">
+                                <img 
+                                  src={articulo.imagenPrincipalUrl} 
+                                  alt="" 
+                                  aria-hidden="true"
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                />
+                              </div>
+                            )}
+                            <div className="p-6 flex flex-col grow">
+                              <span className="text-xs font-black text-main-red uppercase tracking-widest mb-3 block">
+                                {formatearFecha(articulo.fechaPublicacion)}
+                              </span>
+                              <h3 className="text-xl font-bold text-main-blue group-hover:text-light-blue transition-colors mb-3 line-clamp-2 leading-tight">
+                                {tituloTraducido}
+                              </h3>
+                              <p className="text-gray-600 font-light text-sm line-clamp-3 mb-6 leading-relaxed grow">
+                                {resumenTraducido}
+                              </p>
+                              <div className="inline-flex items-center gap-2 text-xs font-bold text-main-blue uppercase tracking-widest group-hover:text-main-red transition-colors mt-auto">
+                                {t('articulos.leer_articulo', 'Leer artículo')} <span className="text-lg leading-none" aria-hidden="true">&rarr;</span>
+                              </div>
                             </div>
-                          )}
-                          <div className="p-6 flex flex-col grow">
-                            <span className="text-xs font-black text-main-red uppercase tracking-widest mb-3 block">
-                              {formatearFecha(articulo.fechaPublicacion)}
-                            </span>
-                            <h3 className="text-xl font-bold text-main-blue group-hover:text-light-blue transition-colors mb-3 line-clamp-2 leading-tight">
-                              {articulo.titulo}
-                            </h3>
-                            <p className="text-gray-600 font-light text-sm line-clamp-3 mb-6 leading-relaxed grow">
-                              {articulo.resumen}
-                            </p>
-                            <div className="inline-flex items-center gap-2 text-xs font-bold text-main-blue uppercase tracking-widest group-hover:text-main-red transition-colors mt-auto">
-                              {t('articulos.leer_articulo', 'Leer artículo')} <span className="text-lg leading-none" aria-hidden="true">&rarr;</span>
-                            </div>
-                          </div>
-                        </Link>
-                      </article>
-                    ))}
+                          </Link>
+                        </article>
+                      );
+                    })}
                   </div>
 
-                  {/* CONTROLES DE PAGINACIÓN MEJORADOS CON MUI */}
                   <nav className="mt-16 flex items-center justify-center gap-8 border-t border-gray-100 pt-10" aria-label="Navegación de páginas de artículos">
                     <Button 
                       onClick={paginaAnterior}
@@ -178,14 +182,8 @@ export default function ArticulosAcademicos() {
                       variant="outlined"
                       startIcon={<span className="text-lg leading-none">&larr;</span>}
                       sx={{
-                        px: 4,
-                        py: 1,
-                        borderRadius: '50px',
-                        fontWeight: 'bold',
-                        fontSize: '0.75rem',
-                        letterSpacing: '0.1em',
-                        color: 'primary.main',
-                        borderColor: 'primary.main',
+                        px: 4, py: 1, borderRadius: '50px', fontWeight: 'bold', fontSize: '0.75rem',
+                        letterSpacing: '0.1em', color: 'primary.main', borderColor: 'primary.main',
                         '&:hover': { bgcolor: 'rgba(29, 53, 87, 0.04)', borderColor: 'primary.main' },
                         '&.Mui-disabled': { color: '#D1D5DB', borderColor: '#E5E7EB' }
                       }}
@@ -203,14 +201,8 @@ export default function ArticulosAcademicos() {
                       variant="outlined"
                       endIcon={<span className="text-lg leading-none">&rarr;</span>}
                       sx={{
-                        px: 4,
-                        py: 1,
-                        borderRadius: '50px',
-                        fontWeight: 'bold',
-                        fontSize: '0.75rem',
-                        letterSpacing: '0.1em',
-                        color: 'primary.main',
-                        borderColor: 'primary.main',
+                        px: 4, py: 1, borderRadius: '50px', fontWeight: 'bold', fontSize: '0.75rem',
+                        letterSpacing: '0.1em', color: 'primary.main', borderColor: 'primary.main',
                         '&:hover': { bgcolor: 'rgba(29, 53, 87, 0.04)', borderColor: 'primary.main' },
                         '&.Mui-disabled': { color: '#D1D5DB', borderColor: '#E5E7EB' }
                       }}
