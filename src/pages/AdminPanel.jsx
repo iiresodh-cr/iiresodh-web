@@ -165,6 +165,7 @@ export default function AdminPanel() {
   const [ultimoDoc, setUltimoDoc] = useState(null);
   const [hayMas, setHayMas] = useState(true);
   const [cargandoLista, setCargandoLista] = useState(false);
+  const isFetching = useRef(false);
   const [busquedaTexto, setBusquedaTexto] = useState("");
   const [busquedaFecha, setBusquedaFecha] = useState("");
 
@@ -366,7 +367,11 @@ useEffect(() => {
   };
 
   const cargarMasItems = async () => {
-    if (!hayMas || cargandoLista || !ultimoDoc || busquedaTexto || busquedaFecha) return;
+    // 1. Verificamos el candado síncrono (isFetching.current)
+    if (!hayMas || isFetching.current || !ultimoDoc || busquedaTexto || busquedaFecha) return;
+    
+    // 2. Cerramos el candado inmediatamente
+    isFetching.current = true;
     setCargandoLista(true);
     
     const coleccion = obtenerColeccionActiva();
@@ -389,6 +394,8 @@ useEffect(() => {
     } catch (error) {
       console.error("Error al cargar más datos:", error);
     } finally {
+      // 3. Abrimos el candado al terminar
+      isFetching.current = false;
       setCargandoLista(false);
     }
   };
@@ -432,7 +439,8 @@ useEffect(() => {
 
   const handleScrollLista = (e) => {
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
-    if (scrollHeight - scrollTop <= clientHeight + 20) {
+    // Math.ceil evita bugs si el scrollTop tiene decimales
+    if (scrollHeight - Math.ceil(scrollTop) <= clientHeight + 20) {
       cargarMasItems();
     }
   };
@@ -1693,7 +1701,7 @@ useEffect(() => {
 
                   {/* CONTENEDOR CON SCROLL INFINITO */}
                   <div 
-                    className="space-y-3 max-h-150 overflow-y-auto custom-scrollbar pr-1 relative"
+                    className="space-y-3 max-h-[65vh] overflow-y-auto custom-scrollbar pr-1 relative"
                     onScroll={handleScrollLista}
                   >
                     {listaItems.length === 0 && !cargandoLista ? (
