@@ -23,7 +23,7 @@ import { Button } from "@mui/material";
 
 // IMPORTACIONES PARA i18n Y TRADUCCIÓN DINÁMICA
 import { useTranslation } from 'react-i18next';
-import { obtenerTextoTraducido } from "../utils/traductorDinamico"; // <-- HELPER MÁGICO
+import { obtenerTextoTraducido } from "../utils/traductorDinamico";
 
 export const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
@@ -49,7 +49,7 @@ export const formatearTextoConLinksYHashtags = (texto) => {
 };
 
 export default function Home() {
-  const { t, i18n } = useTranslation(); // <-- Extraemos i18n para saber el idioma activo
+  const { t, i18n } = useTranslation(); 
   const navigate = useNavigate();
   const [noticias, setNoticias] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -125,7 +125,8 @@ export default function Home() {
           {/* HERO SECTION */}
           <section className="relative pt-2 pb-12 lg:pt-6 lg:pb-24 overflow-visible">
             <div className="absolute top-0 right-0 -mr-24 -mt-16 opacity-10 pointer-events-none hidden md:block">
-              <img src={isotipoFondo} alt="" className="w-200 object-cover" />
+              {/* LAZY LOADING PARA EL ISOTIPO DECORATIVO */}
+              <img src={isotipoFondo} alt="" loading="lazy" className="w-200 object-cover" />
             </div>
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center text-left">
@@ -209,21 +210,22 @@ export default function Home() {
                   }}
                   className="w-full rounded-[2.5rem] overflow-hidden shadow-2xl"
                 >
-                  {noticias.map((noticia) => {
-                    // ==========================================
-                    // TRADUCCIÓN DINÁMICA DEL CARRUSEL
-                    // ==========================================
+                  {/* AQUÍ EXTRAEMOS EL INDEX PARA PRIORIZAR LA PRIMERA IMAGEN */}
+                  {noticias.map((noticia, index) => {
                     const tituloTraducido = obtenerTextoTraducido(noticia, 'titulo', i18n.language);
                     const resumenTraducido = obtenerTextoTraducido(noticia, 'resumen', i18n.language);
 
                     return (
                       <SwiperSlide key={noticia.id}>
                         <article className="group relative w-full h-125 md:h-150 lg:h-160 overflow-hidden bg-main-blue cursor-pointer" onClick={() => navigate(`/noticias/${noticia.slug || noticia.id}`, { state: { noticiaPreCargada: noticia } })}>
-                          <div 
-                            className="absolute inset-0 w-full h-full bg-cover bg-top bg-no-repeat transition-transform duration-4000 group-hover:scale-105 bg-gray-200"
-                            style={{ backgroundImage: `url(${noticia.imagenPrincipalUrl})` }}
-                            role="img"
-                            aria-label={tituloTraducido || "Imagen de la noticia"}
+                          
+                          {/* CAMBIO CLAVE: De background-image a etiqueta <img> optimizada */}
+                          <img 
+                            src={noticia.imagenPrincipalUrl}
+                            alt={tituloTraducido}
+                            loading={index === 0 ? "eager" : "lazy"} 
+                            fetchPriority={index === 0 ? "high" : "auto"}
+                            className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-4000 group-hover:scale-105 bg-gray-200"
                           />
                           
                           <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-1000"></div>
