@@ -121,5 +121,18 @@
     "org_territoriales": "Oficinas Territoriales",
     "org_transversales": "Proyectos Transversales",
     "org_universidad": "U-IIRESODH (Altos Estudios Universitarios)"
+  },
+  "equipo": {
+    "header_titulo": "Equipo de Trabajo",
+    "header_subtitulo": "El talento humano detrás de la promoción y protección de los derechos humanos.",
+    "cargando": "Cargando equipo...",
+    "alta_direccion": "Alta Dirección",
+    "otros_miembros": "Otros Miembros",
+    "retrato_de": "Retrato de",
+    "canada": "Canadá",
+    "colombia": "Colombia",
+    "costa_rica": "Costa Rica",
+    "guatemala": "Guatemala",
+    "mexico": "México"
   }
 }

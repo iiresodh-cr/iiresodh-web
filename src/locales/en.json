@@ -121,5 +121,18 @@
     "org_territoriales": "Territorial Offices",
     "org_transversales": "Cross-cutting Projects",
     "org_universidad": "U-IIRESODH (Higher University Studies)"
+  },
+  "equipo": {
+    "header_titulo": "Our Team",
+    "header_subtitulo": "The human talent behind the promotion and protection of human rights.",
+    "cargando": "Loading team...",
+    "alta_direccion": "Senior Management",
+    "otros_miembros": "Other Members",
+    "retrato_de": "Portrait of",
+    "canada": "Canada",
+    "colombia": "Colombia",
+    "costa_rica": "Costa Rica",
+    "guatemala": "Guatemala",
+    "mexico": "Mexico"
   }
 }

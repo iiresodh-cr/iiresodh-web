@@ -7,15 +7,17 @@ import PageHeader from "../components/PageHeader";
 // Importaciones de MUI
 import { CircularProgress, Paper, Skeleton } from "@mui/material";
 
+// IMPORTACIÓN PARA i18n
+import { useTranslation } from 'react-i18next';
+
 // ==========================================
-// NUEVO: COMPONENTE DE IMAGEN INTELIGENTE
+// COMPONENTE DE IMAGEN INTELIGENTE
 // ==========================================
 const ImagenConSkeleton = ({ src, alt, className, priority = false }) => {
   const [cargada, setCargada] = useState(false);
 
   return (
     <div className="w-full h-full relative">
-      {/* Skeleton animado que se muestra mientras la imagen carga */}
       {!cargada && (
         <div className="absolute inset-0 z-10">
           <Skeleton 
@@ -28,7 +30,6 @@ const ImagenConSkeleton = ({ src, alt, className, priority = false }) => {
         </div>
       )}
       
-      {/* Imagen real invisible hasta que cargue completamente */}
       <img
         src={src}
         alt={alt}
@@ -43,6 +44,7 @@ const ImagenConSkeleton = ({ src, alt, className, priority = false }) => {
 };
 
 export default function Equipo() {
+  const { t } = useTranslation(); // HOOK DE TRADUCCIÓN
   const [equipo, setEquipo] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -75,7 +77,7 @@ export default function Equipo() {
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 pt-20" role="status">
         <CircularProgress size={50} thickness={4} sx={{ color: '#1D3557' }} />
         <span className="text-main-blue font-bold text-sm uppercase tracking-widest animate-pulse">
-          Cargando equipo...
+          {t('equipo.cargando', 'Cargando equipo...')}
         </span>
       </div>
     );
@@ -92,12 +94,25 @@ export default function Equipo() {
     return acc;
   }, {});
 
+  // Función auxiliar para traducir los nombres de los países devueltos por la base de datos
+  const traducirPais = (pais) => {
+    switch(pais) {
+      case 'Canadá': return t('equipo.canada', 'Canadá');
+      case 'Colombia': return t('equipo.colombia', 'Colombia');
+      case 'Costa Rica': return t('equipo.costa_rica', 'Costa Rica');
+      case 'Guatemala': return t('equipo.guatemala', 'Guatemala');
+      case 'México': return t('equipo.mexico', 'México');
+      case 'Otra': return t('equipo.otros_miembros', 'Otros Miembros');
+      default: return pais;
+    }
+  };
+
   return (
     <main className="bg-white min-h-screen flex flex-col font-sans">
       
       <PageHeader 
-        titulo="Equipo de Trabajo" 
-        subtitulo="El talento humano detrás de la promoción y protección de los derechos humanos." 
+        titulo={t('equipo.header_titulo', 'Equipo de Trabajo')} 
+        subtitulo={t('equipo.header_subtitulo', 'El talento humano detrás de la promoción y protección de los derechos humanos.')} 
       />
 
       <div className="relative overflow-hidden grow pb-20">
@@ -123,10 +138,9 @@ export default function Equipo() {
                           border: '1px solid #E5E7EB' 
                         }}
                       >
-                        {/* APLICAMOS EL NUEVO COMPONENTE AL PRESIDENTE (CON PRIORIDAD) */}
                         <ImagenConSkeleton 
                           src={presidente.fotoUrl} 
-                          alt={`Retrato de ${presidente.nombre}`} 
+                          alt={`${t('equipo.retrato_de', 'Retrato de')} ${presidente.nombre}`} 
                           className="w-full h-full object-cover"
                           priority={true}
                         />
@@ -134,7 +148,9 @@ export default function Equipo() {
                     </div>
                     
                     <div className="w-full md:w-3/5">
-                      <span className="text-xs font-black text-main-red uppercase tracking-[0.4em] mb-4 block">Alta Dirección</span>
+                      <span className="text-xs font-black text-main-red uppercase tracking-[0.4em] mb-4 block">
+                        {t('equipo.alta_direccion', 'Alta Dirección')}
+                      </span>
                       <h2 id="presidente-nombre" className="text-3xl md:text-5xl font-semibold text-main-blue mb-4 tracking-tighter uppercase leading-tight">
                         {presidente.nombre}
                       </h2>
@@ -157,7 +173,7 @@ export default function Equipo() {
                   return (
                     <section aria-label={`Equipo de ${pais}`} key={pais}>
                       <h3 className="text-2xl font-black text-main-blue uppercase tracking-tight mb-8 border-b-2 border-main-red inline-block pb-2">
-                        {pais === 'Otra' ? 'Otros Miembros' : `${pais}`}
+                        {traducirPais(pais)}
                       </h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
                         {miembrosPais.map((miembro) => (
@@ -182,10 +198,9 @@ export default function Equipo() {
                                 }
                               }}
                             >
-                              {/* APLICAMOS EL NUEVO COMPONENTE AL STAFF (SIN PRIORIDAD) */}
                               <ImagenConSkeleton 
                                 src={miembro.fotoUrl} 
-                                alt={`Retrato de ${miembro.nombre}`} 
+                                alt={`${t('equipo.retrato_de', 'Retrato de')} ${miembro.nombre}`} 
                                 className="w-full h-full object-cover grayscale transition-all duration-300 group-hover:grayscale-0"
                                 priority={false}
                               />
