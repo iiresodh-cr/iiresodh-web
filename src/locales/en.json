@@ -526,6 +526,7 @@
     "modal_desc": "IRENE will forget the current conversation and you will start a new one.",
     "btn_cancelar": "Cancel",
     "btn_reiniciar": "Yes, restart",
-    "input_placeholder": "Type your message here..."
+    "input_placeholder": "Type your message here...",
+    "rol": "IIRESODH Virtual Assistant"
   }
 }

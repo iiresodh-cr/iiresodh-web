@@ -11,7 +11,7 @@ import { Paper, InputBase, IconButton, Tooltip, Button, Zoom } from '@mui/materi
 import { useTranslation } from 'react-i18next';
 
 export default function PidaChat() {
-  const { t } = useTranslation(); 
+  const { t, i18n } = useTranslation(); 
 
   const MENSAJE_INICIAL = useMemo(() => ({ 
     text: t('irene.saludo_inicial', '¡Hola! Soy IRENE, asistente virtual de IIRESODH. ¿En qué te puedo ayudar hoy?'), 
@@ -220,7 +220,7 @@ export default function PidaChat() {
               </div>
               <div>
                 <h3 className="font-bold text-base leading-tight">IRENE</h3>
-                <p className="text-xs text-white/80">Asistente Virtual IIRESODH</p>
+                <p className="text-xs text-white/80">{t('irene.rol', 'Asistente Virtual IIRESODH')}</p>
               </div>
             </div>
             

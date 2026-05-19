@@ -526,6 +526,7 @@
     "modal_desc": "IRENE oubliera la conversation en cours et vous en commencerez une nouvelle.",
     "btn_cancelar": "Annuler",
     "btn_reiniciar": "Oui, redémarrer",
-    "input_placeholder": "Écrivez votre message ici..."
+    "input_placeholder": "Écrivez votre message ici...",
+    "rol": "Assistante Virtuelle IIRESODH"
   }
 }
