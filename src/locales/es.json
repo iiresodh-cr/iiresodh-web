@@ -195,5 +195,28 @@
     "no_docs_desc": "Próximamente estaremos publicando nuestros documentos de incidencia.",
     "tipo_default": "Documento PDF",
     "btn_descargar": "Descargar Documento"
+  },
+  "noticias": {
+    "cargando": "Cargando Noticias...",
+    "header_titulo": "Centro de Noticias",
+    "header_subtitulo": "Archivo histórico y actualidad institucional del IIRESODH.",
+    "filtro_etiqueta": "Filtrar por Etiqueta",
+    "todas": "Todas las noticias",
+    "orden_fecha": "Ordenar por fecha",
+    "mas_recientes": "Más recientes primero",
+    "mas_antiguas": "Más antiguas primero",
+    "no_entradas": "No se encontraron entradas",
+    "no_entradas_tag": "No hemos encontrado noticias bajo la etiqueta \"{{tag}}\".",
+    "no_entradas_general": "Nuestra sala de prensa está siendo actualizada. Pronto encontrará aquí los últimos comunicados.",
+    "reciente": "Reciente",
+    "leer_completa": "Leer noticia completa",
+    "anterior": "Anterior",
+    "siguiente": "Siguiente",
+    "tag_canada": "Canadá",
+    "tag_mexico": "México",
+    "tag_guatemala": "Guatemala",
+    "tag_costa_rica": "Costa Rica",
+    "tag_colombia": "Colombia",
+    "tag_institucional": "Institucional"
   }
 }

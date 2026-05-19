@@ -195,5 +195,28 @@
     "no_docs_desc": "Nous publierons prochainement nos documents de plaidoyer.",
     "tipo_default": "Document PDF",
     "btn_descargar": "Télécharger le Document"
+  },
+  "noticias": {
+    "cargando": "Chargement des actualités...",
+    "header_titulo": "Centre d'Actualités",
+    "header_subtitulo": "Archives historiques et actualités institutionnelles de l'IIRESODH.",
+    "filtro_etiqueta": "Filtrer par étiquette",
+    "todas": "Toutes les actualités",
+    "orden_fecha": "Trier par date",
+    "mas_recientes": "Plus récentes en premier",
+    "mas_antiguas": "Plus anciennes en premier",
+    "no_entradas": "Aucune entrée trouvée",
+    "no_entradas_tag": "Nous n'avons trouvé aucune actualité avec l'étiquette \"{{tag}}\".",
+    "no_entradas_general": "Notre salle de presse est en cours de mise à jour. Vous y trouverez bientôt les derniers communiqués.",
+    "reciente": "Récent",
+    "leer_completa": "Lire l'article complet",
+    "anterior": "Précédent",
+    "siguiente": "Suivant",
+    "tag_canada": "Canada",
+    "tag_mexico": "Mexique",
+    "tag_guatemala": "Guatemala",
+    "tag_costa_rica": "Costa Rica",
+    "tag_colombia": "Colombie",
+    "tag_institucional": "Institutionnel"
   }
 }

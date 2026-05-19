@@ -195,5 +195,28 @@
     "no_docs_desc": "We will soon be publishing our advocacy documents.",
     "tipo_default": "PDF Document",
     "btn_descargar": "Download Document"
+  },
+  "noticias": {
+    "cargando": "Loading News...",
+    "header_titulo": "News Center",
+    "header_subtitulo": "Historical archive and institutional updates of IIRESODH.",
+    "filtro_etiqueta": "Filter by Tag",
+    "todas": "All news",
+    "orden_fecha": "Sort by date",
+    "mas_recientes": "Newest first",
+    "mas_antiguas": "Oldest first",
+    "no_entradas": "No entries found",
+    "no_entradas_tag": "We haven't found any news under the tag \"{{tag}}\".",
+    "no_entradas_general": "Our press room is currently being updated. You will soon find the latest releases here.",
+    "reciente": "Recent",
+    "leer_completa": "Read full article",
+    "anterior": "Previous",
+    "siguiente": "Next",
+    "tag_canada": "Canada",
+    "tag_mexico": "Mexico",
+    "tag_guatemala": "Guatemala",
+    "tag_costa_rica": "Costa Rica",
+    "tag_colombia": "Colombia",
+    "tag_institucional": "Institutional"
   }
 }

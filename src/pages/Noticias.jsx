@@ -8,12 +8,16 @@ import PageHeader from "../components/PageHeader";
 // Importaciones de MUI
 import { CircularProgress, Button, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
 
+// IMPORTACIÓN PARA i18n
+import { useTranslation } from 'react-i18next';
+
 const NOTICIAS_POR_PAGINA = 10;
 
 // Utilizando tus tags reales del panel de administración
 const TAGS_DISPONIBLES = ["Canadá", "México", "Guatemala", "Costa Rica", "Colombia", "Institucional"];
 
 export default function Noticias() {
+  const { t, i18n } = useTranslation(); // HOOK DE TRADUCCIÓN
   const [noticias, setNoticias] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -106,12 +110,27 @@ export default function Noticias() {
     setPagina(prev => prev - 1);
   };
 
+  // Función auxiliar para traducir los tags visualmente
+  const traducirTag = (tag) => {
+    switch(tag) {
+      case 'Canadá': return t('noticias.tag_canada', 'Canadá');
+      case 'México': return t('noticias.tag_mexico', 'México');
+      case 'Guatemala': return t('noticias.tag_guatemala', 'Guatemala');
+      case 'Costa Rica': return t('noticias.tag_costa_rica', 'Costa Rica');
+      case 'Colombia': return t('noticias.tag_colombia', 'Colombia');
+      case 'Institucional': return t('noticias.tag_institucional', 'Institucional');
+      default: return tag;
+    }
+  };
+
   // ESTADO DE CARGA HOMOLOGADO CON MUI
   if (loading && noticias.length === 0) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 pt-20" role="status">
         <CircularProgress size={50} thickness={4} sx={{ color: '#1D3557' }} />
-        <span className="text-main-blue font-bold text-sm uppercase tracking-widest animate-pulse">Cargando Noticias...</span>
+        <span className="text-main-blue font-bold text-sm uppercase tracking-widest animate-pulse">
+          {t('noticias.cargando', 'Cargando Noticias...')}
+        </span>
       </div>
     );
   }
@@ -120,8 +139,8 @@ export default function Noticias() {
     <main className="bg-white min-h-screen flex flex-col font-sans">
       
       <PageHeader 
-        titulo="Centro de Noticias" 
-        subtitulo="Archivo histórico y actualidad institucional del IIRESODH." 
+        titulo={t('noticias.header_titulo', 'Centro de Noticias')} 
+        subtitulo={t('noticias.header_subtitulo', 'Archivo histórico y actualidad institucional del IIRESODH.')} 
       />
 
       <div className="relative overflow-hidden grow pb-20">
@@ -135,34 +154,34 @@ export default function Noticias() {
               {/* BARRA DE FILTROS */}
               <div className="flex flex-col sm:flex-row gap-4 mb-8 pb-6 border-b border-gray-100">
                 <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 220 } }}>
-                  <InputLabel id="tag-select-label">Filtrar por Etiqueta</InputLabel>
+                  <InputLabel id="tag-select-label">{t('noticias.filtro_etiqueta', 'Filtrar por Etiqueta')}</InputLabel>
                   <Select
                     labelId="tag-select-label"
                     value={tagFiltro}
-                    label="Filtrar por Etiqueta"
+                    label={t('noticias.filtro_etiqueta', 'Filtrar por Etiqueta')}
                     onChange={(e) => setTagFiltro(e.target.value)}
                     disabled={loading}
                     sx={{ borderRadius: '8px' }}
                   >
-                    <MenuItem value="Todos">Todas las noticias</MenuItem>
+                    <MenuItem value="Todos">{t('noticias.todas', 'Todas las noticias')}</MenuItem>
                     {TAGS_DISPONIBLES.map(tag => (
-                      <MenuItem key={tag} value={tag}>{tag}</MenuItem>
+                      <MenuItem key={tag} value={tag}>{traducirTag(tag)}</MenuItem>
                     ))}
                   </Select>
                 </FormControl>
 
                 <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 220 } }}>
-                  <InputLabel id="orden-select-label">Ordenar por fecha</InputLabel>
+                  <InputLabel id="orden-select-label">{t('noticias.orden_fecha', 'Ordenar por fecha')}</InputLabel>
                   <Select
                     labelId="orden-select-label"
                     value={ordenFecha}
-                    label="Ordenar por fecha"
+                    label={t('noticias.orden_fecha', 'Ordenar por fecha')}
                     onChange={(e) => setOrdenFecha(e.target.value)}
                     disabled={loading}
                     sx={{ borderRadius: '8px' }}
                   >
-                    <MenuItem value="desc">Más recientes primero</MenuItem>
-                    <MenuItem value="asc">Más antiguas primero</MenuItem>
+                    <MenuItem value="desc">{t('noticias.mas_recientes', 'Más recientes primero')}</MenuItem>
+                    <MenuItem value="asc">{t('noticias.mas_antiguas', 'Más antiguas primero')}</MenuItem>
                   </Select>
                 </FormControl>
               </div>
@@ -170,12 +189,12 @@ export default function Noticias() {
               {noticias.length === 0 ? (
                 <div className="text-center py-10">
                   <h2 className="text-2xl font-semibold text-main-blue mb-4 uppercase tracking-widest">
-                    No se encontraron entradas
+                    {t('noticias.no_entradas', 'No se encontraron entradas')}
                   </h2>
                   <p className="text-gray-500 font-light max-w-2xl mx-auto leading-relaxed italic">
                     {tagFiltro !== "Todos" 
-                      ? `No hemos encontrado noticias bajo la etiqueta "${tagFiltro}".`
-                      : "Nuestra sala de prensa está siendo actualizada. Pronto encontrará aquí los últimos comunicados."}
+                      ? t('noticias.no_entradas_tag', 'No hemos encontrado noticias bajo la etiqueta "{{tag}}".').replace('{{tag}}', traducirTag(tagFiltro))
+                      : t('noticias.no_entradas_general', 'Nuestra sala de prensa está siendo actualizada. Pronto encontrará aquí los últimos comunicados.')}
                   </p>
                 </div>
               ) : (
@@ -207,15 +226,15 @@ export default function Noticias() {
                           <div className="flex flex-wrap items-center gap-3 mb-2">
                             <span className="text-xs font-black text-main-red uppercase tracking-widest">
                               {noticia.fechaPublicacion?.toDate ? 
-                                new Date(noticia.fechaPublicacion.toDate()).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }) 
-                                : 'Reciente'}
+                                new Date(noticia.fechaPublicacion.toDate()).toLocaleDateString(i18n.language || 'es-ES', { day: '2-digit', month: 'long', year: 'numeric' }) 
+                                : t('noticias.reciente', 'Reciente')}
                             </span>
-                            {/* Renderizar tags en la vista pública */}
+                            {/* Renderizar tags en la vista pública traducidos */}
                             {noticia.tags && noticia.tags.length > 0 && (
                               <div className="flex gap-1">
-                                {noticia.tags.map(t => (
-                                  <span key={t} className="text-[9px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md uppercase font-bold tracking-wider">
-                                    {t}
+                                {noticia.tags.map(tag => (
+                                  <span key={tag} className="text-[9px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md uppercase font-bold tracking-wider">
+                                    {traducirTag(tag)}
                                   </span>
                                 ))}
                               </div>
@@ -229,7 +248,7 @@ export default function Noticias() {
                             {noticia.resumen}
                           </p>
                           <div className="text-main-red text-xs font-black uppercase flex items-center gap-2 mt-auto">
-                            Leer noticia completa <span className="text-lg leading-none" aria-hidden="true">&rarr;</span>
+                            {t('noticias.leer_completa', 'Leer noticia completa')} <span className="text-lg leading-none" aria-hidden="true">&rarr;</span>
                           </div>
                         </div>
                       </Link>
@@ -253,7 +272,7 @@ export default function Noticias() {
                       '&.Mui-disabled': { color: '#D1D5DB', borderColor: '#E5E7EB' }
                     }}
                   >
-                    Anterior
+                    {t('noticias.anterior', 'Anterior')}
                   </Button>
 
                   <span className="text-main-blue font-black text-xl">
@@ -272,7 +291,7 @@ export default function Noticias() {
                       '&.Mui-disabled': { color: '#D1D5DB', borderColor: '#E5E7EB' }
                     }}
                   >
-                    Siguiente
+                    {t('noticias.siguiente', 'Siguiente')}
                   </Button>
                 </nav>
               )}
