@@ -14,8 +14,9 @@ import 'swiper/css/effect-fade';
 // Importaciones de MUI
 import { CircularProgress, Button, Alert, Snackbar } from "@mui/material";
 
-// IMPORTACIÓN PARA i18n
+// IMPORTACIONES PARA i18n Y TRADUCCIÓN DINÁMICA
 import { useTranslation } from 'react-i18next';
+import { obtenerTextoTraducido } from "../utils/traductorDinamico";
 
 // ==========================================
 // NUEVO MOTOR DE LINKS (INFALIBLE)
@@ -50,15 +51,13 @@ export const formatearTextoConLinksYHashtags = (texto) => {
 };
 
 export default function NoticiaDetalle() {
-  const { t, i18n } = useTranslation(); // HOOK DE TRADUCCIÓN E INSTANCIA
+  const { t, i18n } = useTranslation(); 
   const { id } = useParams(); 
-  const location = useLocation(); // <-- Agrega esto para leer lo que mandó el Home
+  const location = useLocation(); 
   
-  // Si Home nos pasó la noticia, la usamos como estado inicial
   const noticiaInicial = location.state?.noticiaPreCargada || null;
   
   const [noticia, setNoticia] = useState(noticiaInicial);
-  // Si ya tenemos la noticia inicial, no necesitamos la pantalla de carga
   const [loading, setLoading] = useState(!noticiaInicial); 
   const [copiado, setCopiado] = useState(false); 
   const currentUrl = window.location.href;
@@ -66,13 +65,10 @@ export default function NoticiaDetalle() {
   useEffect(() => {
     window.scrollTo(0, 0);
     
-    // Si la noticia YA vino desde el Home, solo actualizamos el título y evitamos ir a Firebase
     if (noticiaInicial) {
-      if (noticiaInicial.titulo) document.title = `${noticiaInicial.titulo} | IIRESODH`;
       return; 
     }
 
-    // El resto de tu fetchNoticia se mantiene igual para cuando alguien entra desde un link externo
     const fetchNoticia = async () => {
       try {
         const q = query(collection(db, "noticias"), where("slug", "==", id), limit(1));
@@ -89,9 +85,6 @@ export default function NoticiaDetalle() {
 
         if (data) {
           setNoticia(data);
-          if (data.titulo) {
-            document.title = `${data.titulo} | IIRESODH`;
-          }
         }
       } catch (error) {
         console.error("Error:", error);
@@ -131,11 +124,24 @@ export default function NoticiaDetalle() {
     );
   }
 
+  // ==========================================
+  // TRADUCCIÓN DINÁMICA DE LA NOTICIA
+  // ==========================================
+  const tituloTraducido = obtenerTextoTraducido(noticia, 'titulo', i18n.language);
+  const contenidoTraducido = obtenerTextoTraducido(noticia, 'contenido', i18n.language);
+
+  // Actualizamos el título de la pestaña dinámicamente si cambia el idioma
+  useEffect(() => {
+    if (tituloTraducido) {
+      document.title = `${tituloTraducido} | IIRESODH`;
+    }
+  }, [tituloTraducido]);
+
   const todasLasImagenes = [noticia.imagenPrincipalUrl, ...(noticia.imagenesCarruselUrls || [])].filter(Boolean);
 
   const shareUrls = {
-    whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(noticia.titulo + " " + currentUrl)}`,
-    twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(noticia.titulo)}`,
+    whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(tituloTraducido + " " + currentUrl)}`,
+    twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(tituloTraducido)}`,
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`
   };
 
@@ -148,7 +154,7 @@ export default function NoticiaDetalle() {
             : t('noticia_detalle.comunicado_oficial', 'Comunicado Oficial')}
         </span>
         <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter mb-8 max-w-5xl mx-auto leading-[1.1]">
-          {noticia.titulo}
+          {tituloTraducido}
         </h1>
         <div className="w-24 h-1.5 bg-main-red mx-auto rounded-full" aria-hidden="true"></div>
       </header>
@@ -205,7 +211,7 @@ export default function NoticiaDetalle() {
                       <SwiperSlide key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
                         <img 
                           src={url} 
-                          alt={`Imagen ${i + 1} de la noticia: ${noticia.titulo}`} 
+                          alt={`Imagen ${i + 1} de la noticia: ${tituloTraducido}`} 
                           className="w-full aspect-4/5 object-cover block" 
                         />
                       </SwiperSlide>
@@ -215,7 +221,7 @@ export default function NoticiaDetalle() {
 
                 <div 
                   className="noticia-content z-10"
-                  dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(noticia.contenido) }}
+                  dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(contenidoTraducido) }}
                 />
                 
                 <footer className="mt-12 pt-8 border-t border-gray-100 clear-both">
@@ -223,7 +229,7 @@ export default function NoticiaDetalle() {
                     {t('noticia_detalle.compartir_noticia', 'Compartir esta noticia')}
                   </p>
                   
-                  <nav className="flex flex-wrap justify-center lg:justify-start gap-3" aria-label="Redes sociales para compartir">
+                  <nav className="flex flex-wrap justify-center lg:justify-start gap-3" aria-label="Redes sociales pour partager">
                     
                     <Button
                       component="a"
