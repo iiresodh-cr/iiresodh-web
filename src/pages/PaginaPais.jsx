@@ -5,17 +5,23 @@ import { collection, query, where, orderBy, limit, getDocs } from "firebase/fire
 import { db } from "../firebase/config";
 import { Link } from "react-router-dom";
 import { Paper } from "@mui/material";
-import PageHeader from "../components/PageHeader"; // <-- Importamos el mismo header de las otras páginas
+import PageHeader from "../components/PageHeader"; 
 
+// IMPORTACIÓN PARA i18n
+import { useTranslation } from 'react-i18next';
+
+// Nota: Dejamos el tag tal cual porque es el valor exacto en Firestore (en español).
+// La traducción visual la haremos dentro del componente usando el hook de i18next.
 const CONFIG_PAISES = {
-  "canada": { tag: "Canadá", titulo: "Canadá", contacto: "Ciudad de Lévis, Québec. Toronto: Waldman & Associates. contacto@iiresodh.org" },
-  "guatemala": { tag: "Guatemala", titulo: "Guatemala", contacto: "Diagonal 6 12-42, Edificio Design Center. Oficina 506, Torre 1, Zona 10. +502 5557 7466" },
-  "mexico": { tag: "México", titulo: "México", contacto: "Atención virtual o presencial previa cita en CDMX. contacto@iiresodh.org" },
-  "costa-rica": { tag: "Costa Rica", titulo: "Costa Rica", contacto: "Sede Central: Escazú, San José. CP 10201. +506 4703 5727" },
-  "colombia": { tag: "Colombia", titulo: "Colombia", contacto: "Carrera. 11C No. 117-05. Oficina 5. Bogotá. +57 301 4844324" }
+  "canada": { tag: "Canadá", keyTraduccion: "canada" },
+  "guatemala": { tag: "Guatemala", keyTraduccion: "guatemala" },
+  "mexico": { tag: "México", keyTraduccion: "mexico" },
+  "costa-rica": { tag: "Costa Rica", keyTraduccion: "costa_rica" },
+  "colombia": { tag: "Colombia", keyTraduccion: "colombia" }
 };
 
 export default function PaginaPais({ paisKey: propsPaisKey }) {
+  const { t } = useTranslation(); // HOOK DE TRADUCCIÓN
   const { paisRoute } = useParams();
   const key = propsPaisKey || paisRoute;
   const data = CONFIG_PAISES[key];
@@ -28,7 +34,6 @@ export default function PaginaPais({ paisKey: propsPaisKey }) {
 
     const fetchNoticias = async () => {
       setLoading(true);
-      console.log(`🔍 Buscando noticias con el tag: "${data.tag}" para ${data.titulo}...`);
       
       try {
         const q = query(
@@ -41,7 +46,6 @@ export default function PaginaPais({ paisKey: propsPaisKey }) {
         const querySnapshot = await getDocs(q);
         const resultados = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
-        console.log(`✅ Resultados encontrados para ${data.titulo}:`, resultados.length);
         setNoticias(resultados);
       } catch (error) {
         console.error("❌ Error en la consulta de Firestore:", error);
@@ -53,24 +57,51 @@ export default function PaginaPais({ paisKey: propsPaisKey }) {
     fetchNoticias();
   }, [key, data]);
 
-  if (!data) return <div className="p-20 text-center">País no configurado.</div>;
+  if (!data) return <div className="p-20 text-center">{t('pagina_pais.no_configurado', 'País no configurado.')}</div>;
+
+  // Obtenemos los textos traducidos para el país actual usando las llaves de nuestro diccionario del Footer/Equipo
+  let tituloPaisTraducido = "";
+  let contactoPaisTraducido = "";
+
+  switch (data.keyTraduccion) {
+    case "canada":
+      tituloPaisTraducido = t('equipo.canada', 'Canadá');
+      contactoPaisTraducido = t('pagina_pais.canada_contacto', 'Ciudad de Lévis, Québec. Toronto: Waldman & Associates. contacto@iiresodh.org');
+      break;
+    case "guatemala":
+      tituloPaisTraducido = t('equipo.guatemala', 'Guatemala');
+      contactoPaisTraducido = t('pagina_pais.guatemala_contacto', 'Diagonal 6 12-42, Edificio Design Center. Oficina 506, Torre 1, Zona 10. +502 5557 7466');
+      break;
+    case "mexico":
+      tituloPaisTraducido = t('equipo.mexico', 'México');
+      contactoPaisTraducido = t('pagina_pais.mexico_contacto', 'Atención virtual o presencial previa cita en CDMX. contacto@iiresodh.org');
+      break;
+    case "costa_rica":
+      tituloPaisTraducido = t('equipo.costa_rica', 'Costa Rica');
+      contactoPaisTraducido = t('pagina_pais.costa_rica_contacto', 'Sede Central: Escazú, San José. CP 10201. +506 4703 5727');
+      break;
+    case "colombia":
+      tituloPaisTraducido = t('equipo.colombia', 'Colombia');
+      contactoPaisTraducido = t('pagina_pais.colombia_contacto', 'Carrera. 11C No. 117-05. Oficina 5. Bogotá. +57 301 4844324');
+      break;
+    default:
+      tituloPaisTraducido = data.tag;
+      contactoPaisTraducido = "";
+  }
 
   return (
     <main className="bg-white min-h-screen flex flex-col font-sans overflow-x-hidden">
       
-      {/* Usamos tu componente estandarizado para que mida exactamente igual */}
       <PageHeader 
-        titulo={`IIRESODH ${data.titulo}`} 
-        subtitulo={`Actividad y presencia institucional en ${data.titulo}.`} 
+        titulo={t('pagina_pais.header_titulo', 'IIRESODH {{pais}}').replace('{{pais}}', tituloPaisTraducido)} 
+        subtitulo={t('pagina_pais.header_subtitulo', 'Actividad y presencia institucional en {{pais}}.').replace('{{pais}}', tituloPaisTraducido)} 
       />
 
-      {/* CONTENEDOR CON MARCA DE AGUA */}
       <div className="relative overflow-hidden grow pb-20">
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
           <div className="bg-watermark"></div>
         </div>
 
-        {/* ESTRUCTURA COHERENTE: Sección plana, fondo blanco, ancho máximo */}
         <section className="relative z-10 pt-4 md:pt-8 px-0">
           <div className="max-w-7xl mx-auto bg-white">
             <div className="px-6 md:px-12 lg:px-16 pt-8 pb-16 w-full animate-fade-in-up">
@@ -78,7 +109,9 @@ export default function PaginaPais({ paisKey: propsPaisKey }) {
               {/* NOTICIAS */}
               <div className="mb-16">
                 <div className="flex items-center gap-4 mb-10">
-                  <h2 className="text-2xl md:text-3xl font-black text-main-blue uppercase tracking-tight">Noticias de {data.titulo}</h2>
+                  <h2 className="text-2xl md:text-3xl font-black text-main-blue uppercase tracking-tight">
+                    {t('pagina_pais.noticias_de', 'Noticias de {{pais}}').replace('{{pais}}', tituloPaisTraducido)}
+                  </h2>
                   <div className="grow h-px bg-gray-100"></div>
                 </div>
 
@@ -102,7 +135,10 @@ export default function PaginaPais({ paisKey: propsPaisKey }) {
                   </div>
                 ) : (
                   <div className="text-center py-20 bg-gray-50 rounded-4xl border border-dashed border-gray-200">
-                    <p className="text-gray-400">No hay noticias con el tag "{data.tag}". <br/> <small>Verifica que el tag en el Admin sea idéntico (mayúsculas y tildes).</small></p>
+                    <p className="text-gray-400">
+                      {t('pagina_pais.no_hay_noticias', 'No hay noticias con el tag "{{tag}}".').replace('{{tag}}', data.tag)} <br/> 
+                      <small>{t('pagina_pais.verifica_tag', 'Verifica que el tag en el Admin sea idéntico (mayúsculas y tildes).')}</small>
+                    </p>
                   </div>
                 )}
               </div>
@@ -111,10 +147,14 @@ export default function PaginaPais({ paisKey: propsPaisKey }) {
               <div>
                  <div className="bg-gray-50 rounded-4xl p-8 md:p-12 border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-8">
                     <div className="max-w-xl text-center md:text-left">
-                       <h2 className="text-2xl font-black text-main-blue mb-2 uppercase">Sede {data.titulo}</h2>
-                       <p className="text-gray-600 font-light">{data.contacto}</p>
+                       <h2 className="text-2xl font-black text-main-blue mb-2 uppercase">
+                         {t('pagina_pais.sede', 'Sede {{pais}}').replace('{{pais}}', tituloPaisTraducido)}
+                       </h2>
+                       <p className="text-gray-600 font-light">{contactoPaisTraducido}</p>
                     </div>
-                    <Link to="/contacto" className="bg-main-red text-white font-bold py-4 px-10 rounded-xl uppercase text-xs hover:bg-red-800 transition-colors shrink-0">Contactar</Link>
+                    <Link to="/contacto" className="bg-main-red text-white font-bold py-4 px-10 rounded-xl uppercase text-xs hover:bg-red-800 transition-colors shrink-0">
+                      {t('pagina_pais.btn_contactar', 'Contactar')}
+                    </Link>
                  </div>
               </div>
 

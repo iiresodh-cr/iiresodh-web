@@ -293,5 +293,20 @@
     "compartir_articulo": "Compartir este artículo",
     "copiar_enlace": "Copiar Enlace",
     "enlace_copiado": "¡Enlace copiado al portapapeles!"
+  },
+  "pagina_pais": {
+    "no_configurado": "País no configurado.",
+    "header_titulo": "IIRESODH {{pais}}",
+    "header_subtitulo": "Actividad y presencia institucional en {{pais}}.",
+    "noticias_de": "Noticias de {{pais}}",
+    "no_hay_noticias": "No hay noticias con el tag \"{{tag}}\".",
+    "verifica_tag": "Verifica que el tag en el Admin sea idéntico (mayúsculas y tildes).",
+    "sede": "Sede {{pais}}",
+    "btn_contactar": "Contactar",
+    "canada_contacto": "Ciudad de Lévis, Québec. Toronto: Waldman & Associates. contacto@iiresodh.org",
+    "guatemala_contacto": "Diagonal 6 12-42, Edificio Design Center. Oficina 506, Torre 1, Zona 10. +502 5557 7466",
+    "mexico_contacto": "Atención virtual o presencial previa cita en CDMX. contacto@iiresodh.org",
+    "costa_rica_contacto": "Sede Central: Escazú, San José. CP 10201. +506 4703 5727",
+    "colombia_contacto": "Carrera. 11C No. 117-05. Oficina 5. Bogotá. +57 301 4844324"
   }
 }
