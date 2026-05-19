@@ -160,7 +160,7 @@ body {
     inset: 0;
     pointer-events: none;
     z-index: 0;
-    background-image: url('./assets/isotipo-blanco.png');
+    background-image: url('./assets/isotipo-blanco-bak.png');
     background-repeat: repeat;
     background-size: 500px;
     opacity: 0.04;
