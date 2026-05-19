@@ -218,5 +218,16 @@
     "tag_costa_rica": "Costa Rica",
     "tag_colombia": "Colombia",
     "tag_institucional": "Institucional"
+  },
+  "articulos": {
+    "cargando": "Cargando repositorio...",
+    "header_titulo": "Artículos Académicos",
+    "header_subtitulo": "Investigación y análisis especializado en Derechos Humanos.",
+    "repositorio_titulo": "Repositorio en Organización",
+    "repositorio_desc": "Estamos digitalizando y categorizando nuestra producción académica para facilitar su consulta y descarga gratuita. Próximamente encontrará aquí ensayos, ponencias y artículos de nuestros expertos.",
+    "leer_articulo": "Leer artículo",
+    "aria_leer_articulo": "Leer artículo:",
+    "anterior": "Anterior",
+    "siguiente": "Siguiente"
   }
 }

@@ -218,5 +218,16 @@
     "tag_costa_rica": "Costa Rica",
     "tag_colombia": "Colombia",
     "tag_institucional": "Institutional"
+  },
+  "articulos": {
+    "cargando": "Loading repository...",
+    "header_titulo": "Academic Articles",
+    "header_subtitulo": "Specialized research and analysis in Human Rights.",
+    "repositorio_titulo": "Repository in Organization",
+    "repositorio_desc": "We are digitizing and categorizing our academic production to facilitate its consultation and free download. Soon you will find essays, presentations, and articles from our experts here.",
+    "leer_articulo": "Read article",
+    "aria_leer_articulo": "Read article:",
+    "anterior": "Previous",
+    "siguiente": "Next"
   }
 }

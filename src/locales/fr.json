@@ -218,5 +218,16 @@
     "tag_costa_rica": "Costa Rica",
     "tag_colombia": "Colombie",
     "tag_institucional": "Institutionnel"
+  },
+  "articulos": {
+    "cargando": "Chargement du référentiel...",
+    "header_titulo": "Articles Académiques",
+    "header_subtitulo": "Recherche et analyse spécialisées en Droits de l'Homme.",
+    "repositorio_titulo": "Référentiel en cours d'organisation",
+    "repositorio_desc": "Nous numérisons et catégorisons notre production académique pour faciliter sa consultation et son téléchargement gratuit. Vous trouverez bientôt ici des essais, des présentations et des articles de nos experts.",
+    "leer_articulo": "Lire l'article",
+    "aria_leer_articulo": "Lire l'article :",
+    "anterior": "Précédent",
+    "siguiente": "Suivant"
   }
 }

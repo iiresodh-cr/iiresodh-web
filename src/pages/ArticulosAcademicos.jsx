@@ -8,9 +8,13 @@ import PageHeader from "../components/PageHeader";
 // Importaciones de MUI
 import { CircularProgress, Button } from "@mui/material";
 
+// IMPORTACIÓN PARA i18n
+import { useTranslation } from 'react-i18next';
+
 const ARTICULOS_POR_PAGINA = 10;
 
 export default function ArticulosAcademicos() {
+  const { t, i18n } = useTranslation(); // HOOK DE TRADUCCIÓN E INSTANCIA
   const [articulos, setArticulos] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -87,7 +91,7 @@ export default function ArticulosAcademicos() {
   const formatearFecha = (timestamp) => {
     if (!timestamp) return "";
     const date = timestamp.toDate();
-    return date.toLocaleDateString("es-ES", { year: "numeric", month: "long", day: "numeric" });
+    return date.toLocaleDateString(i18n.language || "es-ES", { year: "numeric", month: "long", day: "numeric" });
   };
 
   // ESTADO DE CARGA HOMOLOGADO CON MUI
@@ -95,7 +99,9 @@ export default function ArticulosAcademicos() {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 pt-20" role="status">
         <CircularProgress size={50} thickness={4} sx={{ color: '#1D3557' }} />
-        <span className="text-main-blue font-bold text-sm uppercase tracking-widest animate-pulse">Cargando repositorio...</span>
+        <span className="text-main-blue font-bold text-sm uppercase tracking-widest animate-pulse">
+          {t('articulos.cargando', 'Cargando repositorio...')}
+        </span>
       </div>
     );
   }
@@ -104,8 +110,8 @@ export default function ArticulosAcademicos() {
     <main className="bg-white min-h-screen flex flex-col font-sans">
       
       <PageHeader 
-        titulo="Artículos Académicos" 
-        subtitulo="Investigación y análisis especializado en Derechos Humanos." 
+        titulo={t('articulos.header_titulo', 'Artículos Académicos')} 
+        subtitulo={t('articulos.header_subtitulo', 'Investigación y análisis especializado en Derechos Humanos.')} 
       />
 
       <div className="relative overflow-hidden grow pb-20">
@@ -119,10 +125,10 @@ export default function ArticulosAcademicos() {
               {articulos.length === 0 ? (
                 <div className="text-center">
                   <h2 className="text-2xl font-semibold text-main-blue mb-4 uppercase tracking-widest">
-                    Repositorio en Organización
+                    {t('articulos.repositorio_titulo', 'Repositorio en Organización')}
                   </h2>
                   <p className="text-gray-500 font-light max-w-2xl mx-auto leading-relaxed italic">
-                    Estamos digitalizando y categorizando nuestra producción académica para facilitar su consulta y descarga gratuita. Próximamente encontrará aquí ensayos, ponencias y artículos de nuestros expertos.
+                    {t('articulos.repositorio_desc', 'Estamos digitalizando y categorizando nuestra producción académica para facilitar su consulta y descarga gratuita. Próximamente encontrará aquí ensayos, ponencias y artículos de nuestros expertos.')}
                   </p>
                 </div>
               ) : (
@@ -133,7 +139,7 @@ export default function ArticulosAcademicos() {
                         <Link 
                           to={`/articulos-academicos/${articulo.slug || articulo.id}`}
                           className="bg-gray-50 rounded-2xl overflow-hidden border border-gray-200 hover:shadow-xl hover:border-pale-blue transition-all duration-300 flex flex-col group cursor-pointer h-full"
-                          aria-label={`Leer artículo: ${articulo.titulo}`}
+                          aria-label={`${t('articulos.aria_leer_articulo', 'Leer artículo:')} ${articulo.titulo}`}
                         >
                           {articulo.imagenPrincipalUrl && (
                             <div className="w-full aspect-video overflow-hidden bg-gray-200 shrink-0">
@@ -156,7 +162,7 @@ export default function ArticulosAcademicos() {
                               {articulo.resumen}
                             </p>
                             <div className="inline-flex items-center gap-2 text-xs font-bold text-main-blue uppercase tracking-widest group-hover:text-main-red transition-colors mt-auto">
-                              Leer artículo <span className="text-lg leading-none" aria-hidden="true">&rarr;</span>
+                              {t('articulos.leer_articulo', 'Leer artículo')} <span className="text-lg leading-none" aria-hidden="true">&rarr;</span>
                             </div>
                           </div>
                         </Link>
@@ -184,7 +190,7 @@ export default function ArticulosAcademicos() {
                         '&.Mui-disabled': { color: '#D1D5DB', borderColor: '#E5E7EB' }
                       }}
                     >
-                      Anterior
+                      {t('articulos.anterior', 'Anterior')}
                     </Button>
 
                     <span className="text-main-blue font-black text-xl" aria-current="page">
@@ -209,7 +215,7 @@ export default function ArticulosAcademicos() {
                         '&.Mui-disabled': { color: '#D1D5DB', borderColor: '#E5E7EB' }
                       }}
                     >
-                      Siguiente
+                      {t('articulos.siguiente', 'Siguiente')}
                     </Button>
                   </nav>
                 </>
@@ -217,6 +223,7 @@ export default function ArticulosAcademicos() {
             </div>
           </div>
         </section>
+
       </div>
     </main>
   );
