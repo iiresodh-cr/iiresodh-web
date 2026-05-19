@@ -134,5 +134,19 @@
     "costa_rica": "Costa Rica",
     "guatemala": "Guatemala",
     "mexico": "México"
+  },
+  "informes": {
+    "header_titulo": "Informes Anuales",
+    "header_subtitulo": "Transparencia y rendición de cuentas sobre nuestra gestión e impacto en los Derechos Humanos.",
+    "cargando": "Cargando archivo histórico...",
+    "archivo_historico_titulo": "Archivo Histórico de Gestión",
+    "parrafo_1": "En nuestro compromiso con la transparencia, cada año publicamos un informe detallado que resume nuestras actividades, logros, impacto en litigio estratégico y el estado financiero de la organización.",
+    "parrafo_2": "Estos documentos son un pilar de nuestra rendición de cuentas ante donantes, socios y el público general, reflejando el trabajo realizado en la promoción y defensa de los derechos humanos en la región.",
+    "no_informes_titulo": "Aún no hay informes",
+    "no_informes_desc": "Próximamente estaremos publicando nuestros informes de gestión.",
+    "etiqueta_ano": "Año",
+    "tarjeta_titulo": "Informe Anual de Gestión",
+    "btn_descargar": "Descargar PDF",
+    "aria_portada": "Portada del Informe"
   }
 }

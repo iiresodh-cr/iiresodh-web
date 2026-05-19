@@ -134,5 +134,19 @@
     "costa_rica": "Costa Rica",
     "guatemala": "Guatemala",
     "mexico": "Mexique"
+  },
+  "informes": {
+    "header_titulo": "Rapports Annuels",
+    "header_subtitulo": "Transparence et responsabilité concernant notre gestion et notre impact sur les Droits de l'Homme.",
+    "cargando": "Chargement des archives historiques...",
+    "archivo_historico_titulo": "Archives Historiques de Gestion",
+    "parrafo_1": "Dans notre engagement envers la transparence, nous publions chaque année un rapport détaillé résumant nos activités, nos réalisations, notre impact dans les litiges stratégiques et la situation financière de l'organisation.",
+    "parrafo_2": "Ces documents sont un pilier de notre responsabilité envers les donateurs, les partenaires et le grand public, reflétant le travail accompli dans la promotion et la défense des droits de l'homme dans la région.",
+    "no_informes_titulo": "Aucun rapport pour le moment",
+    "no_informes_desc": "Nous publierons prochainement nos rapports de gestion.",
+    "etiqueta_ano": "Année",
+    "tarjeta_titulo": "Rapport Annuel de Gestion",
+    "btn_descargar": "Télécharger le PDF",
+    "aria_portada": "Couverture du Rapport"
   }
 }

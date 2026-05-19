@@ -5,7 +5,11 @@ import { Paper, CircularProgress } from "@mui/material";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../firebase/config";
 
+// IMPORTACIÓN PARA i18n
+import { useTranslation } from 'react-i18next';
+
 export default function InformesAnuales() {
+  const { t } = useTranslation(); // HOOK DE TRADUCCIÓN
   const [informes, setInformes] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,7 +42,7 @@ export default function InformesAnuales() {
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 pt-20" role="status">
         <CircularProgress size={50} thickness={4} sx={{ color: '#1D3557' }} />
         <span className="text-main-blue font-bold text-sm uppercase tracking-widest animate-pulse">
-          Cargando archivo histórico...
+          {t('informes.cargando', 'Cargando archivo histórico...')}
         </span>
       </div>
     );
@@ -47,8 +51,8 @@ export default function InformesAnuales() {
   return (
     <main className="bg-white min-h-screen flex flex-col font-sans">
       <PageHeader 
-        titulo="Informes Anuales" 
-        subtitulo="Transparencia y rendición de cuentas sobre nuestra gestión e impacto en los Derechos Humanos." 
+        titulo={t('informes.header_titulo', 'Informes Anuales')} 
+        subtitulo={t('informes.header_subtitulo', 'Transparencia y rendición de cuentas sobre nuestra gestión e impacto en los Derechos Humanos.')} 
       />
 
       <div className="relative overflow-hidden grow pb-20">
@@ -58,13 +62,13 @@ export default function InformesAnuales() {
           
           <div className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify mb-16 animate-fade-in-up">
             <h2 className="text-3xl font-black text-main-blue tracking-tighter mb-6 text-center md:text-left">
-              Archivo Histórico de Gestión
+              {t('informes.archivo_historico_titulo', 'Archivo Histórico de Gestión')}
             </h2>
             <p>
-              En nuestro compromiso con la transparencia, cada año publicamos un informe detallado que resume nuestras actividades, logros, impacto en litigio estratégico y el estado financiero de la organización.
+              {t('informes.parrafo_1', 'En nuestro compromiso con la transparencia, cada año publicamos un informe detallado que resume nuestras actividades, logros, impacto en litigio estratégico y el estado financiero de la organización.')}
             </p>
             <p>
-              Estos documentos son un pilar de nuestra rendición de cuentas ante donantes, socios y el público general, reflejando el trabajo realizado en la promoción y defensa de los derechos humanos en la región.
+              {t('informes.parrafo_2', 'Estos documentos son un pilar de nuestra rendición de cuentas ante donantes, socios y el público general, reflejando el trabajo realizado en la promoción y defensa de los derechos humanos en la región.')}
             </p>
           </div>
 
@@ -73,10 +77,10 @@ export default function InformesAnuales() {
           {informes.length === 0 ? (
              <div className="text-center py-10">
                <h2 className="text-2xl font-semibold text-main-blue mb-4 uppercase tracking-widest">
-                 Aún no hay informes
+                 {t('informes.no_informes_titulo', 'Aún no hay informes')}
                </h2>
                <p className="text-gray-500 font-light max-w-2xl mx-auto leading-relaxed italic">
-                 Próximamente estaremos publicando nuestros informes de gestión.
+                 {t('informes.no_informes_desc', 'Próximamente estaremos publicando nuestros informes de gestión.')}
                </p>
              </div>
           ) : (
@@ -92,7 +96,7 @@ export default function InformesAnuales() {
                   <div 
                     className="absolute inset-0 bg-cover bg-top transition-transform duration-700 group-hover:scale-110"
                     style={{ backgroundImage: `url(${informe.imagenPrincipalUrl || 'https://via.placeholder.com/600x800?text=Sin+Portada'})` }}
-                    aria-label={`Portada del Informe ${informe.año}`}
+                    aria-label={`${t('informes.aria_portada', 'Portada del Informe')} ${informe.año}`}
                   />
                   
                   {/* Filtro oscuro para legibilidad */}
@@ -101,11 +105,11 @@ export default function InformesAnuales() {
                   {/* Contenido de la tarjeta */}
                   <div className="absolute inset-0 p-6 flex flex-col justify-end">
                     <span className="self-start bg-main-red text-white text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-lg mb-auto shadow-lg">
-                      Año {informe.año}
+                      {t('informes.etiqueta_ano', 'Año')} {informe.año}
                     </span>
                     
                     <h3 className="text-2xl md:text-3xl font-black text-white mb-2 leading-tight drop-shadow-md">
-                      Informe Anual de Gestión
+                      {t('informes.tarjeta_titulo', 'Informe Anual de Gestión')}
                     </h3>
                     
                     <div className="w-12 h-1 bg-main-red rounded-full mb-6 transition-all duration-500 group-hover:w-24"></div>
@@ -118,7 +122,7 @@ export default function InformesAnuales() {
                       className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white text-white hover:text-main-blue backdrop-blur-md border border-white/30 text-sm font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl transition-all duration-300 w-full shadow-lg"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                      Descargar PDF
+                      {t('informes.btn_descargar', 'Descargar PDF')}
                     </a>
                   </div>
                 </Paper>

@@ -134,5 +134,19 @@
     "costa_rica": "Costa Rica",
     "guatemala": "Guatemala",
     "mexico": "Mexico"
+  },
+  "informes": {
+    "header_titulo": "Annual Reports",
+    "header_subtitulo": "Transparency and accountability regarding our management and impact on Human Rights.",
+    "cargando": "Loading historical archive...",
+    "archivo_historico_titulo": "Historical Management Archive",
+    "parrafo_1": "In our commitment to transparency, every year we publish a detailed report summarizing our activities, achievements, impact on strategic litigation, and the financial status of the organization.",
+    "parrafo_2": "These documents are a pillar of our accountability to donors, partners, and the general public, reflecting the work done in the promotion and defense of human rights in the region.",
+    "no_informes_titulo": "No reports yet",
+    "no_informes_desc": "We will be publishing our management reports soon.",
+    "etiqueta_ano": "Year",
+    "tarjeta_titulo": "Annual Management Report",
+    "btn_descargar": "Download PDF",
+    "aria_portada": "Report Cover"
   }
 }
