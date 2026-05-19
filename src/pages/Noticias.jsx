@@ -8,8 +8,9 @@ import PageHeader from "../components/PageHeader";
 // Importaciones de MUI
 import { CircularProgress, Button, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
 
-// IMPORTACIÓN PARA i18n
+// IMPORTACIONES PARA i18n Y TRADUCCIÓN DINÁMICA
 import { useTranslation } from 'react-i18next';
+import { obtenerTextoTraducido } from "../utils/traductorDinamico"; // <-- HELPER MÁGICO
 
 const NOTICIAS_POR_PAGINA = 10;
 
@@ -17,7 +18,7 @@ const NOTICIAS_POR_PAGINA = 10;
 const TAGS_DISPONIBLES = ["Canadá", "México", "Guatemala", "Costa Rica", "Colombia", "Institucional"];
 
 export default function Noticias() {
-  const { t, i18n } = useTranslation(); // HOOK DE TRADUCCIÓN
+  const { t, i18n } = useTranslation(); 
   const [noticias, setNoticias] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -35,12 +36,10 @@ export default function Noticias() {
   const getBaseConstraints = () => {
     const constraints = [];
     
-    // Si hay un tag seleccionado (diferente a "Todos"), filtramos el array
     if (tagFiltro !== "Todos") {
       constraints.push(where("tags", "array-contains", tagFiltro));
     }
     
-    // Ordenamiento por fecha
     constraints.push(orderBy("fechaPublicacion", ordenFecha));
     
     return constraints;
@@ -74,9 +73,8 @@ export default function Noticias() {
     }
   };
 
-  // Carga inicial y reacción a cambios en los filtros
   useEffect(() => {
-    setPagina(1); // Reiniciamos a la página 1 cuando cambia un filtro
+    setPagina(1); 
     const q = query(
       collection(db, "noticias"),
       ...getBaseConstraints(),
@@ -110,7 +108,6 @@ export default function Noticias() {
     setPagina(prev => prev - 1);
   };
 
-  // Función auxiliar para traducir los tags visualmente
   const traducirTag = (tag) => {
     switch(tag) {
       case 'Canadá': return t('noticias.tag_canada', 'Canadá');
@@ -123,7 +120,6 @@ export default function Noticias() {
     }
   };
 
-  // ESTADO DE CARGA HOMOLOGADO CON MUI
   if (loading && noticias.length === 0) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 pt-20" role="status">
@@ -151,7 +147,6 @@ export default function Noticias() {
             
             <div className="px-6 md:px-12 lg:px-16 pt-4 md:pt-6 pb-12 animate-fade-in-up w-full">
               
-              {/* BARRA DE FILTROS */}
               <div className="flex flex-col sm:flex-row gap-4 mb-8 pb-6 border-b border-gray-100">
                 <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 220 } }}>
                   <InputLabel id="tag-select-label">{t('noticias.filtro_etiqueta', 'Filtrar por Etiqueta')}</InputLabel>
@@ -199,65 +194,76 @@ export default function Noticias() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-6" role="list">
-                  {noticias.map((noticia) => (
-                    <article key={noticia.id} role="listitem">
-                      <Link 
-                        to={`/noticias/${noticia.slug || noticia.id}`} 
-                        className="group bg-white border border-gray-100 rounded-2xl p-4 flex flex-col md:flex-row items-center gap-6 md:gap-8 hover:shadow-xl transition-all duration-300"
-                      >
-                        <div className="w-full md:w-48 h-48 shrink-0 rounded-xl overflow-hidden bg-gray-50 border border-gray-50 relative">
-                          {/* Pin para noticias persistentes si aplica */}
-                          {noticia.persistente && (
-                            <div className="absolute top-2 right-2 bg-main-blue/90 p-1.5 rounded-full z-10 shadow-sm">
-                              <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v4l2 2v2h-7v5l-1 1-1-1v-5H4v-2l2-2V4z" />
-                              </svg>
-                            </div>
-                          )}
-                          <img 
-                            src={noticia.imagenPrincipalUrl} 
-                            alt="" 
-                            aria-hidden="true"
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                          />
-                        </div>
+                  {noticias.map((noticia) => {
+                    
+                    // ==========================================
+                    // TRADUCCIÓN DINÁMICA DE LA BASE DE DATOS
+                    // ==========================================
+                    const tituloTraducido = obtenerTextoTraducido(noticia, 'titulo', i18n.language);
+                    const resumenTraducido = obtenerTextoTraducido(noticia, 'resumen', i18n.language);
 
-                        <div className="flex flex-col grow min-w-0 h-full">
-                          <div className="flex flex-wrap items-center gap-3 mb-2">
-                            <span className="text-xs font-black text-main-red uppercase tracking-widest">
-                              {noticia.fechaPublicacion?.toDate ? 
-                                new Date(noticia.fechaPublicacion.toDate()).toLocaleDateString(i18n.language || 'es-ES', { day: '2-digit', month: 'long', year: 'numeric' }) 
-                                : t('noticias.reciente', 'Reciente')}
-                            </span>
-                            {/* Renderizar tags en la vista pública traducidos */}
-                            {noticia.tags && noticia.tags.length > 0 && (
-                              <div className="flex gap-1">
-                                {noticia.tags.map(tag => (
-                                  <span key={tag} className="text-[9px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md uppercase font-bold tracking-wider">
-                                    {traducirTag(tag)}
-                                  </span>
-                                ))}
+                    return (
+                      <article key={noticia.id} role="listitem">
+                        <Link 
+                          to={`/noticias/${noticia.slug || noticia.id}`} 
+                          className="group bg-white border border-gray-100 rounded-2xl p-4 flex flex-col md:flex-row items-center gap-6 md:gap-8 hover:shadow-xl transition-all duration-300"
+                        >
+                          <div className="w-full md:w-48 h-48 shrink-0 rounded-xl overflow-hidden bg-gray-50 border border-gray-50 relative">
+                            {noticia.persistente && (
+                              <div className="absolute top-2 right-2 bg-main-blue/90 p-1.5 rounded-full z-10 shadow-sm">
+                                <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v4l2 2v2h-7v5l-1 1-1-1v-5H4v-2l2-2V4z" />
+                                </svg>
                               </div>
                             )}
+                            <img 
+                              src={noticia.imagenPrincipalUrl} 
+                              alt="" 
+                              aria-hidden="true"
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                            />
                           </div>
-                          
-                          <h2 className="text-xl md:text-2xl font-bold text-main-blue mb-3 line-clamp-1 leading-tight group-hover:text-light-blue transition-colors uppercase tracking-tight">
-                            {noticia.titulo}
-                          </h2>
-                          <p className="text-gray-600 text-sm md:text-base line-clamp-2 font-light leading-relaxed mb-4">
-                            {noticia.resumen}
-                          </p>
-                          <div className="text-main-red text-xs font-black uppercase flex items-center gap-2 mt-auto">
-                            {t('noticias.leer_completa', 'Leer noticia completa')} <span className="text-lg leading-none" aria-hidden="true">&rarr;</span>
+
+                          <div className="flex flex-col grow min-w-0 h-full">
+                            <div className="flex flex-wrap items-center gap-3 mb-2">
+                              <span className="text-xs font-black text-main-red uppercase tracking-widest">
+                                {noticia.fechaPublicacion?.toDate ? 
+                                  new Date(noticia.fechaPublicacion.toDate()).toLocaleDateString(i18n.language || 'es-ES', { day: '2-digit', month: 'long', year: 'numeric' }) 
+                                  : t('noticias.reciente', 'Reciente')}
+                              </span>
+                              
+                              {noticia.tags && noticia.tags.length > 0 && (
+                                <div className="flex gap-1">
+                                  {noticia.tags.map(tag => (
+                                    <span key={tag} className="text-[9px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md uppercase font-bold tracking-wider">
+                                      {traducirTag(tag)}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* AQUÍ INYECTAMOS EL TÍTULO TRADUCIDO */}
+                            <h2 className="text-xl md:text-2xl font-bold text-main-blue mb-3 line-clamp-1 leading-tight group-hover:text-light-blue transition-colors uppercase tracking-tight">
+                              {tituloTraducido}
+                            </h2>
+                            
+                            {/* AQUÍ INYECTAMOS EL RESUMEN TRADUCIDO */}
+                            <p className="text-gray-600 text-sm md:text-base line-clamp-2 font-light leading-relaxed mb-4">
+                              {resumenTraducido}
+                            </p>
+                            
+                            <div className="text-main-red text-xs font-black uppercase flex items-center gap-2 mt-auto">
+                              {t('noticias.leer_completa', 'Leer noticia completa')} <span className="text-lg leading-none" aria-hidden="true">&rarr;</span>
+                            </div>
                           </div>
-                        </div>
-                      </Link>
-                    </article>
-                  ))}
+                        </Link>
+                      </article>
+                    );
+                  })}
                 </div>
               )}
 
-              {/* CONTROLES DE PAGINACIÓN */}
               {noticias.length > 0 && (
                 <nav className="mt-16 flex items-center justify-center gap-8 border-t border-gray-100 pt-10">
                   <Button 
