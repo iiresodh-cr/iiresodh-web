@@ -11,15 +11,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Separar React y React Router
-          if (id.includes('node_modules/react') || id.includes('node_modules/react-router-dom')) {
-            return 'react-vendor';
-          }
-          // Separar todo Material UI
-          if (id.includes('node_modules/@mui')) {
-            return 'mui-vendor';
-          }
-          // Separar Firebase
+          // Solo separamos Firebase, que es masivo y seguro de aislar.
+          // Dejamos que Vite maneje React y Material UI de forma nativa para evitar errores.
           if (id.includes('node_modules/firebase')) {
             return 'firebase-vendor';
           }
