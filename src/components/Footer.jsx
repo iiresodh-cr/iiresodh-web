@@ -1,6 +1,6 @@
 // src/components/Footer.jsx
 import { Link } from "react-router-dom";
-import logoBlanco from "../assets/logo.png";
+import logoBlanco from "../assets/logo.webp";
 import { Tooltip, Zoom } from '@mui/material'; 
 
 // IMPORTACIÓN PARA i18n
