@@ -102,6 +102,21 @@ export default function NoticiaDetalle() {
       .catch((err) => console.error("Error al copiar el enlace: ", err));
   };
 
+  // ==========================================
+  // TRADUCCIÓN DINÁMICA (Movido arriba para respetar las Reglas de React Hooks)
+  // ==========================================
+  const tituloTraducido = obtenerTextoTraducido(noticia, 'titulo', i18n.language);
+  const contenidoTraducido = obtenerTextoTraducido(noticia, 'contenido', i18n.language);
+
+  useEffect(() => {
+    if (tituloTraducido) {
+      document.title = `${tituloTraducido} | IIRESODH`;
+    }
+  }, [tituloTraducido]);
+
+  // ==========================================
+  // RETORNOS TEMPRANOS (Deben ir después de todos los Hooks)
+  // ==========================================
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4" role="status">
@@ -123,19 +138,6 @@ export default function NoticiaDetalle() {
       </div>
     );
   }
-
-  // ==========================================
-  // TRADUCCIÓN DINÁMICA DE LA NOTICIA
-  // ==========================================
-  const tituloTraducido = obtenerTextoTraducido(noticia, 'titulo', i18n.language);
-  const contenidoTraducido = obtenerTextoTraducido(noticia, 'contenido', i18n.language);
-
-  // Actualizamos el título de la pestaña dinámicamente si cambia el idioma
-  useEffect(() => {
-    if (tituloTraducido) {
-      document.title = `${tituloTraducido} | IIRESODH`;
-    }
-  }, [tituloTraducido]);
 
   const todasLasImagenes = [noticia.imagenPrincipalUrl, ...(noticia.imagenesCarruselUrls || [])].filter(Boolean);
 
@@ -229,7 +231,7 @@ export default function NoticiaDetalle() {
                     {t('noticia_detalle.compartir_noticia', 'Compartir esta noticia')}
                   </p>
                   
-                  <nav className="flex flex-wrap justify-center lg:justify-start gap-3" aria-label="Redes sociales pour partager">
+                  <nav className="flex flex-wrap justify-center lg:justify-start gap-3" aria-label="Redes sociales para compartir">
                     
                     <Button
                       component="a"
