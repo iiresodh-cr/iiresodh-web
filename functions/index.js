@@ -691,8 +691,8 @@ const { Translate } = require('@google-cloud/translate').v2;
 const translate = new Translate(); 
 
 const IDIOMAS_DESTINO = ['en', 'fr'];
-const CAMPOS_A_TRADUCIR = ['titulo', 'resumen', 'contenido', 'bio', 'cargo'];
-const COLECCIONES_PERMITIDAS = ['noticias', 'articulos_academicos', 'cursos', 'libros', 'incidencia', 'equipo'];
+const CAMPOS_A_TRADUCIR = ['titulo', 'resumen', 'contenido', 'bio', 'cargo', 'texto1', 'texto2', 'texto3'];
+const COLECCIONES_PERMITIDAS = ['noticias', 'articulos_academicos', 'cursos', 'libros', 'incidencia', 'equipo', 'configuracion'];
 
 exports.traductorAutomatico = onDocumentWritten(
   {
