@@ -682,3 +682,68 @@ exports.stripeWebhook = onRequest({
 
   res.json({ received: true });
 });
+
+// ============================================================================
+// 8. TRADUCTOR
+// ============================================================================
+const { Translate } = require('@google-cloud/translate').v2;
+const translate = new Translate(); // Toma las credenciales de tu proyecto automáticamente
+
+// Definimos a qué idiomas vamos a traducir
+const IDIOMAS_DESTINO = ['en', 'fr'];
+
+// Definimos qué campos de tu base de datos queremos traducir
+const CAMPOS_A_TRADUCIR = ['titulo', 'resumen', 'contenido', 'bio', 'cargo'];
+
+// Definimos qué colecciones vamos a vigilar
+const COLECCIONES_PERMITIDAS = ['noticias', 'articulos_academicos', 'cursos', 'libros', 'incidencia', 'equipo'];
+
+exports.traductorAutomatico = functions.firestore
+  .document('{coleccion}/{documentoId}')
+  .onWrite(async (change, context) => {
+    const coleccionActual = context.params.coleccion;
+
+    // 1. Verificamos si el documento pertenece a una colección que nos interesa
+    if (!COLECCIONES_PERMITIDAS.includes(coleccionActual)) {
+      return null;
+    }
+
+    // 2. Obtenemos los datos antes y después del cambio
+    const datosNuevos = change.after.exists ? change.after.data() : null;
+    const datosAnteriores = change.before.exists ? change.before.data() : null;
+
+    // Si se eliminó el documento, no hacemos nada
+    if (!datosNuevos) return null;
+
+    let actualizaciones = {};
+    let necesitaActualizar = false;
+
+    // 3. Revisamos cada campo que definimos como "traducible"
+    for (const campo of CAMPOS_A_TRADUCIR) {
+      if (datosNuevos[campo]) {
+        
+        // Solo traducimos si el campo es nuevo o si el texto cambió (para ahorrar cuota y evitar bucles infinitos)
+        const textoCambio = !datosAnteriores || datosNuevos[campo] !== datosAnteriores[campo];
+        
+        if (textoCambio) {
+          for (const idioma of IDIOMAS_DESTINO) {
+            try {
+              // La API de Google respeta automáticamente las etiquetas HTML (<p>, <strong>, etc.)
+              const [traduccion] = await translate.translate(datosNuevos[campo], idioma);
+              actualizaciones[`${campo}_${idioma}`] = traduccion;
+              necesitaActualizar = true;
+            } catch (error) {
+              console.error(`Error traduciendo ${campo} al ${idioma}:`, error);
+            }
+          }
+        }
+      }
+    }
+
+    // 4. Si hubo traducciones, actualizamos el documento en la base de datos
+    if (necesitaActualizar) {
+      return change.after.ref.update(actualizaciones);
+    }
+
+    return null;
+  });
