@@ -515,5 +515,17 @@
     "titulo": "Page introuvable",
     "descripcion": "Désolé, la ressource que vous recherchez n'existe pas ou a été déplacée. Utilisez le menu de navigation ou retournez à notre page d'accueil.",
     "btn_volver": "Retour à l'accueil"
+  },
+  "irene": {
+    "saludo_inicial": "Bonjour ! Je suis IRENE, l'assistante virtuelle de l'IIRESODH. Comment puis-je vous aider aujourd'hui ?",
+    "error_mensaje": "Oups, j'ai eu un petit vertige dans mes circuits. Pouvez-vous réessayer ?",
+    "tooltip_abrir": "Discutez avec IRENE",
+    "tooltip_reiniciar": "Redémarrer la conversation",
+    "tooltip_cerrar": "Fermer le chat",
+    "modal_titulo": "Recommencer à zéro ?",
+    "modal_desc": "IRENE oubliera la conversation en cours et vous en commencerez une nouvelle.",
+    "btn_cancelar": "Annuler",
+    "btn_reiniciar": "Oui, redémarrer",
+    "input_placeholder": "Écrivez votre message ici..."
   }
 }

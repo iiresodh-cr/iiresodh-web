@@ -515,5 +515,17 @@
     "titulo": "Page not found",
     "descripcion": "Sorry, the resource you are looking for does not exist or has been moved. Use the navigation menu or return to our homepage.",
     "btn_volver": "Back to Home"
+  },
+  "irene": {
+    "saludo_inicial": "Hello! I am IRENE, IIRESODH's virtual assistant. How can I help you today?",
+    "error_mensaje": "Oops, I had a little dizzy spell in my circuits. Can you try again?",
+    "tooltip_abrir": "Chat with IRENE",
+    "tooltip_reiniciar": "Restart conversation",
+    "tooltip_cerrar": "Close chat",
+    "modal_titulo": "Start over?",
+    "modal_desc": "IRENE will forget the current conversation and you will start a new one.",
+    "btn_cancelar": "Cancel",
+    "btn_reiniciar": "Yes, restart",
+    "input_placeholder": "Type your message here..."
   }
 }

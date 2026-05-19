@@ -515,5 +515,17 @@
     "titulo": "Página no encontrada",
     "descripcion": "Lo sentimos, el recurso que intentas buscar no existe o ha sido movido. Utiliza el menú de navegación o regresa a nuestra página principal.",
     "btn_volver": "Volver al Inicio"
+  },
+  "irene": {
+    "saludo_inicial": "¡Hola! Soy IRENE, asistente virtual de IIRESODH. ¿En qué te puedo ayudar hoy?",
+    "error_mensaje": "Ups, tuve un pequeño mareo en mis circuitos. ¿Puedes intentar de nuevo?",
+    "tooltip_abrir": "Chatea con IRENE",
+    "tooltip_reiniciar": "Reiniciar conversación",
+    "tooltip_cerrar": "Cerrar chat",
+    "modal_titulo": "¿Empezar de cero?",
+    "modal_desc": "IRENE olvidará la conversación actual y comenzarán una nueva.",
+    "btn_cancelar": "Cancelar",
+    "btn_reiniciar": "Sí, reiniciar",
+    "input_placeholder": "Escribe tu mensaje aquí..."
   }
 }

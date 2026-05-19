@@ -1,5 +1,5 @@
 // src/components/PidaChat.jsx
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import pidaImg from "../assets/IRENE-80.webp"; 
 import { functions } from "../firebase/config";
 import { httpsCallable } from "firebase/functions";
@@ -7,12 +7,17 @@ import { httpsCallable } from "firebase/functions";
 // Importaciones de MUI
 import { Paper, InputBase, IconButton, Tooltip, Button, Zoom } from '@mui/material';
 
-const MENSAJE_INICIAL = { 
-  text: "¡Hola! Soy IRENE, asistente virtual de IIRESODH. ¿En qué te puedo ayudar hoy?", 
-  isBot: true 
-};
+// IMPORTACIÓN PARA i18n
+import { useTranslation } from 'react-i18next';
 
 export default function PidaChat() {
+  const { t } = useTranslation(); 
+
+  const MENSAJE_INICIAL = useMemo(() => ({ 
+    text: t('irene.saludo_inicial', '¡Hola! Soy IRENE, asistente virtual de IIRESODH. ¿En qué te puedo ayudar hoy?'), 
+    isBot: true 
+  }), [t]);
+
   const [isOpen, setIsOpen] = useState(false);
   
   // MEMORIA: Inicializamos leyendo de sessionStorage
@@ -32,6 +37,13 @@ export default function PidaChat() {
     sessionStorage.setItem("pidaChatHistorial", JSON.stringify(mensajes));
   }, [mensajes]);
 
+  // Si cambia el idioma y el chat solo tiene el saludo inicial, actualizamos el saludo
+  useEffect(() => {
+    if (mensajes.length === 1 && mensajes[0].isBot) {
+      setMensajes([MENSAJE_INICIAL]);
+    }
+  }, [MENSAJE_INICIAL]);
+
   // Auto-scroll al fondo
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -41,11 +53,10 @@ export default function PidaChat() {
 
   // Auto-focus en el input
   useEffect(() => {
-    // Si el chat está abierto y el bot no está escribiendo, enfocar el input.
     if (isOpen && !escribiendo && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [escribiendo, isOpen]); // Se ejecuta cuando el bot termina o cuando se abre el chat.
+  }, [escribiendo, isOpen]);
 
   const toggleChat = () => setIsOpen(!isOpen);
 
@@ -111,7 +122,7 @@ export default function PidaChat() {
       setMensajes((prev) => [...prev, { text: resultado.data.respuesta, isBot: true }]);
     } catch (error) {
       console.error("Error consultando a PIDA:", error);
-      setMensajes((prev) => [...prev, { text: "Ups, tuve un pequeño mareo en mis circuitos. ¿Puedes intentar de nuevo?", isBot: true }]);
+      setMensajes((prev) => [...prev, { text: t('irene.error_mensaje', 'Ups, tuve un pequeño mareo en mis circuitos. ¿Puedes intentar de nuevo?'), isBot: true }]);
     } finally {
       setEscribiendo(false);
     }
@@ -121,7 +132,7 @@ export default function PidaChat() {
     <div className="fixed bottom-6 right-6 z-50 font-sans">
       {/* BOTÓN FLOTANTE (TOGGLE) CON MUI */}
       {!isOpen && (
-        <Tooltip title="Chatea con IRENE" placement="left" arrow TransitionComponent={Zoom}>
+        <Tooltip title={t('irene.tooltip_abrir', 'Chatea con IRENE')} placement="left" arrow TransitionComponent={Zoom}>
           <Paper 
             component="button"
             onClick={toggleChat}
@@ -174,9 +185,9 @@ export default function PidaChat() {
               <div className="w-16 h-16 bg-blue-50 text-main-red rounded-full flex items-center justify-center mb-4">
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               </div>
-              <h3 className="text-lg font-bold text-gray-800 mb-2">¿Empezar de cero?</h3>
+              <h3 className="text-lg font-bold text-gray-800 mb-2">{t('irene.modal_titulo', '¿Empezar de cero?')}</h3>
               <p className="text-sm text-gray-500 mb-6">
-                IRENE olvidará la conversación actual y comenzarán una nueva.
+                {t('irene.modal_desc', 'IRENE olvidará la conversación actual y comenzarán una nueva.')}
               </p>
               <div className="flex gap-3 w-full">
                 <Button 
@@ -186,16 +197,16 @@ export default function PidaChat() {
                   fullWidth 
                   sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 600, py: 1 }}
                 >
-                  Cancelar
+                  {t('irene.btn_cancelar', 'Cancelar')}
                 </Button>
                 <Button 
                   onClick={confirmarReinicio} 
                   variant="contained" 
-                  color="primary" // Usará el azul institucional (main-) de tu ThemeProvider
+                  color="primary" 
                   fullWidth 
                   sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 600, py: 1, boxShadow: 'none' }}
                 >
-                  Sí, reiniciar
+                  {t('irene.btn_reiniciar', 'Sí, reiniciar')}
                 </Button>
               </div>
             </div>
@@ -214,7 +225,7 @@ export default function PidaChat() {
             </div>
             
             <div className="flex items-center gap-1">
-              <Tooltip title="Reiniciar conversación" arrow>
+              <Tooltip title={t('irene.tooltip_reiniciar', 'Reiniciar conversación')} arrow>
                 <IconButton 
                   onClick={solicitarReinicio} 
                   size="small"
@@ -225,7 +236,7 @@ export default function PidaChat() {
                 </IconButton>
               </Tooltip>
               
-              <Tooltip title="Cerrar chat" arrow>
+              <Tooltip title={t('irene.tooltip_cerrar', 'Cerrar chat')} arrow>
                 <IconButton 
                   onClick={toggleChat} 
                   size="small"
@@ -283,7 +294,7 @@ export default function PidaChat() {
               inputRef={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Escribe tu mensaje aquí..."
+              placeholder={t('irene.input_placeholder', 'Escribe tu mensaje aquí...')}
               disabled={escribiendo}
               sx={{
                 flex: 1, 
@@ -297,7 +308,7 @@ export default function PidaChat() {
                 transition: 'all 0.2s ease-in-out',
                 '&.Mui-focused': { 
                   bgcolor: 'white', 
-                  borderColor: '#B92F32', // main-red
+                  borderColor: '#B92F32', 
                   boxShadow: '0 0 0 2px rgba(185, 47, 50, 0.1)' 
                 }
               }}
@@ -305,7 +316,7 @@ export default function PidaChat() {
             <IconButton
               type="submit"
               disabled={!input.trim() || escribiendo}
-              color="secondary" // Usará el color rojo definido en ThemeProvider
+              color="secondary" 
               sx={{
                 bgcolor: 'secondary.main', 
                 color: 'white', 
