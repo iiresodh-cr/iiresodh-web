@@ -25,7 +25,7 @@ export default function ResultadosBusqueda() {
   const [resultadosNoticias, setResultadosNoticias] = useState([]);
   const [resultadosArticulos, setResultadosArticulos] = useState([]);
   const [resultadosCursos, setResultadosCursos] = useState([]);
-  const [resultadosIncidencia, setResultadosIncidencia] = useState([]); // <-- NUEVO ESTADO
+  const [resultadosIncidencia, setResultadosIncidencia] = useState([]); 
   const [loading, setLoading] = useState(true);
 
   const PAGINAS_ESTATICAS = [
@@ -109,7 +109,6 @@ export default function ResultadosBusqueda() {
       setLoading(true);
       const terminoNormalizado = normalizarTexto(terminoBusqueda);
 
-      // 1. Filtrar páginas estáticas locales
       const paginasFiltradas = PAGINAS_ESTATICAS.filter(pagina => {
         const tituloMatch = normalizarTexto(pagina.titulo).includes(terminoNormalizado);
         const descMatch = normalizarTexto(pagina.descripcion).includes(terminoNormalizado);
@@ -119,7 +118,6 @@ export default function ResultadosBusqueda() {
       setResultadosPaginas(paginasFiltradas);
 
       try {
-        // 2. Ejecutar consultas concurrentes a Firestore para máxima velocidad (AHORA INCLUYE INCIDENCIA)
         const [snapNoticias, snapArticulos, snapCursos, snapIncidencia] = await Promise.all([
           getDocs(query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"))),
           getDocs(query(collection(db, "articulos_academicos"), orderBy("fechaPublicacion", "desc"))),
@@ -127,7 +125,6 @@ export default function ResultadosBusqueda() {
           getDocs(query(collection(db, "incidencia"), orderBy("fechaPublicacion", "desc")))
         ]);
         
-        // 3. Filtrar colección de Noticias
         const noticiasFiltradas = [];
         snapNoticias.forEach((doc) => {
           const data = doc.data();
@@ -144,7 +141,6 @@ export default function ResultadosBusqueda() {
           }
         });
 
-        // 4. Filtrar colección de Artículos Académicos
         const articulosFiltrados = [];
         snapArticulos.forEach((doc) => {
           const data = doc.data();
@@ -161,7 +157,6 @@ export default function ResultadosBusqueda() {
           }
         });
 
-        // 5. Filtrar colección de Cursos
         const cursosFiltrados = [];
         snapCursos.forEach((doc) => {
           const data = doc.data();
@@ -176,7 +171,6 @@ export default function ResultadosBusqueda() {
           }
         });
 
-        // 6. Filtrar colección de Incidencia (NUEVO)
         const incidenciaFiltrada = [];
         snapIncidencia.forEach((doc) => {
           const data = doc.data();
@@ -326,7 +320,7 @@ export default function ResultadosBusqueda() {
                     </section>
                   )}
 
-                  {/* SECCIÓN: INCIDENCIA INTERNACIONAL */}
+                  {/* SECCIÓN: INCIDENCIA INTERNACIONAL (APUNTA AL PDF) */}
                   {resultadosIncidencia.length > 0 && (
                     <section aria-labelledby="incidencia-results-title">
                       <h2 id="incidencia-results-title" className="text-sm font-black text-main-red uppercase tracking-[0.3em] mb-8 flex items-center gap-4">
@@ -340,8 +334,14 @@ export default function ResultadosBusqueda() {
 
                           return (
                             <article key={incidencia.id} role="listitem">
-                              {/* ASUMIENDO RUTA: Si existe una vista detalle de incidencia, ponla aquí. Si solo los listas en la página general, envíalos allá. */}
-                              <Link to={`/incidencia-internacional`} className="group bg-white p-4 rounded-2xl border border-gray-100 flex flex-col sm:flex-row gap-6 hover:shadow-xl hover:border-pale-blue transition-all duration-300 h-full" aria-label={`Ver documento: ${tituloTraducido}`}>
+                              {/* AQUÍ ESTÁ EL CAMBIO: Ahora es una etiqueta <a> apuntando al PDF */}
+                              <a 
+                                href={incidencia.archivoIncidenciaUrl || "/incidencia-internacional"} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="group bg-white p-4 rounded-2xl border border-gray-100 flex flex-col sm:flex-row gap-6 hover:shadow-xl hover:border-pale-blue transition-all duration-300 h-full" 
+                                aria-label={`Ver documento: ${tituloTraducido}`}
+                              >
                                 <div className="w-full sm:w-48 shrink-0 aspect-video bg-gray-50 rounded-xl overflow-hidden shadow-sm flex items-center justify-center">
                                   {incidencia.imagenPrincipalUrl ? (
                                     <img src={incidencia.imagenPrincipalUrl} alt="" aria-hidden="true" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
@@ -360,7 +360,7 @@ export default function ResultadosBusqueda() {
                                     {t('busqueda.ver_documento', 'Ver documento')} <span className="text-lg" aria-hidden="true">&rarr;</span>
                                   </span>
                                 </div>
-                              </Link>
+                              </a>
                             </article>
                           );
                         })}
