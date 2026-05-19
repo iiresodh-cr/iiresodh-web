@@ -1,7 +1,12 @@
 // src/pages/NotFound.jsx
 import { Link } from "react-router-dom";
 
+// IMPORTACIÓN PARA i18n
+import { useTranslation } from 'react-i18next';
+
 export default function NotFound() {
+  const { t } = useTranslation(); // HOOK DE TRADUCCIÓN
+
   return (
     <div className="bg-white min-h-screen flex flex-col">
       <div className="relative overflow-hidden grow flex items-center justify-center py-20">
@@ -16,18 +21,17 @@ export default function NotFound() {
                 404
               </h1>
               <h2 className="text-2xl md:text-3xl font-extrabold text-main-blue mb-6 uppercase tracking-tight">
-                Página no encontrada
+                {t('not_found.titulo', 'Página no encontrada')}
               </h2>
               <p className="text-lg text-gray-600 mb-10 leading-relaxed">
-                Lo sentimos, el recurso que intentas buscar no existe o ha sido movido. 
-                Utiliza el menú de navegación o regresa a nuestra página principal.
+                {t('not_found.descripcion', 'Lo sentimos, el recurso que intentas buscar no existe o ha sido movido. Utiliza el menú de navegación o regresa a nuestra página principal.')}
               </p>
               
               <Link 
                 to="/" 
                 className="inline-block bg-main-blue hover:bg-light-blue text-white font-bold py-4 px-10 rounded-full transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
               >
-                Volver al Inicio
+                {t('not_found.btn_volver', 'Volver al Inicio')}
               </Link>
             </div>
 

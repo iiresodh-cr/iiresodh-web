@@ -510,5 +510,10 @@
     "p_cooperacion_desc": "International cooperation projects and alliances.",
     "p_donaciones_tit": "Donations",
     "p_donaciones_desc": "Support our cause and contribute to the defense of human rights."
+  },
+  "not_found": {
+    "titulo": "Page not found",
+    "descripcion": "Sorry, the resource you are looking for does not exist or has been moved. Use the navigation menu or return to our homepage.",
+    "btn_volver": "Back to Home"
   }
 }

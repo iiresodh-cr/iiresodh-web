@@ -510,5 +510,10 @@
     "p_cooperacion_desc": "Projets de coopération internationale et alliances.",
     "p_donaciones_tit": "Dons",
     "p_donaciones_desc": "Soutenez notre cause et contribuez à la défense des droits de l'homme."
+  },
+  "not_found": {
+    "titulo": "Page introuvable",
+    "descripcion": "Désolé, la ressource que vous recherchez n'existe pas ou a été déplacée. Utilisez le menu de navigation ou retournez à notre page d'accueil.",
+    "btn_volver": "Retour à l'accueil"
   }
 }

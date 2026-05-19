@@ -510,5 +510,10 @@
     "p_cooperacion_desc": "Proyectos y alianzas de cooperación a nivel internacional.",
     "p_donaciones_tit": "Donaciones",
     "p_donaciones_desc": "Apoya nuestra causa y contribuye a la defensa de los derechos humanos."
+  },
+  "not_found": {
+    "titulo": "Página no encontrada",
+    "descripcion": "Lo sentimos, el recurso que intentas buscar no existe o ha sido movido. Utiliza el menú de navegación o regresa a nuestra página principal.",
+    "btn_volver": "Volver al Inicio"
   }
 }
