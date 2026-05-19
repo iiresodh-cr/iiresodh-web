@@ -1,41 +1,60 @@
 // src/App.jsx
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 
-// Componentes Globales
+// Importaciones de MUI para el estado de carga
+import { CircularProgress } from "@mui/material";
+
+// Componentes Globales (Estos NO se hacen lazy porque se necesitan inmediatamente en la pantalla)
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import Login from "./components/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PidaChat from "./components/PidaChat";
 
-// Páginas Actuales
-import Home from "./pages/Home";
-import QuienesSomos from "./pages/QuienesSomos";
-import LitigioEstrategico from "./pages/LitigioEstrategico";
-import Noticias from "./pages/Noticias";
-import Donaciones from "./pages/Donaciones";
-import NoticiaDetalle from "./pages/NoticiaDetalle";
-import ResultadosBusqueda from "./pages/ResultadosBusqueda";
-import Privacidad from "./pages/Privacidad";
-import AdminPanel from "./pages/AdminPanel";
-import NotFound from "./pages/NotFound"; 
-import InformesAnuales from "./pages/InformesAnuales";
+// ==========================================
+// CODE SPLITTING (Carga Perezosa de Páginas)
+// ==========================================
+const Login = lazy(() => import("./components/Login"));
+const Home = lazy(() => import("./pages/Home"));
+const QuienesSomos = lazy(() => import("./pages/QuienesSomos"));
+const LitigioEstrategico = lazy(() => import("./pages/LitigioEstrategico"));
+const Noticias = lazy(() => import("./pages/Noticias"));
+const Donaciones = lazy(() => import("./pages/Donaciones"));
+const NoticiaDetalle = lazy(() => import("./pages/NoticiaDetalle"));
+const ResultadosBusqueda = lazy(() => import("./pages/ResultadosBusqueda"));
+const Privacidad = lazy(() => import("./pages/Privacidad"));
+const AdminPanel = lazy(() => import("./pages/AdminPanel"));
+const NotFound = lazy(() => import("./pages/NotFound")); 
+const InformesAnuales = lazy(() => import("./pages/InformesAnuales"));
+const PaginaPais = lazy(() => import("./pages/PaginaPais"));
+const Cursos = lazy(() => import("./pages/Cursos"));
+const Equipo = lazy(() => import("./pages/Equipo"));
+const ArticulosAcademicos = lazy(() => import("./pages/ArticulosAcademicos"));
+const ArticuloDetalle = lazy(() => import("./pages/ArticuloDetalle"));
+const Tienda = lazy(() => import("./pages/Tienda"));
+const Incidencia = lazy(() => import("./pages/Incidencia"));
 
-// Nuevas Páginas y Componente Dinámico
-import PaginaPais from "./pages/PaginaPais";
-import Cursos from "./pages/Cursos";
-import Equipo from "./pages/Equipo";
-import ArticulosAcademicos from "./pages/ArticulosAcademicos";
-import ArticuloDetalle from "./pages/ArticuloDetalle";
-import Tienda from "./pages/Tienda";
-import Incidencia from "./pages/Incidencia";
+// ==========================================
+// PANTALLA DE CARGA GENÉRICA
+// ==========================================
+const FallbackLoader = () => (
+  <div className="min-h-[70vh] flex flex-col items-center justify-center bg-white gap-4">
+    <CircularProgress size={50} thickness={4} sx={{ color: '#1D3557' }} />
+    <span className="text-main-blue font-bold text-xs uppercase tracking-widest animate-pulse">
+      Cargando...
+    </span>
+  </div>
+);
 
 function PublicLayout() {
   return (
     <div className="flex flex-col min-h-screen relative">
       <Navbar />
       <div className="grow">
-        <Outlet />
+        {/* El Suspense envuelve solo el contenido para no desaparecer el Navbar */}
+        <Suspense fallback={<FallbackLoader />}>
+          <Outlet />
+        </Suspense>
       </div>
       <Footer />
       
@@ -56,6 +75,7 @@ function App() {
           <Route path="/informes-anuales" element={<InformesAnuales />} />
           <Route path="/equipo" element={<Equipo />} />
           <Route path="/litigio-estrategico" element={<LitigioEstrategico />} />
+          
           {/* RUTAS DINÁMICAS POR PAÍS */}
           <Route path="/incidencia-internacional/canada" element={<PaginaPais paisKey="canada" />} />
           <Route path="/incidencia-internacional/mexico" element={<PaginaPais paisKey="mexico" />} />
@@ -80,10 +100,26 @@ function App() {
         </Route>
 
         {/* RUTAS SIN LAYOUT (Sin Navbar ni Footer) */}
-        <Route path="/login" element={<Login />} />
+        <Route 
+          path="/login" 
+          element={
+            <Suspense fallback={<FallbackLoader />}>
+              <Login />
+            </Suspense>
+          } 
+        />
         
         {/* RUTAS PRIVADAS (Panel Administrativo) */}
-        <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute>
+              <Suspense fallback={<FallbackLoader />}>
+                <AdminPanel />
+              </Suspense>
+            </ProtectedRoute>
+          } 
+        />
         
       </Routes>
     </BrowserRouter>
