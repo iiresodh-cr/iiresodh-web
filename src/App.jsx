@@ -33,6 +33,7 @@ const ArticulosAcademicos = lazy(() => import("./pages/ArticulosAcademicos"));
 const ArticuloDetalle = lazy(() => import("./pages/ArticuloDetalle"));
 const Tienda = lazy(() => import("./pages/Tienda"));
 const Incidencia = lazy(() => import("./pages/Incidencia"));
+const Feedback = lazy(() => import("./pages/Feedback")); // <- NUEVA RUTA QA
 
 // ==========================================
 // PANTALLA DE CARGA GENÉRICA
@@ -95,6 +96,9 @@ function App() {
           
           {/* TIENDA */}
           <Route path="/tienda/:slug?" element={<Tienda />} />
+
+          {/* QA Y FEEDBACK INTERNO */}
+          <Route path="/qa-feedback" element={<Feedback />} />
           
           <Route path="*" element={<NotFound />} />
         </Route>
