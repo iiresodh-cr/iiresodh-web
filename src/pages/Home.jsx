@@ -374,16 +374,23 @@ export default function Home() {
             {/* Contenedor principal sin bordes, sin sombras, totalmente plano */}
             <div className="w-full bg-gray-50/50 py-12 px-6 lg:px-12 flex flex-col-reverse lg:flex-row items-center gap-12 lg:gap-16">
               
-              {/* PANEL DE INFORMACIÓN (IZQUIERDA) - Sin tarjeta, puro texto institucional */}
-              <div className="w-full lg:w-1/3 flex flex-col justify-center text-left">
+              {/* PANEL DE INFORMACIÓN (IZQUIERDA) - Mucho más delgado (lg:w-1/4) */}
+              <div className="w-full lg:w-1/4 flex flex-col justify-center text-left">
                 {(() => {
                   const sedeActiva = sedes.find(s => s.id === sedeActivaId) || sedes.find(s => s.id === 'cr');
+                  
+                  // Lógica dinámica para la etiqueta
+                  const esCostaRica = sedeActiva.id === 'cr';
+                  const textoEtiqueta = esCostaRica 
+                    ? t('quienes_somos.sede_principal', 'Sede Principal') 
+                    : t('quienes_somos.oficina_regional', 'Oficina Regional');
+
                   return (
                     <div className="flex flex-col justify-center min-h-60">
                       <div className="flex items-center gap-3 mb-6">
                         <div className="w-2.5 h-2.5 rounded-full bg-main-red animate-pulse"></div>
                         <span className="text-xs font-bold text-main-red uppercase tracking-widest">
-                          {t('quienes_somos.oficina_regional', 'Oficina Regional')}
+                          {textoEtiqueta}
                         </span>
                       </div>
                       <h3 className="text-3xl md:text-4xl font-black text-main-blue mb-6 leading-tight">
@@ -397,8 +404,8 @@ export default function Home() {
                 })()}
               </div>
 
-              {/* MAPA (DERECHA) - Contenedor amplio, sin sombras, escala del mapa ajustada */}
-              <div className="w-full lg:w-2/3 flex items-center justify-center relative min-h-87.5">
+              {/* MAPA (DERECHA) - Mucho más ancho (lg:w-3/4) y sin límites de max-width */}
+              <div className="w-full lg:w-3/4 flex items-center justify-center relative min-h-87.5">
                 <ComposableMap 
                   projection="geoMercator" 
                   projectionConfig={{ scale: 280, center: [-80, 20] }} 
@@ -410,7 +417,7 @@ export default function Home() {
                       <Geography 
                         key={geo.rsmKey} 
                         geography={geo} 
-                        fill="#E5E7EB" /* Color gris muy sutil y serio para los continentes */
+                        fill="#E5E7EB" 
                         stroke="#FFFFFF" 
                         strokeWidth={0.5} 
                         style={{ default: { outline: "none" }, hover: { fill: "#D1D5DB", outline: "none" }, pressed: { outline: "none" } }} 
