@@ -361,10 +361,10 @@ export default function Home() {
             
             {/* Cabecera idéntica al estilo de los pilares (Litigio Estratégico) */}
             <div className="mb-8 text-left">
-              <h3 className="text-2xl font-bold text-main-blue mb-1">
+              <h3 className="text-2xl font-bold text-main-blue mb-2">
                 {t('quienes_somos.sedes_titulo', 'Sedes Oficiales')}
               </h3>
-              <p className="text-xs text-gray-400 font-light">
+              <p className="text-gray-500 font-light text-base mb-6">
                 {t('quienes_somos.sedes_subtitulo', 'Pasa el ratón sobre los puntos rojos en el mapa')}
               </p>
             </div>
