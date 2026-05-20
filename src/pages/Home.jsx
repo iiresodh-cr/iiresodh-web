@@ -1,5 +1,5 @@
 // src/pages/Home.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { collection, query, orderBy, limit, getDocs, where, doc, getDoc } from "firebase/firestore";
 import { db, functions } from "../firebase/config";
 import { httpsCallable } from "firebase/functions";
@@ -10,6 +10,10 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, EffectFade, Navigation } from 'swiper/modules'; 
 import 'swiper/css';
 import 'swiper/css/effect-fade';
+
+// Importaciones para el Mapa Interactivo de Sedes
+import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
+import { Paper } from "@mui/material";
 
 // Imágenes y Recursos
 import isotipoFondo from "../assets/Isotipo-color-512.webp"; 
@@ -24,6 +28,8 @@ import { Button } from "@mui/material";
 // IMPORTACIONES PARA i18n Y TRADUCCIÓN DINÁMICA
 import { useTranslation } from 'react-i18next';
 import { obtenerTextoTraducido } from "../utils/traductorDinamico";
+
+const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 export const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
@@ -60,6 +66,19 @@ export default function Home() {
     cifra2: "", texto2: "",
     cifra3: "", texto3: ""
   });
+
+  // Estados y Refs para el Mapa de Sedes
+  const [hoveredSede, setHoveredSede] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
+  const mapContainerRef = useRef(null);
+
+  const sedes = [
+    { id: 'ca', pais: t('quienes_somos.sede_ca_pais', 'Canadá'), coords: [-71.1743, 46.8033], info: t('quienes_somos.sede_ca_info', 'Atención virtual o presencial previa cita en la ciudad de Lévis, Québec. En Toronto vinculado con Waldman & Associates. Email: contacto@iiresodh.org') },
+    { id: 'mx', pais: t('quienes_somos.sede_mx_pais', 'México'), coords: [-99.1332, 19.4326], info: t('quienes_somos.sede_mx_info', 'Atención virtual o presencial previa cita. Email: contacto@iiresodh.org') },
+    { id: 'gt', pais: t('quienes_somos.sede_gt_pais', 'Guatemala'), coords: [-90.5069, 14.6349], info: t('quienes_somos.sede_gt_info', 'Diagonal 6 12-42, Edificio Design Center. Oficina No. 506, Torre 1, Zona 10. Ciudad de Guatemala. Teléfono: +502 5557 7466') },
+    { id: 'cr', pais: t('quienes_somos.sede_cr_pais', 'Costa Rica'), coords: [-84.0833, 9.9333], info: t('quienes_somos.sede_cr_info', 'Centro Corporativo San Rafael, nivel 3. San Rafael de Escazú, San José. CP 10201. Teléfono: +506 4703 5727') },
+    { id: 'co', pais: t('quienes_somos.sede_co_pais', 'Colombia'), coords: [-74.0636, 4.6243], info: t('quienes_somos.sede_co_info', 'Carrera. 11C No. 117-05. Oficina 5. Bogotá, Colombia. Teléfono: Bogotá +7461964. Móvil: +57 301 4844324') }
+  ];
 
   useEffect(() => {
     const fetchCifras = async () => {
@@ -109,10 +128,33 @@ export default function Home() {
       setContacto({ nombre: "", correo: "", mensaje: "" });
       setTimeout(() => setEstadoEnvio("idle"), 5000);
     } catch (error) {
-      console.error("Error enviando correo:", error);
+      console.error("Error sending email:", error);
       setEstadoEnvio("error");
       setTimeout(() => setEstadoEnvio("idle"), 5000);
     }
+  };
+
+  // Funciones del Mapa Interactivo
+  const handleHover = (sede, e) => {
+    if (!mapContainerRef.current) return;
+    const rect = mapContainerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const leftPos = x > rect.width / 2 ? x - 260 : x + 20;
+    const topPos = y < 150 ? y + 20 : y - 140;
+    setTooltipPos({ top: topPos, left: leftPos });
+    setHoveredSede(sede);
+  };
+
+  const showTooltipKeyboard = (sede, target) => {
+    const rect = target.getBoundingClientRect();
+    const mapRect = mapContainerRef.current.getBoundingClientRect();
+    const x = rect.left + rect.width / 2 - mapRect.left;
+    const y = rect.top + rect.height / 2 - mapRect.top;
+    const leftPos = x > mapRect.width / 2 ? x - 260 : x + 20;
+    const topPos = y < 150 ? y + 20 : y - 140;
+    setTooltipPos({ top: topPos, left: leftPos });
+    setHoveredSede(sede);
   };
 
   return (
@@ -120,17 +162,15 @@ export default function Home() {
       <div className="relative grow pb-20">
         <div className="bg-watermark" aria-hidden="true"></div>
 
-        <div className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-4 md:pt-6 pb-12 flex flex-col">
+        <div className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-4 md:pt-6 pb-12 flex flex-col gap-16 md:gap-24">
           
           {/* HERO SECTION */}
-          <section className="relative pt-2 pb-12 lg:pt-6 lg:pb-24 overflow-visible">
+          <section className="relative pt-2 pb-4 lg:pt-6 lg:pb-12 overflow-visible">
             <div className="absolute top-0 right-0 -mr-24 -mt-16 opacity-10 pointer-events-none hidden md:block">
-              {/* Solo dejamos optimizado el isotipo, que ya era un img */}
               <img src={isotipoFondo} alt="" fetchPriority="high" className="w-200 object-cover" />
             </div>
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center text-left">
-              
               <div className="lg:col-span-8 max-w-4xl">
                 <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-black text-[#0B1E40] leading-[1.05] mb-6 tracking-tighter">
                   {t('home.hero_titulo_1', 'Defendiendo la')}<br className="hidden md:block"/>
@@ -170,12 +210,11 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-
             </div>
           </section>
 
           {/* CARRUSEL DE NOTICIAS */}
-          <section id="noticias-recientes" className="pt-8 pb-12 scroll-mt-24 border-t border-gray-100 relative">
+          <section id="noticias-recientes" className="pt-8 scroll-mt-24 border-t border-gray-100 relative">
             <div className="flex items-end justify-between mb-8">
               <div>
                 <h2 className="text-3xl md:text-4xl font-black text-main-blue tracking-tight">
@@ -217,15 +256,12 @@ export default function Home() {
                     return (
                       <SwiperSlide key={noticia.id}>
                         <article className="group relative w-full h-125 md:h-150 lg:h-160 overflow-hidden bg-main-blue cursor-pointer" onClick={() => navigate(`/noticias/${noticia.slug || noticia.id}`, { state: { noticiaPreCargada: noticia } })}>
-                          
-                          {/* DEVUELTO A DIV CON BACKGROUND-IMAGE PARA EVITAR DEFORMACIONES */}
                           <div 
                             className="absolute inset-0 w-full h-full bg-cover bg-top bg-no-repeat transition-transform duration-4000 group-hover:scale-105 bg-gray-200"
                             style={{ backgroundImage: `url(${noticia.imagenPrincipalUrl})` }}
                             role="img"
                             aria-label={tituloTraducido || "Imagen de la noticia"}
                           />
-                          
                           <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-1000"></div>
                           <div className="absolute bottom-4 left-4 right-4 md:bottom-10 md:left-10 md:right-auto w-[90%] md:w-[75%] lg:w-[65%] h-auto min-h-80 md:min-h-96 lg:min-h-112 p-6 md:p-10 lg:p-12 bg-white/30 backdrop-blur-xl shadow-2xl rounded-3xl border border-white/30 z-10 flex flex-col justify-end transform transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-main-blue/20">
                             <div className="flex flex-wrap gap-2 mb-4 md:mb-6">
@@ -247,7 +283,6 @@ export default function Home() {
                   })}
                 </Swiper>
 
-                {/* CONTROLES DEL CARRUSEL */}
                 <button className="swiper-btn-prev absolute top-1/2 left-2 md:-left-6 z-20 -translate-y-1/2 w-10 h-10 md:w-14 md:h-14 bg-white/90 shadow-xl rounded-full text-main-red hover:bg-main-red hover:text-white hover:scale-110 transition-all duration-300 outline-none flex items-center justify-center cursor-pointer" aria-label="Ver noticia anterior">
                   <svg className="w-5 h-5 md:w-7 md:h-7" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
                 </button>
@@ -259,9 +294,8 @@ export default function Home() {
           </section>
 
           {/* BENTO BOX PILARES Y FORMULARIO DE CONTACTO */}
-          <div className="pt-12 pb-8 bg-white border-t border-gray-100">
+          <section className="pt-12 bg-white border-t border-gray-100">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-              
               <div className="lg:col-span-7 flex flex-col">
                 <div className="mb-8">
                   <span className="text-main-red font-black tracking-[0.3em] uppercase text-xs mb-3 block">{t('home.nuestra_labor', 'Nuestra Labor')}</span>
@@ -321,9 +355,50 @@ export default function Home() {
                   </form>
                 </div>
               </div>
-
             </div>
-          </div>
+          </section>
+
+          {/* OPTIMIZACIÓN EDITORIAL: MAPA DE SEDES INTERNACIONALES COMO CIERRE DE HOME */}
+          <section id="sedes-oficiales" className="pt-12 border-t border-gray-100 relative scroll-mt-24">
+            <div className="flex flex-col mb-8 text-left">
+              <span className="text-main-red font-black tracking-[0.3em] uppercase text-xs mb-3 block">
+                {t('quienes_somos.presencia_etiqueta', 'Nuestra Presencia')}
+              </span>
+              <h2 className="text-3xl md:text-4xl font-black text-main-blue tracking-tight">
+                {t('quienes_somos.sedes_titulo', 'Sedes Oficiales')}
+              </h2>
+              <div className="w-20 h-1.5 bg-main-red mt-4 rounded-full"></div>
+              <p className="text-sm text-gray-400 mt-4 font-light">{t('quienes_somos.sedes_subtitulo', 'Pasa el ratón sobre los puntos rojos en el mapa')}</p>
+            </div>
+
+            <Paper elevation={0} className="w-full relative bg-gray-50 rounded-3xl p-4 md:p-8 border border-gray-100 flex flex-col items-center justify-center h-full min-h-100" sx={{ borderRadius: '2.5rem' }}>
+              <div ref={mapContainerRef} className="w-full grow flex items-center justify-center relative">
+                <ComposableMap projection="geoMercator" projectionConfig={{ scale: 300, center: [-85, 30] }} className="w-full h-auto max-h-96" aria-label="Mapa interactivo de sedes internacionales">
+                  <Geographies geography={geoUrl}>
+                    {({ geographies }) => geographies.map((geo) => (
+                      <Geography key={geo.rsmKey} geography={geo} fill="#457B9D" stroke="#FFFFFF" strokeWidth={0.5} style={{ default: { outline: "none" }, hover: { fill: "#1D3557", outline: "none" } }} />
+                    ))}
+                  </Geographies>
+                  {sedes.map((sede) => (
+                    <Marker key={sede.id} coordinates={sede.coords}>
+                      <g tabIndex="0" role="button" aria-label={`Sede en ${sede.pais}`} onMouseEnter={(e) => handleHover(sede, e)} onMouseLeave={() => setHoveredSede(null)} onFocus={(e) => showTooltipKeyboard(sede, e.target)} onBlur={() => setHoveredSede(null)} className="focus:outline-none cursor-pointer">
+                        <circle r={25} fill="transparent" className="cursor-pointer" />
+                        <circle r={25} fill="#B92F32" fillOpacity={0.1} className="animate-pulse pointer-events-none" />
+                        <circle r={10} fill="#B92F32" stroke="#FFFFFF" strokeWidth={2} className="pointer-events-none" />
+                      </g>
+                    </Marker>
+                  ))}
+                </ComposableMap>
+                
+                {hoveredSede && (
+                  <div role="tooltip" className="absolute z-50 bg-white p-4 rounded-xl flex flex-col gap-2 w-60 shadow-xl border border-gray-100 pointer-events-none text-left" style={{ top: `${tooltipPos.top}px`, left: `${tooltipPos.left}px` }}>
+                    <h4 className="text-lg font-semibold text-main-red uppercase tracking-tight border-b border-gray-50 pb-2">{hoveredSede.pais}</h4>
+                    <p className="text-xs text-gray-700 leading-relaxed font-medium">{hoveredSede.info}</p>
+                  </div>
+                )}
+              </div>
+            </Paper>
+          </section>
 
         </div>
       </div>
