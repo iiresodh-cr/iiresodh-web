@@ -1,6 +1,6 @@
 // src/pages/Feedback.jsx
 import { useState, useEffect } from "react";
-import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, doc } from "firebase/firestore";
 import { db } from "../firebase/config";
 import PageHeader from "../components/PageHeader";
 
@@ -39,11 +39,11 @@ export default function Feedback() {
         nombre: nombre.trim(),
         observacion: observacion.trim(),
         fecha: serverTimestamp(),
-        estado: "Pendiente" // Por si luego quieres marcar cuáles ya arreglaste
+        estado: "Pendiente" 
       });
       
       setEstadoEnvio("exito");
-      setObservacion(""); // Limpiamos solo la observación, dejamos el nombre por si quiere enviar otra
+      setObservacion(""); 
       setTimeout(() => setEstadoEnvio("idle"), 4000);
     } catch (error) {
       console.error("Error al guardar feedback:", error);
@@ -52,7 +52,18 @@ export default function Feedback() {
     }
   };
 
-  // Formatear la fecha para que se vea bonita
+  // NUEVA FUNCIÓN: Cambiar de Pendiente a Cumplido
+  const toggleEstado = async (id, estadoActual) => {
+    const nuevoEstado = estadoActual === "Cumplido" ? "Pendiente" : "Cumplido";
+    try {
+      const docRef = doc(db, "feedback_qa", id);
+      await updateDoc(docRef, { estado: nuevoEstado });
+    } catch (error) {
+      console.error("Error al actualizar el estado:", error);
+    }
+  };
+
+  // Formatear la fecha
   const formatearFecha = (timestamp) => {
     if (!timestamp) return "Justo ahora...";
     const date = timestamp.toDate();
@@ -75,7 +86,7 @@ export default function Feedback() {
           
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
             
-            {/* FORMULARIO DE ENVÍO (Izquierda) */}
+            {/* FORMULARIO DE ENVÍO */}
             <div className="lg:col-span-5 sticky top-24">
               <div className="mb-6">
                 <span className="text-main-red font-black tracking-[0.2em] uppercase text-xs mb-2 block">
@@ -127,7 +138,7 @@ export default function Feedback() {
               <ToastAlert open={estadoEnvio === "error"} message="Error de conexión." isError={true} onClose={() => setEstadoEnvio("idle")} />
             </div>
 
-            {/* MURO DE OBSERVACIONES (Derecha) */}
+            {/* MURO DE OBSERVACIONES */}
             <div className="lg:col-span-7 flex flex-col">
               <div className="mb-6 flex justify-between items-end border-b border-gray-100 pb-4">
                 <h3 className="text-xl font-bold text-main-blue">
@@ -141,27 +152,41 @@ export default function Feedback() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-4">
-                  {listaFeedback.map((item) => (
-                    <div key={item.id} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow animate-fade-in-up">
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-main-blue/10 text-main-blue flex items-center justify-center font-black text-lg">
-                            {item.nombre.charAt(0).toUpperCase()}
+                  {listaFeedback.map((item) => {
+                    // Determinar colores según el estado
+                    const esCumplido = item.estado === "Cumplido";
+                    const colorBoton = esCumplido 
+                      ? "bg-green-100 text-green-800 hover:bg-green-200 border-green-200" 
+                      : "bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border-yellow-200";
+
+                    return (
+                      <div key={item.id} className={`bg-white border ${esCumplido ? 'border-green-100 opacity-60' : 'border-gray-100'} rounded-2xl p-6 shadow-sm hover:shadow-md transition-all animate-fade-in-up`}>
+                        <div className="flex justify-between items-start mb-3 gap-2">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-lg ${esCumplido ? 'bg-green-50 text-green-600' : 'bg-main-blue/10 text-main-blue'}`}>
+                              {item.nombre.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <span className="block font-bold text-main-blue leading-none mb-1">{item.nombre}</span>
+                              <span className="text-xs text-gray-400 font-medium">{formatearFecha(item.fecha)}</span>
+                            </div>
                           </div>
-                          <div>
-                            <span className="block font-bold text-main-blue leading-none mb-1">{item.nombre}</span>
-                            <span className="text-xs text-gray-400 font-medium">{formatearFecha(item.fecha)}</span>
-                          </div>
+                          
+                          {/* ETIQUETA INTERACTIVA */}
+                          <button 
+                            onClick={() => toggleEstado(item.id, item.estado || "Pendiente")}
+                            className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full cursor-pointer transition-colors border ${colorBoton}`}
+                            title="Haz clic para cambiar el estado"
+                          >
+                            {item.estado || "Pendiente"}
+                          </button>
                         </div>
-                        <span className="bg-yellow-100 text-yellow-800 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">
-                          {item.estado || "Pendiente"}
-                        </span>
+                        <p className={`text-gray-700 font-light text-sm md:text-base whitespace-pre-wrap ml-13 ${esCumplido ? 'line-through text-gray-400' : ''}`}>
+                          {item.observacion}
+                        </p>
                       </div>
-                      <p className="text-gray-700 font-light text-sm md:text-base whitespace-pre-wrap ml-13">
-                        {item.observacion}
-                      </p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
