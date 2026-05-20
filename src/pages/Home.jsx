@@ -356,26 +356,24 @@ export default function Home() {
             </div>
           </section>
 
-          {/* OPTIMIZACIÓN EDITORIAL: MAPA DE SEDES INTERNACIONALES (Master-Detail, Compacto y Amplio) */}
-          <section id="sedes-oficiales" className="pt-8 border-t border-gray-100 relative scroll-mt-24">
+          {/* SECCIÓN SEDES: ESTILO IGUAL A BENTO BOX, MÁS ANCHO Y SIN AIRE */}
+          <section id="sedes-oficiales" className="pt-4 border-t border-gray-100 relative scroll-mt-24">
             
-            {/* Título puramente informativo, jerarquía baja y sin aire */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-2">
-              <div>
-                <h3 className="text-xl font-bold text-main-blue">
-                  {t('quienes_somos.sedes_titulo', 'Sedes Oficiales')}
-                </h3>
-                <p className="text-xs text-gray-500 mt-1">
-                  {t('quienes_somos.sedes_subtitulo', 'Pasa el ratón sobre un punto en el mapa para ver los detalles.')}
-                </p>
-              </div>
+            {/* Cabecera idéntica al estilo de los pilares (Litigio Estratégico) */}
+            <div className="mb-8 text-left">
+              <h3 className="text-2xl font-bold text-main-blue mb-1">
+                {t('quienes_somos.sedes_titulo', 'Sedes Oficiales')}
+              </h3>
+              <p className="text-xs text-gray-400 font-light">
+                {t('quienes_somos.sedes_subtitulo', 'Pasa el ratón sobre los puntos rojos en el mapa')}
+              </p>
             </div>
 
-            {/* Contenedor sin padding lateral extra para que sea lo más ancho posible */}
-            <div className="w-full flex flex-col-reverse lg:flex-row items-center gap-6 lg:gap-10">
+            {/* Contenedor Ultra-Ancho: 20% texto / 80% mapa */}
+            <div className="w-full flex flex-col-reverse lg:flex-row items-center gap-10">
               
-              {/* PANEL DE INFORMACIÓN (IZQUIERDA) */}
-              <div className="w-full lg:w-1/4 flex flex-col justify-center text-left">
+              {/* PANEL DE INFORMACIÓN (Delgado lg:w-1/5) */}
+              <div className="w-full lg:w-1/5 flex flex-col justify-center text-left">
                 {(() => {
                   const sedeActiva = sedes.find(s => s.id === sedeActivaId) || sedes.find(s => s.id === 'cr');
                   const esCostaRica = sedeActiva.id === 'cr';
@@ -384,14 +382,14 @@ export default function Home() {
                     : t('quienes_somos.oficina_regional', 'Oficina Regional');
 
                   return (
-                    <div className="flex flex-col justify-center">
-                      <div className="flex items-center gap-2 mb-3">
+                    <div className="flex flex-col justify-center animate-fade-in">
+                      <div className="flex items-center gap-2 mb-2">
                         <div className="w-2 h-2 rounded-full bg-main-red animate-pulse"></div>
                         <span className="text-[10px] font-bold text-main-red uppercase tracking-widest">
                           {textoEtiqueta}
                         </span>
                       </div>
-                      <h4 className="text-2xl font-extrabold text-main-blue mb-3 leading-tight">
+                      <h4 className="text-xl font-extrabold text-main-blue mb-3 leading-tight uppercase">
                         {sedeActiva.pais}
                       </h4>
                       <p className="text-gray-600 font-light leading-relaxed text-sm">
@@ -402,25 +400,24 @@ export default function Home() {
                 })()}
               </div>
 
-              {/* MAPA (DERECHA) - Lienzo alto (600) para no cortar continentes, escala ajustada */}
-              <div className="w-full lg:w-3/4 flex items-center justify-center relative">
+              {/* MAPA (Gigante lg:w-4/5) - Proporción 1000x500 para máximo ancho */}
+              <div className="w-full lg:w-4/5 flex items-center justify-end relative">
                 <ComposableMap 
                   projection="geoMercator" 
-                  projectionConfig={{ scale: 300, center: [-80, 15] }} 
-                  width={900} 
-                  height={600} 
+                  projectionConfig={{ scale: 380, center: [-84, 22] }} 
+                  width={1000} 
+                  height={500} 
                   className="w-full h-auto outline-none" 
-                  aria-label="Mapa interactivo de sedes internacionales"
                 >
                   <Geographies geography={geoUrl}>
                     {({ geographies }) => geographies.map((geo) => (
                       <Geography 
                         key={geo.rsmKey} 
                         geography={geo} 
-                        fill="#E5E7EB" 
+                        fill="#F3F4F6" 
                         stroke="#FFFFFF" 
                         strokeWidth={0.5} 
-                        style={{ default: { outline: "none" }, hover: { fill: "#D1D5DB", outline: "none" }, pressed: { outline: "none" } }} 
+                        style={{ default: { outline: "none" }, hover: { fill: "#E5E7EB", outline: "none" } }} 
                       />
                     ))}
                   </Geographies>
@@ -429,23 +426,19 @@ export default function Home() {
                     return (
                       <Marker key={sede.id} coordinates={sede.coords}>
                         <g 
-                          tabIndex="0" 
-                          role="button" 
-                          aria-label={`Sede en ${sede.pais}`} 
                           onMouseEnter={() => setSedeActivaId(sede.id)} 
-                          onFocus={() => setSedeActivaId(sede.id)} 
-                          className="focus:outline-none cursor-pointer group"
+                          className="focus:outline-none cursor-pointer"
                         >
-                          <circle r={35} fill="transparent" className="cursor-pointer outline-none" />
+                          <circle r={30} fill="transparent" />
                           {isActive && (
-                            <circle r={25} fill="#1D3557" fillOpacity={0.15} className="animate-pulse pointer-events-none" />
+                            <circle r={20} fill="#1D3557" fillOpacity={0.15} className="animate-pulse" />
                           )}
                           <circle 
-                            r={isActive ? 12 : 8} 
+                            r={isActive ? 10 : 7} 
                             fill={isActive ? "#1D3557" : "#B92F32"} 
                             stroke="#FFFFFF" 
-                            strokeWidth={isActive ? 3 : 2} 
-                            className="pointer-events-none transition-all duration-300" 
+                            strokeWidth={2} 
+                            className="transition-all duration-300" 
                           />
                         </g>
                       </Marker>
