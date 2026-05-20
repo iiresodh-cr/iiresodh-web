@@ -358,7 +358,7 @@ export default function Home() {
 
           {/* OPTIMIZACIÓN EDITORIAL: MAPA DE SEDES INTERNACIONALES (Master-Detail, Diseño Corporativo Plano) */}
           <section id="sedes-oficiales" className="pt-16 border-t border-gray-100 relative scroll-mt-24">
-            <div className="flex flex-col mb-12 text-left">
+            <div className="flex flex-col mb-8 text-left">
               <span className="text-main-red font-bold tracking-[0.3em] uppercase text-xs mb-3 block">
                 {t('quienes_somos.presencia_etiqueta', 'Nuestra Presencia')}
               </span>
@@ -371,32 +371,32 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Contenedor principal sin bordes, sin sombras, totalmente plano */}
-            <div className="w-full bg-gray-50/50 py-12 px-6 lg:px-12 flex flex-col-reverse lg:flex-row items-center gap-12 lg:gap-16">
+            {/* Contenedor principal: Totalmente limpio, sin fondo gris y con menos padding vertical */}
+            <div className="w-full flex flex-col-reverse lg:flex-row items-center gap-10 lg:gap-16">
               
-              {/* PANEL DE INFORMACIÓN (IZQUIERDA) - Mucho más delgado (lg:w-1/4) */}
+              {/* PANEL DE INFORMACIÓN (IZQUIERDA) - Más delgado (lg:w-1/4) */}
               <div className="w-full lg:w-1/4 flex flex-col justify-center text-left">
                 {(() => {
                   const sedeActiva = sedes.find(s => s.id === sedeActivaId) || sedes.find(s => s.id === 'cr');
                   
-                  // Lógica dinámica para la etiqueta
                   const esCostaRica = sedeActiva.id === 'cr';
                   const textoEtiqueta = esCostaRica 
                     ? t('quienes_somos.sede_principal', 'Sede Principal') 
                     : t('quienes_somos.oficina_regional', 'Oficina Regional');
 
                   return (
-                    <div className="flex flex-col justify-center min-h-60">
-                      <div className="flex items-center gap-3 mb-6">
+                    <div className="flex flex-col justify-center">
+                      <div className="flex items-center gap-3 mb-4">
                         <div className="w-2.5 h-2.5 rounded-full bg-main-red animate-pulse"></div>
-                        <span className="text-xs font-bold text-main-red uppercase tracking-widest">
+                        <span className="text-[10px] font-bold text-main-red uppercase tracking-widest">
                           {textoEtiqueta}
                         </span>
                       </div>
-                      <h3 className="text-3xl md:text-4xl font-black text-main-blue mb-6 leading-tight">
+                      {/* JERARQUÍA CORREGIDA: Menor tamaño que el título de la sección */}
+                      <h3 className="text-2xl font-extrabold text-main-blue mb-4 leading-tight">
                         {sedeActiva.pais}
                       </h3>
-                      <p className="text-gray-600 font-light leading-relaxed text-base">
+                      <p className="text-gray-600 font-light leading-relaxed text-sm md:text-base">
                         {sedeActiva.info}
                       </p>
                     </div>
@@ -404,11 +404,13 @@ export default function Home() {
                 })()}
               </div>
 
-              {/* MAPA (DERECHA) - Mucho más ancho (lg:w-3/4) y sin límites de max-width */}
-              <div className="w-full lg:w-3/4 flex items-center justify-center relative min-h-87.5">
+              {/* MAPA (DERECHA) - Formato Ultrawide (1000x400) para aplastar la altura vertical */}
+              <div className="w-full lg:w-3/4 flex items-center justify-center relative">
                 <ComposableMap 
                   projection="geoMercator" 
-                  projectionConfig={{ scale: 280, center: [-80, 20] }} 
+                  projectionConfig={{ scale: 220, center: [-80, 15] }} 
+                  width={1000} 
+                  height={400} 
                   className="w-full h-auto outline-none" 
                   aria-label="Mapa interactivo de sedes internacionales"
                 >
