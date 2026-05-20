@@ -68,9 +68,7 @@ export default function Home() {
   });
 
   // Estados y Refs para el Mapa de Sedes
-  const [hoveredSede, setHoveredSede] = useState(null);
-  const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
-  const mapContainerRef = useRef(null);
+  const [sedeActivaId, setSedeActivaId] = useState('cr');
 
   const sedes = [
     { id: 'ca', pais: t('quienes_somos.sede_ca_pais', 'Canadá'), coords: [-71.1743, 46.8033], info: t('quienes_somos.sede_ca_info', 'Atención virtual o presencial previa cita en la ciudad de Lévis, Québec. En Toronto vinculado con Waldman & Associates. Email: contacto@iiresodh.org') },
@@ -358,7 +356,7 @@ export default function Home() {
             </div>
           </section>
 
-          {/* OPTIMIZACIÓN EDITORIAL: MAPA DE SEDES INTERNACIONALES COMO CIERRE DE HOME */}
+          {/* OPTIMIZACIÓN EDITORIAL: MAPA DE SEDES INTERNACIONALES (Master-Detail) */}
           <section id="sedes-oficiales" className="pt-12 border-t border-gray-100 relative scroll-mt-24">
             <div className="flex flex-col mb-8 text-left">
               <span className="text-main-red font-black tracking-[0.3em] uppercase text-xs mb-3 block">
@@ -368,34 +366,98 @@ export default function Home() {
                 {t('quienes_somos.sedes_titulo', 'Sedes Oficiales')}
               </h2>
               <div className="w-20 h-1.5 bg-main-red mt-4 rounded-full"></div>
-              <p className="text-sm text-gray-400 mt-4 font-light">{t('quienes_somos.sedes_subtitulo', 'Pasa el ratón sobre los puntos rojos en el mapa')}</p>
+              <p className="text-sm text-gray-400 mt-4 font-light">
+                {t('quienes_somos.sedes_subtitulo', 'Pasa el ratón sobre un punto en el mapa para ver los detalles de la oficina.')}
+              </p>
             </div>
 
-            <Paper elevation={0} className="w-full relative bg-gray-50 rounded-3xl p-4 md:p-8 border border-gray-100 flex flex-col items-center justify-center h-full min-h-100" sx={{ borderRadius: '2.5rem' }}>
-              <div ref={mapContainerRef} className="w-full grow flex items-center justify-center relative">
-                <ComposableMap projection="geoMercator" projectionConfig={{ scale: 300, center: [-85, 30] }} className="w-full h-auto max-h-96" aria-label="Mapa interactivo de sedes internacionales">
-                  <Geographies geography={geoUrl}>
-                    {({ geographies }) => geographies.map((geo) => (
-                      <Geography key={geo.rsmKey} geography={geo} fill="#457B9D" stroke="#FFFFFF" strokeWidth={0.5} style={{ default: { outline: "none" }, hover: { fill: "#1D3557", outline: "none" } }} />
-                    ))}
-                  </Geographies>
-                  {sedes.map((sede) => (
-                    <Marker key={sede.id} coordinates={sede.coords}>
-                      <g tabIndex="0" role="button" aria-label={`Sede en ${sede.pais}`} onMouseEnter={(e) => handleHover(sede, e)} onMouseLeave={() => setHoveredSede(null)} onFocus={(e) => showTooltipKeyboard(sede, e.target)} onBlur={() => setHoveredSede(null)} className="focus:outline-none cursor-pointer">
-                        <circle r={25} fill="transparent" className="cursor-pointer" />
-                        <circle r={25} fill="#B92F32" fillOpacity={0.1} className="animate-pulse pointer-events-none" />
-                        <circle r={10} fill="#B92F32" stroke="#FFFFFF" strokeWidth={2} className="pointer-events-none" />
-                      </g>
-                    </Marker>
-                  ))}
-                </ComposableMap>
+            <Paper elevation={0} className="w-full bg-gray-50 rounded-3xl p-6 md:p-10 border border-gray-100" sx={{ borderRadius: '2.5rem' }}>
+              
+              {/* Contenedor dividido: Tarjeta (Izquierda) y Mapa (Derecha) */}
+              <div className="flex flex-col-reverse lg:flex-row items-center gap-10">
                 
-                {hoveredSede && (
-                  <div role="tooltip" className="absolute z-50 bg-white p-4 rounded-xl flex flex-col gap-2 w-60 shadow-xl border border-gray-100 pointer-events-none text-left" style={{ top: `${tooltipPos.top}px`, left: `${tooltipPos.left}px` }}>
-                    <h4 className="text-lg font-semibold text-main-red uppercase tracking-tight border-b border-gray-50 pb-2">{hoveredSede.pais}</h4>
-                    <p className="text-xs text-gray-700 leading-relaxed font-medium">{hoveredSede.info}</p>
-                  </div>
-                )}
+                {/* PANEL DE INFORMACIÓN (IZQUIERDA) */}
+                <div className="w-full lg:w-1/3 flex flex-col justify-center">
+                  {(() => {
+                    // Buscamos la información de la sede activa (por defecto CR)
+                    const sedeActiva = sedes.find(s => s.id === sedeActivaId) || sedes.find(s => s.id === 'cr');
+                    return (
+                      <div className="bg-white p-8 md:p-10 rounded-3xl shadow-xl border border-gray-100 min-h-70 flex flex-col justify-center transform transition-all duration-300">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-3 h-3 rounded-full bg-main-red animate-pulse"></div>
+                          <span className="text-xs font-black text-main-red uppercase tracking-widest">
+                            {t('quienes_somos.oficina_regional', 'Oficina Regional')}
+                          </span>
+                        </div>
+                        <h3 className="text-3xl md:text-4xl font-black text-main-blue mb-4 leading-tight">
+                          {sedeActiva.pais}
+                        </h3>
+                        <p className="text-gray-600 font-medium leading-relaxed text-sm md:text-base">
+                          {sedeActiva.info}
+                        </p>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* MAPA (DERECHA) */}
+                <div className="w-full lg:w-2/3 flex items-center justify-center relative min-h-87.5">
+                  <ComposableMap 
+                    projection="geoMercator" 
+                    projectionConfig={{ scale: 320, center: [-80, 20] }} 
+                    width={800} 
+                    height={450} 
+                    className="w-full h-auto max-w-3xl drop-shadow-sm" 
+                    aria-label="Mapa interactivo de sedes internacionales"
+                  >
+                    <Geographies geography={geoUrl}>
+                      {({ geographies }) => geographies.map((geo) => (
+                        <Geography 
+                          key={geo.rsmKey} 
+                          geography={geo} 
+                          fill="#457B9D" 
+                          stroke="#FFFFFF" 
+                          strokeWidth={0.5} 
+                          style={{ default: { outline: "none" }, hover: { fill: "#1D3557", outline: "none" }, pressed: { outline: "none" } }} 
+                        />
+                      ))}
+                    </Geographies>
+                    {sedes.map((sede) => {
+                      // Verificamos si este marcador es el que está activo actualmente
+                      const isActive = sedeActivaId === sede.id;
+                      return (
+                        <Marker key={sede.id} coordinates={sede.coords}>
+                          <g 
+                            tabIndex="0" 
+                            role="button" 
+                            aria-label={`Sede en ${sede.pais}`} 
+                            onMouseEnter={() => setSedeActivaId(sede.id)} 
+                            onFocus={() => setSedeActivaId(sede.id)} 
+                            className="focus:outline-none cursor-pointer group"
+                          >
+                            {/* Zona de clic invisible más grande para facilitar el toque en celulares */}
+                            <circle r={35} fill="transparent" className="cursor-pointer" />
+                            
+                            {/* Círculo de pulso (solo activo para la sede seleccionada) */}
+                            {isActive && (
+                              <circle r={25} fill="#1D3557" fillOpacity={0.2} className="animate-pulse pointer-events-none" />
+                            )}
+                            
+                            {/* Punto principal: Cambia a azul y se hace más grande si está seleccionado */}
+                            <circle 
+                              r={isActive ? 12 : 8} 
+                              fill={isActive ? "#1D3557" : "#B92F32"} 
+                              stroke="#FFFFFF" 
+                              strokeWidth={isActive ? 3 : 2} 
+                              className="pointer-events-none transition-all duration-300" 
+                            />
+                          </g>
+                        </Marker>
+                      );
+                    })}
+                  </ComposableMap>
+                </div>
+
               </div>
             </Paper>
           </section>
