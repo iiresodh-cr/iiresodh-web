@@ -356,29 +356,28 @@ export default function Home() {
             </div>
           </section>
 
-          {/* OPTIMIZACIÓN EDITORIAL: MAPA DE SEDES INTERNACIONALES (Master-Detail, Diseño Corporativo Plano) */}
-          <section id="sedes-oficiales" className="pt-16 border-t border-gray-100 relative scroll-mt-24">
-            <div className="flex flex-col mb-8 text-left">
-              <span className="text-main-red font-bold tracking-[0.3em] uppercase text-xs mb-3 block">
-                {t('quienes_somos.presencia_etiqueta', 'Nuestra Presencia')}
-              </span>
-              <h2 className="text-3xl md:text-4xl font-black text-main-blue tracking-tight">
-                {t('quienes_somos.sedes_titulo', 'Sedes Oficiales')}
-              </h2>
-              <div className="w-20 h-1 bg-main-red mt-4"></div>
-              <p className="text-sm text-gray-500 mt-4 font-light">
-                {t('quienes_somos.sedes_subtitulo', 'Pasa el ratón sobre un punto en el mapa para ver los detalles de la oficina.')}
-              </p>
+          {/* OPTIMIZACIÓN EDITORIAL: MAPA DE SEDES INTERNACIONALES (Master-Detail, Compacto y Amplio) */}
+          <section id="sedes-oficiales" className="pt-8 border-t border-gray-100 relative scroll-mt-24">
+            
+            {/* Título puramente informativo, jerarquía baja y sin aire */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-2">
+              <div>
+                <h3 className="text-xl font-bold text-main-blue">
+                  {t('quienes_somos.sedes_titulo', 'Sedes Oficiales')}
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  {t('quienes_somos.sedes_subtitulo', 'Pasa el ratón sobre un punto en el mapa para ver los detalles.')}
+                </p>
+              </div>
             </div>
 
-            {/* Contenedor principal: Totalmente limpio, sin fondo gris y con menos padding vertical */}
-            <div className="w-full flex flex-col-reverse lg:flex-row items-center gap-10 lg:gap-16">
+            {/* Contenedor sin padding lateral extra para que sea lo más ancho posible */}
+            <div className="w-full flex flex-col-reverse lg:flex-row items-center gap-6 lg:gap-10">
               
-              {/* PANEL DE INFORMACIÓN (IZQUIERDA) - Más delgado (lg:w-1/4) */}
+              {/* PANEL DE INFORMACIÓN (IZQUIERDA) */}
               <div className="w-full lg:w-1/4 flex flex-col justify-center text-left">
                 {(() => {
                   const sedeActiva = sedes.find(s => s.id === sedeActivaId) || sedes.find(s => s.id === 'cr');
-                  
                   const esCostaRica = sedeActiva.id === 'cr';
                   const textoEtiqueta = esCostaRica 
                     ? t('quienes_somos.sede_principal', 'Sede Principal') 
@@ -386,17 +385,16 @@ export default function Home() {
 
                   return (
                     <div className="flex flex-col justify-center">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-2.5 h-2.5 rounded-full bg-main-red animate-pulse"></div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-2 h-2 rounded-full bg-main-red animate-pulse"></div>
                         <span className="text-[10px] font-bold text-main-red uppercase tracking-widest">
                           {textoEtiqueta}
                         </span>
                       </div>
-                      {/* JERARQUÍA CORREGIDA: Menor tamaño que el título de la sección */}
-                      <h3 className="text-2xl font-extrabold text-main-blue mb-4 leading-tight">
+                      <h4 className="text-2xl font-extrabold text-main-blue mb-3 leading-tight">
                         {sedeActiva.pais}
-                      </h3>
-                      <p className="text-gray-600 font-light leading-relaxed text-sm md:text-base">
+                      </h4>
+                      <p className="text-gray-600 font-light leading-relaxed text-sm">
                         {sedeActiva.info}
                       </p>
                     </div>
@@ -404,13 +402,13 @@ export default function Home() {
                 })()}
               </div>
 
-              {/* MAPA (DERECHA) - Formato Ultrawide (1000x400) para aplastar la altura vertical */}
+              {/* MAPA (DERECHA) - Lienzo alto (600) para no cortar continentes, escala ajustada */}
               <div className="w-full lg:w-3/4 flex items-center justify-center relative">
                 <ComposableMap 
                   projection="geoMercator" 
-                  projectionConfig={{ scale: 220, center: [-80, 15] }} 
-                  width={1000} 
-                  height={400} 
+                  projectionConfig={{ scale: 300, center: [-80, 15] }} 
+                  width={900} 
+                  height={600} 
                   className="w-full h-auto outline-none" 
                   aria-label="Mapa interactivo de sedes internacionales"
                 >
