@@ -63,6 +63,12 @@ service cloud.firestore {
       allow read: if true;
       allow write: if esAdmin();
     }
+
+    // ===== FEEDBACK QA TEMPORAL =====
+    match /feedback_qa/{docId=**} {
+      allow read, write: if true;
+    }
+    // ================================
     
     match /{document=**} {
       allow read, write: if false;
