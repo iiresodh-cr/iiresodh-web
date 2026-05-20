@@ -356,103 +356,98 @@ export default function Home() {
             </div>
           </section>
 
-          {/* OPTIMIZACIÓN EDITORIAL: MAPA DE SEDES INTERNACIONALES (Master-Detail) */}
-          <section id="sedes-oficiales" className="pt-12 border-t border-gray-100 relative scroll-mt-24">
-            <div className="flex flex-col mb-8 text-left">
-              <span className="text-main-red font-black tracking-[0.3em] uppercase text-xs mb-3 block">
+          {/* OPTIMIZACIÓN EDITORIAL: MAPA DE SEDES INTERNACIONALES (Master-Detail, Diseño Corporativo Plano) */}
+          <section id="sedes-oficiales" className="pt-16 border-t border-gray-100 relative scroll-mt-24">
+            <div className="flex flex-col mb-12 text-left">
+              <span className="text-main-red font-bold tracking-[0.3em] uppercase text-xs mb-3 block">
                 {t('quienes_somos.presencia_etiqueta', 'Nuestra Presencia')}
               </span>
               <h2 className="text-3xl md:text-4xl font-black text-main-blue tracking-tight">
                 {t('quienes_somos.sedes_titulo', 'Sedes Oficiales')}
               </h2>
-              <div className="w-20 h-1.5 bg-main-red mt-4 rounded-full"></div>
-              <p className="text-sm text-gray-400 mt-4 font-light">
+              <div className="w-20 h-1 bg-main-red mt-4"></div>
+              <p className="text-sm text-gray-500 mt-4 font-light">
                 {t('quienes_somos.sedes_subtitulo', 'Pasa el ratón sobre un punto en el mapa para ver los detalles de la oficina.')}
               </p>
             </div>
 
-            <Paper elevation={0} className="w-full bg-gray-50 rounded-3xl p-6 md:p-10 border border-gray-100" sx={{ borderRadius: '2.5rem' }}>
+            {/* Contenedor principal sin bordes, sin sombras, totalmente plano */}
+            <div className="w-full bg-gray-50/50 py-12 px-6 lg:px-12 flex flex-col-reverse lg:flex-row items-center gap-12 lg:gap-16">
               
-              {/* Contenedor dividido: Tarjeta (Izquierda al 25%) y Mapa (Derecha al 75%) */}
-              <div className="flex flex-col-reverse lg:flex-row items-center gap-8 lg:gap-12">
-                
-                {/* PANEL DE INFORMACIÓN (IZQUIERDA - AHORA MÁS DELGADA lg:w-1/4) */}
-                <div className="w-full lg:w-1/4 flex flex-col justify-center">
-                  {(() => {
-                    const sedeActiva = sedes.find(s => s.id === sedeActivaId) || sedes.find(s => s.id === 'cr');
-                    return (
-                      <div className="bg-white p-6 lg:p-8 rounded-3xl shadow-xl border border-gray-100 min-h-70 flex flex-col justify-center transform transition-all duration-300">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="w-3 h-3 rounded-full bg-main-red animate-pulse"></div>
-                          <span className="text-[10px] md:text-xs font-black text-main-red uppercase tracking-widest">
-                            {t('quienes_somos.oficina_regional', 'Oficina Regional')}
-                          </span>
-                        </div>
-                        <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-main-blue mb-4 leading-tight">
-                          {sedeActiva.pais}
-                        </h3>
-                        <p className="text-gray-600 font-medium leading-relaxed text-sm">
-                          {sedeActiva.info}
-                        </p>
+              {/* PANEL DE INFORMACIÓN (IZQUIERDA) - Sin tarjeta, puro texto institucional */}
+              <div className="w-full lg:w-1/3 flex flex-col justify-center text-left">
+                {(() => {
+                  const sedeActiva = sedes.find(s => s.id === sedeActivaId) || sedes.find(s => s.id === 'cr');
+                  return (
+                    <div className="flex flex-col justify-center min-h-60">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="w-2.5 h-2.5 rounded-full bg-main-red animate-pulse"></div>
+                        <span className="text-xs font-bold text-main-red uppercase tracking-widest">
+                          {t('quienes_somos.oficina_regional', 'Oficina Regional')}
+                        </span>
                       </div>
-                    );
-                  })()}
-                </div>
-
-                {/* MAPA (DERECHA - AHORA MÁS ANCHO lg:w-3/4) */}
-                <div className="w-full lg:w-3/4 flex items-center justify-center relative min-h-87.5">
-                  <ComposableMap 
-                    projection="geoMercator" 
-                    projectionConfig={{ scale: 320, center: [-80, 20] }} 
-                    width={900} 
-                    height={450} 
-                    className="w-full h-auto max-w-4xl drop-shadow-sm" 
-                    aria-label="Mapa interactivo de sedes internacionales"
-                  >
-                    <Geographies geography={geoUrl}>
-                      {({ geographies }) => geographies.map((geo) => (
-                        <Geography 
-                          key={geo.rsmKey} 
-                          geography={geo} 
-                          fill="#457B9D" 
-                          stroke="#FFFFFF" 
-                          strokeWidth={0.5} 
-                          style={{ default: { outline: "none" }, hover: { fill: "#1D3557", outline: "none" }, pressed: { outline: "none" } }} 
-                        />
-                      ))}
-                    </Geographies>
-                    {sedes.map((sede) => {
-                      const isActive = sedeActivaId === sede.id;
-                      return (
-                        <Marker key={sede.id} coordinates={sede.coords}>
-                          <g 
-                            tabIndex="0" 
-                            role="button" 
-                            aria-label={`Sede en ${sede.pais}`} 
-                            onMouseEnter={() => setSedeActivaId(sede.id)} 
-                            onFocus={() => setSedeActivaId(sede.id)} 
-                            className="focus:outline-none cursor-pointer group"
-                          >
-                            <circle r={35} fill="transparent" className="cursor-pointer" />
-                            {isActive && (
-                              <circle r={25} fill="#1D3557" fillOpacity={0.2} className="animate-pulse pointer-events-none" />
-                            )}
-                            <circle 
-                              r={isActive ? 12 : 8} 
-                              fill={isActive ? "#1D3557" : "#B92F32"} 
-                              stroke="#FFFFFF" 
-                              strokeWidth={isActive ? 3 : 2} 
-                              className="pointer-events-none transition-all duration-300" 
-                            />
-                          </g>
-                        </Marker>
-                      );
-                    })}
-                  </ComposableMap>
-                </div>
-
+                      <h3 className="text-3xl md:text-4xl font-black text-main-blue mb-6 leading-tight">
+                        {sedeActiva.pais}
+                      </h3>
+                      <p className="text-gray-600 font-light leading-relaxed text-base">
+                        {sedeActiva.info}
+                      </p>
+                    </div>
+                  );
+                })()}
               </div>
-            </Paper>
+
+              {/* MAPA (DERECHA) - Contenedor amplio, sin sombras, escala del mapa ajustada */}
+              <div className="w-full lg:w-2/3 flex items-center justify-center relative min-h-87.5">
+                <ComposableMap 
+                  projection="geoMercator" 
+                  projectionConfig={{ scale: 280, center: [-80, 20] }} 
+                  className="w-full h-auto outline-none" 
+                  aria-label="Mapa interactivo de sedes internacionales"
+                >
+                  <Geographies geography={geoUrl}>
+                    {({ geographies }) => geographies.map((geo) => (
+                      <Geography 
+                        key={geo.rsmKey} 
+                        geography={geo} 
+                        fill="#E5E7EB" /* Color gris muy sutil y serio para los continentes */
+                        stroke="#FFFFFF" 
+                        strokeWidth={0.5} 
+                        style={{ default: { outline: "none" }, hover: { fill: "#D1D5DB", outline: "none" }, pressed: { outline: "none" } }} 
+                      />
+                    ))}
+                  </Geographies>
+                  {sedes.map((sede) => {
+                    const isActive = sedeActivaId === sede.id;
+                    return (
+                      <Marker key={sede.id} coordinates={sede.coords}>
+                        <g 
+                          tabIndex="0" 
+                          role="button" 
+                          aria-label={`Sede en ${sede.pais}`} 
+                          onMouseEnter={() => setSedeActivaId(sede.id)} 
+                          onFocus={() => setSedeActivaId(sede.id)} 
+                          className="focus:outline-none cursor-pointer group"
+                        >
+                          <circle r={35} fill="transparent" className="cursor-pointer outline-none" />
+                          {isActive && (
+                            <circle r={25} fill="#1D3557" fillOpacity={0.15} className="animate-pulse pointer-events-none" />
+                          )}
+                          <circle 
+                            r={isActive ? 12 : 8} 
+                            fill={isActive ? "#1D3557" : "#B92F32"} 
+                            stroke="#FFFFFF" 
+                            strokeWidth={isActive ? 3 : 2} 
+                            className="pointer-events-none transition-all duration-300" 
+                          />
+                        </g>
+                      </Marker>
+                    );
+                  })}
+                </ComposableMap>
+              </div>
+
+            </div>
           </section>
 
         </div>
