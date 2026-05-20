@@ -15,7 +15,8 @@ import { Button, Checkbox, FormControlLabel, Alert, Paper } from "@mui/material"
 // IMPORTACIÓN PARA i18n
 import { useTranslation } from 'react-i18next';
 
-const stripePromise = loadStripe("pk_test_51TG3Ix2cAGUeJe5mZ8VfsyNf1qmd7EYcncADyttNU7oZPLxpgi8VfjCWTVjOdluNcgeiyleaPgWmR1FQtZbwLj9E00RTW4N4Qs");
+// Usa la variable de entorno para no dejar la clave en el código fuente (Mejor práctica)
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_test_51TG3Ix2cAGUeJe5mZ8VfsyNf1qmd7EYcncADyttNU7oZPLxpgi8VfjCWTVjOdluNcgeiyleaPgWmR1FQtZbwLj9E00RTW4N4Qs");
 
 const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
   const { t } = useTranslation();
@@ -250,7 +251,7 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
           }
           label={
             <span className="text-sm font-medium text-gray-700 leading-snug">
-              {t('tienda.he_leido', "He leído y acepto")} {articuloPrivacidad} <Link to={urlPrivacidad} target="_blank" className="text-main-blue font-bold hover:underline">{textoPrivacidad}</Link> {t('tienda.y_los', "y los")} <Link to="/privacidad?tab=terminos" target="_blank" className="text-main-blue font-bold hover:underline">{t('tienda.terminos_uso', "Términos de Uso")}</Link> {t('tienda.politica_antipirateria', "(incluyendo la política anti-piratería).")}
+              {t('tienda.he_leido', "He leído y acepto")} {articuloPrivacidad} <a href={urlPrivacidad} target="_blank" rel="noopener noreferrer" className="text-main-blue font-bold hover:underline">{textoPrivacidad}</a> {t('tienda.y_los', "y los")} <a href="/privacidad?tab=terminos" target="_blank" rel="noopener noreferrer" className="text-main-blue font-bold hover:underline">{t('tienda.terminos_uso', "Términos de Uso")}</a> {t('tienda.politica_antipirateria', "(incluyendo la política anti-piratería).")}
             </span>
           }
           sx={{ m: 0, alignItems: 'flex-start', '& .MuiFormControlLabel-label': { mt: '2px' } }}
@@ -313,6 +314,7 @@ export default function Tienda() {
   const [libro, setLibro] = useState(null);
   const [listaLibros, setListaLibros] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errorCarga, setErrorCarga] = useState(false); // NUEVO ESTADO PARA ERRORES
   const [moneda, setMoneda] = useState("USD");
 
   useEffect(() => {
@@ -334,6 +336,7 @@ export default function Tienda() {
     window.scrollTo(0, 0);
     const fetchData = async () => {
       setLoading(true);
+      setErrorCarga(false); // Resetear error antes de nueva carga
       try {
         if (slug) {
           const q = query(collection(db, "libros"), where("slug", "==", slug), limit(1));
@@ -348,6 +351,7 @@ export default function Tienda() {
         }
       } catch (e) {
         console.error("Error cargando datos:", e);
+        setErrorCarga(true); // SE INDICA EL ERROR
       } finally {
         setLoading(false);
       }
@@ -368,49 +372,59 @@ export default function Tienda() {
           <section className="relative pt-4 md:pt-6 px-0 z-10">
             <div className="max-w-7xl mx-auto bg-white overflow-hidden">
               <div className="px-6 md:px-12 lg:px-16 pt-4 md:pt-6 pb-12 animate-fade-in-up w-full">
-                <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-12 lg:gap-16 items-start">
-                  {listaLibros.map((l) => {
-                    const esMXN = moneda === "MXN" && l.precioMXN;
-                    const precioMostrar = esMXN ? l.precioMXN : l.precio;
-                    const monedaMostrar = esMXN ? "MXN" : "USD";
+                
+                {/* SI HAY ERROR DE CARGA, MOSTRAMOS UN MENSAJE HONESTO */}
+                {errorCarga ? (
+                   <div className="text-center py-20">
+                     <p className="text-xl text-red-500 font-medium">{t('tienda.error_cargar_libros', "Hubo un problema al cargar el catálogo de libros. Por favor, verifica tu conexión o intenta más tarde.")}</p>
+                   </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-12 lg:gap-16 items-start">
+                      {listaLibros.map((l) => {
+                        const esMXN = moneda === "MXN" && l.precioMXN;
+                        const precioMostrar = esMXN ? l.precioMXN : l.precio;
+                        const monedaMostrar = esMXN ? "MXN" : "USD";
 
-                    return (
-                      <div key={l.id} className="flex flex-col group h-full">
-                        <Link 
-                          to={`/tienda/${l.slug}`} 
-                          className="w-full aspect-4/5 flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300"
-                        >
-                          {l.imagenPrincipalUrl ? (
-                            <img 
-                              src={l.imagenPrincipalUrl} 
-                              alt={l.titulo} 
-                              className="max-h-full max-w-full object-contain shadow-lg group-hover:shadow-2xl transition-shadow duration-300 rounded-sm" 
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gray-50 rounded-xl flex items-center justify-center border border-gray-100 text-gray-300 font-bold text-center uppercase tracking-tighter p-4">{t('tienda.sin_portada', "Sin Portada")}</div>
-                          )}
-                        </Link>
+                        return (
+                          <div key={l.id} className="flex flex-col group h-full">
+                            <Link 
+                              to={`/tienda/${l.slug}`} 
+                              className="w-full aspect-4/5 flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300"
+                            >
+                              {l.imagenPrincipalUrl ? (
+                                <img 
+                                  src={l.imagenPrincipalUrl} 
+                                  alt={l.titulo} 
+                                  className="max-h-full max-w-full object-contain shadow-lg group-hover:shadow-2xl transition-shadow duration-300 rounded-sm" 
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gray-50 rounded-xl flex items-center justify-center border border-gray-100 text-gray-300 font-bold text-center uppercase tracking-tighter p-4">{t('tienda.sin_portada', "Sin Portada")}</div>
+                              )}
+                            </Link>
 
-                        <div className="flex flex-col grow">
-                          <span className="text-[10px] font-black text-main-red uppercase tracking-widest mb-2 block">{t('tienda.copia_digital', "Copia Digital (PDF)")}</span>
-                          <Link to={`/tienda/${l.slug}`}>
-                            <h3 className="text-xl md:text-2xl font-extrabold text-main-blue mb-2 leading-tight uppercase group-hover:text-light-blue transition-colors">{l.titulo}</h3>
-                          </Link>
-                          {l.autor && <p className="text-sm font-bold text-gray-700 mb-4">{t('tienda.por', "Por:")} {l.autor}</p>}
-                          {l.resumen && <p className="text-sm text-gray-600 mb-6 leading-relaxed font-light italic">{l.resumen}</p>}
-                          <div className="mt-auto pt-6 border-t border-gray-200 flex flex-wrap gap-4 items-center justify-between">
-                            <span className="text-2xl font-black text-main-blue">${precioMostrar} <span className="text-sm font-medium text-gray-500">{monedaMostrar}</span></span>
-                            <Link to={`/tienda/${l.slug}`} className="bg-main-blue hover:bg-light-blue text-white font-bold py-3 px-8 rounded-xl text-sm uppercase tracking-widest transition-colors shadow-sm">{t('tienda.comprar', "Comprar")}</Link>
+                            <div className="flex flex-col grow">
+                              <span className="text-[10px] font-black text-main-red uppercase tracking-widest mb-2 block">{t('tienda.copia_digital', "Copia Digital (PDF)")}</span>
+                              <Link to={`/tienda/${l.slug}`}>
+                                <h3 className="text-xl md:text-2xl font-extrabold text-main-blue mb-2 leading-tight uppercase group-hover:text-light-blue transition-colors">{l.titulo}</h3>
+                              </Link>
+                              {l.autor && <p className="text-sm font-bold text-gray-700 mb-4">{t('tienda.por', "Por:")} {l.autor}</p>}
+                              {l.resumen && <p className="text-sm text-gray-600 mb-6 leading-relaxed font-light italic">{l.resumen}</p>}
+                              <div className="mt-auto pt-6 border-t border-gray-200 flex flex-wrap gap-4 items-center justify-between">
+                                <span className="text-2xl font-black text-main-blue">${precioMostrar} <span className="text-sm font-medium text-gray-500">{monedaMostrar}</span></span>
+                                <Link to={`/tienda/${l.slug}`} className="bg-main-blue hover:bg-light-blue text-white font-bold py-3 px-8 rounded-xl text-sm uppercase tracking-widest transition-colors shadow-sm">{t('tienda.comprar', "Comprar")}</Link>
+                              </div>
+                            </div>
                           </div>
-                        </div>
+                        );
+                      })}
+                    </div>
+                    {listaLibros.length === 0 && !errorCarga && (
+                      <div className="text-center py-20">
+                        <p className="text-xl text-gray-400 font-medium">{t('tienda.no_libros', "No hay libros disponibles en este momento.")}</p>
                       </div>
-                    );
-                  })}
-                </div>
-                {listaLibros.length === 0 && (
-                  <div className="text-center py-20">
-                    <p className="text-xl text-gray-400 font-medium">{t('tienda.no_libros', "No hay libros disponibles en este momento.")}</p>
-                  </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -450,7 +464,7 @@ export default function Tienda() {
                       style={{ maxHeight: "480px" }} 
                     />
                   ) : (
-                    <div className="w-64 h-80 bg-gray-50 rounded-sm shadow-sm border border-gray-200 flex items-center justify-center text-main-blue font-bold p-10 text-center text-sm uppercase leading-tight">{libro.titulo}</div>
+                    <div className="w-full h-full bg-gray-50 rounded-sm shadow-sm border border-gray-200 flex items-center justify-center text-main-blue font-bold p-10 text-center text-sm uppercase leading-tight">{libro.titulo}</div>
                   )}
                 </div>
                 
