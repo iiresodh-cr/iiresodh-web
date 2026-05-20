@@ -373,26 +373,25 @@ export default function Home() {
 
             <Paper elevation={0} className="w-full bg-gray-50 rounded-3xl p-6 md:p-10 border border-gray-100" sx={{ borderRadius: '2.5rem' }}>
               
-              {/* Contenedor dividido: Tarjeta (Izquierda) y Mapa (Derecha) */}
-              <div className="flex flex-col-reverse lg:flex-row items-center gap-10">
+              {/* Contenedor dividido: Tarjeta (Izquierda al 25%) y Mapa (Derecha al 75%) */}
+              <div className="flex flex-col-reverse lg:flex-row items-center gap-8 lg:gap-12">
                 
-                {/* PANEL DE INFORMACIÓN (IZQUIERDA) */}
-                <div className="w-full lg:w-1/3 flex flex-col justify-center">
+                {/* PANEL DE INFORMACIÓN (IZQUIERDA - AHORA MÁS DELGADA lg:w-1/4) */}
+                <div className="w-full lg:w-1/4 flex flex-col justify-center">
                   {(() => {
-                    // Buscamos la información de la sede activa (por defecto CR)
                     const sedeActiva = sedes.find(s => s.id === sedeActivaId) || sedes.find(s => s.id === 'cr');
                     return (
-                      <div className="bg-white p-8 md:p-10 rounded-3xl shadow-xl border border-gray-100 min-h-70 flex flex-col justify-center transform transition-all duration-300">
+                      <div className="bg-white p-6 lg:p-8 rounded-3xl shadow-xl border border-gray-100 min-h-70 flex flex-col justify-center transform transition-all duration-300">
                         <div className="flex items-center gap-3 mb-4">
                           <div className="w-3 h-3 rounded-full bg-main-red animate-pulse"></div>
-                          <span className="text-xs font-black text-main-red uppercase tracking-widest">
+                          <span className="text-[10px] md:text-xs font-black text-main-red uppercase tracking-widest">
                             {t('quienes_somos.oficina_regional', 'Oficina Regional')}
                           </span>
                         </div>
-                        <h3 className="text-3xl md:text-4xl font-black text-main-blue mb-4 leading-tight">
+                        <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-main-blue mb-4 leading-tight">
                           {sedeActiva.pais}
                         </h3>
-                        <p className="text-gray-600 font-medium leading-relaxed text-sm md:text-base">
+                        <p className="text-gray-600 font-medium leading-relaxed text-sm">
                           {sedeActiva.info}
                         </p>
                       </div>
@@ -400,14 +399,14 @@ export default function Home() {
                   })()}
                 </div>
 
-                {/* MAPA (DERECHA) */}
-                <div className="w-full lg:w-2/3 flex items-center justify-center relative min-h-87.5">
+                {/* MAPA (DERECHA - AHORA MÁS ANCHO lg:w-3/4) */}
+                <div className="w-full lg:w-3/4 flex items-center justify-center relative min-h-87.5">
                   <ComposableMap 
                     projection="geoMercator" 
                     projectionConfig={{ scale: 320, center: [-80, 20] }} 
-                    width={800} 
+                    width={900} 
                     height={450} 
-                    className="w-full h-auto max-w-3xl drop-shadow-sm" 
+                    className="w-full h-auto max-w-4xl drop-shadow-sm" 
                     aria-label="Mapa interactivo de sedes internacionales"
                   >
                     <Geographies geography={geoUrl}>
@@ -423,7 +422,6 @@ export default function Home() {
                       ))}
                     </Geographies>
                     {sedes.map((sede) => {
-                      // Verificamos si este marcador es el que está activo actualmente
                       const isActive = sedeActivaId === sede.id;
                       return (
                         <Marker key={sede.id} coordinates={sede.coords}>
@@ -435,15 +433,10 @@ export default function Home() {
                             onFocus={() => setSedeActivaId(sede.id)} 
                             className="focus:outline-none cursor-pointer group"
                           >
-                            {/* Zona de clic invisible más grande para facilitar el toque en celulares */}
                             <circle r={35} fill="transparent" className="cursor-pointer" />
-                            
-                            {/* Círculo de pulso (solo activo para la sede seleccionada) */}
                             {isActive && (
                               <circle r={25} fill="#1D3557" fillOpacity={0.2} className="animate-pulse pointer-events-none" />
                             )}
-                            
-                            {/* Punto principal: Cambia a azul y se hace más grande si está seleccionado */}
                             <circle 
                               r={isActive ? 12 : 8} 
                               fill={isActive ? "#1D3557" : "#B92F32"} 
