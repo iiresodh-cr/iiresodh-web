@@ -1,5 +1,5 @@
 // src/pages/QuienesSomos.jsx
-import { useState, useEffect } from "react"; // Incorporado useState
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 
@@ -13,38 +13,24 @@ import posterVideo from "../assets/Isotipo-color-512.png";
 // IMPORTACIÓN PARA i18n
 import { useTranslation } from 'react-i18next';
 
-// 1. CONFIGURACIÓN DEL MAPA (Variables externas al componente)
-// URL base de topología mundial (World Atlas de alta resolución)
+// CONFIGURACIÓN GLOBAL DEL MAPA 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
-
-// Listado de sedes con sus coordenadas geográficas [Longitud, Latitud] e información básica
-const sedes = [
-  { 
-    id: "cr", 
-    pais: "Costa Rica", 
-    coords: [-84.0907, 9.9281], 
-    info: "Sede Central en San José. Punto de origen, coordinación general y centro operativo principal de todos nuestros proyectos." 
-  },
-  { 
-    id: "mx", 
-    pais: "México", 
-    coords: [-99.1332, 19.4326], 
-    info: "U-IIRESODH. Nuestro Instituto de Altos Estudios Universitarios, enfocado en impartir maestrías y especializaciones académicas." 
-  },
-  { 
-    id: "co", 
-    pais: "Colombia", 
-    coords: [-74.0721, 4.7110], 
-    info: "Oficina Regional. Centro estratégico para el litigio, la incidencia directa y el monitoreo de derechos humanos en Sudamérica." 
-  }
-];
 
 export default function QuienesSomos() {
   const location = useLocation();
   const { t } = useTranslation(); 
   
-  // 2. ESTADO PARA CONTROLAR LA SEDE ACTIVA
+  // Estado para controlar la sede activa en el mapa interactivo (CR por defecto)
   const [sedeActivaId, setSedeActivaId] = useState('cr'); 
+
+  // Listado oficial y completo de las 5 sedes con traducción i18n
+  const sedes = [
+    { id: 'ca', pais: t('quienes_somos.sede_ca_pais', 'Canadá'), coords: [-71.1743, 46.8033], info: t('quienes_somos.sede_ca_info', 'Atención virtual o presencial previa cita en la ciudad de Lévis, Québec. En Toronto vinculado con Waldman & Associates. Email: contacto@iiresodh.org') },
+    { id: 'mx', pais: t('quienes_somos.sede_mx_pais', 'México'), coords: [-99.1332, 19.4326], info: t('quienes_somos.sede_mx_info', 'Atención virtual o presencial previa cita. Email: contacto@iiresodh.org') },
+    { id: 'gt', pais: t('quienes_somos.sede_gt_pais', 'Guatemala'), coords: [-90.5069, 14.6349], info: t('quienes_somos.sede_gt_info', 'Diagonal 6 12-42, Edificio Design Center. Oficina No. 506, Torre 1, Zona 10. Ciudad de Guatemala. Teléfono: +502 5557 7466') },
+    { id: 'cr', pais: t('quienes_somos.sede_cr_pais', 'Costa Rica'), coords: [-84.0833, 9.9333], info: t('quienes_somos.sede_cr_info', 'Centro Corporativo San Rafael, nivel 3. San Rafael de Escazú, San José. CP 10201. Teléfono: +506 4703 5727') },
+    { id: 'co', pais: t('quienes_somos.sede_co_pais', 'Colombia'), coords: [-74.0636, 4.6243], info: t('quienes_somos.sede_co_info', 'Carrera. 11C No. 117-05. Oficina 5. Bogotá, Colombia. Teléfono: Bogotá +7461964. Móvil: +57 301 4844324') }
+  ];
 
   useEffect(() => {
     if (location.hash) {
@@ -61,28 +47,28 @@ export default function QuienesSomos() {
 
   const principiosRectores = [
     {
-      titulo: t('quienes_somos.prin_1_tit', 'Dignidad Humana'),
-      texto: t('quienes_somos.prin_1_tex', 'Valor intrínseco e inalienable de cada persona. Exige tratar a los individuos como un fin en sí mismos, garantizando una vida libre de humillaciones y basada en el reconocimiento mutuo.')
+      titulo: t('quienes_somos.principles_1_tit', 'Dignidad Humana'),
+      texto: t('quienes_somos.principles_1_tex', 'Valor intrínseco e inalienable de cada persona. Exige tratar a los individuos como un fin en sí mismos, garantizando una vida libre de humillaciones y basada en el reconocimiento mutuo.')
     },
     {
-      titulo: t('quienes_somos.prin_2_tit', 'Defensa de Derechos'),
-      texto: t('quienes_somos.prin_2_tex', 'Velar por las garantías fundamentales que permiten vivir con libertad, justicia y paz. Actúan como un escudo protector frente al abuso de poder y la discriminación sistemática.')
+      titulo: t('quienes_somos.principles_2_tit', 'Defensa de Derechos'),
+      texto: t('quienes_somos.principles_2_tex', 'Velar por las garantías fundamentales que permiten vivir con libertad, justicia y paz. Actúan como un escudo protector frente al abuso de poder y la discriminación sistemática.')
     },
     {
-      titulo: t('quienes_somos.prin_3_tit', 'Equidad de Género'),
-      texto: t('quienes_somos.prin_3_tex', 'Asegurar que todas las personas tengan acceso a las mismas oportunidades, eliminando barreras estructurales y prejuicios para construir una sociedad justa y equitativa.')
+      titulo: t('quienes_somos.principles_3_tit', 'Equidad de Género'),
+      texto: t('quienes_somos.principles_3_tex', 'Asegurar que todas las personas tengan acceso a las mismas oportunidades, eliminando barreras estructurales y prejuicios para construir una sociedad justa y equitativa.')
     },
     {
-      titulo: t('quienes_somos.prin_4_tit', 'Protección Ambiental'),
-      texto: t('quienes_somos.prin_4_tex', 'Adoptar prácticas sostenibles que minimicen nuestra huella ecológica, reconociendo nuestra interdependencia con la naturaleza para protegerla para las generaciones futuras.')
+      titulo: t('quienes_somos.principles_4_tit', 'Protección Ambiental'),
+      texto: t('quienes_somos.principles_4_tex', 'Adoptar prácticas sostenibles que minimicen nuestra huella ecológica, reconociendo nuestra interdependencia con la naturaleza para protegerla para las generaciones futuras.')
     },
     {
-      titulo: t('quienes_somos.prin_5_tit', 'Ética y Transparencia'),
-      texto: t('quienes_somos.prin_5_tex', 'Actuar con integridad, evitando conflictos de intereses y combatiendo la corrupción. Fomentar una cultura de rendición de cuentas donde la honestidad sea la norma.')
+      titulo: t('quienes_somos.principles_5_tit', 'Ética y Transparencia'),
+      texto: t('quienes_somos.principles_5_tex', 'Actuar con integridad, evitando conflictos de intereses y combatiendo la corrupción. Fomentar una cultura de rendición de cuentas donde la honestidad sea la norma.')
     },
     {
-      titulo: t('quienes_somos.prin_6_tit', 'Inclusión Social'),
-      texto: t('quienes_somos.prin_6_tex', 'Integrar a todos los individuos en la vida comunitaria, especialmente a los más vulnerables, derribando barreras físicas, económicas y culturales que impiden la participación.')
+      titulo: t('quienes_somos.principles_6_tit', 'Inclusión Social'),
+      texto: t('quienes_somos.principles_6_tex', 'Integrar a todos los individuos en la vida comunitaria, especialmente a los más vulnerables, derribando barreras físicas, económicas y culturales que impiden la participación.')
     }
   ];
 
@@ -102,10 +88,10 @@ export default function QuienesSomos() {
           {/* BLOQUE 2: HISTORIA */}
           <div id="historia-section" className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify animate-fade-in-up">
             <p>
-              {t('quienes_somos.historia_1_pt1', 'El')} <strong className="font-semibold text-main-blue">IIRESODH</strong> {t('quienes_somos.historia_1_pt2', 'nace in San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.')}
+              {t('quienes_somos.historia_1_pt1', 'El')} <strong className="font-semibold text-main-blue">IIRESODH</strong> {t('quienes_somos.historia_1_pt2', 'nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.')}
             </p>
             <p>
-              {t('quienes_somos.historia_2', 'Desde su creación fue una entidad con claridad en sus objetivos para el fortalecimiento, promoción y protección de los derechos humanos, y con ello incidir en una cultura donde el respeto sea asumido por las empresas e instituciones públicas como una forma de desarrollo directo.')}
+              {t('quienes_somos.historia_2', 'Desde su creación fue una entidad con claridad en sus objetivos para el fortalecimiento, promotion y protección de los derechos humanos, y con ello incidir en una cultura donde el respeto sea asumido por las empresas e instituciones públicas como una forma de desarrollo directo.')}
             </p>
             <p>
               {t('quienes_somos.historia_3', 'Contamos con acuerdos de cooperación con el CCPR-Centre en Ginebra, la Comisión Interamericana de Derechos Humanos, la Universidad Nacional de La Plata y el Instituto Universitario de Yucatán. Nuestro personal cuenta con amplia experiencia en el sistema interamericano y universal de Naciones Unidas.')}
@@ -120,22 +106,21 @@ export default function QuienesSomos() {
 
           <div className="w-20 h-1 bg-main-red mx-auto rounded-full"></div>
 
-          {/* SECCIÓN SEDES INTERACTIVAS */}
+          {/* SECCIÓN SEDES INTERACTIVAS (ESTILO CORRECTO BENTO BOX) */}
           <section id="sedes-oficiales" className="pt-4 border-t border-gray-100 relative scroll-mt-24">
             
             <div className="mb-8 text-left">
-              <h3 className="text-2xl font-bold text-main-blue mb-2">
+              <h3 className="text-2xl font-bold text-main-blue mb-1">
                 {t('quienes_somos.sedes_titulo', 'Sedes Oficiales')}
               </h3>
-              <p className="text-gray-500 font-light text-base mb-6">
+              <p className="text-xs text-gray-400 font-light">
                 {t('quienes_somos.sedes_subtitulo', 'Pasa el ratón sobre los puntos rojos en el mapa')}
               </p>
             </div>
 
-            {/* Contenedor Ultra-Ancho: 20% texto / 80% mapa */}
             <div className="w-full flex flex-col-reverse lg:flex-row items-center gap-10">
               
-              {/* PANEL DE INFORMACIÓN */}
+              {/* PANEL DE INFORMACIÓN (20%) */}
               <div className="w-full lg:w-1/5 flex flex-col justify-center text-left">
                 {(() => {
                   const sedeActiva = sedes.find(s => s.id === sedeActivaId) || sedes.find(s => s.id === 'cr');
@@ -163,7 +148,7 @@ export default function QuienesSomos() {
                 })()}
               </div>
 
-              {/* MAPA INTERACTIVO */}
+              {/* MAPA INTERACTIVO (80% - Ultrawide) */}
               <div className="w-full lg:w-4/5 flex items-center justify-end relative">
                 <ComposableMap 
                   projection="geoMercator" 

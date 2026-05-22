@@ -1,5 +1,5 @@
 // src/pages/Home.jsx
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { collection, query, orderBy, limit, getDocs, where, doc, getDoc } from "firebase/firestore";
 import { db, functions } from "../firebase/config";
 import { httpsCallable } from "firebase/functions";
@@ -10,9 +10,6 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, EffectFade, Navigation } from 'swiper/modules'; 
 import 'swiper/css';
 import 'swiper/css/effect-fade';
-
-// Importaciones para el Mapa Interactivo de Sedes
-import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 
 // Imágenes y Recursos
 import isotipoFondo from "../assets/Isotipo-color-512.webp"; 
@@ -27,8 +24,6 @@ import { Button } from "@mui/material";
 // IMPORTACIONES PARA i18n Y TRADUCCIÓN DINÁMICA
 import { useTranslation } from 'react-i18next';
 import { obtenerTextoTraducido } from "../utils/traductorDinamico";
-
-const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 export const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
@@ -65,17 +60,6 @@ export default function Home() {
     cifra2: "", texto2: "",
     cifra3: "", texto3: ""
   });
-
-  // Estado para controlar qué sede está activa en el mapa interactivo (CR por defecto)
-  const [sedeActivaId, setSedeActivaId] = useState('cr');
-
-  const sedes = [
-    { id: 'ca', pais: t('quienes_somos.sede_ca_pais', 'Canadá'), coords: [-71.1743, 46.8033], info: t('quienes_somos.sede_ca_info', 'Atención virtual o presencial previa cita en la ciudad de Lévis, Québec. En Toronto vinculado con Waldman & Associates. Email: contacto@iiresodh.org') },
-    { id: 'mx', pais: t('quienes_somos.sede_mx_pais', 'México'), coords: [-99.1332, 19.4326], info: t('quienes_somos.sede_mx_info', 'Atención virtual o presencial previa cita. Email: contacto@iiresodh.org') },
-    { id: 'gt', pais: t('quienes_somos.sede_gt_pais', 'Guatemala'), coords: [-90.5069, 14.6349], info: t('quienes_somos.sede_gt_info', 'Diagonal 6 12-42, Edificio Design Center. Oficina No. 506, Torre 1, Zona 10. Ciudad de Guatemala. Teléfono: +502 5557 7466') },
-    { id: 'cr', pais: t('quienes_somos.sede_cr_pais', 'Costa Rica'), coords: [-84.0833, 9.9333], info: t('quienes_somos.sede_cr_info', 'Centro Corporativo San Rafael, nivel 3. San Rafael de Escazú, San José. CP 10201. Teléfono: +506 4703 5727') },
-    { id: 'co', pais: t('quienes_somos.sede_co_pais', 'Colombia'), coords: [-74.0636, 4.6243], info: t('quienes_somos.sede_co_info', 'Carrera. 11C No. 117-05. Oficina 5. Bogotá, Colombia. Teléfono: Bogotá +7461964. Móvil: +57 301 4844324') }
-  ];
 
   useEffect(() => {
     const fetchCifras = async () => {
@@ -329,100 +313,6 @@ export default function Home() {
                   </form>
                 </div>
               </div>
-            </div>
-          </section>
-
-          {/* SECCIÓN SEDES: ESTILO IGUAL A BENTO BOX, MÁS ANCHO Y SIN AIRE */}
-          <section id="sedes-oficiales" className="pt-4 border-t border-gray-100 relative scroll-mt-24">
-            
-            {/* Cabecera idéntica al estilo de los pilares (Litigio Estratégico) */}
-            <div className="mb-8 text-left">
-              <h3 className="text-2xl font-bold text-main-blue mb-1">
-                {t('quienes_somos.sedes_titulo', 'Sedes Oficiales')}
-              </h3>
-              <p className="text-xs text-gray-400 font-light">
-                {t('quienes_somos.sedes_subtitulo', 'Pasa el ratón sobre los puntos rojos en el mapa')}
-              </p>
-            </div>
-
-            {/* Contenedor Ultra-Ancho: 20% texto / 80% mapa */}
-            <div className="w-full flex flex-col-reverse lg:flex-row items-center gap-10">
-              
-              {/* PANEL DE INFORMACIÓN (Delgado lg:w-1/5) */}
-              <div className="w-full lg:w-1/5 flex flex-col justify-center text-left">
-                {(() => {
-                  const sedeActiva = sedes.find(s => s.id === sedeActivaId) || sedes.find(s => s.id === 'cr');
-                  const esCostaRica = sedeActiva.id === 'cr';
-                  const textoEtiqueta = esCostaRica 
-                    ? t('quienes_somos.sede_principal', 'Sede Principal') 
-                    : t('quienes_somos.oficina_regional', 'Oficina Regional');
-
-                  return (
-                    <div className="flex flex-col justify-center animate-fade-in">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-2 h-2 rounded-full bg-main-red animate-pulse"></div>
-                        <span className="text-[10px] font-bold text-main-red uppercase tracking-widest">
-                          {textoEtiqueta}
-                        </span>
-                      </div>
-                      <h4 className="text-xl font-extrabold text-main-blue mb-3 leading-tight uppercase">
-                        {sedeActiva.pais}
-                      </h4>
-                      <p className="text-gray-600 font-light leading-relaxed text-sm">
-                        {sedeActiva.info}
-                      </p>
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {/* MAPA (Gigante lg:w-4/5) - Proporción 1000x500 para máximo ancho sin distorsión vertical */}
-              <div className="w-full lg:w-4/5 flex items-center justify-end relative">
-                <ComposableMap 
-                  projection="geoMercator" 
-                  projectionConfig={{ scale: 380, center: [-84, 22] }} 
-                  width={1000} 
-                  height={500} 
-                  className="w-full h-auto outline-none" 
-                >
-                  <Geographies geography={geoUrl}>
-                    {({ geographies }) => geographies.map((geo) => (
-                      <Geography 
-                        key={geo.rsmKey} 
-                        geography={geo} 
-                        fill="#F3F4F6" 
-                        stroke="#FFFFFF" 
-                        strokeWidth={0.5} 
-                        style={{ default: { outline: "none" }, hover: { fill: "#E5E7EB", outline: "none" } }} 
-                      />
-                    ))}
-                  </Geographies>
-                  {sedes.map((sede) => {
-                    const isActive = sedeActivaId === sede.id;
-                    return (
-                      <Marker key={sede.id} coordinates={sede.coords}>
-                        <g 
-                          onMouseEnter={() => setSedeActivaId(sede.id)} 
-                          className="focus:outline-none cursor-pointer"
-                        >
-                          <circle r={30} fill="transparent" />
-                          {isActive && (
-                            <circle r={20} fill="#1D3557" fillOpacity={0.15} className="animate-pulse" />
-                          )}
-                          <circle 
-                            r={isActive ? 10 : 7} 
-                            fill={isActive ? "#1D3557" : "#B92F32"} 
-                            stroke="#FFFFFF" 
-                            strokeWidth={2} 
-                            className="transition-all duration-300" 
-                          />
-                        </g>
-                      </Marker>
-                    );
-                  })}
-                </ComposableMap>
-              </div>
-
             </div>
           </section>
 
