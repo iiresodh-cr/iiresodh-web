@@ -1,10 +1,7 @@
 // src/pages/QuienesSomos.jsx
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
-
-// Componentes para la sección de mapas interactivos
-import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 
 // Importaciones estructurales de UI
 import { Paper } from "@mui/material";
@@ -13,25 +10,10 @@ import posterVideo from "../assets/Isotipo-color-512.png";
 // IMPORTACIÓN PARA i18n
 import { useTranslation } from 'react-i18next';
 
-// CONFIGURACIÓN GLOBAL DEL MAPA 
-const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
-
 export default function QuienesSomos() {
   const location = useLocation();
   const { t } = useTranslation(); 
   
-  // Estado para controlar la sede activa en el mapa interactivo (CR por defecto)
-  const [sedeActivaId, setSedeActivaId] = useState('cr'); 
-
-  // Listado oficial y completo de las 5 sedes con traducción i18n
-  const sedes = [
-    { id: 'ca', pais: t('quienes_somos.sede_ca_pais', 'Canadá'), coords: [-71.1743, 46.8033], info: t('quienes_somos.sede_ca_info', 'Atención virtual o presencial previa cita en la ciudad de Lévis, Québec. En Toronto vinculado con Waldman & Associates. Email: contacto@iiresodh.org') },
-    { id: 'mx', pais: t('quienes_somos.sede_mx_pais', 'México'), coords: [-99.1332, 19.4326], info: t('quienes_somos.sede_mx_info', 'Atención virtual o presencial previa cita. Email: contacto@iiresodh.org') },
-    { id: 'gt', pais: t('quienes_somos.sede_gt_pais', 'Guatemala'), coords: [-90.5069, 14.6349], info: t('quienes_somos.sede_gt_info', 'Diagonal 6 12-42, Edificio Design Center. Oficina No. 506, Torre 1, Zona 10. Ciudad de Guatemala. Teléfono: +502 5557 7466') },
-    { id: 'cr', pais: t('quienes_somos.sede_cr_pais', 'Costa Rica'), coords: [-84.0833, 9.9333], info: t('quienes_somos.sede_cr_info', 'Centro Corporativo San Rafael, nivel 3. San Rafael de Escazú, San José. CP 10201. Teléfono: +506 4703 5727') },
-    { id: 'co', pais: t('quienes_somos.sede_co_pais', 'Colombia'), coords: [-74.0636, 4.6243], info: t('quienes_somos.sede_co_info', 'Carrera. 11C No. 117-05. Oficina 5. Bogotá, Colombia. Teléfono: Bogotá +7461964. Móvil: +57 301 4844324') }
-  ];
-
   useEffect(() => {
     if (location.hash) {
       const elemento = document.getElementById(location.hash.substring(1));
@@ -60,7 +42,7 @@ export default function QuienesSomos() {
     },
     {
       titulo: t('quienes_somos.principles_4_tit', 'Protección Ambiental'),
-      texto: t('quienes_somos.principles_4_tex', 'Adoptar prácticas sostenibles que minimicen nuestra huella ecológica, reconociendo nuestra interdependencia con la naturaleza para protegerla para las generaciones futuras.')
+      texto: t('quienes_somos.principles_4_tex', 'Adoptar prácticas sostenibles que minimicen nuestra huella ecológica, reconociendo nuestra interdependencia con la naturaleza para protegerla pour las generaciones futuras.')
     },
     {
       titulo: t('quienes_somos.principles_5_tit', 'Ética y Transparencia'),
@@ -91,7 +73,7 @@ export default function QuienesSomos() {
               {t('quienes_somos.historia_1_pt1', 'El')} <strong className="font-semibold text-main-blue">IIRESODH</strong> {t('quienes_somos.historia_1_pt2', 'nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.')}
             </p>
             <p>
-              {t('quienes_somos.historia_2', 'Desde su creación fue una entidad con claridad en sus objetivos para el fortalecimiento, promotion y protección de los derechos humanos, y con ello incidir en una cultura donde el respeto sea asumido por las empresas e instituciones públicas como una forma de desarrollo directo.')}
+              {t('quienes_somos.historia_2', 'Desde su creación fue una entidad con claridad en sus objetivos para el fortalecimiento, promoción y protección de los derechos humanos, y con ello incidir en una cultura donde el respeto sea asumido por las empresas e instituciones públicas como una forma de desarrollo directo.')}
             </p>
             <p>
               {t('quienes_somos.historia_3', 'Contamos con acuerdos de cooperación con el CCPR-Centre en Ginebra, la Comisión Interamericana de Derechos Humanos, la Universidad Nacional de La Plata y el Instituto Universitario de Yucatán. Nuestro personal cuenta con amplia experiencia en el sistema interamericano y universal de Naciones Unidas.')}
@@ -105,98 +87,6 @@ export default function QuienesSomos() {
           </div>
 
           <div className="w-20 h-1 bg-main-red mx-auto rounded-full"></div>
-
-          {/* SECCIÓN SEDES INTERACTIVAS (ESTILO CORRECTO BENTO BOX) */}
-          <section id="sedes-oficiales" className="pt-4 border-t border-gray-100 relative scroll-mt-24">
-            
-            <div className="mb-8 text-left">
-              <h3 className="text-2xl font-bold text-main-blue mb-1">
-                {t('quienes_somos.sedes_titulo', 'Sedes Oficiales')}
-              </h3>
-              <p className="text-xs text-gray-400 font-light">
-                {t('quienes_somos.sedes_subtitulo', 'Pasa el ratón sobre los puntos rojos en el mapa')}
-              </p>
-            </div>
-
-            <div className="w-full flex flex-col-reverse lg:flex-row items-center gap-10">
-              
-              {/* PANEL DE INFORMACIÓN (20%) */}
-              <div className="w-full lg:w-1/5 flex flex-col justify-center text-left">
-                {(() => {
-                  const sedeActiva = sedes.find(s => s.id === sedeActivaId) || sedes.find(s => s.id === 'cr');
-                  const esCostaRica = sedeActiva.id === 'cr';
-                  const textoEtiqueta = esCostaRica 
-                    ? t('quienes_somos.sede_principal', 'Sede Principal') 
-                    : t('quienes_somos.oficina_regional', 'Oficina Regional');
-
-                  return (
-                    <div className="flex flex-col justify-center animate-fade-in">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-2 h-2 rounded-full bg-main-red animate-pulse"></div>
-                        <span className="text-[10px] font-bold text-main-red uppercase tracking-widest">
-                          {textoEtiqueta}
-                        </span>
-                      </div>
-                      <h4 className="text-xl font-extrabold text-main-blue mb-3 leading-tight uppercase">
-                        {sedeActiva.pais}
-                      </h4>
-                      <p className="text-gray-600 font-light leading-relaxed text-sm">
-                        {sedeActiva.info}
-                      </p>
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {/* MAPA INTERACTIVO (80% - Ultrawide) */}
-              <div className="w-full lg:w-4/5 flex items-center justify-end relative">
-                <ComposableMap 
-                  projection="geoMercator" 
-                  projectionConfig={{ scale: 380, center: [-84, 22] }} 
-                  width={1000} 
-                  height={500} 
-                  className="w-full h-auto outline-none" 
-                >
-                  <Geographies geography={geoUrl}>
-                    {({ geographies }) => geographies.map((geo) => (
-                      <Geography 
-                        key={geo.rsmKey} 
-                        geography={geo} 
-                        fill="#F3F4F6" 
-                        stroke="#FFFFFF" 
-                        strokeWidth={0.5} 
-                        style={{ default: { outline: "none" }, hover: { fill: "#E5E7EB", outline: "none" } }} 
-                      />
-                    ))}
-                  </Geographies>
-                  {sedes.map((sede) => {
-                    const isActive = sedeActivaId === sede.id;
-                    return (
-                      <Marker key={sede.id} coordinates={sede.coords}>
-                        <g 
-                          onMouseEnter={() => setSedeActivaId(sede.id)} 
-                          className="focus:outline-none cursor-pointer"
-                        >
-                          <circle r={30} fill="transparent" />
-                          {isActive && (
-                            <circle r={20} fill="#1D3557" fillOpacity={0.15} className="animate-pulse" />
-                          )}
-                          <circle 
-                            r={isActive ? 10 : 7} 
-                            fill={isActive ? "#1D3557" : "#B92F32"} 
-                            stroke="#FFFFFF" 
-                            strokeWidth={2} 
-                            className="transition-all duration-300" 
-                          />
-                        </g>
-                      </Marker>
-                    );
-                  })}
-                </ComposableMap>
-              </div>
-
-            </div>
-          </section>
 
           {/* BLOQUE 1: PRESENCIA AUDIOVISUAL */}
           <div className="w-full flex flex-col gap-10">
