@@ -1,7 +1,10 @@
 // src/pages/QuienesSomos.jsx
-import { useEffect } from "react";
+import { useState, useEffect } from "react"; // Incorporado useState
 import { useLocation } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+
+// Componentes para la sección de mapas interactivos
+import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 
 // Importaciones estructurales de UI
 import { Paper } from "@mui/material";
@@ -10,9 +13,38 @@ import posterVideo from "../assets/Isotipo-color-512.png";
 // IMPORTACIÓN PARA i18n
 import { useTranslation } from 'react-i18next';
 
+// 1. CONFIGURACIÓN DEL MAPA (Variables externas al componente)
+// URL base de topología mundial (World Atlas de alta resolución)
+const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+
+// Listado de sedes con sus coordenadas geográficas [Longitud, Latitud] e información básica
+const sedes = [
+  { 
+    id: "cr", 
+    pais: "Costa Rica", 
+    coords: [-84.0907, 9.9281], 
+    info: "Sede Central en San José. Punto de origen, coordinación general y centro operativo principal de todos nuestros proyectos." 
+  },
+  { 
+    id: "mx", 
+    pais: "México", 
+    coords: [-99.1332, 19.4326], 
+    info: "U-IIRESODH. Nuestro Instituto de Altos Estudios Universitarios, enfocado en impartir maestrías y especializaciones académicas." 
+  },
+  { 
+    id: "co", 
+    pais: "Colombia", 
+    coords: [-74.0721, 4.7110], 
+    info: "Oficina Regional. Centro estratégico para el litigio, la incidencia directa y el monitoreo de derechos humanos en Sudamérica." 
+  }
+];
+
 export default function QuienesSomos() {
   const location = useLocation();
   const { t } = useTranslation(); 
+  
+  // 2. ESTADO PARA CONTROLAR LA SEDE ACTIVA
+  const [sedeActivaId, setSedeActivaId] = useState('cr'); 
 
   useEffect(() => {
     if (location.hash) {
@@ -70,7 +102,7 @@ export default function QuienesSomos() {
           {/* BLOQUE 2: HISTORIA */}
           <div id="historia-section" className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify animate-fade-in-up">
             <p>
-              {t('quienes_somos.historia_1_pt1', 'El')} <strong className="font-semibold text-main-blue">IIRESODH</strong> {t('quienes_somos.historia_1_pt2', 'nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.')}
+              {t('quienes_somos.historia_1_pt1', 'El')} <strong className="font-semibold text-main-blue">IIRESODH</strong> {t('quienes_somos.historia_1_pt2', 'nace in San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.')}
             </p>
             <p>
               {t('quienes_somos.historia_2', 'Desde su creación fue una entidad con claridad en sus objetivos para el fortalecimiento, promoción y protección de los derechos humanos, y con ello incidir en una cultura donde el respeto sea asumido por las empresas e instituciones públicas como una forma de desarrollo directo.')}
@@ -88,10 +120,9 @@ export default function QuienesSomos() {
 
           <div className="w-20 h-1 bg-main-red mx-auto rounded-full"></div>
 
-          {/* SECCIÓN SEDES: ESTILO IGUAL A BENTO BOX, MÁS ANCHO Y SIN AIRE */}
+          {/* SECCIÓN SEDES INTERACTIVAS */}
           <section id="sedes-oficiales" className="pt-4 border-t border-gray-100 relative scroll-mt-24">
             
-            {/* Cabecera idéntica al estilo de los pilares (Litigio Estratégico) */}
             <div className="mb-8 text-left">
               <h3 className="text-2xl font-bold text-main-blue mb-2">
                 {t('quienes_somos.sedes_titulo', 'Sedes Oficiales')}
@@ -104,7 +135,7 @@ export default function QuienesSomos() {
             {/* Contenedor Ultra-Ancho: 20% texto / 80% mapa */}
             <div className="w-full flex flex-col-reverse lg:flex-row items-center gap-10">
               
-              {/* PANEL DE INFORMACIÓN (Delgado lg:w-1/5) */}
+              {/* PANEL DE INFORMACIÓN */}
               <div className="w-full lg:w-1/5 flex flex-col justify-center text-left">
                 {(() => {
                   const sedeActiva = sedes.find(s => s.id === sedeActivaId) || sedes.find(s => s.id === 'cr');
@@ -132,7 +163,7 @@ export default function QuienesSomos() {
                 })()}
               </div>
 
-              {/* MAPA (Gigante lg:w-4/5) - Proporción 1000x500 para máximo ancho */}
+              {/* MAPA INTERACTIVO */}
               <div className="w-full lg:w-4/5 flex items-center justify-end relative">
                 <ComposableMap 
                   projection="geoMercator" 
@@ -219,7 +250,7 @@ export default function QuienesSomos() {
                 {t('quienes_somos.vision_titulo', 'Visión')}
               </h2>
               <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed text-justify">
-                {t('quienes_somos.vision_texto', 'Ser una institución que impulse el respeto y la inclusión de los derechos humanos mediante estrategias de defense y capacitación, con la finalidad de construir una sociedad democrática y participativa.')}
+                {t('quienes_somos.vision_texto', 'Ser una institución que impulse el respeto y la inclusión de los derechos humanos mediante estrategias de defensa y capacitación, con la finalidad de construir una sociedad democrática y participativa.')}
               </p>
             </article>
           </div>
