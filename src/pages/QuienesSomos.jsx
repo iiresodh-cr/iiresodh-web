@@ -88,6 +88,100 @@ export default function QuienesSomos() {
 
           <div className="w-20 h-1 bg-main-red mx-auto rounded-full"></div>
 
+          {/* SECCIÓN SEDES: ESTILO IGUAL A BENTO BOX, MÁS ANCHO Y SIN AIRE */}
+          <section id="sedes-oficiales" className="pt-4 border-t border-gray-100 relative scroll-mt-24">
+            
+            {/* Cabecera idéntica al estilo de los pilares (Litigio Estratégico) */}
+            <div className="mb-8 text-left">
+              <h3 className="text-2xl font-bold text-main-blue mb-2">
+                {t('quienes_somos.sedes_titulo', 'Sedes Oficiales')}
+              </h3>
+              <p className="text-gray-500 font-light text-base mb-6">
+                {t('quienes_somos.sedes_subtitulo', 'Pasa el ratón sobre los puntos rojos en el mapa')}
+              </p>
+            </div>
+
+            {/* Contenedor Ultra-Ancho: 20% texto / 80% mapa */}
+            <div className="w-full flex flex-col-reverse lg:flex-row items-center gap-10">
+              
+              {/* PANEL DE INFORMACIÓN (Delgado lg:w-1/5) */}
+              <div className="w-full lg:w-1/5 flex flex-col justify-center text-left">
+                {(() => {
+                  const sedeActiva = sedes.find(s => s.id === sedeActivaId) || sedes.find(s => s.id === 'cr');
+                  const esCostaRica = sedeActiva.id === 'cr';
+                  const textoEtiqueta = esCostaRica 
+                    ? t('quienes_somos.sede_principal', 'Sede Principal') 
+                    : t('quienes_somos.oficina_regional', 'Oficina Regional');
+
+                  return (
+                    <div className="flex flex-col justify-center animate-fade-in">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-2 h-2 rounded-full bg-main-red animate-pulse"></div>
+                        <span className="text-[10px] font-bold text-main-red uppercase tracking-widest">
+                          {textoEtiqueta}
+                        </span>
+                      </div>
+                      <h4 className="text-xl font-extrabold text-main-blue mb-3 leading-tight uppercase">
+                        {sedeActiva.pais}
+                      </h4>
+                      <p className="text-gray-600 font-light leading-relaxed text-sm">
+                        {sedeActiva.info}
+                      </p>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* MAPA (Gigante lg:w-4/5) - Proporción 1000x500 para máximo ancho */}
+              <div className="w-full lg:w-4/5 flex items-center justify-end relative">
+                <ComposableMap 
+                  projection="geoMercator" 
+                  projectionConfig={{ scale: 380, center: [-84, 22] }} 
+                  width={1000} 
+                  height={500} 
+                  className="w-full h-auto outline-none" 
+                >
+                  <Geographies geography={geoUrl}>
+                    {({ geographies }) => geographies.map((geo) => (
+                      <Geography 
+                        key={geo.rsmKey} 
+                        geography={geo} 
+                        fill="#F3F4F6" 
+                        stroke="#FFFFFF" 
+                        strokeWidth={0.5} 
+                        style={{ default: { outline: "none" }, hover: { fill: "#E5E7EB", outline: "none" } }} 
+                      />
+                    ))}
+                  </Geographies>
+                  {sedes.map((sede) => {
+                    const isActive = sedeActivaId === sede.id;
+                    return (
+                      <Marker key={sede.id} coordinates={sede.coords}>
+                        <g 
+                          onMouseEnter={() => setSedeActivaId(sede.id)} 
+                          className="focus:outline-none cursor-pointer"
+                        >
+                          <circle r={30} fill="transparent" />
+                          {isActive && (
+                            <circle r={20} fill="#1D3557" fillOpacity={0.15} className="animate-pulse" />
+                          )}
+                          <circle 
+                            r={isActive ? 10 : 7} 
+                            fill={isActive ? "#1D3557" : "#B92F32"} 
+                            stroke="#FFFFFF" 
+                            strokeWidth={2} 
+                            className="transition-all duration-300" 
+                          />
+                        </g>
+                      </Marker>
+                    );
+                  })}
+                </ComposableMap>
+              </div>
+
+            </div>
+          </section>
+
           {/* BLOQUE 1: PRESENCIA AUDIOVISUAL */}
           <div className="w-full flex flex-col gap-10">
             <div className="text-center max-w-3xl mx-auto">
