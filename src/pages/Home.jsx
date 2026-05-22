@@ -1,5 +1,5 @@
 // src/pages/Home.jsx
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { collection, query, orderBy, limit, getDocs, where, doc, getDoc } from "firebase/firestore";
 import { db, functions } from "../firebase/config";
 import { httpsCallable } from "firebase/functions";
@@ -10,10 +10,6 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, EffectFade, Navigation } from 'swiper/modules'; 
 import 'swiper/css';
 import 'swiper/css/effect-fade';
-
-// Importaciones para el Mapa Interactivo de Sedes
-import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
-import { Paper } from "@mui/material";
 
 // Imágenes y Recursos
 import isotipoFondo from "../assets/Isotipo-color-512.webp"; 
@@ -28,8 +24,6 @@ import { Button } from "@mui/material";
 // IMPORTACIONES PARA i18n Y TRADUCCIÓN DINÁMICA
 import { useTranslation } from 'react-i18next';
 import { obtenerTextoTraducido } from "../utils/traductorDinamico";
-
-const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 export const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
@@ -66,17 +60,6 @@ export default function Home() {
     cifra2: "", texto2: "",
     cifra3: "", texto3: ""
   });
-
-  // Estados y Refs para el Mapa de Sedes
-  const [sedeActivaId, setSedeActivaId] = useState('cr');
-
-  const sedes = [
-    { id: 'ca', pais: t('quienes_somos.sede_ca_pais', 'Canadá'), coords: [-71.1743, 46.8033], info: t('quienes_somos.sede_ca_info', 'Atención virtual o presencial previa cita en la ciudad de Lévis, Québec. En Toronto vinculado con Waldman & Associates. Email: contacto@iiresodh.org') },
-    { id: 'mx', pais: t('quienes_somos.sede_mx_pais', 'México'), coords: [-99.1332, 19.4326], info: t('quienes_somos.sede_mx_info', 'Atención virtual o presencial previa cita. Email: contacto@iiresodh.org') },
-    { id: 'gt', pais: t('quienes_somos.sede_gt_pais', 'Guatemala'), coords: [-90.5069, 14.6349], info: t('quienes_somos.sede_gt_info', 'Diagonal 6 12-42, Edificio Design Center. Oficina No. 506, Torre 1, Zona 10. Ciudad de Guatemala. Teléfono: +502 5557 7466') },
-    { id: 'cr', pais: t('quienes_somos.sede_cr_pais', 'Costa Rica'), coords: [-84.0833, 9.9333], info: t('quienes_somos.sede_cr_info', 'Centro Corporativo San Rafael, nivel 3. San Rafael de Escazú, San José. CP 10201. Teléfono: +506 4703 5727') },
-    { id: 'co', pais: t('quienes_somos.sede_co_pais', 'Colombia'), coords: [-74.0636, 4.6243], info: t('quienes_somos.sede_co_info', 'Carrera. 11C No. 117-05. Oficina 5. Bogotá, Colombia. Teléfono: Bogotá +7461964. Móvil: +57 301 4844324') }
-  ];
 
   useEffect(() => {
     const fetchCifras = async () => {
@@ -130,29 +113,6 @@ export default function Home() {
       setEstadoEnvio("error");
       setTimeout(() => setEstadoEnvio("idle"), 5000);
     }
-  };
-
-  // Funciones del Mapa Interactivo
-  const handleHover = (sede, e) => {
-    if (!mapContainerRef.current) return;
-    const rect = mapContainerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const leftPos = x > rect.width / 2 ? x - 260 : x + 20;
-    const topPos = y < 150 ? y + 20 : y - 140;
-    setTooltipPos({ top: topPos, left: leftPos });
-    setHoveredSede(sede);
-  };
-
-  const showTooltipKeyboard = (sede, target) => {
-    const rect = target.getBoundingClientRect();
-    const mapRect = mapContainerRef.current.getBoundingClientRect();
-    const x = rect.left + rect.width / 2 - mapRect.left;
-    const y = rect.top + rect.height / 2 - mapRect.top;
-    const leftPos = x > mapRect.width / 2 ? x - 260 : x + 20;
-    const topPos = y < 150 ? y + 20 : y - 140;
-    setTooltipPos({ top: topPos, left: leftPos });
-    setHoveredSede(sede);
   };
 
   return (
@@ -304,6 +264,7 @@ export default function Home() {
                     {t('home.que_hacemos_subtitulo', 'Combinamos acción jurídica, cooperación técnica y formación académica para generar un impacto real en la sociedad.')}
                   </p>
                 </div>
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <Link to="/litigio-estrategico" className="group bg-gray-50 rounded-3xl p-8 border border-gray-100 hover:bg-white hover:shadow-xl transition-all duration-300">
                     <div className="w-14 h-14 bg-main-red text-white rounded-2xl flex items-center justify-center mb-6 shadow-md shadow-main-red/20 group-hover:scale-110 transition-transform">
@@ -312,6 +273,7 @@ export default function Home() {
                     <h3 className="text-2xl font-bold text-main-blue mb-3">{t('home.litigio_titulo', 'Litigio Estratégico')}</h3>
                     <p className="text-gray-500 font-light leading-relaxed">{t('home.litigio_desc', 'Defensa jurídica ante tribunales internacionales para sentar precedentes en la protección de derechos.')}</p>
                   </Link>
+                  
                   <Link to="/incidencia-internacional" className="group bg-gray-50 rounded-3xl p-8 border border-gray-100 hover:bg-white hover:shadow-xl transition-all duration-300">
                     <div className="w-14 h-14 bg-light-blue text-white rounded-2xl flex items-center justify-center mb-6 shadow-md shadow-light-blue/20 group-hover:scale-110 transition-transform">
                       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
@@ -319,6 +281,7 @@ export default function Home() {
                     <h3 className="text-2xl font-bold text-main-blue mb-3">{t('home.incidencia_titulo', 'Incidencia Internacional')}</h3>
                     <p className="text-gray-500 font-light leading-relaxed">{t('home.incidencia_desc', 'Investigaciones, informes de impacto y documentos de litigio estratégico.')}</p>
                   </Link>
+                  
                   <Link to="/cursos" className="md:col-span-2 group bg-main-blue rounded-3xl p-8 md:p-10 flex flex-col md:flex-row gap-8 items-center hover:shadow-2xl transition-all duration-300">
                     <div className="w-20 h-20 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-main-red group-hover:border-main-red transition-all">
                       <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
@@ -328,6 +291,18 @@ export default function Home() {
                       <p className="text-gray-300 font-light text-lg">{t('home.formacion_desc', 'Certificaciones y programas académicos diseñados para los líderes del cambio social.')}</p>
                     </div>
                   </Link>
+
+                  {/* NUEVO: TARJETA DEL BLOG */}
+                  <Link to="/blog" className="md:col-span-2 group bg-[#f0fdf4] rounded-3xl p-8 md:p-10 flex flex-col md:flex-row gap-8 items-center hover:shadow-xl transition-all duration-300 border border-[#bbf7d0]">
+                    <div className="w-20 h-20 bg-[#16a34a] text-white rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-[#15803d] transition-all shadow-lg shadow-green-600/30">
+                      <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-[#166534] mb-2">{t('home.blog_titulo', 'Blog Oficial')}</h3>
+                      <p className="text-gray-600 font-light text-lg">{t('home.blog_desc', 'Manténgase informado con análisis profundos, artículos de opinión y actualizaciones redactadas por nuestros expertos legales.')}</p>
+                    </div>
+                  </Link>
+
                 </div>
               </div>
               
@@ -353,100 +328,6 @@ export default function Home() {
                   </form>
                 </div>
               </div>
-            </div>
-          </section>
-
-          {/* SECCIÓN SEDES: ESTILO IGUAL A BENTO BOX, MÁS ANCHO Y SIN AIRE */}
-          <section id="sedes-oficiales" className="pt-4 border-t border-gray-100 relative scroll-mt-24">
-            
-            {/* Cabecera idéntica al estilo de los pilares (Litigio Estratégico) */}
-            <div className="mb-8 text-left">
-              <h3 className="text-2xl font-bold text-main-blue mb-2">
-                {t('quienes_somos.sedes_titulo', 'Sedes Oficiales')}
-              </h3>
-              <p className="text-gray-500 font-light text-base mb-6">
-                {t('quienes_somos.sedes_subtitulo', 'Pasa el ratón sobre los puntos rojos en el mapa')}
-              </p>
-            </div>
-
-            {/* Contenedor Ultra-Ancho: 20% texto / 80% mapa */}
-            <div className="w-full flex flex-col-reverse lg:flex-row items-center gap-10">
-              
-              {/* PANEL DE INFORMACIÓN (Delgado lg:w-1/5) */}
-              <div className="w-full lg:w-1/5 flex flex-col justify-center text-left">
-                {(() => {
-                  const sedeActiva = sedes.find(s => s.id === sedeActivaId) || sedes.find(s => s.id === 'cr');
-                  const esCostaRica = sedeActiva.id === 'cr';
-                  const textoEtiqueta = esCostaRica 
-                    ? t('quienes_somos.sede_principal', 'Sede Principal') 
-                    : t('quienes_somos.oficina_regional', 'Oficina Regional');
-
-                  return (
-                    <div className="flex flex-col justify-center animate-fade-in">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-2 h-2 rounded-full bg-main-red animate-pulse"></div>
-                        <span className="text-[10px] font-bold text-main-red uppercase tracking-widest">
-                          {textoEtiqueta}
-                        </span>
-                      </div>
-                      <h4 className="text-xl font-extrabold text-main-blue mb-3 leading-tight uppercase">
-                        {sedeActiva.pais}
-                      </h4>
-                      <p className="text-gray-600 font-light leading-relaxed text-sm">
-                        {sedeActiva.info}
-                      </p>
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {/* MAPA (Gigante lg:w-4/5) - Proporción 1000x500 para máximo ancho */}
-              <div className="w-full lg:w-4/5 flex items-center justify-end relative">
-                <ComposableMap 
-                  projection="geoMercator" 
-                  projectionConfig={{ scale: 380, center: [-84, 22] }} 
-                  width={1000} 
-                  height={500} 
-                  className="w-full h-auto outline-none" 
-                >
-                  <Geographies geography={geoUrl}>
-                    {({ geographies }) => geographies.map((geo) => (
-                      <Geography 
-                        key={geo.rsmKey} 
-                        geography={geo} 
-                        fill="#F3F4F6" 
-                        stroke="#FFFFFF" 
-                        strokeWidth={0.5} 
-                        style={{ default: { outline: "none" }, hover: { fill: "#E5E7EB", outline: "none" } }} 
-                      />
-                    ))}
-                  </Geographies>
-                  {sedes.map((sede) => {
-                    const isActive = sedeActivaId === sede.id;
-                    return (
-                      <Marker key={sede.id} coordinates={sede.coords}>
-                        <g 
-                          onMouseEnter={() => setSedeActivaId(sede.id)} 
-                          className="focus:outline-none cursor-pointer"
-                        >
-                          <circle r={30} fill="transparent" />
-                          {isActive && (
-                            <circle r={20} fill="#1D3557" fillOpacity={0.15} className="animate-pulse" />
-                          )}
-                          <circle 
-                            r={isActive ? 10 : 7} 
-                            fill={isActive ? "#1D3557" : "#B92F32"} 
-                            stroke="#FFFFFF" 
-                            strokeWidth={2} 
-                            className="transition-all duration-300" 
-                          />
-                        </g>
-                      </Marker>
-                    );
-                  })}
-                </ComposableMap>
-              </div>
-
             </div>
           </section>
 
