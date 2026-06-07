@@ -154,7 +154,19 @@
     "accion_nacional_titulo": "Acción a Nivel Nacional",
     "accion_nacional_pt1": "Además, en",
     "accion_nacional_pt2": "México, Costa Rica y El Salvador",
-    "accion_nacional_pt3": "realizamos litigios y asesorías en materia constitucional y afines."
+    "accion_nacional_pt3": "realizamos litigios y asesorías en materia constitucional y afines.",
+    "que_es_titulo": "¿Qué es el Litigio Estratégico Internacional?",
+    "que_es_subtitulo": "Justicia que transforma realidades, más allá de las fronteras.",
+    "que_es_p1": "Cuando los caminos de la justicia local se agotan o fallan en proteger los derechos fundamentales, la comunidad internacional ofrece una última esperanza. El litigio estratégico internacional no busca únicamente resolver un caso individual; busca transformar el sistema desde la raíz.",
+    "que_es_p2": "Consiste en seleccionar y llevar casos emblemáticos ante organismos y tribunales internacionales (como el Sistema Interamericano de Derechos Humanos o las Naciones Unidas) para evidenciar violaciones sistemáticas de derechos humanos. Nuestro objetivo no es solo ganar un juicio, sino lograr un efecto multiplicador: crear precedentes legales que obliguen a los Estados a cambiar leyes injustas, reparar de forma integral a las víctimas y evitar que las injusticias se repitan.",
+    "como_hacemos_titulo": "¿Cómo lo hacemos? El Poder del Pro-Bono",
+    "como_hacemos_p1": "En nuestra organización creemos firmemente que el acceso a la justicia internacional no debe ser un privilegio de unos pocos. Por eso, dedicamos nuestro conocimiento, tiempo y recursos de manera totalmente gratuita (pro-bono) al servicio de personas, comunidades y colectivos en situación de vulnerabilidad.",
+    "como_hacemos_p2": "Asumimos la defensa técnica con los más altos estándares de excelencia jurídica, acompañando de forma integral a las víctimas y articulando esfuerzos con movimientos sociales. El litigio estratégico es nuestra forma de nivelar la balanza y poner el derecho internacional al servicio de la dignidad humana.",
+    "pilares_titulo": "Los Tres Pilares de Nuestro Impacto:",
+    "pilar_1": "Creación de Precedentes: Logramos fallos internacionales que sirven como \"escudo legal\" para proteger a miles de personas en situaciones similares.",
+    "pilar_2": "Reforma Estructural: Presionamos a los Gobiernos para que modifiquen políticas públicas y leyes que vulneran los derechos humanos.",
+    "pilar_3": "Visibilidad y Concientización: Llevamos las voces de las víctimas a los escenarios globales más importantes, rompiendo el silencio y la impunidad.",
+    "cita_final": "\"Buscamos que la victoria de una persona se convierta en la justicia de toda una comunidad.\""
   },
   "cursos": {
     "cargando": "Cargando oferta académica...",
