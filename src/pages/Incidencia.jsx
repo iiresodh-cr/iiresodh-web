@@ -17,6 +17,7 @@ const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 export default function Incidencia() {
   const { t, i18n } = useTranslation(); 
   const [documentos, setDocumentos] = useState([]);
+  const [busqueda, setBusqueda] = useState(""); // NUEVO: Estado para búsqueda
   const [loading, setLoading] = useState(true);
   
   // ESTADO PARA EL MAPA
@@ -76,10 +77,22 @@ export default function Incidencia() {
     }
   };
 
+  // NUEVO: Lógica de filtrado de documentos por búsqueda
+  const documentosFiltrados = documentos.filter(doc => 
+    doc.titulo?.toLowerCase().includes(busqueda.toLowerCase()) || 
+    doc.resumen?.toLowerCase().includes(busqueda.toLowerCase()) ||
+    doc.tipo?.toLowerCase().includes(busqueda.toLowerCase())
+  );
+
   const indiceUltimoDocumento = paginaActual * documentosPorPagina;
   const indicePrimerDocumento = indiceUltimoDocumento - documentosPorPagina;
-  const documentosPaginados = documentos.slice(indicePrimerDocumento, indiceUltimoDocumento);
-  const totalPaginas = Math.ceil(documentos.length / documentosPorPagina);
+  const documentosPaginados = documentosFiltrados.slice(indicePrimerDocumento, indiceUltimoDocumento);
+  const totalPaginas = Math.ceil(documentosFiltrados.length / documentosPorPagina);
+
+  // Reiniciar la página a 1 si se realiza una búsqueda
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [busqueda]);
 
   if (loading) {
     return (
@@ -123,13 +136,13 @@ export default function Incidencia() {
 
             <div className="w-full flex flex-col-reverse lg:flex-row items-center gap-10">
               
-              {/* PANEL DE INFORMACIÓN (TARJETA EN BLANCO) */}
+              {/* PANEL DE INFORMACIÓN */}
               <div className="w-full lg:w-1/4 flex flex-col justify-center text-left">
                 {(() => {
                   const paisActivo = paisesIncidencia.find(p => p.id === paisActivoId) || paisesIncidencia.find(p => p.id === 'cr');
 
                   return (
-                    <Paper elevation={0} className="p-8 border border-gray-100 bg-gray-50/50 rounded-2xl min-h-62.5 flex flex-col" sx={{ borderRadius: '24px' }}>
+                    <Paper elevation={0} className="p-8 border border-gray-100 bg-gray-50/50 min-h-62.5 flex flex-col" sx={{ borderRadius: '20px' }}>
                       <div className="flex items-center gap-2 mb-4">
                         <div className="w-3 h-3 rounded-full bg-main-red animate-pulse"></div>
                         <span className="text-xs font-bold text-main-red uppercase tracking-widest">
@@ -139,20 +152,21 @@ export default function Incidencia() {
                       <h4 className="text-3xl font-extrabold text-main-blue mb-4 leading-tight uppercase">
                         {paisActivo.pais}
                       </h4>
-                      {/* Espacio en blanco preparado para futura información de proyectos/incidencia */}
-                      <div className="grow flex items-center justify-center border-2 border-dashed border-gray-200 rounded-xl bg-white/50">
-                         <span className="text-gray-400 text-sm italic">{t('incidencia.info_proximamente', 'Información de incidencia próximamente')}</span>
+                      {/* MEJORA UX/UI: Empty state suavizado con ícono */}
+                      <div className="grow flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-xl bg-white/50 p-4 text-center">
+                         <svg className="w-8 h-8 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                         <span className="text-gray-400 text-sm font-medium">{t('incidencia.info_proximamente', 'Información de incidencia próximamente')}</span>
                       </div>
                     </Paper>
                   );
                 })()}
               </div>
 
-              {/* MAPA INTERACTIVO (Ajustado para que quepa América y Europa) */}
+              {/* MAPA INTERACTIVO */}
               <div className="w-full lg:w-3/4 flex items-center justify-end relative">
                 <ComposableMap 
                   projection="geoMercator" 
-                  projectionConfig={{ scale: 220, center: [-30, 30] }} // Aleja el zoom y centra en el Atlántico
+                  projectionConfig={{ scale: 220, center: [-30, 30] }} 
                   width={1000} 
                   height={550} 
                   className="w-full h-auto outline-none" 
@@ -162,7 +176,7 @@ export default function Incidencia() {
                       <Geography 
                         key={geo.rsmKey} 
                         geography={geo} 
-                        fill="#E5E7EB" // Mapa un poco más oscuro
+                        fill="#E5E7EB" 
                         stroke="#FFFFFF" 
                         strokeWidth={0.5} 
                         style={{ default: { outline: "none" }, hover: { fill: "#D1D5DB", outline: "none" } }} 
@@ -177,7 +191,7 @@ export default function Incidencia() {
                           onMouseEnter={() => setPaisActivoId(pais.id)} 
                           className="focus:outline-none cursor-pointer"
                         >
-                          <circle r={25} fill="transparent" /> {/* Área interactiva más grande */}
+                          <circle r={25} fill="transparent" /> 
                           {isActive && (
                             <circle r={15} fill="#1D3557" fillOpacity={0.15} className="animate-pulse" />
                           )}
@@ -200,7 +214,7 @@ export default function Incidencia() {
           {/* ==================================================== */}
           {/* INTRODUCCIÓN Y LISTADO DE DOCUMENTOS                   */}
           {/* ==================================================== */}
-          <div className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify mb-16 animate-fade-in-up">
+          <div className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify mb-12 animate-fade-in-up">
             <h2 className="text-3xl md:text-4xl font-black text-main-blue tracking-tighter mb-6 text-center md:text-left">
               {t('incidencia.intro_titulo', 'Documentos y Posicionamientos')}
             </h2>
@@ -212,16 +226,34 @@ export default function Incidencia() {
             </p>
           </div>
 
-          <div ref={listRef} className="w-16 h-1 bg-main-red mx-auto mt-8 mb-12 rounded-full"></div>
+          {/* NUEVO: BARRA DE BÚSQUEDA (UX) */}
+          <div className="max-w-xl mx-auto mb-10" ref={listRef}>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              </div>
+              <input
+                type="text"
+                placeholder={t('incidencia.buscar_placeholder', 'Buscar por título, tipo o palabra clave...')}
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                className="block w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-main-blue/20 focus:border-main-blue transition-all"
+              />
+            </div>
+          </div>
+
+          <div className="w-16 h-1 bg-main-red mx-auto mt-8 mb-12 rounded-full"></div>
 
           {/* LISTA DE DOCUMENTOS */}
-          {documentos.length === 0 ? (
+          {documentosFiltrados.length === 0 ? (
             <div className="text-center py-10">
               <h2 className="text-2xl font-semibold text-main-blue mb-4 uppercase tracking-widest">
                 {t('incidencia.no_docs_titulo', 'Aún no hay documentos')}
               </h2>
               <p className="text-gray-500 font-light max-w-2xl mx-auto leading-relaxed italic">
-                {t('incidencia.no_docs_desc', 'Próximamente estaremos publicando nuestros documentos de incidencia.')}
+                {busqueda !== "" 
+                  ? t('incidencia.no_docs_busqueda', 'No encontramos coincidencias para tu búsqueda. Intenta con otras palabras.')
+                  : t('incidencia.no_docs_desc', 'Próximamente estaremos publicando nuestros documentos de incidencia.')}
               </p>
             </div>
           ) : (
@@ -231,11 +263,11 @@ export default function Incidencia() {
                   <Paper 
                     key={doc.id} 
                     elevation={0} 
-                    className="group flex flex-col bg-gray-50/50 p-8 border border-gray-100 hover:border-main-red/30 hover:shadow-lg transition-all duration-300 h-full relative overflow-hidden" 
-                    sx={{ borderRadius: '24px' }}
+                    className="group flex flex-col bg-gray-50/50 p-8 border border-gray-100 hover:border-main-red/30 hover:shadow-md transition-all duration-300 h-full relative overflow-hidden" 
+                    sx={{ borderRadius: '20px' }}
                   >
                     <div className="flex justify-between items-start mb-4">
-                      <span className="bg-pale-blue/20 text-main-blue text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-md border border-pale-blue/30">
+                      <span className="bg-pale-blue/10 text-main-blue text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-md border border-pale-blue/20">
                         {formatearFecha(doc.fechaPublicacion)}
                       </span>
                       <span className="text-gray-400 text-xs font-bold flex items-center gap-1">
@@ -247,22 +279,24 @@ export default function Incidencia() {
                     <h3 className="text-xl md:text-2xl font-bold text-main-blue mb-3 tracking-tight group-hover:text-main-red transition-colors">
                       {doc.titulo}
                     </h3>
-                    <p className="text-gray-500 font-light leading-relaxed text-sm mb-8 grow">
+                    
+                    {/* MEJORA UI: line-clamp-3 para mantener la simetría de las tarjetas */}
+                    <p className="text-gray-500 font-light leading-relaxed text-sm mb-8 grow line-clamp-3">
                       {doc.resumen}
                     </p>
 
                     <div className="mt-auto pt-4 border-t border-gray-100">
+                      {/* MEJORA UX/UI: Botón fantasma en lugar de solo texto */}
                       <a 
                         href={doc.archivoIncidenciaUrl || "#"} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-sm font-bold text-main-red uppercase tracking-widest hover:text-red-800 transition-colors"
+                        className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2.5 text-xs font-bold text-main-red uppercase tracking-widest border-2 border-main-red/20 rounded-lg hover:bg-main-red hover:text-white hover:border-main-red transition-all duration-300"
                       >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                         {t('incidencia.btn_descargar', 'Descargar Documento')}
                       </a>
                     </div>
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-main-red/5 rounded-bl-[100px] -z-10 transition-transform group-hover:scale-110"></div>
                   </Paper>
                 ))}
               </div>
