@@ -42,7 +42,7 @@ export default function QuienesSomos() {
     },
     {
       titulo: t('quienes_somos.principles_4_tit', 'Protección Ambiental'),
-      texto: t('quienes_somos.principles_4_tex', 'Adoptar prácticas sostenibles que minimicen nuestra huella ecológica, reconociendo nuestra interdependencia con la naturaleza para protegerla pour las generaciones futuras.')
+      texto: t('quienes_somos.principles_4_tex', 'Adoptar prácticas sostenibles que minimicen nuestra huella ecológica, reconociendo nuestra interdependencia con la naturaleza para protegerla para las generaciones futuras.')
     },
     {
       titulo: t('quienes_somos.principles_5_tit', 'Ética y Transparencia'),
@@ -67,50 +67,59 @@ export default function QuienesSomos() {
 
         <section className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-12 pb-16 flex flex-col gap-16 md:gap-20">
 
-          {/* BLOQUE 2: HISTORIA */}
-          <div id="historia-section" className="max-w-4xl mx-auto space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify animate-fade-in-up">
-            <p>
-              {t('quienes_somos.historia_1_pt1', 'El')} <strong className="font-semibold text-main-blue">IIRESODH</strong> {t('quienes_somos.historia_1_pt2', 'nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.')}
-            </p>
-            <p>
-              {t('quienes_somos.historia_2', 'Desde su creación fue una entidad con claridad en sus objetivos para el fortalecimiento, promoción y protección de los derechos humanos, y con ello incidir en una cultura donde el respeto sea asumido por las empresas e instituciones públicas como una forma de desarrollo directo.')}
-            </p>
-            <p>
-              {t('quienes_somos.historia_3', 'Contamos con acuerdos de cooperación con el CCPR-Centre en Ginebra, la Comisión Interamericana de Derechos Humanos, la Universidad Nacional de La Plata y el Instituto Universitario de Yucatán. Nuestro personal cuenta con amplia experiencia en el sistema interamericano y universal de Naciones Unidas.')}
-            </p>
-            <p>
-              {t('quienes_somos.historia_4', 'Desde 2013 hemos capacitado a más de 1500 personas en América Latina y Europa. En 2021 abrimos el instituto de altos estudios universitarios (U-IIRESODH) en México para ofrecer maestrías especializadas.')}
-            </p>
-            <p>
-              {t('quienes_somos.historia_5', 'Desde 2019 implementamos proyectos de cooperación orientados a la incidencia y al litigio estratégico en Nicaragua, Venezuela, Costa Rica y Colombia, con el apoyo de donantes como las embajadas de Reino Unido y Suiza, y el PNUD.')}
-            </p>
-          </div>
-
-          <div className="w-20 h-1 bg-main-red mx-auto rounded-full"></div>
-
-          {/* BLOQUE 1: PRESENCIA AUDIOVISUAL */}
-          <div className="w-full flex flex-col gap-10">
-            <div className="text-center max-w-3xl mx-auto">
-              <span className="text-main-red font-black tracking-[0.3em] uppercase text-xs mb-3 block">
+          {/* =========================================
+              BLOQUE 1: HISTORIA + VIDEO/IMAGEN
+          ========================================= */}
+          <div id="historia-section" className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center animate-fade-in-up">
+            
+            {/* Columna Izquierda: Textos de Historia */}
+            <div className="lg:col-span-7 space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify">
+              <span className="text-main-red font-black tracking-[0.3em] uppercase text-xs mb-1 block">
                 {t('quienes_somos.presencia_etiqueta', 'Nuestra Presencia')}
               </span>
-              <h2 className="text-3xl md:text-4xl font-black text-main-blue tracking-tighter">
+              <h2 className="text-3xl md:text-4xl font-black text-main-blue tracking-tighter mb-6">
                 {t('quienes_somos.presencia_titulo', 'Impacto Global, Acción Local')}
               </h2>
+              
+              <p>
+                {t('quienes_somos.historia_1_pt1', 'El')} <strong className="font-semibold text-main-blue">IIRESODH</strong> {t('quienes_somos.historia_1_pt2', 'nace en San José, Costa Rica, logrando crecer muy rápidamente para una más amplia y mejor atención que hoy nos permite tener oficinas de trabajo en varios países.')}
+              </p>
+              <p>
+                {t('quienes_somos.historia_2', 'Desde su creación fue una entidad con claridad en sus objetivos para el fortalecimiento, promoción y protección de los derechos humanos, y con ello incidir en una cultura donde el respeto sea asumido por las empresas e instituciones públicas como una forma de desarrollo directo.')}
+              </p>
+              <p>
+                {t('quienes_somos.historia_3', 'Contamos con acuerdos de cooperación con el CCPR-Centre en Ginebra, la Comisión Interamericana de Derechos Humanos, la Universidad Nacional de La Plata y el Instituto Universitario de Yucatán. Nuestro personal cuenta con amplia experiencia en el sistema interamericano y universal de Naciones Unidas.')}
+              </p>
+              <p>
+                {t('quienes_somos.historia_4', 'Desde 2013 hemos capacitado a más de 1500 personas en América Latina y Europa. En 2021 abrimos el instituto de altos estudios universitarios (U-IIRESODH) en México para ofrecer maestrías especializadas.')}
+              </p>
+              <p>
+                {t('quienes_somos.historia_5', 'Desde 2019 implementamos proyectos de cooperación orientados a la incidencia y al litigio estratégico en Nicaragua, Venezuela, Costa Rica y Colombia, con el apoyo de donantes como las embajadas de Reino Unido y Suiza, y el PNUD.')}
+              </p>
             </div>
 
-            <div className="max-w-5xl mx-auto w-full">
-              <Paper elevation={4} className="w-full aspect-video rounded-3xl overflow-hidden shadow-lg bg-black" sx={{ borderRadius: '24px' }}>
-                <video src="https://storage.googleapis.com/videos-iire/IIRESODH.webm" controls className="w-full h-full object-contain" poster={posterVideo} />
+            {/* Columna Derecha: Contenedor Audiovisual */}
+            <div className="lg:col-span-5 w-full flex justify-center mt-8 lg:mt-0">
+              <Paper elevation={0} className="w-full rounded-3xl overflow-hidden border border-gray-100 bg-gray-50/50 p-2" sx={{ borderRadius: '24px' }}>
+                <div className="rounded-2xl overflow-hidden bg-black shadow-sm aspect-4/3 md:aspect-video lg:aspect-4/3 flex items-center justify-center">
+                  <video 
+                    src="https://storage.googleapis.com/videos-iire/IIRESODH.webm" 
+                    controls 
+                    className="w-full h-full object-contain" 
+                    poster={posterVideo} 
+                  />
+                </div>
               </Paper>
             </div>
           </div>
 
           <div className="w-16 h-1 bg-main-red mx-auto rounded-full"></div>
 
-          {/* BLOQUE 3: MISIÓN Y VISIÓN */}
+          {/* =========================================
+              BLOQUE 2: MISIÓN Y VISIÓN
+          ========================================= */}
           <div id="mision-vision" className="grid grid-cols-1 md:grid-cols-2 gap-8 scroll-mt-32">
-            <article className="bg-gray-50 border-l-4 border-main-red p-8 md:p-10 rounded-r-2xl shadow-sm hover:shadow-md transition-shadow">
+            <article className="bg-gray-50 border-l-4 border-l-main-red p-8 md:p-10 rounded-r-2xl border-y border-r border-gray-100 hover:shadow-md transition-shadow duration-300">
               <h2 className="text-2xl font-extrabold text-main-blue mb-4 uppercase tracking-wider flex items-center gap-3">
                 <span className="bg-main-red text-white w-10 h-10 flex items-center justify-center rounded-xl text-lg font-black shadow-sm" aria-hidden="true">M</span>
                 {t('quienes_somos.mision_titulo', 'Misión')}
@@ -119,7 +128,8 @@ export default function QuienesSomos() {
                 {t('quienes_somos.mision_texto', 'Promover el respeto y cumplimiento de los estándares internacionales en derechos humanos a través del litigio estratégico y proyectos de capacitación, brindando acompañamiento al sector público y privado en materia de responsabilidad social.')}
               </p>
             </article>
-            <article className="bg-pale-blue/10 border-l-4 border-light-blue p-8 md:p-10 rounded-r-2xl shadow-sm hover:shadow-md transition-shadow">
+
+            <article className="bg-pale-blue/10 border-l-4 border-l-light-blue p-8 md:p-10 rounded-r-2xl border-y border-r border-pale-blue/20 hover:shadow-md transition-shadow duration-300">
               <h2 className="text-2xl font-extrabold text-main-blue mb-4 uppercase tracking-wider flex items-center gap-3">
                 <span className="bg-light-blue text-white w-10 h-10 flex items-center justify-center rounded-xl text-lg font-black shadow-sm" aria-hidden="true">V</span>
                 {t('quienes_somos.vision_titulo', 'Visión')}
@@ -132,7 +142,9 @@ export default function QuienesSomos() {
 
           <div className="w-16 h-1 bg-main-red mx-auto rounded-full"></div>
 
-          {/* BLOQUE 4: PRINCIPIOS RECTORES */}
+          {/* =========================================
+              BLOQUE 3: PRINCIPIOS RECTORES
+          ========================================= */}
           <section id="principios-rectores" className="scroll-mt-32" aria-labelledby="principios-titulo">
             <div className="text-center mb-12">
               <h2 id="principios-titulo" className="text-3xl md:text-4xl font-black text-main-blue uppercase tracking-tighter">
@@ -148,7 +160,7 @@ export default function QuienesSomos() {
                     <div className="w-2.5 h-2.5 rounded-full bg-main-red shrink-0" aria-hidden="true"></div>
                     {principio.titulo}
                   </h3>
-                  <p className="text-gray-500 font-light leading-relaxed text-sm">
+                  <p className="text-gray-500 font-light leading-relaxed text-sm text-justify">
                     {principio.texto}
                   </p>
                 </Paper>
@@ -158,7 +170,9 @@ export default function QuienesSomos() {
 
           <div className="w-16 h-1 bg-main-red mx-auto rounded-full"></div>
 
-          {/* BLOQUE 5: ORGANIGRAMA */}
+          {/* =========================================
+              BLOQUE 4: ORGANIGRAMA
+          ========================================= */}
           <section id="organigrama" className="relative z-20 scroll-mt-32" aria-labelledby="organigrama-titulo">
             <div className="max-w-5xl mx-auto">
               <h2 id="organigrama-titulo" className="text-3xl md:text-4xl font-black text-center mb-8 uppercase tracking-tighter text-main-blue">
@@ -203,7 +217,7 @@ export default function QuienesSomos() {
                     </div>
                   </div>
                   <div className="mt-12 flex items-center gap-4 border-2 border-dashed border-gray-300 p-8 rounded-2xl bg-white relative w-full justify-center">
-                    <div className="bg-pale-blue text-main-blue font-black py-4 px-10 rounded-xl shadow-sm tracking-wide border border-pale-blue">
+                    <div className="bg-pale-blue/20 text-main-blue font-black py-4 px-10 rounded-xl shadow-sm tracking-wide border border-pale-blue/30">
                       {t('quienes_somos.org_universidad', 'U-IIRESODH (Altos Estudios Universitarios)')}
                     </div>
                   </div>
