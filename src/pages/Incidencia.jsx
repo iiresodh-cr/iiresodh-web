@@ -20,20 +20,22 @@ export default function Incidencia() {
   const [loading, setLoading] = useState(true);
   
   // ESTADO PARA EL MAPA
-  const [sedeActivaId, setSedeActivaId] = useState('cr'); 
+  const [paisActivoId, setPaisActivoId] = useState('cr'); 
 
   // ESTADOS PARA PAGINACIÓN
   const [paginaActual, setPaginaActual] = useState(1);
   const documentosPorPagina = 10;
   const listRef = useRef(null); 
 
-  // LISTADO OFICIAL DE SEDES (Traducciones apuntando a 'incidencia')
-  const sedes = [
-    { id: 'ca', pais: t('incidencia.sede_ca_pais', 'Canadá'), coords: [-71.1743, 46.8033], info: t('incidencia.sede_ca_info', 'Atención virtual o presencial previa cita en la ciudad de Lévis, Québec. En Toronto vinculado con Waldman & Associates. Email: contacto@iiresodh.org') },
-    { id: 'mx', pais: t('incidencia.sede_mx_pais', 'México'), coords: [-99.1332, 19.4326], info: t('incidencia.sede_mx_info', 'Atención virtual o presencial previa cita. Email: contacto@iiresodh.org') },
-    { id: 'gt', pais: t('incidencia.sede_gt_pais', 'Guatemala'), coords: [-90.5069, 14.6349], info: t('incidencia.sede_gt_info', 'Diagonal 6 12-42, Edificio Design Center. Oficina No. 506, Torre 1, Zona 10. Ciudad de Guatemala. Teléfono: +502 5557 7466') },
-    { id: 'cr', pais: t('incidencia.sede_cr_pais', 'Costa Rica'), coords: [-84.0833, 9.9333], info: t('incidencia.sede_cr_info', 'Centro Corporativo San Rafael, nivel 3. San Rafael de Escazú, San José. CP 10201. Teléfono: +506 4703 5727') },
-    { id: 'co', pais: t('incidencia.sede_co_pais', 'Colombia'), coords: [-74.0636, 4.6243], info: t('incidencia.sede_co_info', 'Carrera. 11C No. 117-05. Oficina 5. Bogotá, Colombia. Teléfono: Bogotá +7461964. Móvil: +57 301 4844324') }
+  // LISTADO DE PAÍSES DE INCIDENCIA
+  const paisesIncidencia = [
+    { id: 'ca', pais: t('incidencia.pais_ca', 'Canadá'), coords: [-106.3468, 56.1304] },
+    { id: 'mx', pais: t('incidencia.pais_mx', 'México'), coords: [-102.5528, 23.6345] },
+    { id: 'gt', pais: t('incidencia.pais_gt', 'Guatemala'), coords: [-90.2308, 15.7835] },
+    { id: 'hn', pais: t('incidencia.pais_hn', 'Honduras'), coords: [-86.2419, 15.2000] },
+    { id: 'cr', pais: t('incidencia.pais_cr', 'Costa Rica'), coords: [-83.7534, 9.7489] },
+    { id: 'co', pais: t('incidencia.pais_co', 'Colombia'), coords: [-74.2973, 4.5709] },
+    { id: 'ch', pais: t('incidencia.pais_ch', 'Suiza'), coords: [8.2275, 46.8182] }
   ];
 
   useEffect(() => {
@@ -104,58 +106,55 @@ export default function Incidencia() {
         <section className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-12 pb-16">
 
           {/* ==================================================== */}
-          {/* SECCIÓN SEDES INTERACTIVAS (MAPA MOVIDO AQUÍ)          */}
+          {/* SECCIÓN MAPA DE INCIDENCIA                           */}
           {/* ==================================================== */}
-          <section id="sedes-oficiales" className="mb-20 pb-16 border-b border-gray-100 relative scroll-mt-24 animate-fade-in-up">
+          <section id="mapa-incidencia" className="mb-20 pb-16 border-b border-gray-100 relative scroll-mt-24 animate-fade-in-up">
             <div className="mb-8 text-left">
               <span className="text-main-red font-black tracking-[0.3em] uppercase text-xs mb-3 block">
                 {t('incidencia.mapa_etiqueta', 'Nuestra Presencia')}
               </span>
               <h3 className="text-3xl md:text-4xl font-black text-main-blue mb-2 tracking-tight">
-                {t('incidencia.sedes_titulo', 'Sedes Oficiales')}
+                {t('incidencia.mapa_titulo', 'Impacto Global')}
               </h3>
               <p className="text-gray-500 font-light text-base mb-6">
-                {t('incidencia.sedes_subtitulo', 'Pasa el ratón sobre los puntos rojos en el mapa')}
+                {t('incidencia.mapa_subtitulo', 'Pasa el ratón sobre los puntos rojos en el mapa para explorar nuestra incidencia por país.')}
               </p>
             </div>
 
             <div className="w-full flex flex-col-reverse lg:flex-row items-center gap-10">
               
-              {/* PANEL DE INFORMACIÓN */}
-              <div className="w-full lg:w-1/5 flex flex-col justify-center text-left">
+              {/* PANEL DE INFORMACIÓN (TARJETA EN BLANCO) */}
+              <div className="w-full lg:w-1/4 flex flex-col justify-center text-left">
                 {(() => {
-                  const sedeActiva = sedes.find(s => s.id === sedeActivaId) || sedes.find(s => s.id === 'cr');
-                  const esCostaRica = sedeActiva.id === 'cr';
-                  const textoEtiqueta = esCostaRica 
-                    ? t('incidencia.sede_principal', 'Sede Principal') 
-                    : t('incidencia.oficina_regional', 'Oficina Regional');
+                  const paisActivo = paisesIncidencia.find(p => p.id === paisActivoId) || paisesIncidencia.find(p => p.id === 'cr');
 
                   return (
-                    <div className="flex flex-col justify-center animate-fade-in">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-2 h-2 rounded-full bg-main-red animate-pulse"></div>
-                        <span className="text-[10px] font-bold text-main-red uppercase tracking-widest">
-                          {textoEtiqueta}
+                    <Paper elevation={0} className="p-8 border border-gray-100 bg-gray-50/50 rounded-2xl min-h-62.5 flex flex-col" sx={{ borderRadius: '24px' }}>
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="w-3 h-3 rounded-full bg-main-red animate-pulse"></div>
+                        <span className="text-xs font-bold text-main-red uppercase tracking-widest">
+                          {t('incidencia.pais_seleccionado', 'País Seleccionado')}
                         </span>
                       </div>
-                      <h4 className="text-xl font-extrabold text-main-blue mb-3 leading-tight uppercase">
-                        {sedeActiva.pais}
+                      <h4 className="text-3xl font-extrabold text-main-blue mb-4 leading-tight uppercase">
+                        {paisActivo.pais}
                       </h4>
-                      <p className="text-gray-600 font-light leading-relaxed text-sm">
-                        {sedeActiva.info}
-                      </p>
-                    </div>
+                      {/* Espacio en blanco preparado para futura información de proyectos/incidencia */}
+                      <div className="grow flex items-center justify-center border-2 border-dashed border-gray-200 rounded-xl bg-white/50">
+                         <span className="text-gray-400 text-sm italic">{t('incidencia.info_proximamente', 'Información de incidencia próximamente')}</span>
+                      </div>
+                    </Paper>
                   );
                 })()}
               </div>
 
-              {/* MAPA INTERACTIVO */}
-              <div className="w-full lg:w-4/5 flex items-center justify-end relative">
+              {/* MAPA INTERACTIVO (Ajustado para que quepa América y Europa) */}
+              <div className="w-full lg:w-3/4 flex items-center justify-end relative">
                 <ComposableMap 
                   projection="geoMercator" 
-                  projectionConfig={{ scale: 380, center: [-84, 22] }} 
+                  projectionConfig={{ scale: 220, center: [-30, 30] }} // Aleja el zoom y centra en el Atlántico
                   width={1000} 
-                  height={500} 
+                  height={550} 
                   className="w-full h-auto outline-none" 
                 >
                   <Geographies geography={geoUrl}>
@@ -163,30 +162,30 @@ export default function Incidencia() {
                       <Geography 
                         key={geo.rsmKey} 
                         geography={geo} 
-                        fill="#F3F4F6" 
+                        fill="#E5E7EB" // Mapa un poco más oscuro
                         stroke="#FFFFFF" 
                         strokeWidth={0.5} 
-                        style={{ default: { outline: "none" }, hover: { fill: "#E5E7EB", outline: "none" } }} 
+                        style={{ default: { outline: "none" }, hover: { fill: "#D1D5DB", outline: "none" } }} 
                       />
                     ))}
                   </Geographies>
-                  {sedes.map((sede) => {
-                    const isActive = sedeActivaId === sede.id;
+                  {paisesIncidencia.map((pais) => {
+                    const isActive = paisActivoId === pais.id;
                     return (
-                      <Marker key={sede.id} coordinates={sede.coords}>
+                      <Marker key={pais.id} coordinates={pais.coords}>
                         <g 
-                          onMouseEnter={() => setSedeActivaId(sede.id)} 
+                          onMouseEnter={() => setPaisActivoId(pais.id)} 
                           className="focus:outline-none cursor-pointer"
                         >
-                          <circle r={30} fill="transparent" />
+                          <circle r={25} fill="transparent" /> {/* Área interactiva más grande */}
                           {isActive && (
-                            <circle r={20} fill="#1D3557" fillOpacity={0.15} className="animate-pulse" />
+                            <circle r={15} fill="#1D3557" fillOpacity={0.15} className="animate-pulse" />
                           )}
                           <circle 
-                            r={isActive ? 10 : 7} 
+                            r={isActive ? 8 : 5} 
                             fill={isActive ? "#1D3557" : "#B92F32"} 
                             stroke="#FFFFFF" 
-                            strokeWidth={2} 
+                            strokeWidth={1.5} 
                             className="transition-all duration-300" 
                           />
                         </g>
