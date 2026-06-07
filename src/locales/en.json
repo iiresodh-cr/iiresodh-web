@@ -108,7 +108,8 @@
     "org_unidades": "Functional Units",
     "org_territoriales": "Territorial Offices",
     "org_transversales": "Cross-cutting Projects",
-    "org_universidad": "U-IIRESODH (Higher University Studies)"
+    "org_universidad": "U-IIRESODH (Higher University Studies)",
+    "alt_img_vrr": "Víctor Rodríguez, President of IIRESODH"
   },
   "equipo": {
     "header_titulo": "Our Team",

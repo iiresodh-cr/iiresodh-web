@@ -5,7 +5,9 @@ import PageHeader from "../components/PageHeader";
 
 // Importaciones estructurales de UI
 import { Paper } from "@mui/material";
-import posterVideo from "../assets/Isotipo-color-512.png";
+
+// IMPORTACIÓN DE LA NUEVA IMAGEN
+import imagenVideo from "../assets/Video-VRR.webp";
 
 // IMPORTACIÓN PARA i18n
 import { useTranslation } from 'react-i18next';
@@ -68,7 +70,7 @@ export default function QuienesSomos() {
         <section className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-12 pb-16 flex flex-col gap-16 md:gap-20">
 
           {/* =========================================
-              BLOQUE 1: HISTORIA + VIDEO/IMAGEN
+              BLOQUE 1: HISTORIA + IMAGEN REPRESENTATIVA
           ========================================= */}
           <div id="historia-section" className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center animate-fade-in-up">
             
@@ -98,15 +100,15 @@ export default function QuienesSomos() {
               </p>
             </div>
 
-            {/* Columna Derecha: Contenedor Audiovisual */}
+            {/* Columna Derecha: Contenedor de Imagen */}
             <div className="lg:col-span-5 w-full flex justify-center mt-8 lg:mt-0">
               <Paper elevation={0} className="w-full rounded-3xl overflow-hidden border border-gray-100 bg-gray-50/50 p-2" sx={{ borderRadius: '24px' }}>
-                <div className="rounded-2xl overflow-hidden bg-black shadow-sm aspect-4/3 md:aspect-video lg:aspect-4/3 flex items-center justify-center">
-                  <video 
-                    src="https://storage.googleapis.com/videos-iire/IIRESODH.webm" 
-                    controls 
-                    className="w-full h-full object-contain" 
-                    poster={posterVideo} 
+                <div className="rounded-2xl overflow-hidden bg-gray-100 shadow-sm aspect-4/3 md:aspect-video lg:aspect-4/3 flex items-center justify-center">
+                  <img 
+                    src={imagenVideo} 
+                    alt={t('quienes_somos.alt_img_vrr', 'Víctor Rodríguez, representante de IIRESODH')} 
+                    className="w-full h-full object-cover"
+                    loading="lazy"
                   />
                 </div>
               </Paper>
