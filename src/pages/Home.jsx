@@ -166,7 +166,7 @@ export default function Home() {
 
               {/* Cifras de Impacto */}
               <div className="lg:col-span-4 lg:flex justify-end relative z-20 mt-8 lg:mt-0">
-                <Paper elevation={0} className="w-full bg-white/80 backdrop-blur-sm border border-gray-100 p-8 md:p-10 flex flex-col gap-8 shadow-sm text-right" sx={{ borderRadius: '24px' }}>
+                <Paper elevation={0} className="w-full bg-white/60 backdrop-blur-md border border-white/50 p-8 md:p-10 flex flex-col gap-8 shadow-lg text-right" sx={{ borderRadius: '24px' }}>
                   <div>
                     <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra1}</span>
                     <span className="text-xs font-bold tracking-widest uppercase text-gray-500">{obtenerTextoTraducido(cifrasImpacto, 'texto1', i18n.language)}</span>
