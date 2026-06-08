@@ -143,7 +143,7 @@ export default function Home() {
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Link to="/incidencia-internacional" className="bg-[#B91C1C] text-white font-bold py-3.5 px-8 rounded-lg hover:bg-red-800 transition-all text-center uppercase tracking-widest text-xs shadow-sm">
+                  <Link to="/incidencia-internacional" className="bg-[#B91C1C] text-white font-bold py-3.5 px-8 rounded-lg hover:bg-red-800 transition-all text-center uppercase tracking-widest text-xs shadow-md">
                     {t('home.btn_incidencia', 'Incidencia Internacional')}
                   </Link>
                   <Link to="/noticias" className="bg-white text-main-blue border border-gray-200 font-bold py-3.5 px-8 rounded-lg hover:border-main-red hover:text-main-red transition-all text-center uppercase tracking-widest text-xs flex items-center justify-center gap-2 shadow-sm">
@@ -152,24 +152,24 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Cifras de Impacto */}
+              {/* Cifras de Impacto estilo "Dashboard" aprobadas en la primera propuesta */}
               <div className="lg:col-span-4 lg:flex justify-end relative z-20 text-center lg:text-left mt-8 lg:mt-0">
-                <div className="w-full bg-gray-50/50 border border-gray-100 p-8 md:p-10 flex flex-col gap-8 shadow-sm rounded-3xl">
+                <Paper elevation={0} className="w-full bg-gray-50/50 border border-gray-100 p-8 md:p-10 flex flex-col gap-8 shadow-sm" sx={{ borderRadius: '24px' }}>
                   <div>
-                    <span className="block text-4xl font-black text-[#B91C1C] mb-2">{cifrasImpacto.cifra1}</span>
+                    <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra1}</span>
                     <span className="text-xs font-bold tracking-widest uppercase text-gray-500">{obtenerTextoTraducido(cifrasImpacto, 'texto1', i18n.language)}</span>
                   </div>
                   <div className="w-12 h-px bg-gray-200 mx-auto lg:mx-0"></div>
                   <div>
-                    <span className="block text-4xl font-black text-[#B91C1C] mb-2">{cifrasImpacto.cifra2}</span>
+                    <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra2}</span>
                     <span className="text-xs font-bold tracking-widest uppercase text-gray-500">{obtenerTextoTraducido(cifrasImpacto, 'texto2', i18n.language)}</span>
                   </div>
                   <div className="w-12 h-px bg-gray-200 mx-auto lg:mx-0"></div>
                   <div>
-                    <span className="block text-4xl font-black text-[#B91C1C] mb-2">{cifrasImpacto.cifra3}</span>
+                    <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra3}</span>
                     <span className="text-xs font-bold tracking-widest uppercase text-gray-500">{obtenerTextoTraducido(cifrasImpacto, 'texto3', i18n.language)}</span>
                   </div>
-                </div>
+                </Paper>
               </div>
             </div>
           </section>
