@@ -67,7 +67,8 @@ export default function Navbar() {
         {/* LOGO E INDICADOR MÓVIL */}
         <div className="shrink-0 flex items-center justify-between px-6 py-4 md:pr-8 bg-white relative z-20">
           <Link to="/" className="flex items-center" aria-label="Ir a la página de inicio de IIRESODH">
-            <img src={logo} alt="Logotipo oficial de IIRESODH" className="h-14 md:h-24 lg:h-28 w-auto object-contain" />
+            {/* SOLUCIÓN UI/UX: Se redujeron las alturas a h-12 md:h-16 lg:h-20 para lograr un diseño más limpio y esbelto */}
+            <img src={logo} alt="Logotipo oficial de IIRESODH" className="h-12 md:h-16 lg:h-20 w-auto object-contain" />
           </Link>
           
           {/* Botón Hamburguesa oculto en md (768px) en adelante */}
@@ -228,12 +229,8 @@ export default function Navbar() {
                 </button>
                 <div className={`${activeDropdown === 'areas' ? 'block' : 'hidden'} md:block md:absolute md:left-0 md:top-full md:w-80 md:bg-white md:shadow-xl md:rounded-b md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300 md:border-t-4 md:border-main-red w-full bg-gray-50 border-l-4 border-main-red md:border-l-0 z-50`}>
                   <ul className="py-2 flex flex-col">
-                    
-                    {/* Elementos Principales al mismo nivel */}
                     <li><Link to="/litigio-estrategico" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">{t('navbar.litigio', 'Litigio Estratégico')}</Link></li>
                     <li><Link to="/cursos" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors mt-1">{t('navbar.formacion', 'Formación Especializada')}</Link></li>
-                    
-                    {/* Sección Internacional Agrupada */}
                     <li className="flex flex-col">
                       <Link to="/incidencia-internacional" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">
                         {t('navbar.incidencia', 'Incidencia Internacional')}
