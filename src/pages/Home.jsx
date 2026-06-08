@@ -165,19 +165,19 @@ export default function Home() {
               </div>
 
               {/* Cifras de Impacto */}
-              <div className="lg:col-span-4 lg:flex justify-end relative z-20 text-center lg:text-left mt-8 lg:mt-0">
-                <Paper elevation={0} className="w-full bg-gray-50/50 border border-gray-100 p-8 md:p-10 flex flex-col gap-8 shadow-sm" sx={{ borderRadius: '24px' }}>
+              <div className="lg:col-span-4 lg:flex justify-end relative z-20 mt-8 lg:mt-0">
+                <Paper elevation={0} className="w-full bg-white/80 backdrop-blur-sm border border-gray-100 p-8 md:p-10 flex flex-col gap-8 shadow-sm text-right" sx={{ borderRadius: '24px' }}>
                   <div>
                     <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra1}</span>
                     <span className="text-xs font-bold tracking-widest uppercase text-gray-500">{obtenerTextoTraducido(cifrasImpacto, 'texto1', i18n.language)}</span>
                   </div>
                   {/* MEJORA UI: Líneas de separación estilizadas con el color institucional secundario */}
-                  <div className="w-12 h-px bg-light-blue/30 mx-auto lg:mx-0"></div>
+                  <div className="w-12 h-px bg-light-blue/30 ml-auto"></div>
                   <div>
                     <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra2}</span>
                     <span className="text-xs font-bold tracking-widest uppercase text-gray-500">{obtenerTextoTraducido(cifrasImpacto, 'texto2', i18n.language)}</span>
                   </div>
-                  <div className="w-12 h-px bg-light-blue/30 mx-auto lg:mx-0"></div>
+                  <div className="w-12 h-px bg-light-blue/30 ml-auto"></div>
                   <div>
                     <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra3}</span>
                     <span className="text-xs font-bold tracking-widest uppercase text-gray-500">{obtenerTextoTraducido(cifrasImpacto, 'texto3', i18n.language)}</span>
