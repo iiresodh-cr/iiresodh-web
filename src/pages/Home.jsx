@@ -131,8 +131,8 @@ export default function Home() {
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center text-left">
               <div className="lg:col-span-8 max-w-4xl">
                 <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-black text-[#0B1E40] leading-[1.05] mb-6 tracking-tighter">
-                  {t('home.hero_titulo_1', 'Defendiendo la')}<br className="hidden md:block"/>
-                  {t('home.hero_titulo_2', 'dignidad y los')}<br className="hidden md:block"/>
+                  {t('home.hero_titulo_1', 'Defendiendo la ')}<br className="hidden md:block"/>
+                  {t('home.hero_titulo_2', 'dignidad y los ')}<br className="hidden md:block"/>
                   {t('home.hero_titulo_3', 'Derechos Humanos')}
                 </h1>
                 
