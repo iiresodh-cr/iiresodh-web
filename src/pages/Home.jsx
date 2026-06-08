@@ -159,12 +159,12 @@ export default function Home() {
                     <span className="block text-4xl font-black text-[#B91C1C] mb-2">{cifrasImpacto.cifra1}</span>
                     <span className="text-xs font-bold tracking-widest uppercase text-gray-500">{obtenerTextoTraducido(cifrasImpacto, 'texto1', i18n.language)}</span>
                   </div>
-                  <div className="w-12 h-px bg-gray-200 mx-auto lg:mx-0"></div>
+                  <div className="w-12 h-[1px] bg-gray-200 mx-auto lg:mx-0"></div>
                   <div>
                     <span className="block text-4xl font-black text-[#B91C1C] mb-2">{cifrasImpacto.cifra2}</span>
                     <span className="text-xs font-bold tracking-widest uppercase text-gray-500">{obtenerTextoTraducido(cifrasImpacto, 'texto2', i18n.language)}</span>
                   </div>
-                  <div className="w-12 h-px bg-gray-200 mx-auto lg:mx-0"></div>
+                  <div className="w-12 h-[1px] bg-gray-200 mx-auto lg:mx-0"></div>
                   <div>
                     <span className="block text-4xl font-black text-[#B91C1C] mb-2">{cifrasImpacto.cifra3}</span>
                     <span className="text-xs font-bold tracking-widest uppercase text-gray-500">{obtenerTextoTraducido(cifrasImpacto, 'texto3', i18n.language)}</span>
@@ -263,93 +263,93 @@ export default function Home() {
           <div className="w-16 h-1 bg-main-red mx-auto rounded-full"></div>
 
           {/* =========================================
-              BLOQUE 3: NUESTRA LABOR (3 COLUMNAS)
+              BLOQUE 3: NUESTRA LABOR Y CONTACTO (SIDE-BY-SIDE)
           ========================================= */}
           <section className="bg-white">
-            <div className="text-center mb-12">
-              <span className="text-main-red font-black tracking-[0.3em] uppercase text-xs mb-3 block">{t('home.nuestra_labor', 'Nuestra Labor')}</span>
-              <h2 className="text-3xl md:text-4xl font-black text-main-blue tracking-tighter mb-4">
-                {t('home.que_hacemos_titulo', '¿Qué hacemos en IIRESODH?')}
-              </h2>
-              <p className="text-gray-500 text-lg font-light leading-relaxed max-w-2xl mx-auto">
-                {t('home.que_hacemos_subtitulo', 'Combinamos acción jurídica, cooperación técnica y formación académica para generar un impacto real en la sociedad.')}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-stretch">
               
-              <Link to="/litigio-estrategico" className="group">
-                <Paper elevation={0} className="flex flex-col h-full bg-gray-50/50 p-8 border border-gray-100 hover:border-main-red/30 hover:shadow-md transition-all duration-300" sx={{ borderRadius: '20px' }}>
-                  <div className="w-14 h-14 bg-main-red text-white rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-105 transition-transform">
-                    <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-main-blue mb-3">{t('home.litigio_titulo', 'Litigio Estratégico')}</h3>
-                  <p className="text-gray-500 font-light text-sm leading-relaxed grow">{t('home.litigio_desc', 'Defensa jurídica ante tribunales internacionales para sentar precedentes en la protección de derechos.')}</p>
-                </Paper>
-              </Link>
+              {/* COLUMNA IZQUIERDA: SERVICIOS (7 columnas) */}
+              <div className="lg:col-span-7 flex flex-col">
+                <div className="mb-10">
+                  <span className="text-main-red font-black tracking-[0.3em] uppercase text-xs mb-3 block">{t('home.nuestra_labor', 'Nuestra Labor')}</span>
+                  <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-main-blue tracking-tighter mb-4 leading-tight">
+                    {t('home.que_hacemos_titulo', '¿Qué hacemos en IIRESODH?')}
+                  </h2>
+                  <p className="text-gray-500 text-base md:text-lg font-light leading-relaxed">
+                    {t('home.que_hacemos_subtitulo', 'Combinamos acción jurídica, cooperación técnica y formación académica para generar un impacto real en la sociedad.')}
+                  </p>
+                </div>
 
-              <Link to="/incidencia-internacional" className="group">
-                <Paper elevation={0} className="flex flex-col h-full bg-gray-50/50 p-8 border border-gray-100 hover:border-main-red/30 hover:shadow-md transition-all duration-300" sx={{ borderRadius: '20px' }}>
-                  <div className="w-14 h-14 bg-light-blue text-white rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-105 transition-transform">
-                    <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-main-blue mb-3">{t('home.incidencia_titulo', 'Incidencia Internacional')}</h3>
-                  <p className="text-gray-500 font-light text-sm leading-relaxed grow">{t('home.incidencia_desc', 'Investigaciones, informes de impacto y documentos de litigio estratégico.')}</p>
-                </Paper>
-              </Link>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 grow">
+                  <Link to="/litigio-estrategico" className="group">
+                    <Paper elevation={0} className="flex flex-col h-full bg-gray-50/50 p-8 border border-gray-100 hover:border-main-red/30 hover:shadow-md transition-all duration-300" sx={{ borderRadius: '24px' }}>
+                      <div className="w-12 h-12 bg-main-red text-white rounded-xl flex items-center justify-center mb-5 shadow-sm group-hover:scale-105 transition-transform">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
+                      </div>
+                      <h3 className="text-lg md:text-xl font-bold text-main-blue mb-2">{t('home.litigio_titulo', 'Litigio Estratégico')}</h3>
+                      <p className="text-gray-500 font-light text-sm leading-relaxed grow">{t('home.litigio_desc', 'Defensa jurídica ante tribunales internacionales para sentar precedentes en la protección de derechos.')}</p>
+                    </Paper>
+                  </Link>
 
-              <Link to="/cursos" className="group">
-                <Paper elevation={0} className="flex flex-col h-full bg-gray-50/50 p-8 border border-gray-100 hover:border-main-red/30 hover:shadow-md transition-all duration-300" sx={{ borderRadius: '20px' }}>
-                  <div className="w-14 h-14 bg-main-blue text-white rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-105 transition-transform">
-                    <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-main-blue mb-3">{t('home.formacion_titulo', 'Formación Especializada')}</h3>
-                  <p className="text-gray-500 font-light text-sm leading-relaxed grow">{t('home.formacion_desc', 'Certificaciones y programas académicos diseñados para los líderes del cambio social.')}</p>
-                </Paper>
-              </Link>
+                  <Link to="/incidencia-internacional" className="group">
+                    <Paper elevation={0} className="flex flex-col h-full bg-gray-50/50 p-8 border border-gray-100 hover:border-main-red/30 hover:shadow-md transition-all duration-300" sx={{ borderRadius: '24px' }}>
+                      <div className="w-12 h-12 bg-light-blue text-white rounded-xl flex items-center justify-center mb-5 shadow-sm group-hover:scale-105 transition-transform">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+                      </div>
+                      <h3 className="text-lg md:text-xl font-bold text-main-blue mb-2">{t('home.incidencia_titulo', 'Incidencia Internacional')}</h3>
+                      <p className="text-gray-500 font-light text-sm leading-relaxed grow">{t('home.incidencia_desc', 'Investigaciones, informes de impacto y documentos de litigio estratégico.')}</p>
+                    </Paper>
+                  </Link>
 
-            </div>
-          </section>
-
-          <div className="w-16 h-1 bg-main-red mx-auto rounded-full"></div>
-
-          {/* =========================================
-              BLOQUE 4: CONTACTO
-          ========================================= */}
-          <section className="bg-white max-w-4xl mx-auto w-full">
-            <Paper elevation={0} className="bg-gray-50/50 rounded-3xl p-8 md:p-12 border border-gray-100 flex flex-col md:flex-row gap-10 lg:gap-16 items-center" sx={{ borderRadius: '24px' }}>
-              
-              <div className="w-full md:w-5/12 text-center md:text-left">
-                <h3 className="text-3xl font-black text-main-blue mb-4">{t('home.contacto_titulo', '¿Hablamos?')}</h3>
-                <p className="text-gray-500 font-light text-lg leading-relaxed">
-                  {t('home.contacto_subtitulo', 'Estamos aquí para colaborar y responder tus dudas.')}
-                </p>
-                <div className="w-12 h-1 bg-main-red mx-auto md:mx-0 mt-6 rounded-full hidden md:block"></div>
+                  <Link to="/cursos" className="group sm:col-span-2">
+                    <Paper elevation={0} className="flex flex-col sm:flex-row items-start sm:items-center h-full bg-main-blue p-8 border border-main-blue hover:shadow-lg hover:border-main-red/50 transition-all duration-300 gap-6" sx={{ borderRadius: '24px' }}>
+                      <div className="w-14 h-14 bg-white/10 border border-white/20 text-white rounded-xl flex items-center justify-center shrink-0 group-hover:bg-main-red group-hover:border-main-red transition-all">
+                        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
+                      </div>
+                      <div>
+                        <h3 className="text-lg md:text-xl font-bold text-white mb-2">{t('home.formacion_titulo', 'Formación Especializada')}</h3>
+                        <p className="text-gray-300 font-light text-sm leading-relaxed">{t('home.formacion_desc', 'Certificaciones y programas académicos diseñados para los líderes del cambio social.')}</p>
+                      </div>
+                    </Paper>
+                  </Link>
+                </div>
               </div>
 
-              <div className="w-full md:w-7/12">
-                <ToastAlert open={estadoEnvio === "exito"} message={t('home.msg_exito', '¡Mensaje enviado con éxito!')} isError={false} onClose={() => setEstadoEnvio("idle")} />
-                <ToastAlert open={estadoEnvio === "error"} message={t('home.msg_error', 'Ocurrió un error al enviar el mensaje.')} isError={true} onClose={() => setEstadoEnvio("idle")} />
-                
-                <form onSubmit={handleEnviarContacto} className="space-y-5">
-                  <div className="flex flex-col sm:flex-row gap-5">
-                    <div className="w-full">
-                      <AdminTextField label={t('home.form_nombre', 'Nombre')} required value={contacto.nombre} onChange={(e) => setContacto({...contacto, nombre: e.target.value})} />
+              {/* COLUMNA DERECHA: CONTACTO (5 columnas) */}
+              <div className="lg:col-span-5 flex flex-col h-full">
+                <Paper elevation={0} className="bg-gray-50/50 p-8 md:p-10 border border-gray-100 flex flex-col h-full" sx={{ borderRadius: '24px' }}>
+                  <h3 className="text-2xl md:text-3xl font-black text-main-blue mb-2">{t('home.contacto_titulo', '¿Hablamos?')}</h3>
+                  <p className="text-gray-500 font-light mb-8 text-sm md:text-base leading-relaxed">
+                    {t('home.contacto_subtitulo', 'Estamos aquí para colaborar y responder tus dudas.')}
+                  </p>
+                  
+                  <ToastAlert open={estadoEnvio === "exito"} message={t('home.msg_exito', '¡Mensaje enviado con éxito!')} isError={false} onClose={() => setEstadoEnvio("idle")} />
+                  <ToastAlert open={estadoEnvio === "error"} message={t('home.msg_error', 'Ocurrió un error al enviar el mensaje.')} isError={true} onClose={() => setEstadoEnvio("idle")} />
+                  
+                  <form onSubmit={handleEnviarContacto} className="space-y-5 flex flex-col grow">
+                    <AdminTextField label={t('home.form_nombre', 'Nombre')} required value={contacto.nombre} onChange={(e) => setContacto({...contacto, nombre: e.target.value})} />
+                    <AdminTextField label={t('home.form_email', 'Email')} type="email" required value={contacto.correo} onChange={(e) => setContacto({...contacto, correo: e.target.value})} />
+                    
+                    <div className="grow flex flex-col">
+                      <AdminTextField 
+                        label={t('home.form_mensaje', 'Mensaje')} 
+                        required 
+                        multiline 
+                        rows={4} 
+                        value={contacto.mensaje} 
+                        onChange={(e) => setContacto({...contacto, mensaje: e.target.value})} 
+                        sx={{ flexGrow: 1 }}
+                      />
                     </div>
-                    <div className="w-full">
-                      <AdminTextField label={t('home.form_email', 'Email')} type="email" required value={contacto.correo} onChange={(e) => setContacto({...contacto, correo: e.target.value})} />
-                    </div>
-                  </div>
-                  <div>
-                    <AdminTextField label={t('home.form_mensaje', 'Mensaje')} required multiline rows={4} value={contacto.mensaje} onChange={(e) => setContacto({...contacto, mensaje: e.target.value})} />
-                  </div>
-                  <Button type="submit" variant="contained" color="secondary" disabled={estadoEnvio === "enviando"} sx={{ py: 1.5, px: 6, width: '100%', borderRadius: '8px', fontWeight: 'bold', textTransform: 'uppercase', tracking: '0.1em' }}>
-                    {estadoEnvio === "enviando" ? t('home.btn_enviando', 'Enviando...') : t('home.btn_enviar', 'Enviar Mensaje')}
-                  </Button>
-                </form>
+                    
+                    <Button type="submit" variant="contained" color="secondary" disabled={estadoEnvio === "enviando"} sx={{ py: 1.5, width: '100%', borderRadius: '12px', fontWeight: 'bold', textTransform: 'uppercase', tracking: '0.1em', mt: 'auto' }}>
+                      {estadoEnvio === "enviando" ? t('home.btn_enviando', 'Enviando...') : t('home.btn_enviar', 'Enviar Mensaje')}
+                    </Button>
+                  </form>
+                </Paper>
               </div>
 
-            </Paper>
+            </div>
           </section>
 
         </div>
