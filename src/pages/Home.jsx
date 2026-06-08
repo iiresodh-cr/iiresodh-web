@@ -32,7 +32,7 @@ export const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
   let procesado = texto.replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const linksGuardados = []; 
-  processed = procesado.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, label, url) => {
+  procesado = procesado.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, label, url) => {
     linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline wrap-break-words">${label}</a>`);
     return `__LINK_${linksGuardados.length - 1}__`; 
   });
@@ -135,13 +135,6 @@ export default function Home() {
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center text-left">
               <div className="lg:col-span-8 max-w-4xl">
-                {/* SOLUCIÓN: El problema de las palabras unidas (como "ladignidad")
-                    se debe a que i18next concatena las partes y React no añade
-                    espacios automáticamente. La solución más robusta es insertar un
-                    fragmento de espacio vacío ({' '}) entre cada parte. Esto garantiza
-                    un espacio correcto independientemente de si los archivos de
-                    traducción (.json) lo tienen o no. He usado un max-w-3xl para
-                    controlar el diseño de forma fluida sin romper la semántica de i18n. */}
                 <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-black text-[#0B1E40] leading-[1.05] mb-6 tracking-tighter max-w-3xl">
                   {t('home.hero_titulo_1', 'Defendiendo la')}
                   {' '}
@@ -164,14 +157,17 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Cifras de Impacto */}
+              {/* Cifras de Impacto con Transparencia Mejorada (Glassmorphism) */}
               <div className="lg:col-span-4 lg:flex justify-end relative z-20 mt-8 lg:mt-0">
-                <Paper elevation={0} className="w-full bg-white/60 backdrop-blur-md border border-white/50 p-8 md:p-10 flex flex-col gap-8 shadow-lg text-right" sx={{ borderRadius: '24px' }}>
+                <Paper 
+                  elevation={0} 
+                  className="w-full bg-white/40 backdrop-blur-lg border border-white/50 p-8 md:p-10 flex flex-col gap-8 shadow-xl text-right transition-all duration-300 hover:bg-white/50" 
+                  sx={{ borderRadius: '24px' }}
+                >
                   <div>
                     <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra1}</span>
                     <span className="text-xs font-bold tracking-widest uppercase text-gray-500">{obtenerTextoTraducido(cifrasImpacto, 'texto1', i18n.language)}</span>
                   </div>
-                  {/* MEJORA UI: Líneas de separación estilizadas con el color institucional secundario */}
                   <div className="w-12 h-px bg-light-blue/30 ml-auto"></div>
                   <div>
                     <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra2}</span>
@@ -240,10 +236,8 @@ export default function Home() {
                             role="img"
                             aria-label={tituloTraducido || "Imagen de la noticia"}
                           />
-                          {/* MEJORA UI: Filtro de contraste oscuro sutil en el fondo de la imagen para garantizar legibilidad */}
                           <div className="absolute inset-0 bg-black/20 group-hover/slide:bg-black/10 transition-colors duration-1000"></div>
                           
-                          {/* MEJORA UX/UI: Opacidad elevada (bg-white/90) para cumplir estrictamente con el contraste accesible WCAG */}
                           <div className="absolute bottom-4 left-4 right-4 md:bottom-10 md:left-10 md:right-auto w-[90%] md:w-[75%] lg:w-[65%] h-auto min-h-80 md:min-h-96 lg:min-h-112 p-6 md:p-10 lg:p-12 bg-white/90 backdrop-blur-md shadow-2xl rounded-3xl border border-white/80 z-10 flex flex-col justify-end transform transition-all duration-500 group-hover/slide:-translate-y-2 group-hover/slide:shadow-main-blue/10">
                             <div className="flex flex-wrap gap-2 mb-4 md:mb-6">
                               {noticia.tags?.map(tag => (
@@ -257,7 +251,6 @@ export default function Home() {
                               {resumenTraducido}
                             </p>
                             
-                            {/* MEJORA UX: Estilizado como Botón Fantasma interactivo unificado con la sección de Incidencia */}
                             <div className="inline-flex items-center justify-center gap-2 self-start px-5 py-2.5 text-xs font-bold text-main-red uppercase tracking-widest border-2 border-main-red/20 rounded-lg group-hover/slide:bg-main-red group-hover/slide:text-white group-hover/slide:border-main-red transition-all duration-300">
                               {t('home.leer_articulo', 'Leer artículo')} <span aria-hidden="true" className="text-sm leading-none">&rarr;</span>
                             </div>
@@ -321,7 +314,7 @@ export default function Home() {
                     </article>
                   </Link>
 
-                  {/* Tarjeta 3: Formación con Lucide (Unificado fondo y acento azul claro institucional) */}
+                  {/* Tarjeta 3: Formación con Lucide */}
                   <Link to="/cursos" className="group sm:col-span-2">
                     <article className="flex flex-col sm:flex-row items-start sm:items-center h-full bg-white p-8 border border-gray-100 rounded-3xl hover:border-main-red/30 hover:shadow-lg transition-all duration-300 gap-6">
                       <div className="w-14 h-14 bg-light-blue text-white rounded-xl flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
@@ -347,7 +340,6 @@ export default function Home() {
                   <ToastAlert open={estadoEnvio === "exito"} message={t('home.msg_exito', '¡Mensaje enviado con éxito!')} isError={false} onClose={() => setEstadoEnvio("idle")} />
                   <ToastAlert open={estadoEnvio === "error"} message={t('home.msg_error', 'Ocurrió un error al enviar el mensaje.')} isError={true} onClose={() => setEstadoEnvio("idle")} />
                   
-                  {/* Formulario con mejoras UX en los textfields y feedback activo en el botón */}
                   <form onSubmit={handleEnviarContacto} className="flex flex-col gap-6 grow">
                     <AdminTextField 
                       label={t('home.form_nombre', 'Nombre')} 
@@ -377,7 +369,6 @@ export default function Home() {
                       />
                     </div>
                     
-                    {/* MEJORA UX: Botón con estado dinámico e indicador circular de carga integrado */}
                     <Button 
                       type="submit" 
                       variant="contained" 
