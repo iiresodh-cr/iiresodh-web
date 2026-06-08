@@ -130,7 +130,7 @@ export default function Home() {
           ========================================= */}
           <section className="relative pt-2 pb-4 lg:pt-6 lg:pb-8 overflow-visible animate-fade-in-up">
             <div className="absolute top-0 right-0 -mr-24 -mt-16 opacity-10 pointer-events-none hidden md:block">
-              <img src={isotipoFondo} alt="" fetchPriority="high" className="w-200 object-cover" />
+              <img src={isotipoFondo} alt="" fetchPriority="high" className="w-160 object-cover" />
             </div>
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center text-left">
