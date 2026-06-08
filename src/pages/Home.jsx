@@ -129,8 +129,7 @@ export default function Home() {
               BLOQUE 1: HERO SECTION
           ========================================= */}
           <section className="relative pt-2 pb-4 lg:pt-6 lg:pb-8 overflow-visible animate-fade-in-up">
-            {/* SOLUCIÓN: Se cambió -mr-24 por -mr-4 para desplazar el Isotipo hacia la izquierda y centrarlo detrás de la tarjeta */}
-            <div className="absolute top-0 right-0 -mr-4 -mt-16 opacity-10 pointer-events-none hidden md:block">
+            <div className="absolute top-0 right-20 -mt-16 opacity-10 pointer-events-none hidden md:block">
               <img src={isotipoFondo} alt="" fetchPriority="high" className="w-160 object-cover" />
             </div>
 
