@@ -129,7 +129,8 @@ export default function Home() {
               BLOQUE 1: HERO SECTION
           ========================================= */}
           <section className="relative pt-2 pb-4 lg:pt-6 lg:pb-8 overflow-visible animate-fade-in-up">
-            <div className="absolute top-0 right-0 -mr-24 -mt-16 opacity-10 pointer-events-none hidden md:block">
+            {/* SOLUCIÓN: Se cambió -mr-24 por -mr-4 para desplazar el Isotipo hacia la izquierda y centrarlo detrás de la tarjeta */}
+            <div className="absolute top-0 right-0 -mr-4 -mt-16 opacity-10 pointer-events-none hidden md:block">
               <img src={isotipoFondo} alt="" fetchPriority="high" className="w-160 object-cover" />
             </div>
 
@@ -157,12 +158,24 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Cifras de Impacto con Transparencia Mejorada (Glassmorphism) */}
+              {/* Cifras de Impacto */}
               <div className="lg:col-span-4 lg:flex justify-end relative z-20 mt-8 lg:mt-0">
+                {/* SOLUCIÓN: Se inyectan estilos Glassmorphism de transparencia directamente en 'sx' 
+                    para forzar la anulación del color de fondo nativo de Material UI */}
                 <Paper 
                   elevation={0} 
-                  className="w-full bg-white/40 backdrop-blur-lg border border-white/50 p-8 md:p-10 flex flex-col gap-8 shadow-xl text-right transition-all duration-300 hover:bg-white/50" 
-                  sx={{ borderRadius: '24px' }}
+                  className="w-full border border-white/60 p-8 md:p-10 flex flex-col gap-8 shadow-xl text-right" 
+                  sx={{ 
+                    borderRadius: '24px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.45) !important',
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.60) !important',
+                      borderColor: 'rgba(255, 255, 255, 0.80)'
+                    }
+                  }}
                 >
                   <div>
                     <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra1}</span>
@@ -279,7 +292,7 @@ export default function Home() {
           <section className="bg-white">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
               
-              {/* COLUMNA IZQUIERDA: SERVICIOS (7 columnas) */}
+              {/* COLUMNA IZQUIERDA: SERVICIOS */}
               <div className="lg:col-span-7 flex flex-col">
                 <div className="mb-8">
                   <span className="text-main-red font-black tracking-[0.3em] uppercase text-xs mb-3 block">{t('home.nuestra_labor', 'Nuestra Labor')}</span>
@@ -299,7 +312,7 @@ export default function Home() {
                         <Scale className="w-7 h-7" strokeWidth={1.75} />
                       </div>
                       <h3 className="text-xl font-bold text-main-blue mb-3">{t('home.litigio_titulo', 'Litigio Estratégico')}</h3>
-                      <p className="text-gray-500 font-light text-sm leading-relaxed grow">{t('home.litigio_desc', 'Defensa jurídica ante tribunales internacionales para sentar precedentes en la protección de derechos.')}</p>
+                      <p className="text-gray-500 font-light text-sm leading-relaxed grow">{t('home.litigio_desc', 'Defensa jurídica ante tribunals internacionales para sentar precedentes en la protección de derechos.')}</p>
                     </article>
                   </Link>
 
@@ -329,7 +342,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* COLUMNA DERECHA: CONTACTO (5 columnas) */}
+              {/* COLUMNA DERECHA: CONTACTO */}
               <div className="lg:col-span-5 flex flex-col h-full">
                 <article className="bg-gray-50/50 p-8 md:p-10 border border-gray-100 rounded-3xl flex flex-col h-full shadow-sm">
                   <h3 className="text-2xl md:text-3xl font-black text-main-blue mb-2">{t('home.contacto_titulo', '¿Hablamos?')}</h3>
