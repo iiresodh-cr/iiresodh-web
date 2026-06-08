@@ -19,7 +19,7 @@ import AdminTextField from "../components/ui/AdminTextField";
 import ToastAlert from "../components/ui/ToastAlert";
 
 // UI Externa
-import { Button, Paper } from "@mui/material";
+import { Button, Paper, CircularProgress } from "@mui/material";
 
 // IMPORTACIONES PARA i18n Y TRADUCCIÓN DINÁMICA
 import { useTranslation } from 'react-i18next';
@@ -132,10 +132,9 @@ export default function Home() {
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center text-left">
               <div className="lg:col-span-8 max-w-4xl">
-                <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-black text-[#0B1E40] leading-[1.05] mb-6 tracking-tighter">
-                  {t('home.hero_titulo_1', 'Defendiendo la ')} <br className="hidden md:block"/>
-                  {t('home.hero_titulo_2', 'dignidad y los ')} <br className="hidden md:block"/>
-                  {t('home.hero_titulo_3', 'Derechos Humanos')}
+                {/* MEJORA UX/i18n: Removidos saltos <br/> manuales para evitar rupturas semánticas en otros idiomas */}
+                <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-black text-[#0B1E40] leading-[1.05] mb-6 tracking-tighter max-w-3xl">
+                  {t('home.hero_titulo', 'Defendiendo la dignidad y los Derechos Humanos')}
                 </h1>
                 
                 <p className="text-lg md:text-xl text-gray-600 font-light mb-10 leading-relaxed max-w-2xl">
@@ -152,19 +151,20 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Cifras de Impacto estilo "Dashboard" aprobadas en la primera propuesta */}
+              {/* Cifras de Impacto */}
               <div className="lg:col-span-4 lg:flex justify-end relative z-20 text-center lg:text-left mt-8 lg:mt-0">
                 <Paper elevation={0} className="w-full bg-gray-50/50 border border-gray-100 p-8 md:p-10 flex flex-col gap-8 shadow-sm" sx={{ borderRadius: '24px' }}>
                   <div>
                     <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra1}</span>
                     <span className="text-xs font-bold tracking-widest uppercase text-gray-500">{obtenerTextoTraducido(cifrasImpacto, 'texto1', i18n.language)}</span>
                   </div>
-                  <div className="w-12 h-px bg-gray-200 mx-auto lg:mx-0"></div>
+                  {/* MEJORA UI: Líneas de separación estilizadas con el color institucional secundario */}
+                  <div className="w-12 h-px bg-light-blue/30 mx-auto lg:mx-0"></div>
                   <div>
                     <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra2}</span>
                     <span className="text-xs font-bold tracking-widest uppercase text-gray-500">{obtenerTextoTraducido(cifrasImpacto, 'texto2', i18n.language)}</span>
                   </div>
-                  <div className="w-12 h-px bg-gray-200 mx-auto lg:mx-0"></div>
+                  <div className="w-12 h-px bg-light-blue/30 mx-auto lg:mx-0"></div>
                   <div>
                     <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra3}</span>
                     <span className="text-xs font-bold tracking-widest uppercase text-gray-500">{obtenerTextoTraducido(cifrasImpacto, 'texto3', i18n.language)}</span>
@@ -227,20 +227,27 @@ export default function Home() {
                             role="img"
                             aria-label={tituloTraducido || "Imagen de la noticia"}
                           />
-                          <div className="absolute inset-0 bg-black/10 group-hover/slide:bg-black/0 transition-colors duration-1000"></div>
-                          <div className="absolute bottom-4 left-4 right-4 md:bottom-10 md:left-10 md:right-auto w-[90%] md:w-[75%] lg:w-[65%] h-auto min-h-80 md:min-h-96 lg:min-h-112 p-6 md:p-10 lg:p-12 bg-white/30 backdrop-blur-xl shadow-2xl rounded-3xl border border-white/30 z-10 flex flex-col justify-end transform transition-all duration-500 group-hover/slide:-translate-y-2 group-hover/slide:shadow-main-blue/20">
+                          {/* MEJORA UI: Filtro de contraste oscuro sutil en el fondo de la imagen para garantizar legibilidad */}
+                          <div className="absolute inset-0 bg-black/20 group-hover/slide:bg-black/10 transition-colors duration-1000"></div>
+                          
+                          {/* MEJORA UX/UI: Opacidad elevada (bg-white/90) para cumplir estrictamente con el contraste accesible WCAG */}
+                          <div className="absolute bottom-4 left-4 right-4 md:bottom-10 md:left-10 md:right-auto w-[90%] md:w-[75%] lg:w-[65%] h-auto min-h-80 md:min-h-96 lg:min-h-112 p-6 md:p-10 lg:p-12 bg-white/90 backdrop-blur-md shadow-2xl rounded-3xl border border-white/80 z-10 flex flex-col justify-end transform transition-all duration-500 group-hover/slide:-translate-y-2 group-hover/slide:shadow-main-blue/10">
                             <div className="flex flex-wrap gap-2 mb-4 md:mb-6">
                               {noticia.tags?.map(tag => (
-                                <span key={tag} className="bg-white/40 border border-white/50 text-main-blue text-[10px] md:text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-widest">{tag}</span>
+                                <span key={tag} className="bg-main-blue/5 border border-main-blue/10 text-main-blue text-[10px] md:text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-widest">{tag}</span>
                               ))}
                             </div>
                             <h3 className="text-2xl md:text-4xl lg:text-5xl font-black text-main-blue mb-4 pb-1 leading-tight tracking-tight group-hover/slide:text-main-red transition-colors line-clamp-4">
                               {tituloTraducido}
                             </h3>
-                            <p className="text-gray-800 line-clamp-2 md:line-clamp-3 mb-6 md:mb-8 text-sm md:text-lg font-medium leading-relaxed drop-shadow-sm">
+                            <p className="text-gray-700 line-clamp-2 md:line-clamp-3 mb-6 md:mb-8 text-sm md:text-lg font-medium leading-relaxed drop-shadow-sm">
                               {resumenTraducido}
                             </p>
-                            <div className="text-main-red font-black flex items-center gap-2 uppercase text-xs md:text-sm tracking-[0.2em] group-hover/slide:gap-4 transition-all">{t('home.leer_articulo', 'Leer artículo')} <span aria-hidden="true" className="text-lg md:text-xl leading-none">&rarr;</span></div>
+                            
+                            {/* MEJORA UX: Estilizado como Botón Fantasma interactivo unificado con la sección de Incidencia */}
+                            <div className="inline-flex items-center justify-center gap-2 self-start px-5 py-2.5 text-xs font-bold text-main-red uppercase tracking-widest border-2 border-main-red/20 rounded-lg group-hover/slide:bg-main-red group-hover/slide:text-white group-hover/slide:border-main-red transition-all duration-300">
+                              {t('home.leer_articulo', 'Leer artículo')} <span aria-hidden="true" className="text-sm leading-none">&rarr;</span>
+                            </div>
                           </div>
                         </article>
                       </SwiperSlide>
@@ -286,7 +293,7 @@ export default function Home() {
                         <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
                       </div>
                       <h3 className="text-xl font-bold text-main-blue mb-3">{t('home.litigio_titulo', 'Litigio Estratégico')}</h3>
-                      <p className="text-gray-500 font-light text-sm leading-relaxed grow">{t('home.litigio_desc', 'Defensa jurídica ante tribunales internacionales para sentar precedentes en la protección de derechos.')}</p>
+                      <p className="text-gray-500 font-light text-sm leading-relaxed grow">{t('home.litigio_desc', 'Defensa jurídica ante tribunals internacionales para sentar precedentes en la protección de derechos.')}</p>
                     </article>
                   </Link>
 
@@ -301,15 +308,15 @@ export default function Home() {
                     </article>
                   </Link>
 
-                  {/* Tarjeta 3: Formación (Ocupa las dos columnas en desktop, FONDO AZUL SOLUCIONADO) */}
+                  {/* Tarjeta 3: Formación (MEJORA UI: Unificado fondo a blanco con acento "light-blue" para consistencia de grilla) */}
                   <Link to="/cursos" className="group sm:col-span-2">
-                    <article className="flex flex-col sm:flex-row items-start sm:items-center h-full bg-main-blue p-8 rounded-3xl hover:shadow-xl transition-all duration-300 gap-6 border border-main-blue hover:border-main-red/50">
-                      <div className="w-14 h-14 bg-white/10 border border-white/20 text-white rounded-xl flex items-center justify-center shrink-0 group-hover:bg-main-red group-hover:border-main-red transition-all">
+                    <article className="flex flex-col sm:flex-row items-start sm:items-center h-full bg-white p-8 border border-gray-100 rounded-3xl hover:border-main-red/30 hover:shadow-lg transition-all duration-300 gap-6">
+                      <div className="w-14 h-14 bg-light-blue text-white rounded-xl flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
                         <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-white mb-2">{t('home.formacion_titulo', 'Formación Especializada')}</h3>
-                        <p className="text-gray-300 font-light text-sm leading-relaxed">{t('home.formacion_desc', 'Certificaciones y programas académicos diseñados para los líderes del cambio social.')}</p>
+                        <h3 className="text-xl font-bold text-main-blue mb-2">{t('home.formacion_titulo', 'Formación Especializada')}</h3>
+                        <p className="text-gray-500 font-light text-sm leading-relaxed">{t('home.formacion_desc', 'Certificaciones y programas académicos diseñados para los líderes del cambio social.')}</p>
                       </div>
                     </article>
                   </Link>
@@ -327,10 +334,23 @@ export default function Home() {
                   <ToastAlert open={estadoEnvio === "exito"} message={t('home.msg_exito', '¡Mensaje enviado con éxito!')} isError={false} onClose={() => setEstadoEnvio("idle")} />
                   <ToastAlert open={estadoEnvio === "error"} message={t('home.msg_error', 'Ocurrió un error al enviar el mensaje.')} isError={true} onClose={() => setEstadoEnvio("idle")} />
                   
-                  {/* Formulario arreglado: gap-6 soluciona el aplastamiento */}
+                  {/* Formulario con mejoras UX en los textfields y feedback activo en el botón */}
                   <form onSubmit={handleEnviarContacto} className="flex flex-col gap-6 grow">
-                    <AdminTextField label={t('home.form_nombre', 'Nombre')} required value={contacto.nombre} onChange={(e) => setContacto({...contacto, nombre: e.target.value})} />
-                    <AdminTextField label={t('home.form_email', 'Email')} type="email" required value={contacto.correo} onChange={(e) => setContacto({...contacto, correo: e.target.value})} />
+                    <AdminTextField 
+                      label={t('home.form_nombre', 'Nombre')} 
+                      required 
+                      value={contacto.nombre} 
+                      onChange={(e) => setContacto({...contacto, nombre: e.target.value})} 
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                    />
+                    <AdminTextField 
+                      label={t('home.form_email', 'Email')} 
+                      type="email" 
+                      required 
+                      value={contacto.correo} 
+                      onChange={(e) => setContacto({...contacto, correo: e.target.value})} 
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                    />
                     
                     <div className="grow flex flex-col">
                       <AdminTextField 
@@ -340,12 +360,38 @@ export default function Home() {
                         rows={5} 
                         value={contacto.mensaje} 
                         onChange={(e) => setContacto({...contacto, mensaje: e.target.value})} 
-                        sx={{ flexGrow: 1 }}
+                        sx={{ flexGrow: 1, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                       />
                     </div>
                     
-                    <Button type="submit" variant="contained" color="secondary" disabled={estadoEnvio === "enviando"} sx={{ py: 1.5, width: '100%', borderRadius: '12px', fontWeight: 'bold', textTransform: 'uppercase', tracking: '0.1em', mt: 'auto' }}>
-                      {estadoEnvio === "enviando" ? t('home.btn_enviando', 'Enviando...') : t('home.btn_enviar', 'Enviar Mensaje')}
+                    {/* MEJORA UX: Botón con estado dinámico e indicador circular de carga integrado */}
+                    <Button 
+                      type="submit" 
+                      variant="contained" 
+                      color="secondary" 
+                      disabled={estadoEnvio === "enviando"} 
+                      sx={{ 
+                        py: 1.5, 
+                        width: '100%', 
+                        borderRadius: '12px', 
+                        fontWeight: 'bold', 
+                        textTransform: 'uppercase', 
+                        tracking: '0.1em', 
+                        mt: 'auto',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 1.5
+                      }}
+                    >
+                      {estadoEnvio === "enviando" ? (
+                        <>
+                          <CircularProgress size={18} thickness={5} sx={{ color: 'inherit' }} />
+                          {t('home.btn_enviando', 'Enviando...')}
+                        </>
+                      ) : (
+                        t('home.btn_enviar', 'Enviar Mensaje')
+                      )}
                     </Button>
                   </form>
                 </article>
