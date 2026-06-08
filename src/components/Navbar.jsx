@@ -1,7 +1,7 @@
 // src/components/Navbar.jsx
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import logo from "../assets/Logo Oficial_IIRESODH-224.webp"; 
+import logo from "../assets/Logo Oficial_IIRESODH-240.webp"; 
 
 // Importaciones de MUI para mejorar la UX
 import { Paper, InputBase, IconButton, Tooltip } from '@mui/material';
