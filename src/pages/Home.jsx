@@ -25,6 +25,9 @@ import { Button, Paper, CircularProgress } from "@mui/material";
 import { useTranslation } from 'react-i18next';
 import { obtenerTextoTraducido } from "../utils/traductorDinamico";
 
+// Iconos (Lucide)
+import { ChevronLeft, ChevronRight, Scale, Globe, GraduationCap } from 'lucide-react';
+
 export const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
   let procesado = texto.replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -256,10 +259,10 @@ export default function Home() {
                 </Swiper>
 
                 <button className="swiper-btn-prev absolute top-1/2 left-4 md:left-8 z-20 -translate-y-1/2 w-12 h-12 bg-white/90 backdrop-blur-sm shadow-md border border-gray-100 rounded-full text-main-blue hover:bg-main-red hover:text-white hover:border-main-red transition-colors duration-300 outline-none flex items-center justify-center cursor-pointer" aria-label="Ver noticia anterior">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                  <ChevronLeft className="w-6 h-6" strokeWidth={2.5} />
                 </button>
                 <button className="swiper-btn-next absolute top-1/2 right-4 md:right-8 z-20 -translate-y-1/2 w-12 h-12 bg-white/90 backdrop-blur-sm shadow-md border border-gray-100 rounded-full text-main-blue hover:bg-main-red hover:text-white hover:border-main-red transition-colors duration-300 outline-none flex items-center justify-center cursor-pointer" aria-label="Ver siguiente noticia">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                  <ChevronRight className="w-6 h-6" strokeWidth={2.5} />
                 </button>
               </div>
             ) : null}
@@ -290,7 +293,7 @@ export default function Home() {
                   <Link to="/litigio-estrategico" className="group">
                     <article className="flex flex-col h-full bg-white p-8 border border-gray-100 rounded-3xl hover:border-main-red/30 hover:shadow-lg transition-all duration-300">
                       <div className="w-14 h-14 bg-main-red text-white rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-105 transition-transform">
-                        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
+                        <Scale className="w-7 h-7" />
                       </div>
                       <h3 className="text-xl font-bold text-main-blue mb-3">{t('home.litigio_titulo', 'Litigio Estratégico')}</h3>
                       <p className="text-gray-500 font-light text-sm leading-relaxed grow">{t('home.litigio_desc', 'Defensa jurídica ante tribunals internacionales para sentar precedentes en la protección de derechos.')}</p>
@@ -301,7 +304,7 @@ export default function Home() {
                   <Link to="/incidencia-internacional" className="group">
                     <article className="flex flex-col h-full bg-white p-8 border border-gray-100 rounded-3xl hover:border-main-red/30 hover:shadow-lg transition-all duration-300">
                       <div className="w-14 h-14 bg-[#3B82F6] text-white rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-105 transition-transform">
-                        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+                        <Globe className="w-7 h-7" />
                       </div>
                       <h3 className="text-xl font-bold text-main-blue mb-3">{t('home.incidencia_titulo', 'Incidencia Internacional')}</h3>
                       <p className="text-gray-500 font-light text-sm leading-relaxed grow">{t('home.incidencia_desc', 'Investigaciones, informes de impacto y documentos de litigio estratégico.')}</p>
@@ -312,7 +315,7 @@ export default function Home() {
                   <Link to="/cursos" className="group sm:col-span-2">
                     <article className="flex flex-col sm:flex-row items-start sm:items-center h-full bg-white p-8 border border-gray-100 rounded-3xl hover:border-main-red/30 hover:shadow-lg transition-all duration-300 gap-6">
                       <div className="w-14 h-14 bg-light-blue text-white rounded-xl flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
+                        <GraduationCap className="w-7 h-7" />
                       </div>
                       <div>
                         <h3 className="text-xl font-bold text-main-blue mb-2">{t('home.formacion_titulo', 'Formación Especializada')}</h3>
