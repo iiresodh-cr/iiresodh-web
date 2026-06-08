@@ -86,7 +86,7 @@ export default function LitigioEstrategico() {
             </div>
 
             <div className="order-1 lg:order-2 w-full flex justify-center">
-              <Paper elevation={3} className="w-full rounded-3xl overflow-hidden shadow-lg bg-black border border-gray-100" sx={{ borderRadius: '24px' }}>
+              <Paper elevation={0} className="w-full rounded-3xl overflow-hidden shadow-lg bg-black border border-gray-100" sx={{ borderRadius: '4px' }}>
                 <img 
                   src={imagenCIJ} 
                   alt={t('litigio.alt_img_cij', 'Abogados de IIRESODH en la Corte Internacional de Justicia')} 
