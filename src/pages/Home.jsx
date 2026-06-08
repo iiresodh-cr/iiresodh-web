@@ -11,6 +11,9 @@ import { Autoplay, EffectFade, Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/effect-fade';
 
+// Iconos Lucide
+import { Scale, Earth, GraduationCap } from "lucide-react";
+
 // Imágenes y Recursos
 import isotipoFondo from "../assets/Isotipo-color-512.webp"; 
 
@@ -25,14 +28,11 @@ import { Button, Paper, CircularProgress } from "@mui/material";
 import { useTranslation } from 'react-i18next';
 import { obtenerTextoTraducido } from "../utils/traductorDinamico";
 
-// Iconos (Lucide)
-import { ChevronLeft, ChevronRight, Scale, Globe, GraduationCap } from 'lucide-react';
-
 export const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
   let procesado = texto.replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const linksGuardados = []; 
-  procesado = procesado.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, label, url) => {
+  processed = procesado.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, label, url) => {
     linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline wrap-break-words">${label}</a>`);
     return `__LINK_${linksGuardados.length - 1}__`; 
   });
@@ -135,9 +135,11 @@ export default function Home() {
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center text-left">
               <div className="lg:col-span-8 max-w-4xl">
-                {/* MEJORA UX/i18n: Removidos saltos <br/> manuales para evitar rupturas semánticas en otros idiomas */}
+                {/* SOLUCIÓN: Se restauran tus claves originales para reactivar i18n, controlando el diseño mediante un ancho máximo responsivo */}
                 <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-black text-[#0B1E40] leading-[1.05] mb-6 tracking-tighter max-w-3xl">
-                  {t('home.hero_titulo', 'Defendiendo la dignidad y los Derechos Humanos')}
+                  {t('home.hero_titulo_1', 'Defendiendo la ')}
+                  {t('home.hero_titulo_2', 'dignidad y los ')}
+                  {t('home.hero_titulo_3', 'Derechos Humanos')}
                 </h1>
                 
                 <p className="text-lg md:text-xl text-gray-600 font-light mb-10 leading-relaxed max-w-2xl">
@@ -161,7 +163,6 @@ export default function Home() {
                     <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra1}</span>
                     <span className="text-xs font-bold tracking-widest uppercase text-gray-500">{obtenerTextoTraducido(cifrasImpacto, 'texto1', i18n.language)}</span>
                   </div>
-                  {/* MEJORA UI: Líneas de separación estilizadas con el color institucional secundario */}
                   <div className="w-12 h-px bg-light-blue/30 mx-auto lg:mx-0"></div>
                   <div>
                     <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra2}</span>
@@ -230,10 +231,8 @@ export default function Home() {
                             role="img"
                             aria-label={tituloTraducido || "Imagen de la noticia"}
                           />
-                          {/* MEJORA UI: Filtro de contraste oscuro sutil en el fondo de la imagen para garantizar legibilidad */}
                           <div className="absolute inset-0 bg-black/20 group-hover/slide:bg-black/10 transition-colors duration-1000"></div>
                           
-                          {/* MEJORA UX/UI: Opacidad elevada (bg-white/90) para cumplir estrictamente con el contraste accesible WCAG */}
                           <div className="absolute bottom-4 left-4 right-4 md:bottom-10 md:left-10 md:right-auto w-[90%] md:w-[75%] lg:w-[65%] h-auto min-h-80 md:min-h-96 lg:min-h-112 p-6 md:p-10 lg:p-12 bg-white/90 backdrop-blur-md shadow-2xl rounded-3xl border border-white/80 z-10 flex flex-col justify-end transform transition-all duration-500 group-hover/slide:-translate-y-2 group-hover/slide:shadow-main-blue/10">
                             <div className="flex flex-wrap gap-2 mb-4 md:mb-6">
                               {noticia.tags?.map(tag => (
@@ -247,7 +246,6 @@ export default function Home() {
                               {resumenTraducido}
                             </p>
                             
-                            {/* MEJORA UX: Estilizado como Botón Fantasma interactivo unificado con la sección de Incidencia */}
                             <div className="inline-flex items-center justify-center gap-2 self-start px-5 py-2.5 text-xs font-bold text-main-red uppercase tracking-widest border-2 border-main-red/20 rounded-lg group-hover/slide:bg-main-red group-hover/slide:text-white group-hover/slide:border-main-red transition-all duration-300">
                               {t('home.leer_articulo', 'Leer artículo')} <span aria-hidden="true" className="text-sm leading-none">&rarr;</span>
                             </div>
@@ -259,10 +257,10 @@ export default function Home() {
                 </Swiper>
 
                 <button className="swiper-btn-prev absolute top-1/2 left-4 md:left-8 z-20 -translate-y-1/2 w-12 h-12 bg-white/90 backdrop-blur-sm shadow-md border border-gray-100 rounded-full text-main-blue hover:bg-main-red hover:text-white hover:border-main-red transition-colors duration-300 outline-none flex items-center justify-center cursor-pointer" aria-label="Ver noticia anterior">
-                  <ChevronLeft className="w-6 h-6" strokeWidth={2.5} />
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
                 </button>
                 <button className="swiper-btn-next absolute top-1/2 right-4 md:right-8 z-20 -translate-y-1/2 w-12 h-12 bg-white/90 backdrop-blur-sm shadow-md border border-gray-100 rounded-full text-main-blue hover:bg-main-red hover:text-white hover:border-main-red transition-colors duration-300 outline-none flex items-center justify-center cursor-pointer" aria-label="Ver siguiente noticia">
-                  <ChevronRight className="w-6 h-6" strokeWidth={2.5} />
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
                 </button>
               </div>
             ) : null}
@@ -276,7 +274,7 @@ export default function Home() {
           <section className="bg-white">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
               
-              {/* COLUMNA IZQUIERDA: SERVICIOS (7 columnas) */}
+              {/* COLUMNA IZQUIERDA: SERVICIOS */}
               <div className="lg:col-span-7 flex flex-col">
                 <div className="mb-8">
                   <span className="text-main-red font-black tracking-[0.3em] uppercase text-xs mb-3 block">{t('home.nuestra_labor', 'Nuestra Labor')}</span>
@@ -289,33 +287,33 @@ export default function Home() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 grow">
-                  {/* Tarjeta 1: Litigio */}
+                  {/* Tarjeta 1: Litigio con Lucide */}
                   <Link to="/litigio-estrategico" className="group">
                     <article className="flex flex-col h-full bg-white p-8 border border-gray-100 rounded-3xl hover:border-main-red/30 hover:shadow-lg transition-all duration-300">
                       <div className="w-14 h-14 bg-main-red text-white rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-105 transition-transform">
-                        <Scale className="w-7 h-7" />
+                        <Scale className="w-7 h-7" strokeWidth={1.75} />
                       </div>
                       <h3 className="text-xl font-bold text-main-blue mb-3">{t('home.litigio_titulo', 'Litigio Estratégico')}</h3>
-                      <p className="text-gray-500 font-light text-sm leading-relaxed grow">{t('home.litigio_desc', 'Defensa jurídica ante tribunals internacionales para sentar precedentes en la protección de derechos.')}</p>
+                      <p className="text-gray-500 font-light text-sm leading-relaxed grow">{t('home.litigio_desc', 'Defensa jurídica ante tribunales internacionales para sentar precedentes en la protección de derechos.')}</p>
                     </article>
                   </Link>
 
-                  {/* Tarjeta 2: Incidencia */}
+                  {/* Tarjeta 2: Incidencia con Lucide */}
                   <Link to="/incidencia-internacional" className="group">
                     <article className="flex flex-col h-full bg-white p-8 border border-gray-100 rounded-3xl hover:border-main-red/30 hover:shadow-lg transition-all duration-300">
                       <div className="w-14 h-14 bg-[#3B82F6] text-white rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-105 transition-transform">
-                        <Globe className="w-7 h-7" />
+                        <Earth className="w-7 h-7" strokeWidth={1.75} />
                       </div>
                       <h3 className="text-xl font-bold text-main-blue mb-3">{t('home.incidencia_titulo', 'Incidencia Internacional')}</h3>
                       <p className="text-gray-500 font-light text-sm leading-relaxed grow">{t('home.incidencia_desc', 'Investigaciones, informes de impacto y documentos de litigio estratégico.')}</p>
                     </article>
                   </Link>
 
-                  {/* Tarjeta 3: Formación (MEJORA UI: Unificado fondo a blanco con acento "light-blue" para consistencia de grilla) */}
+                  {/* Tarjeta 3: Formación con Lucide */}
                   <Link to="/cursos" className="group sm:col-span-2">
                     <article className="flex flex-col sm:flex-row items-start sm:items-center h-full bg-white p-8 border border-gray-100 rounded-3xl hover:border-main-red/30 hover:shadow-lg transition-all duration-300 gap-6">
                       <div className="w-14 h-14 bg-light-blue text-white rounded-xl flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                        <GraduationCap className="w-7 h-7" />
+                        <GraduationCap className="w-7 h-7" strokeWidth={1.75} />
                       </div>
                       <div>
                         <h3 className="text-xl font-bold text-main-blue mb-2">{t('home.formacion_titulo', 'Formación Especializada')}</h3>
@@ -326,7 +324,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* COLUMNA DERECHA: CONTACTO (5 columnas) */}
+              {/* COLUMNA DERECHA: CONTACTO */}
               <div className="lg:col-span-5 flex flex-col h-full">
                 <article className="bg-gray-50/50 p-8 md:p-10 border border-gray-100 rounded-3xl flex flex-col h-full shadow-sm">
                   <h3 className="text-2xl md:text-3xl font-black text-main-blue mb-2">{t('home.contacto_titulo', '¿Hablamos?')}</h3>
@@ -337,7 +335,6 @@ export default function Home() {
                   <ToastAlert open={estadoEnvio === "exito"} message={t('home.msg_exito', '¡Mensaje enviado con éxito!')} isError={false} onClose={() => setEstadoEnvio("idle")} />
                   <ToastAlert open={estadoEnvio === "error"} message={t('home.msg_error', 'Ocurrió un error al enviar el mensaje.')} isError={true} onClose={() => setEstadoEnvio("idle")} />
                   
-                  {/* Formulario con mejoras UX en los textfields y feedback activo en el botón */}
                   <form onSubmit={handleEnviarContacto} className="flex flex-col gap-6 grow">
                     <AdminTextField 
                       label={t('home.form_nombre', 'Nombre')} 
@@ -367,7 +364,6 @@ export default function Home() {
                       />
                     </div>
                     
-                    {/* MEJORA UX: Botón con estado dinámico e indicador circular de carga integrado */}
                     <Button 
                       type="submit" 
                       variant="contained" 
