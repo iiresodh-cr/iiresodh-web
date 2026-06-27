@@ -35,6 +35,10 @@ export default function Login() {
         return; // Detenemos la ejecución aquí
       }
 
+      // 🔥 CORRECCIÓN: Forzar la sincronización de la credencial con Firestore
+      await result.user.getIdToken(true);
+      await new Promise(resolve => setTimeout(resolve, 800));
+
       // ==========================================
       // 2. FILTRO DE PRIVILEGIOS EN FIRESTORE
       // ==========================================
