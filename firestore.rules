@@ -2,15 +2,18 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Función centralizada y segura
+    // FUNCIÓN CORREGIDA: Utiliza path() y concatenación (+) para que Firebase 
+    // pueda compilar el método .lower() sin romper el despliegue.
     function esAdmin() {
       return request.auth != null && 
-             exists(/databases/$(database)/documents/admins/$(request.auth.token.email.lower()));
+             request.auth.token.email != null &&
+             exists(path('/databases/' + database + '/documents/admins/' + request.auth.token.email.lower()));
     }
 
+    // ACCESO DE LECTURA COMPILADO: Permite que el login consulte la colección de admins
     match /admins/{adminEmail} {
       allow read: if request.auth != null;
-      allow write: if false; 
+      allow write: if false; // Blindado contra registros malintencionados
     }
 
     match /auditoria_actividad/{document=**} {
@@ -37,7 +40,6 @@ service cloud.firestore {
       allow write: if esAdmin();
     }
     
-    // ===== FALTABAN ESTAS TRES COLECCIONES =====
     match /informes/{docId=**} {
       allow read: if true;
       allow write: if esAdmin();
@@ -52,13 +54,11 @@ service cloud.firestore {
       allow read: if true;
       allow write: if esAdmin();
     }
-    // ===========================================
 
     match /compras/{docId=**} {
       allow read, write: if esAdmin();
     }
     
-    // Reglas para la colección configuración que permite que el Hero section pueda leer los números
     match /configuracion/{docId=**} {
       allow read: if true;
       allow write: if esAdmin();
