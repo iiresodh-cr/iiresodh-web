@@ -1,14 +1,15 @@
 // src/components/PidaChat.jsx
 import { useState, useRef, useEffect, useMemo } from "react";
 import pidaImg from "../assets/IRENE-80.webp"; 
-import { functions } from "../firebase/config";
-import { httpsCallable } from "firebase/functions";
 
 // Importaciones de MUI
 import { Paper, InputBase, IconButton, Tooltip, Button, Zoom } from '@mui/material';
 
 // IMPORTACIÓN PARA i18n
 import { useTranslation } from 'react-i18next';
+
+// URL de la Cloud Function HTTP en us-central1
+const STREAM_ENDPOINT = "https://us-central1-iiresodh-web.cloudfunctions.net/chatPidaStream";
 
 export default function PidaChat() {
   const { t, i18n } = useTranslation(); 
@@ -26,7 +27,6 @@ export default function PidaChat() {
   const getSessionId = () => {
     let id = sessionStorage.getItem("pidaChatSessionId");
     if (!id) {
-      // Generamos un ID único simple si no existe
       id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
       sessionStorage.setItem("pidaChatSessionId", id);
     }
@@ -35,7 +35,7 @@ export default function PidaChat() {
 
   const [sessionId, setSessionId] = useState(getSessionId());
 
-  // MEMORIA UI: Inicializamos leyendo de sessionStorage para mantener la ventana
+  // MEMORIA UI: Inicializamos leyendo de sessionStorage
   const [mensajes, setMensajes] = useState(() => {
     const chatGuardado = sessionStorage.getItem("pidaChatHistorial");
     return chatGuardado ? JSON.parse(chatGuardado) : [MENSAJE_INICIAL];
@@ -47,7 +47,7 @@ export default function PidaChat() {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Guardamos cada actualización del chat en la UI
+  // Guardamos cada actualización del chat en sessionStorage
   useEffect(() => {
     sessionStorage.setItem("pidaChatHistorial", JSON.stringify(mensajes));
   }, [mensajes]);
@@ -79,14 +79,10 @@ export default function PidaChat() {
   const solicitarReinicio = () => setMostrarConfirmacion(true);
   
   const confirmarReinicio = () => {
-    // 1. Limpiamos la UI
     setMensajes([MENSAJE_INICIAL]);
     sessionStorage.removeItem("pidaChatHistorial");
-    
-    // 2. Limpiamos y renovamos la sesión en el Agent Memory Bank
     sessionStorage.removeItem("pidaChatSessionId");
     setSessionId(getSessionId()); 
-    
     setMostrarConfirmacion(false);
   };
 
@@ -120,32 +116,74 @@ export default function PidaChat() {
     });
   };
 
+  // =========================================================================
+  // MANEJADOR DE ENVÍO CON STREAMING EN TIEMPO REAL
+  // =========================================================================
   const handleEnviar = async (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || escribiendo) return;
 
     const textoUsuario = input.trim();
-    
-    // Mostramos el mensaje del usuario inmediatamente
-    const nuevoMensaje = { text: textoUsuario, isBot: false };
-    setMensajes((prev) => [...prev, nuevoMensaje]);
     setInput("");
     setEscribiendo(true);
 
+    // Agregamos el mensaje del usuario y una burbuja inicial vacía para IRENE
+    setMensajes((prev) => [
+      ...prev, 
+      { text: textoUsuario, isBot: false },
+      { text: "", isBot: true }
+    ]);
+
     try {
-      const charlarConPida = httpsCallable(functions, 'chatPida');
-      
-      // AHORA ENVIAMOS SESSION ID EN LUGAR DE TODO EL HISTORIAL
-      const resultado = await charlarConPida({ 
-        mensaje: textoUsuario,
-        sessionId: sessionId,          // <-- El Agent Platform gestiona el historial con esto
-        idioma: i18n.language 
+      const response = await fetch(STREAM_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          mensaje: textoUsuario, 
+          sessionId: sessionId, 
+          idioma: i18n.language 
+        })
       });
+
+      if (!response.ok) {
+        throw new Error(`Error en el servidor: ${response.status}`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
       
-      setMensajes((prev) => [...prev, { text: resultado.data.respuesta, isBot: true }]);
+      // Ocultamos los puntos de escritura cuando empiezan a llegar los primeros fragmentos
+      setEscribiendo(false);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunkTexto = decoder.decode(value, { stream: true });
+
+        // Concatenamos cada fragmento en tiempo real a la última burbuja del chat
+        setMensajes((prev) => {
+          const nuevos = [...prev];
+          const ultimoIndex = nuevos.length - 1;
+          nuevos[ultimoIndex] = {
+            ...nuevos[ultimoIndex],
+            text: nuevos[ultimoIndex].text + chunkTexto
+          };
+          return nuevos;
+        });
+      }
+
     } catch (error) {
-      console.error("Error consultando a IRENE:", error);
-      setMensajes((prev) => [...prev, { text: t('irene.error_mensaje', 'Ups, tuve un pequeño mareo en mis circuitos. ¿Puedes intentar de nuevo?'), isBot: true }]);
+      console.error("Error en streaming con IRENE:", error);
+      setMensajes((prev) => {
+        const nuevos = [...prev];
+        const ultimoIndex = nuevos.length - 1;
+        // Si no llegó nada de texto, mostramos el mensaje de error
+        if (!nuevos[ultimoIndex].text) {
+          nuevos[ultimoIndex].text = t('irene.error_mensaje', 'Ups, tuve un pequeño mareo en mis circuitos. ¿Puedes intentar de nuevo?');
+        }
+        return nuevos;
+      });
     } finally {
       setEscribiendo(false);
     }
@@ -174,7 +212,7 @@ export default function PidaChat() {
               transition: 'all 0.3s',
               '&:hover': {
                 transform: 'translateY(-4px)',
-                boxShadow: '0 10px 15px -3px rgba(185, 47, 50, 0.25)' // Sombra roja suave
+                boxShadow: '0 10px 15px -3px rgba(185, 47, 50, 0.25)'
               }
             }}
           >
