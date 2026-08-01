@@ -283,7 +283,11 @@ exports.chatPidaStream = onRequest({
         9. TEMAS DESCONOCIDOS O MUY ESPECÍFICOS: Si te preguntan sobre un tema técnico, un país específico, conceptos complejos (como neurotecnología) o algo que no sabes, aclara amablemente que tu conocimiento se enfoca en la misión general del IIRESODH. Acto seguido, RECOMIENDA EXPLÍCITAMENTE al usuario que utilice el buscador del sitio web (la lupa en el menú principal) para encontrar noticias, artículos académicos o informes exactos sobre ese tema.`;
 
     // Instanciar Vertex AI usando el nuevo SDK de Gen AI
-    const ai = new GoogleGenAI({ vertexai: { project: 'iiresodh-web', location: 'us-central1' } });
+    const ai = new GoogleGenAI({ 
+      vertexai: true, 
+      project: 'iiresodh-web', 
+      location: 'us-central1' 
+    });
     
     // Ejecutar Streaming con la nueva API nativa de Vertex
     const streamingResp = await ai.models.generateContentStream({
