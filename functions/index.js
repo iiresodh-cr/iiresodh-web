@@ -235,97 +235,71 @@ exports.enviarFormularioContacto = onCall({
 });
 
 // ============================================================================
-// 4. FUNCIÓN CHATBOT IRENE (GEMINI ENTERPRISE AGENT PLATFORM - ADK)
+// 4. CHATBOT IRENE (STREAMING EN TIEMPO REAL CON ADK)
 // ============================================================================
+const { onRequest } = require("firebase-functions/v2/https");
 const { LlmAgent, Gemini } = require("@google/adk");
-const util = require("util"); // Módulo nativo de Node.js para inspección profunda
+const cors = require("cors")({ origin: true });
 
-exports.chatPida = onCall({ 
-  region: "us-central1",
-  cors: [
-    /iiresodh-web\.web\.app$/, 
-    /iiresodh-web\.firebaseapp\.com$/, 
-    "http://localhost:5173"
-  ]
-}, async (request) => {
-  
-  const { mensaje, sessionId, idioma = 'es' } = request.data;
-  
-  if (!mensaje) {
-    throw new HttpsError("invalid-argument", "El mensaje está vacío.");
-  }
+exports.chatPidaStream = onRequest({ region: "us-central1" }, (req, res) => {
+  // Manejo de CORS para permitir solicitudes desde tu Frontend
+  cors(req, res, async () => {
+    if (req.method !== "POST") {
+      return res.status(405).send("Método no permitido");
+    }
 
-  if (!sessionId) {
-    throw new HttpsError("invalid-argument", "Se requiere un sessionId para mantener el contexto de la conversación.");
-  }
+    const { mensaje, sessionId, idioma = 'es' } = req.body;
 
-  try {
-    const systemInstruction = `Eres IRENE, el asistente virtual oficial del Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH).
-        Tu personalidad es amable, profesional, empática y sumamente respetuosa. Eres un experto en la labor de la institución.
+    if (!mensaje || !sessionId) {
+      return res.status(400).send("Faltan parámetros requeridos (mensaje o sessionId).");
+    }
 
-        INFORMACIÓN CLAVE QUE DEBES SABER SOBRE IIRESODH:
-        - Misión: Somos una institución dedicada a la defensa, promoción y educación en Derechos Humanos y Responsabilidad Social a nivel internacional.
-        - Áreas de trabajo principales: Litigio Estratégico, Cooperación Internacional, Cursos y Capacitaciones, Publicación de Artículos Académicos y Tienda Editorial.
-        - Presencia: Trabajamos a nivel internacional, con sedes y proyectos en Costa Rica (Sede Principal), México, Colombia, Guatemala y Canadá.
-        - Tienda Editorial: Vendemos libros y manuales especializados en formato digital (PDF). El envío es automático por correo electrónico tras confirmar el pago.
+    // Configuración de cabeceras para Streaming continuo (HTTP Chunked)
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.setHeader("Transfer-Encoding", "chunked");
 
-        TUS REGLAS ESTRICTAS DE COMPORTAMIENTO:
-        1. SÉ CONCISA: Los usuarios leen en una pequeña ventana de chat. Usa párrafos muy cortos (máximo 3-4 líneas) y viñetas si es necesario.
-        2. NO ERES ABOGADA: Tienes PROHIBIDO dar asesoría legal específica o prometer resultados judiciales.
-        3. QUÉ HACER CON CASOS LEGALES: Ante solicitudes de ayuda legal, responde con empatía e invita al usuario a usar el Formulario de Contacto o escribir a contacto@iiresodh.org.
-        4. TIENDA Y PRECIOS: Si preguntan por libros, guíalos a la "Tienda Editorial". Informa que son archivos PDF. Importante: Aclara que para usuarios en México los precios se muestran y cobran en Pesos Mexicanos (MXN) de acuerdo con la legislación local, mientras que para el resto del mundo se manejan en USD.
-        5. CÓDIGOS DE DESCUENTO: Si preguntan por descuentos, menciona que ocasionalmente ofrecemos códigos promocionales para la tienda. Invítalos a suscribirse a nuestro boletín para recibir noticias y ofertas exclusivas.
-        6. GUÍA DE NAVEGACIÓN: Orienta a los usuarios sobre dónde encontrar Noticias, Artículos Académicos, Cursos o la Tienda en el menú superior.
-        7. DONACIONES: Si preguntan cómo apoyar, agradéceles, explícales que pronto estará disponible la sección de "Donaciones" pero para mientras puenen apoyarnos comprando libros y guíalos a la sección de "Tienda".
-        8. IDIOMA ESTRICTO: El usuario está navegando el sitio web en el idioma con código '${idioma}'. Debes comunicarte y responder SIEMPRE en ese idioma, a menos que el usuario te hable explícitamente en otro.
-        9. TEMAS DESCONOCIDOS O MUY ESPECÍFICOS: Si te preguntan sobre un tema técnico, un país específico, conceptos complejos (como neurotecnología) o algo que no sabes, aclara amablemente que tu conocimiento se enfoca en la misión general del IIRESODH. Acto seguido, RECOMIENDA EXPLÍCITAMENTE al usuario que utilice el buscador del sitio web (la lupa en el menú principal) para encontrar noticias, artículos académicos o informes exactos sobre ese tema.`;
+    try {
+      const systemInstruction = `Eres IRENE, el asistente virtual oficial del IIRESODH...`; // Tu prompt actual
 
-    const llm = new Gemini({ 
-        model: 'gemini-3.1-flash'
-    });
+      const llm = new Gemini({ model: 'gemini-3.1-flash' });
+      const agent = new LlmAgent({ llm: llm, instruction: systemInstruction });
 
-    const agent = new LlmAgent({
-      llm: llm,
-      instruction: systemInstruction
-    });
-
-    const response = await agent.runAsyncImpl({
+      // Obtenemos el flujo de datos (Stream)
+      const responseStream = await agent.runAsyncImpl({
         input: mensaje,
-        sessionId: sessionId 
-    });
+        sessionId: sessionId
+      });
 
-    // 🔴 Imprimimos la estructura real en los logs de Cloud Functions
-    console.log("ESTRUCTURA DETALLADA ADK:", util.inspect(response, { depth: 5, showHidden: true }));
+      function extraerTextoChunk(obj) {
+        if (!obj) return "";
+        if (typeof obj === "string") return obj;
+        if (typeof obj.text === "string") return obj.text;
+        if (typeof obj.text === "function") return obj.text();
+        if (typeof obj.content === "string") return obj.content;
+        if (typeof obj.output === "string") return obj.output;
+        if (obj.parts) return Array.isArray(obj.parts) ? obj.parts.map(extraerTextoChunk).join("") : extraerTextoChunk(obj.parts);
+        return "";
+      }
 
-    // 🔍 Extractor recursivo de texto
-    function extraerTexto(obj) {
-      if (!obj) return "";
-      if (typeof obj === "string") return obj;
-      if (typeof obj.text === "string") return obj.text;
-      if (typeof obj.text === "function") return obj.text();
-      if (typeof obj.content === "string") return obj.content;
-      if (typeof obj.output === "string") return obj.output;
-      if (Array.isArray(obj)) return obj.map(extraerTexto).filter(Boolean).join("\n");
-      if (obj.content) return extraerTexto(obj.content);
-      if (obj.parts) return Array.isArray(obj.parts) ? obj.parts.map(extraerTexto).join("") : extraerTexto(obj.parts);
-      if (obj.candidates && obj.candidates[0]) return extraerTexto(obj.candidates[0]);
-      if (obj.value) return extraerTexto(obj.value);
-      return "";
+      // 🚀 TRANSMISIÓN EN TIEMPO REAL
+      for await (const chunk of responseStream) {
+        const texto = extraerTextoChunk(chunk);
+        if (texto) {
+          res.write(texto); // ¡Envía cada palabra al navegador al instante!
+        }
+      }
+
+      res.end(); // Finaliza la conexión cuando el bot termina de hablar
+
+    } catch (error) {
+      console.error("Error en streaming de IRENE:", error);
+      if (!res.headersSent) {
+        res.status(500).send("Error interno procesando la respuesta.");
+      } else {
+        res.end();
+      }
     }
-
-    let textoLimpio = extraerTexto(response);
-
-    // Si el extractor no encuentra una propiedad conocida, mostramos la inspección para ver las claves reales
-    if (!textoLimpio || textoLimpio === "{}") {
-      textoLimpio = typeof response === "object" ? util.inspect(response, { depth: 2 }) : String(response);
-    }
-
-    return { respuesta: textoLimpio };
-
-  } catch (error) {
-    console.error("Error en el cerebro de IRENE (Agent Platform):", error);
-    throw new HttpsError("internal", "Error procesando la respuesta con IRENE.");
-  }
+  });
 });
 
 // ============================================================================
