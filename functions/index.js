@@ -235,10 +235,11 @@ exports.enviarFormularioContacto = onCall({
 });
 
 // ============================================================================
-// 4. FUNCIÓN CHATBOT IRENE (GEMINI)
+// 4. FUNCIÓN CHATBOT IRENE (GEMINI ENTERPRISE AGENT PLATFORM - ADK)
 // ============================================================================
+const { AgentClient } = require("@google/adk");
+
 exports.chatPida = onCall({ 
-  secrets: [geminiApiKey], 
   region: "us-central1",
   cors: [
     /iiresodh-web\.web\.app$/, 
@@ -247,20 +248,23 @@ exports.chatPida = onCall({
   ]
 }, async (request) => {
   
-  // AHORA RECIBIMOS EL IDIOMA DEL FRONTEND
-  const { mensaje, historial = [], idioma = 'es' } = request.data;
+  const { mensaje, sessionId, idioma = 'es' } = request.data;
   
   if (!mensaje) {
     throw new HttpsError("invalid-argument", "El mensaje está vacío.");
   }
 
+  if (!sessionId) {
+    throw new HttpsError("invalid-argument", "Se requiere un sessionId para mantener el contexto de la conversación.");
+  }
+
   try {
-    const apiKey = geminiApiKey.value();
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const agentClient = new AgentClient({
+      project: process.env.GCLOUD_PROJECT, 
+      location: "us-central1"
+    });
     
-    const model = genAI.getGenerativeModel({ 
-        model: "gemini-2.5-flash",
-        systemInstruction: `Eres IRENE, el asistente virtual oficial del Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH).
+    const systemInstruction = `Eres IRENE, el asistente virtual oficial del Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH).
         Tu personalidad es amable, profesional, empática y sumamente respetuosa. Eres un experto en la labor de la institución.
 
         INFORMACIÓN CLAVE QUE DEBES SABER SOBRE IIRESODH:
@@ -278,25 +282,19 @@ exports.chatPida = onCall({
         6. GUÍA DE NAVEGACIÓN: Orienta a los usuarios sobre dónde encontrar Noticias, Artículos Académicos, Cursos o la Tienda en el menú superior.
         7. DONACIONES: Si preguntan cómo apoyar, agradéceles, explícales que pronto estará disponible la sección de "Donaciones" pero para mientras puenen apoyarnos comprando libros y guíalos a la sección de "Tienda".
         8. IDIOMA ESTRICTO: El usuario está navegando el sitio web en el idioma con código '${idioma}'. Debes comunicarte y responder SIEMPRE en ese idioma, a menos que el usuario te hable explícitamente en otro.
-        9. TEMAS DESCONOCIDOS O MUY ESPECÍFICOS: Si te preguntan sobre un tema técnico, un país específico, conceptos complejos (como neurotecnología) o algo que no sabes, aclara amablemente que tu conocimiento se enfoca en la misión general del IIRESODH. Acto seguido, RECOMIENDA EXPLÍCITAMENTE al usuario que utilice el buscador del sitio web (la lupa en el menú principal) para encontrar noticias, artículos académicos o informes exactos sobre ese tema.`
+        9. TEMAS DESCONOCIDOS O MUY ESPECÍFICOS: Si te preguntan sobre un tema técnico, un país específico, conceptos complejos (como neurotecnología) o algo que no sabes, aclara amablemente que tu conocimiento se enfoca en la misión general del IIRESODH. Acto seguido, RECOMIENDA EXPLÍCITAMENTE al usuario que utilice el buscador del sitio web (la lupa en el menú principal) para encontrar noticias, artículos académicos o informes exactos sobre ese tema.`;
+
+    const response = await agentClient.sendMessage({
+      model: "gemini-3.1-flash", 
+      sessionId: sessionId,      
+      message: mensaje,
+      systemInstruction: systemInstruction
     });
 
-    const historialFormateado = historial.map(msg => ({
-      role: msg.isBot ? "model" : "user",
-      parts: [{ text: msg.text }]
-    }));
-
-    const chat = model.startChat({
-      history: historialFormateado,
-    });
-
-    const result = await chat.sendMessage(mensaje);
-    const respuestaTexto = result.response.text();
-
-    return { respuesta: respuestaTexto };
+    return { respuesta: response.text };
 
   } catch (error) {
-    console.error("Error en el cerebro de IRENE:", error);
+    console.error("Error en el cerebro de IRENE (Agent Platform):", error);
     throw new HttpsError("internal", "Error procesando la respuesta con IRENE.");
   }
 });

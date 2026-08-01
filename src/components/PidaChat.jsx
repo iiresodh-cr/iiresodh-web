@@ -20,7 +20,22 @@ export default function PidaChat() {
 
   const [isOpen, setIsOpen] = useState(false);
   
-  // MEMORIA: Inicializamos leyendo de sessionStorage
+  // =========================================================================
+  // GESTIÓN DEL SESSION ID PARA EL AGENT MEMORY BANK
+  // =========================================================================
+  const getSessionId = () => {
+    let id = sessionStorage.getItem("pidaChatSessionId");
+    if (!id) {
+      // Generamos un ID único simple si no existe
+      id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
+      sessionStorage.setItem("pidaChatSessionId", id);
+    }
+    return id;
+  };
+
+  const [sessionId, setSessionId] = useState(getSessionId());
+
+  // MEMORIA UI: Inicializamos leyendo de sessionStorage para mantener la ventana
   const [mensajes, setMensajes] = useState(() => {
     const chatGuardado = sessionStorage.getItem("pidaChatHistorial");
     return chatGuardado ? JSON.parse(chatGuardado) : [MENSAJE_INICIAL];
@@ -32,7 +47,7 @@ export default function PidaChat() {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Guardamos cada actualización del chat
+  // Guardamos cada actualización del chat en la UI
   useEffect(() => {
     sessionStorage.setItem("pidaChatHistorial", JSON.stringify(mensajes));
   }, [mensajes]);
@@ -64,8 +79,14 @@ export default function PidaChat() {
   const solicitarReinicio = () => setMostrarConfirmacion(true);
   
   const confirmarReinicio = () => {
+    // 1. Limpiamos la UI
     setMensajes([MENSAJE_INICIAL]);
     sessionStorage.removeItem("pidaChatHistorial");
+    
+    // 2. Limpiamos y renovamos la sesión en el Agent Memory Bank
+    sessionStorage.removeItem("pidaChatSessionId");
+    setSessionId(getSessionId()); 
+    
     setMostrarConfirmacion(false);
   };
 
@@ -75,7 +96,6 @@ export default function PidaChat() {
   const formatearMensaje = (texto) => {
     if (!texto) return "";
     
-    // Esta expresión regular separa el texto cada vez que encuentra una URL (http/https) o texto en **negrita**
     const regex = /(https?:\/\/[^\s]+|\*\*.*?\*\*)/g;
     const partes = texto.split(regex);
     
@@ -105,8 +125,8 @@ export default function PidaChat() {
     if (!input.trim()) return;
 
     const textoUsuario = input.trim();
-    const historialParaEnviar = mensajes.slice(1);
-
+    
+    // Mostramos el mensaje del usuario inmediatamente
     const nuevoMensaje = { text: textoUsuario, isBot: false };
     setMensajes((prev) => [...prev, nuevoMensaje]);
     setInput("");
@@ -114,10 +134,12 @@ export default function PidaChat() {
 
     try {
       const charlarConPida = httpsCallable(functions, 'chatPida');
+      
+      // AHORA ENVIAMOS SESSION ID EN LUGAR DE TODO EL HISTORIAL
       const resultado = await charlarConPida({ 
         mensaje: textoUsuario,
-        historial: historialParaEnviar,
-        idioma: i18n.language // <-- Le chismeamos a IRENE en qué idioma está la página
+        sessionId: sessionId,          // <-- El Agent Platform gestiona el historial con esto
+        idioma: i18n.language 
       });
       
       setMensajes((prev) => [...prev, { text: resultado.data.respuesta, isBot: true }]);
@@ -180,7 +202,7 @@ export default function PidaChat() {
             }
           }}
         >
-          {/* MODAL DE CONFIRMACIÓN INTERNO (Mantiene confinamiento para no romper el widget) */}
+          {/* MODAL DE CONFIRMACIÓN INTERNO */}
           {mostrarConfirmacion && (
             <div className="absolute inset-0 z-20 bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center animate-fade-in-up">
               <div className="w-16 h-16 bg-blue-50 text-main-red rounded-full flex items-center justify-center mb-4">
