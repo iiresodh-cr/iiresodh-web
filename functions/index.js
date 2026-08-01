@@ -238,6 +238,7 @@ exports.enviarFormularioContacto = onCall({
 // 4. FUNCIÓN CHATBOT IRENE (GEMINI ENTERPRISE AGENT PLATFORM - ADK)
 // ============================================================================
 const { LlmAgent, Gemini } = require("@google/adk");
+const util = require("util"); // Módulo nativo de Node.js para inspección profunda
 
 exports.chatPida = onCall({ 
   region: "us-central1",
@@ -279,39 +280,47 @@ exports.chatPida = onCall({
         8. IDIOMA ESTRICTO: El usuario está navegando el sitio web en el idioma con código '${idioma}'. Debes comunicarte y responder SIEMPRE en ese idioma, a menos que el usuario te hable explícitamente en otro.
         9. TEMAS DESCONOCIDOS O MUY ESPECÍFICOS: Si te preguntan sobre un tema técnico, un país específico, conceptos complejos (como neurotecnología) o algo que no sabes, aclara amablemente que tu conocimiento se enfoca en la misión general del IIRESODH. Acto seguido, RECOMIENDA EXPLÍCITAMENTE al usuario que utilice el buscador del sitio web (la lupa en el menú principal) para encontrar noticias, artículos académicos o informes exactos sobre ese tema.`;
 
-    // 1. Instanciamos el modelo Gemini
     const llm = new Gemini({ 
         model: 'gemini-3.1-flash'
     });
 
-    // 2. Creamos el Agente
     const agent = new LlmAgent({
       llm: llm,
       instruction: systemInstruction
     });
 
-    // 3. Ejecutamos usando el método asíncrono
     const response = await agent.runAsyncImpl({
         input: mensaje,
         sessionId: sessionId 
     });
 
-    // 🔍 Extraemos el texto de forma segura garantizando que SIEMPRE sea una cadena de texto (string)
-    let textoRespuesta = "";
+    // 🔴 Imprimimos la estructura real en los logs de Cloud Functions
+    console.log("ESTRUCTURA DETALLADA ADK:", util.inspect(response, { depth: 5, showHidden: true }));
 
-    if (typeof response === "string") {
-      textoRespuesta = response;
-    } else if (response && response.text) {
-      textoRespuesta = typeof response.text === "function" ? response.text() : response.text;
-    } else if (response && response.output) {
-      textoRespuesta = typeof response.output === "string" ? response.output : JSON.stringify(response.output);
-    } else {
-      // Si el ADK devuelve un objeto de eventos o mensaje estructurado
-      textoRespuesta = JSON.stringify(response);
+    // 🔍 Extractor recursivo de texto
+    function extraerTexto(obj) {
+      if (!obj) return "";
+      if (typeof obj === "string") return obj;
+      if (typeof obj.text === "string") return obj.text;
+      if (typeof obj.text === "function") return obj.text();
+      if (typeof obj.content === "string") return obj.content;
+      if (typeof obj.output === "string") return obj.output;
+      if (Array.isArray(obj)) return obj.map(extraerTexto).filter(Boolean).join("\n");
+      if (obj.content) return extraerTexto(obj.content);
+      if (obj.parts) return Array.isArray(obj.parts) ? obj.parts.map(extraerTexto).join("") : extraerTexto(obj.parts);
+      if (obj.candidates && obj.candidates[0]) return extraerTexto(obj.candidates[0]);
+      if (obj.value) return extraerTexto(obj.value);
+      return "";
     }
 
-    // Retornamos garantizado como String
-    return { respuesta: String(textoRespuesta) };
+    let textoLimpio = extraerTexto(response);
+
+    // Si el extractor no encuentra una propiedad conocida, mostramos la inspección para ver las claves reales
+    if (!textoLimpio || textoLimpio === "{}") {
+      textoLimpio = typeof response === "object" ? util.inspect(response, { depth: 2 }) : String(response);
+    }
+
+    return { respuesta: textoLimpio };
 
   } catch (error) {
     console.error("Error en el cerebro de IRENE (Agent Platform):", error);
