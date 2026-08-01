@@ -233,7 +233,7 @@ exports.enviarFormularioContacto = onCall({
 // ============================================================================
 // 4. CHATBOT IRENE (GEMINI ENTERPRISE AGENT PLATFORM - VERTEX AI / IAM)
 // ============================================================================
-const { VertexAI } = require("@google-cloud/vertexai");
+const { GoogleGenAI } = require("@google/genai");
 
 exports.chatPidaStream = onRequest({ 
   region: "us-central1",
@@ -282,35 +282,25 @@ exports.chatPidaStream = onRequest({
         8. IDIOMA ESTRICTO: El usuario está navegando el sitio web en el idioma con código '${idioma}'. Debes comunicarte y responder SIEMPRE en ese idioma, a menos que el usuario te hable explícitamente en otro.
         9. TEMAS DESCONOCIDOS O MUY ESPECÍFICOS: Si te preguntan sobre un tema técnico, un país específico, conceptos complejos (como neurotecnología) o algo que no sabes, aclara amablemente que tu conocimiento se enfoca en la misión general del IIRESODH. Acto seguido, RECOMIENDA EXPLÍCITAMENTE al usuario que utilice el buscador del sitio web (la lupa en el menú principal) para encontrar noticias, artículos académicos o informes exactos sobre ese tema.`;
 
-    // Instanciar Vertex AI
-    const vertexAI = new VertexAI({ project: 'iiresodh-web', location: 'us-central1' });
+    // Instanciar Vertex AI usando el nuevo SDK de Gen AI
+    const ai = new GoogleGenAI({ vertexai: { project: 'iiresodh-web', location: 'us-central1' } });
     
-    // Instanciar el modelo de Vertex AI (Versión 2.5 Flash oficial)
-    const generativeModel = vertexAI.getGenerativeModel({
+    // Ejecutar Streaming con la nueva API nativa de Vertex
+    const streamingResp = await ai.models.generateContentStream({
       model: 'gemini-2.5-flash',
-      systemInstruction: {
-        role: 'system',
-        parts: [{ text: systemInstruction }]
+      contents: mensaje,
+      config: {
+        systemInstruction: systemInstruction
       }
     });
-
-    const requestInfo = {
-      contents: [{ role: 'user', parts: [{ text: mensaje }] }]
-    };
-
-    // Ejecutar Streaming con la API nativa de Vertex
-    const streamingResp = await generativeModel.generateContentStream(requestInfo);
 
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
     res.setHeader("Transfer-Encoding", "chunked");
 
     // Leer los fragmentos y enviarlos en vivo al frontend
-    for await (const chunk of streamingResp.stream) {
-      if (chunk.candidates && chunk.candidates.length > 0 && chunk.candidates[0].content) {
-        const texto = chunk.candidates[0].content.parts[0].text;
-        if (texto) {
-          res.write(texto);
-        }
+    for await (const chunk of streamingResp) {
+      if (chunk.text) {
+        res.write(chunk.text);
       }
     }
 
