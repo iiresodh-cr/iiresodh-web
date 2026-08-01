@@ -235,36 +235,28 @@ exports.enviarFormularioContacto = onCall({
 });
 
 // ============================================================================
-// 4. CHATBOT IRENE (STREAMING EN TIEMPO REAL CON ADK)
+// 4. CHATBOT IRENE (GEMINI ENTERPRISE AGENT PLATFORM - IAM / ADC STREAMING)
 // ============================================================================
 const { LlmAgent, Gemini } = require("@google/adk");
 
 exports.chatPidaStream = onRequest({ 
   region: "us-central1",
-  cors: true // 🚀 Firebase v2 gestiona CORS y preflights OPTIONS de forma nativa
+  cors: [
+    /iiresodh-web\.web\.app$/, 
+    /iiresodh-web\.firebaseapp\.com$/, 
+    "http://localhost:5173"
+  ]
 }, async (req, res) => {
 
-  // Respuesta inmediata para consultas preflight (OPTIONS)
-  if (req.method === "OPTIONS") {
-    res.status(204).send("");
-    return;
-  }
-
   if (req.method !== "POST") {
-    res.status(405).send("Método no permitido");
-    return;
+    return res.status(405).send("Método no permitido");
   }
 
   const { mensaje, sessionId, idioma = 'es' } = req.body;
 
   if (!mensaje || !sessionId) {
-    res.status(400).send("Faltan parámetros requeridos (mensaje o sessionId).");
-    return;
+    return res.status(400).send("Faltan parámetros requeridos (mensaje o sessionId).");
   }
-
-  // Configuración de cabeceras para Streaming continuo (HTTP Chunked)
-  res.setHeader("Content-Type", "text/plain; charset=utf-8");
-  res.setHeader("Transfer-Encoding", "chunked");
 
   try {
     const systemInstruction = `Eres IRENE, el asistente virtual oficial del Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH).
@@ -273,7 +265,7 @@ exports.chatPidaStream = onRequest({
         INFORMACIÓN CLAVE QUE DEBES SABER SOBRE IIRESODH:
         - Misión: Somos una institución dedicada a la defensa, promoción y educación en Derechos Humanos y Responsabilidad Social a nivel internacional.
         - Áreas de trabajo principales: Litigio Estratégico, Cooperación Internacional, Cursos y Capacitaciones, Publicación de Artículos Académicos y Tienda Editorial.
-        - Presencia: Trabajamos a nivel internacional, con sedes y projects en Costa Rica (Sede Principal), México, Colombia, Guatemala y Canadá.
+        - Presencia: Trabajamos a nivel internacional, con sedes y proyectos en Costa Rica (Sede Principal), México, Colombia, Guatemala y Canadá.
         - Tienda Editorial: Vendemos libros y manuales especializados en formato digital (PDF). El envío es automático por correo electrónico tras confirmar el pago.
 
         TUS REGLAS ESTRICTAS DE COMPORTAMIENTO:
@@ -287,13 +279,26 @@ exports.chatPidaStream = onRequest({
         8. IDIOMA ESTRICTO: El usuario está navegando el sitio web en el idioma con código '${idioma}'. Debes comunicarte y responder SIEMPRE en ese idioma, a menos que el usuario te hable explícitamente en otro.
         9. TEMAS DESCONOCIDOS O MUY ESPECÍFICOS: Si te preguntan sobre un tema técnico, un país específico, conceptos complejos (como neurotecnología) o algo que no sabes, aclara amablemente que tu conocimiento se enfoca en la misión general del IIRESODH. Acto seguido, RECOMIENDA EXPLÍCITAMENTE al usuario que utilice el buscador del sitio web (la lupa en el menú principal) para encontrar noticias, artículos académicos o informes exactos sobre ese tema.`;
 
-    const llm = new Gemini({ model: 'gemini-3.1-flash' });
-    const agent = new LlmAgent({ llm: llm, instruction: systemInstruction });
+    // 🔑 Autenticación IAM / ADC nativa mediante el Service Account de Google Cloud
+    const llm = new Gemini({ 
+      model: 'gemini-3.1-flash',
+      projectId: process.env.GCLOUD_PROJECT || 'iiresodh-web',
+      location: 'us-central1'
+    });
+    
+    const agent = new LlmAgent({ 
+      llm: llm, 
+      instruction: systemInstruction 
+    });
 
     const responseStream = await agent.runAsyncImpl({
       input: mensaje,
       sessionId: sessionId
     });
+
+    // Se configuran las cabeceras solo cuando la conexión con el agente se establece correctamente
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.setHeader("Transfer-Encoding", "chunked");
 
     function extraerTextoChunk(obj) {
       if (!obj) return "";
@@ -316,9 +321,9 @@ exports.chatPidaStream = onRequest({
     res.end();
 
   } catch (error) {
-    console.error("Error en streaming de IRENE:", error);
+    console.error("Error crítico en cerebro de IRENE (Agent Platform / IAM):", error);
     if (!res.headersSent) {
-      res.status(500).send("Error interno procesando la respuesta.");
+      res.status(500).send(`Error de autenticación/procesamiento IAM: ${error.message}`);
     } else {
       res.end();
     }
