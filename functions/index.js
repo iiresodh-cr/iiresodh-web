@@ -259,11 +259,6 @@ exports.chatPidaStream = onRequest({
   }
 
   try {
-    // 🔑 Forzamos las variables de entorno del SDK oficial para conmutar a Vertex AI (IAM / ADC)
-    process.env.GOOGLE_GENAI_USE_VERTEXAI = "true";
-    process.env.GOOGLE_CLOUD_PROJECT = process.env.GCLOUD_PROJECT || "iiresodh-web";
-    process.env.GOOGLE_CLOUD_LOCATION = "us-central1";
-
     const systemInstruction = `Eres IRENE, el asistente virtual oficial del Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH).
         Tu personalidad es amable, profesional, empática y sumamente respetuosa. Eres un experto en la labor de la institución.
 
@@ -284,12 +279,13 @@ exports.chatPidaStream = onRequest({
         8. IDIOMA ESTRICTO: El usuario está navegando el sitio web en el idioma con código '${idioma}'. Debes comunicarte y responder SIEMPRE en ese idioma, a menos que el usuario te hable explícitamente en otro.
         9. TEMAS DESCONOCIDOS O MUY ESPECÍFICOS: Si te preguntan sobre un tema técnico, un país específico, conceptos complejos (como neurotecnología) o algo que no sabes, aclara amablemente que tu conocimiento se enfoca en la misión general del IIRESODH. Acto seguido, RECOMIENDA EXPLÍCITAMENTE al usuario que utilice el buscador del sitio web (la lupa en el menú principal) para encontrar noticias, artículos académicos o informes exactos sobre ese tema.`;
 
-    // 🚀 Instanciación de Gemini en modo Vertex AI explícito (sin API Key, autenticado por IAM)
+    // 🚀 INICIALIZACIÓN CORRECTA PARA NODE.JS (OBJETO ANIDADO)
     const llm = new Gemini({ 
       model: 'gemini-3.1-flash',
-      vertexai: true,
-      project: process.env.GCLOUD_PROJECT || 'iiresodh-web',
-      location: 'us-central1'
+      vertexai: {
+        project: process.env.GCLOUD_PROJECT || 'iiresodh-web',
+        location: 'us-central1'
+      }
     });
     
     const agent = new LlmAgent({ 
