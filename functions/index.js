@@ -235,7 +235,7 @@ exports.enviarFormularioContacto = onCall({
 });
 
 // ============================================================================
-// 4. CHATBOT IRENE (GEMINI ENTERPRISE AGENT PLATFORM - IAM / ADC STREAMING)
+// 4. CHATBOT IRENE (GEMINI ENTERPRISE AGENT PLATFORM - VERTEX AI / IAM)
 // ============================================================================
 const { LlmAgent, Gemini } = require("@google/adk");
 
@@ -279,10 +279,11 @@ exports.chatPidaStream = onRequest({
         8. IDIOMA ESTRICTO: El usuario está navegando el sitio web en el idioma con código '${idioma}'. Debes comunicarte y responder SIEMPRE en ese idioma, a menos que el usuario te hable explícitamente en otro.
         9. TEMAS DESCONOCIDOS O MUY ESPECÍFICOS: Si te preguntan sobre un tema técnico, un país específico, conceptos complejos (como neurotecnología) o algo que no sabes, aclara amablemente que tu conocimiento se enfoca en la misión general del IIRESODH. Acto seguido, RECOMIENDA EXPLÍCITAMENTE al usuario que utilice el buscador del sitio web (la lupa en el menú principal) para encontrar noticias, artículos académicos o informes exactos sobre ese tema.`;
 
-    // 🔑 Autenticación IAM / ADC nativa mediante el Service Account de Google Cloud
+    // 🔑 Forzamos el modo Vertex AI para autenticar con la Service Account nativa vía IAM
     const llm = new Gemini({ 
       model: 'gemini-3.1-flash',
-      projectId: process.env.GCLOUD_PROJECT || 'iiresodh-web',
+      vertexAi: true,
+      project: process.env.GCLOUD_PROJECT || 'iiresodh-web',
       location: 'us-central1'
     });
     
@@ -296,7 +297,6 @@ exports.chatPidaStream = onRequest({
       sessionId: sessionId
     });
 
-    // Se configuran las cabeceras solo cuando la conexión con el agente se establece correctamente
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
     res.setHeader("Transfer-Encoding", "chunked");
 
@@ -323,7 +323,7 @@ exports.chatPidaStream = onRequest({
   } catch (error) {
     console.error("Error crítico en cerebro de IRENE (Agent Platform / IAM):", error);
     if (!res.headersSent) {
-      res.status(500).send(`Error de autenticación/procesamiento IAM: ${error.message}`);
+      res.status(500).send(`Error de autenticación IAM: ${error.message}`);
     } else {
       res.end();
     }
