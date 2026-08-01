@@ -288,11 +288,29 @@ exports.chatPidaStream = onRequest({
       project: 'iiresodh-web', 
       location: 'us-central1' 
     });
+
+    const db = admin.firestore();
+    const sessionRef = db.collection('chat_sessions').doc(sessionId);
+    const sessionDoc = await sessionRef.get();
     
-    // Ejecutar Streaming con la nueva API nativa de Vertex
+    let history = [];
+    if (sessionDoc.exists) {
+      history = sessionDoc.data().history || [];
+    }
+
+    // Prevención de error por roles consecutivos ('user' seguido de 'user')
+    // por si hubo un error de red previo y la IA no alcanzó a responder
+    if (history.length > 0 && history[history.length - 1].role === 'user') {
+      history.pop();
+    }
+
+    // Agregar el nuevo mensaje del usuario al historial
+    history.push({ role: 'user', parts: [{ text: mensaje }] });
+    
+    // Ejecutar Streaming con la nueva API nativa de Vertex, pasando el historial completo
     const streamingResp = await ai.models.generateContentStream({
       model: 'gemini-2.5-flash',
-      contents: mensaje,
+      contents: history,
       config: {
         systemInstruction: systemInstruction
       }
@@ -301,12 +319,28 @@ exports.chatPidaStream = onRequest({
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
     res.setHeader("Transfer-Encoding", "chunked");
 
+    let fullResponse = "";
+
     // Leer los fragmentos y enviarlos en vivo al frontend
     for await (const chunk of streamingResp) {
       if (chunk.text) {
+        fullResponse += chunk.text;
         res.write(chunk.text);
       }
     }
+
+    // Guardar el historial actualizado en Firestore antes de cerrar la conexión
+    history.push({ role: 'model', parts: [{ text: fullResponse }] });
+    
+    // Mantener un límite de memoria (ej. últimos 20 mensajes = 10 interacciones)
+    if (history.length > 20) {
+      history = history.slice(history.length - 20);
+    }
+
+    await sessionRef.set({
+      history: history,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
 
     res.end();
 
