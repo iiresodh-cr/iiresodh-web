@@ -233,7 +233,7 @@ exports.enviarFormularioContacto = onCall({
 // ============================================================================
 // 4. CHATBOT IRENE (GEMINI ENTERPRISE AGENT PLATFORM - VERTEX AI / IAM)
 // ============================================================================
-const { LlmAgent, Gemini } = require("@google/adk");
+const { VertexAI } = require("@google-cloud/vertexai");
 
 exports.chatPidaStream = onRequest({ 
   region: "us-central1",
@@ -262,10 +262,6 @@ exports.chatPidaStream = onRequest({
   }
 
   try {
-    // 1. Asignación explícita de proyecto y región para el SDK de Vertex AI
-    process.env.GOOGLE_CLOUD_PROJECT = "iiresodh-web";
-    process.env.GOOGLE_CLOUD_LOCATION = "us-central1";
-
     const systemInstruction = `Eres IRENE, el asistente virtual oficial del Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH).
         Tu personalidad es amable, profesional, empática y sumamente respetuosa. Eres un experto en la labor de la institución.
 
@@ -286,54 +282,44 @@ exports.chatPidaStream = onRequest({
         8. IDIOMA ESTRICTO: El usuario está navegando el sitio web en el idioma con código '${idioma}'. Debes comunicarte y responder SIEMPRE en ese idioma, a menos que el usuario te hable explícitamente en otro.
         9. TEMAS DESCONOCIDOS O MUY ESPECÍFICOS: Si te preguntan sobre un tema técnico, un país específico, conceptos complejos (como neurotecnología) o algo que no sabes, aclara amablemente que tu conocimiento se enfoca en la misión general del IIRESODH. Acto seguido, RECOMIENDA EXPLÍCITAMENTE al usuario que utilice el buscador del sitio web (la lupa en el menú principal) para encontrar noticias, artículos académicos o informes exactos sobre ese tema.`;
 
-    // 2. Instanciación de Gemini especificando project/projectId/location
-    const llm = new Gemini({ 
-      model: 'gemini-3.1-flash',
-      vertexai: true,
-      project: 'iiresodh-web',
-      projectId: 'iiresodh-web',
-      location: 'us-central1'
-    });
+    // Instanciar Vertex AI
+    const vertexAI = new VertexAI({ project: 'iiresodh-web', location: 'us-central1' });
     
-    // 3. Asignación obligatoria del nombre del agente
-    const agent = new LlmAgent({ 
-      name: 'IRENE',
-      llm: llm, 
-      instruction: systemInstruction 
+    // Instanciar el modelo de Vertex AI (Versión 2.5 Flash oficial)
+    const generativeModel = vertexAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      systemInstruction: {
+        role: 'system',
+        parts: [{ text: systemInstruction }]
+      }
     });
 
-    const responseStream = await agent.runAsyncImpl({
-      input: mensaje,
-      sessionId: sessionId
-    });
+    const requestInfo = {
+      contents: [{ role: 'user', parts: [{ text: mensaje }] }]
+    };
+
+    // Ejecutar Streaming con la API nativa de Vertex
+    const streamingResp = await generativeModel.generateContentStream(requestInfo);
 
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
     res.setHeader("Transfer-Encoding", "chunked");
 
-    function extraerTextoChunk(obj) {
-      if (!obj) return "";
-      if (typeof obj === "string") return obj;
-      if (typeof obj.text === "string") return obj.text;
-      if (typeof obj.text === "function") return obj.text();
-      if (typeof obj.content === "string") return obj.content;
-      if (typeof obj.output === "string") return obj.output;
-      if (obj.parts) return Array.isArray(obj.parts) ? obj.parts.map(extraerTextoChunk).join("") : extraerTextoChunk(obj.parts);
-      return "";
-    }
-
-    for await (const chunk of responseStream) {
-      const texto = extraerTextoChunk(chunk);
-      if (texto) {
-        res.write(texto);
+    // Leer los fragmentos y enviarlos en vivo al frontend
+    for await (const chunk of streamingResp.stream) {
+      if (chunk.candidates && chunk.candidates.length > 0 && chunk.candidates[0].content) {
+        const texto = chunk.candidates[0].content.parts[0].text;
+        if (texto) {
+          res.write(texto);
+        }
       }
     }
 
     res.end();
 
   } catch (error) {
-    console.error("Error crítico en cerebro de IRENE (Agent Platform / IAM):", error);
+    console.error("Error crítico en streaming de Vertex AI:", error);
     if (!res.headersSent) {
-      res.status(500).send(`Error de autenticación IAM: ${error.message}`);
+      res.status(500).send(`Error: ${error.message}`);
     } else {
       res.end();
     }
