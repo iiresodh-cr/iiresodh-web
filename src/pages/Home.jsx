@@ -163,10 +163,10 @@ export default function Home() {
                   <Link 
                     to={`/noticias/${noticias[0].slug || noticias[0].id}`} 
                     state={{ noticiaPreCargada: noticias[0] }}
-                    className="group block w-full max-w-sm mx-auto lg:ml-auto lg:mr-0 rounded-[24px] overflow-hidden shadow-xl hover:shadow-main-red/20 transition-all duration-500"
+                    className="group block w-full max-w-sm mx-auto lg:ml-auto lg:mr-0 rounded-3xl overflow-hidden shadow-xl hover:shadow-main-red/20 transition-all duration-500"
                   >
                     <div 
-                      className="w-full aspect-[3/4] bg-gray-100 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                      className="w-full aspect-3/4 bg-gray-100 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
                       style={{ backgroundImage: `url(${noticias[0].imagenPrincipalUrl})` }}
                       role="img"
                       aria-label={obtenerTextoTraducido(noticias[0], 'titulo', i18n.language) || "Noticia destacada"}
@@ -176,7 +176,7 @@ export default function Home() {
                     </div>
                   </Link>
                 ) : (
-                  <div className="w-full max-w-sm mx-auto lg:ml-auto lg:mr-0 aspect-[3/4] bg-gray-100 rounded-[24px] animate-pulse shadow-xl"></div>
+                  <div className="w-full max-w-sm mx-auto lg:ml-auto lg:mr-0 aspect-3/4 bg-gray-100 rounded-3xl animate-pulse shadow-xl"></div>
                 )}
               </div>
             </div>
