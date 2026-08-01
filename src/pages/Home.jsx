@@ -157,40 +157,27 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Cifras de Impacto */}
+              {/* Noticia Destacada / Portada */}
               <div className="lg:col-span-4 lg:flex justify-end relative z-20 mt-8 lg:mt-0">
-                {/* SOLUCIÓN: Se inyectan estilos Glassmorphism de transparencia directamente en 'sx' 
-                    para forzar la anulación del color de fondo nativo de Material UI */}
-                <Paper 
-                  elevation={0} 
-                  className="w-full border border-white/60 p-8 md:p-10 flex flex-col gap-8 shadow-xl text-right" 
-                  sx={{ 
-                    borderRadius: '24px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.45) !important',
-                    backdropFilter: 'blur(16px)',
-                    WebkitBackdropFilter: 'blur(16px)',
-                    transition: 'all 0.3s ease-in-out',
-                    '&:hover': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.60) !important',
-                      borderColor: 'rgba(255, 255, 255, 0.80)'
-                    }
-                  }}
-                >
-                  <div>
-                    <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra1}</span>
-                    <span className="text-xs font-bold tracking-widest uppercase text-gray-500">{obtenerTextoTraducido(cifrasImpacto, 'texto1', i18n.language)}</span>
-                  </div>
-                  <div className="w-12 h-px bg-light-blue/30 ml-auto"></div>
-                  <div>
-                    <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra2}</span>
-                    <span className="text-xs font-bold tracking-widest uppercase text-gray-500">{obtenerTextoTraducido(cifrasImpacto, 'texto2', i18n.language)}</span>
-                  </div>
-                  <div className="w-12 h-px bg-light-blue/30 ml-auto"></div>
-                  <div>
-                    <span className="block text-4xl font-black text-[#B91C1C] mb-1">{cifrasImpacto.cifra3}</span>
-                    <span className="text-xs font-bold tracking-widest uppercase text-gray-500">{obtenerTextoTraducido(cifrasImpacto, 'texto3', i18n.language)}</span>
-                  </div>
-                </Paper>
+                {noticias.length > 0 ? (
+                  <Link 
+                    to={`/noticias/${noticias[0].slug || noticias[0].id}`} 
+                    state={{ noticiaPreCargada: noticias[0] }}
+                    className="group block w-full max-w-sm mx-auto lg:ml-auto lg:mr-0 rounded-[24px] overflow-hidden shadow-xl hover:shadow-main-red/20 transition-all duration-500"
+                  >
+                    <div 
+                      className="w-full aspect-[3/4] bg-gray-100 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                      style={{ backgroundImage: `url(${noticias[0].imagenPrincipalUrl})` }}
+                      role="img"
+                      aria-label={obtenerTextoTraducido(noticias[0], 'titulo', i18n.language) || "Noticia destacada"}
+                    >
+                      {/* Overlay sutil para mejorar el contraste del enlace o la estética */}
+                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500"></div>
+                    </div>
+                  </Link>
+                ) : (
+                  <div className="w-full max-w-sm mx-auto lg:ml-auto lg:mr-0 aspect-[3/4] bg-gray-100 rounded-[24px] animate-pulse shadow-xl"></div>
+                )}
               </div>
             </div>
           </section>
