@@ -237,7 +237,6 @@ exports.enviarFormularioContacto = onCall({
 // ============================================================================
 // 4. FUNCIÓN CHATBOT IRENE (GEMINI ENTERPRISE AGENT PLATFORM - ADK)
 // ============================================================================
-// Importamos las clases reales confirmadas en el ADK
 const { LlmAgent, Gemini } = require("@google/adk");
 
 exports.chatPida = onCall({ 
@@ -280,24 +279,24 @@ exports.chatPida = onCall({
         8. IDIOMA ESTRICTO: El usuario está navegando el sitio web en el idioma con código '${idioma}'. Debes comunicarte y responder SIEMPRE en ese idioma, a menos que el usuario te hable explícitamente en otro.
         9. TEMAS DESCONOCIDOS O MUY ESPECÍFICOS: Si te preguntan sobre un tema técnico, un país específico, conceptos complejos (como neurotecnología) o algo que no sabes, aclara amablemente que tu conocimiento se enfoca en la misión general del IIRESODH. Acto seguido, RECOMIENDA EXPLÍCITAMENTE al usuario que utilice el buscador del sitio web (la lupa en el menú principal) para encontrar noticias, artículos académicos o informes exactos sobre ese tema.`;
 
-    // 1. Instanciamos el modelo base (Gemini) usando la clase que vimos en la lista
+    // 1. Instanciamos el modelo Gemini
     const llm = new Gemini({ 
-        model: 'gemini-3.1-flash' // o gemini-2.5-flash
+        model: 'gemini-3.1-flash'
     });
 
-    // 2. Creamos el agente usando la clase correcta (LlmAgent)
+    // 2. Creamos el Agente
     const agent = new LlmAgent({
       llm: llm,
       instruction: systemInstruction
     });
 
-    // 3. Ejecutamos la interacción (el ADK suele usar métodos como run, call o interact)
-    const response = await agent.run({
+    // 3. Ejecutamos usando el método asíncrono real detectado: runAsyncImpl
+    const response = await agent.runAsyncImpl({
         input: mensaje,
         sessionId: sessionId 
     });
 
-    return { respuesta: response.text || response.output };
+    return { respuesta: response.text || response.output || response };
 
   } catch (error) {
     console.error("Error en el cerebro de IRENE (Agent Platform):", error);
