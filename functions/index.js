@@ -290,13 +290,28 @@ exports.chatPida = onCall({
       instruction: systemInstruction
     });
 
-    // 3. Ejecutamos usando el método asíncrono real detectado: runAsyncImpl
+    // 3. Ejecutamos usando el método asíncrono
     const response = await agent.runAsyncImpl({
         input: mensaje,
         sessionId: sessionId 
     });
 
-    return { respuesta: response.text || response.output || response };
+    // 🔍 Extraemos el texto de forma segura garantizando que SIEMPRE sea una cadena de texto (string)
+    let textoRespuesta = "";
+
+    if (typeof response === "string") {
+      textoRespuesta = response;
+    } else if (response && response.text) {
+      textoRespuesta = typeof response.text === "function" ? response.text() : response.text;
+    } else if (response && response.output) {
+      textoRespuesta = typeof response.output === "string" ? response.output : JSON.stringify(response.output);
+    } else {
+      // Si el ADK devuelve un objeto de eventos o mensaje estructurado
+      textoRespuesta = JSON.stringify(response);
+    }
+
+    // Retornamos garantizado como String
+    return { respuesta: String(textoRespuesta) };
 
   } catch (error) {
     console.error("Error en el cerebro de IRENE (Agent Platform):", error);
