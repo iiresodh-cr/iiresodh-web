@@ -44,11 +44,7 @@ function getPidaFirestore() {
 exports.generarResumenGemini = onCall({ 
   secrets: [geminiApiKey], 
   region: "us-central1",
-  cors: [
-    /iiresodh-web\.web\.app$/, 
-    /iiresodh-web\.firebaseapp\.com$/, 
-    "http://localhost:5173"
-  ]
+  cors: true
 }, async (request) => {
   
   if (!request.auth) {
@@ -241,18 +237,25 @@ const { LlmAgent, Gemini } = require("@google/adk");
 
 exports.chatPidaStream = onRequest({ 
   region: "us-central1",
-  cors: [
-    /iiresodh-web\.web\.app$/, 
-    /iiresodh-web\.firebaseapp\.com$/, 
-    "http://localhost:5173"
-  ]
+  cors: true
 }, async (req, res) => {
+
+  // Configuración manual de CORS para asegurar que el preflight (OPTIONS) y el streaming no fallen
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") {
+    return res.status(204).send("");
+  }
 
   if (req.method !== "POST") {
     return res.status(405).send("Método no permitido");
   }
 
-  const { mensaje, sessionId, idioma = 'es' } = req.body;
+  // Soportar tanto fetch directo (req.body) como httpsCallable (req.body.data)
+  const bodyData = req.body.data || req.body;
+  const { mensaje, sessionId, idioma = 'es' } = bodyData;
 
   if (!mensaje || !sessionId) {
     return res.status(400).send("Faltan parámetros requeridos (mensaje o sessionId).");
