@@ -237,7 +237,8 @@ exports.enviarFormularioContacto = onCall({
 // ============================================================================
 // 4. FUNCIÓN CHATBOT IRENE (GEMINI ENTERPRISE AGENT PLATFORM - ADK)
 // ============================================================================
-const { AgentClient } = require("@google/adk");
+// Importamos las clases reales confirmadas en el ADK
+const { LlmAgent, Gemini } = require("@google/adk");
 
 exports.chatPida = onCall({ 
   region: "us-central1",
@@ -259,11 +260,6 @@ exports.chatPida = onCall({
   }
 
   try {
-    const agentClient = new AgentClient({
-      project: process.env.GCLOUD_PROJECT, 
-      location: "us-central1"
-    });
-    
     const systemInstruction = `Eres IRENE, el asistente virtual oficial del Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH).
         Tu personalidad es amable, profesional, empática y sumamente respetuosa. Eres un experto en la labor de la institución.
 
@@ -284,14 +280,24 @@ exports.chatPida = onCall({
         8. IDIOMA ESTRICTO: El usuario está navegando el sitio web en el idioma con código '${idioma}'. Debes comunicarte y responder SIEMPRE en ese idioma, a menos que el usuario te hable explícitamente en otro.
         9. TEMAS DESCONOCIDOS O MUY ESPECÍFICOS: Si te preguntan sobre un tema técnico, un país específico, conceptos complejos (como neurotecnología) o algo que no sabes, aclara amablemente que tu conocimiento se enfoca en la misión general del IIRESODH. Acto seguido, RECOMIENDA EXPLÍCITAMENTE al usuario que utilice el buscador del sitio web (la lupa en el menú principal) para encontrar noticias, artículos académicos o informes exactos sobre ese tema.`;
 
-    const response = await agentClient.sendMessage({
-      model: "gemini-3.1-flash", 
-      sessionId: sessionId,      
-      message: mensaje,
-      systemInstruction: systemInstruction
+    // 1. Instanciamos el modelo base (Gemini) usando la clase que vimos en la lista
+    const llm = new Gemini({ 
+        model: 'gemini-3.1-flash' // o gemini-2.5-flash
     });
 
-    return { respuesta: response.text };
+    // 2. Creamos el agente usando la clase correcta (LlmAgent)
+    const agent = new LlmAgent({
+      llm: llm,
+      instruction: systemInstruction
+    });
+
+    // 3. Ejecutamos la interacción (el ADK suele usar métodos como run, call o interact)
+    const response = await agent.run({
+        input: mensaje,
+        sessionId: sessionId 
+    });
+
+    return { respuesta: response.text || response.output };
 
   } catch (error) {
     console.error("Error en el cerebro de IRENE (Agent Platform):", error);
