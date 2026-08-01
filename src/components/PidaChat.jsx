@@ -312,17 +312,22 @@ export default function PidaChat() {
 
           {/* ÁREA DE MENSAJES */}
           <div className="flex-1 p-4 overflow-y-auto bg-gray-50 flex flex-col gap-3 min-h-75 custom-scrollbar">
-            {mensajes.map((msg, index) => (
-              <div key={index} className={`flex ${msg.isBot ? 'justify-start' : 'justify-end'}`}>
-                <div className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm whitespace-pre-line ${
-                  msg.isBot 
-                    ? 'bg-white border border-gray-100 text-gray-700 rounded-tl-sm leading-relaxed' 
-                    : 'bg-main-red text-white rounded-tr-sm leading-relaxed'
-                }`}>
-                  {formatearMensaje(msg.text)}
+            {mensajes.map((msg, index) => {
+              // Evitar renderizar la burbuja vacía si IRENE está "pensando" (mostrando los puntos)
+              if (msg.isBot && !msg.text && escribiendo) return null;
+
+              return (
+                <div key={index} className={`flex ${msg.isBot ? 'justify-start' : 'justify-end'}`}>
+                  <div className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm whitespace-pre-line ${
+                    msg.isBot 
+                      ? 'bg-white border border-gray-100 text-gray-700 rounded-tl-sm leading-relaxed' 
+                      : 'bg-main-red text-white rounded-tr-sm leading-relaxed'
+                  }`}>
+                    {formatearMensaje(msg.text)}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             
             {escribiendo && (
               <div className="flex justify-start">
