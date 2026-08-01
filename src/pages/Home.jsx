@@ -163,17 +163,16 @@ export default function Home() {
                   <Link 
                     to={`/noticias/${noticias[0].slug || noticias[0].id}`} 
                     state={{ noticiaPreCargada: noticias[0] }}
-                    className="group block w-full max-w-sm mx-auto lg:ml-auto lg:mr-0 rounded-3xl overflow-hidden shadow-xl hover:shadow-main-red/20 transition-all duration-500"
+                    className="group relative block w-full max-w-sm mx-auto lg:ml-auto lg:mr-0 rounded-3xl overflow-hidden shadow-xl hover:shadow-main-red/20 transition-all duration-500 z-0"
                   >
                     <div 
                       className="w-full aspect-3/4 bg-gray-100 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
                       style={{ backgroundImage: `url(${noticias[0].imagenPrincipalUrl})` }}
                       role="img"
                       aria-label={obtenerTextoTraducido(noticias[0], 'titulo', i18n.language) || "Noticia destacada"}
-                    >
-                      {/* Overlay sutil para mejorar el contraste del enlace o la estética */}
-                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500"></div>
-                    </div>
+                    />
+                    {/* Overlay sutil colocado fuera del contenedor de la imagen que hace zoom */}
+                    <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500 pointer-events-none rounded-3xl ring-1 ring-inset ring-black/5 z-10"></div>
                   </Link>
                 ) : (
                   <div className="w-full max-w-sm mx-auto lg:ml-auto lg:mr-0 aspect-3/4 bg-gray-100 rounded-3xl animate-pulse shadow-xl"></div>
