@@ -200,14 +200,14 @@ export default function Home() {
             </div>
             
             {loading ? (
-              <div className="w-full h-125 md:h-150 lg:h-160 rounded-[2.5rem] bg-gray-100 animate-pulse flex flex-col justify-end p-6 md:p-10 lg:p-12 shadow-inner">
+              <div className="w-[90%] mx-auto h-[450px] md:h-[540px] lg:h-[576px] rounded-[2.5rem] bg-gray-100 animate-pulse flex flex-col justify-end p-6 md:p-10 lg:p-12 shadow-inner">
                 <div className="w-1/4 h-4 bg-gray-300 rounded mb-4"></div>
                 <div className="w-3/4 h-10 bg-gray-300 rounded mb-4"></div>
                 <div className="w-full h-6 bg-gray-200 rounded mb-2"></div>
                 <div className="w-5/6 h-6 bg-gray-200 rounded"></div>
               </div>
             ) : noticias.length > 0 ? (
-              <div className="relative group">
+              <div className="relative group w-[90%] mx-auto">
                 <Swiper 
                   modules={[Autoplay, EffectFade, Navigation]} 
                   effect="fade"
@@ -227,7 +227,7 @@ export default function Home() {
 
                     return (
                       <SwiperSlide key={noticia.id}>
-                        <article className="group/slide relative w-full h-125 md:h-150 lg:h-160 overflow-hidden bg-main-blue cursor-pointer" onClick={() => navigate(`/noticias/${noticia.slug || noticia.id}`, { state: { noticiaPreCargada: noticia } })}>
+                        <article className="group/slide relative w-full h-[450px] md:h-[540px] lg:h-[576px] overflow-hidden bg-main-blue cursor-pointer" onClick={() => navigate(`/noticias/${noticia.slug || noticia.id}`, { state: { noticiaPreCargada: noticia } })}>
                           <div 
                             className="absolute inset-0 w-full h-full bg-cover bg-top bg-no-repeat transition-transform duration-4000 group-hover/slide:scale-105 bg-gray-200"
                             style={{ backgroundImage: `url(${noticia.imagenPrincipalUrl})` }}
