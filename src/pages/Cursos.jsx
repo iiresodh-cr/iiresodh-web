@@ -90,11 +90,29 @@ export default function Cursos() {
                 const tituloTraducido = obtenerTextoTraducido(curso, 'titulo', i18n.language);
                 const resumenTraducido = obtenerTextoTraducido(curso, 'resumen', i18n.language);
 
+                const estado = curso.estadoInscripcion || (curso.cursoActivo ? 'abierta' : 'cerrada');
+                
+                let badgeColor = 'bg-gray-500';
+                let badgeText = t('cursos.badge_cerrado', 'Finalizado / Cerrado');
+                let btnText = t('cursos.btn_cerrado', 'Periodo de inscripción cerrado');
+
+                if (estado === 'abierta') {
+                  badgeColor = 'bg-main-blue';
+                  badgeText = t('cursos.badge_abierto', 'Inscripciones Abiertas');
+                  btnText = curso.enlaceInscripcion ? t('cursos.btn_inscribirse', 'Inscribirse Ahora') : t('cursos.btn_sin_enlace', 'Enlace no disponible');
+                } else if (estado === 'proximamente') {
+                  badgeColor = 'bg-orange-500';
+                  badgeText = t('cursos.badge_proximamente', 'Próximamente');
+                  btnText = t('cursos.btn_proximamente', 'Disponible Próximamente');
+                }
+
+                const isActiveStyle = estado === 'abierta' || estado === 'proximamente';
+
                 return (
                   <Paper 
                     key={curso.id} 
                     elevation={0} 
-                    className={`group flex flex-col bg-white border border-gray-100 hover:border-main-blue/30 hover:shadow-xl transition-all duration-300 h-full overflow-hidden ${!curso.cursoActivo ? 'opacity-90 grayscale-[0.3]' : ''}`} 
+                    className={`group flex flex-col bg-white border border-gray-100 hover:border-main-blue/30 hover:shadow-xl transition-all duration-300 h-full overflow-hidden ${!isActiveStyle ? 'opacity-90 grayscale-[0.3]' : ''}`} 
                     sx={{ borderRadius: '24px' }}
                   >
                     <div className="relative w-full aspect-video overflow-hidden bg-gray-100">
@@ -103,13 +121,13 @@ export default function Cursos() {
                         alt={`${t('cursos.alt_portada', 'Portada del curso:')} ${tituloTraducido}`}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
-                      <div className={`absolute top-4 left-4 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-md shadow-md ${curso.cursoActivo ? 'bg-main-blue' : 'bg-gray-500'}`}>
-                        {curso.cursoActivo ? t('cursos.badge_abierto', 'Inscripciones Abiertas') : t('cursos.badge_cerrado', 'Finalizado / Cerrado')}
+                      <div className={`absolute top-4 left-4 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-md shadow-md ${badgeColor}`}>
+                        {badgeText}
                       </div>
                     </div>
 
                     <div className="p-6 md:p-8 flex flex-col grow">
-                      <h3 className={`text-xl md:text-2xl font-bold mb-3 tracking-tight transition-colors leading-snug ${curso.cursoActivo ? 'text-gray-800 group-hover:text-main-blue' : 'text-gray-500'}`}>
+                      <h3 className={`text-xl md:text-2xl font-bold mb-3 tracking-tight transition-colors leading-snug ${isActiveStyle ? 'text-gray-800 group-hover:text-main-blue' : 'text-gray-500'}`}>
                         {tituloTraducido}
                       </h3>
                       <p className="text-gray-500 font-light leading-relaxed text-sm mb-8 grow line-clamp-3">
@@ -117,18 +135,18 @@ export default function Cursos() {
                       </p>
                       
                       <div className="mt-auto pt-5 border-t border-gray-100 flex items-center justify-between">
-                        {curso.cursoActivo && curso.enlaceInscripcion ? (
+                        {estado === 'abierta' && curso.enlaceInscripcion ? (
                           <a 
                             href={curso.enlaceInscripcion} 
                             target="_blank" 
                             rel="noopener noreferrer" 
                             className="bg-main-red hover:bg-red-800 text-white text-xs font-bold uppercase tracking-widest py-3.5 px-6 rounded-xl transition-all w-full text-center shadow-md shadow-main-red/20 active:scale-95"
                           >
-                            {t('cursos.btn_inscribirse', 'Inscribirse Ahora')}
+                            {btnText}
                           </a>
                         ) : (
-                          <div className="bg-gray-100 text-gray-400 text-[10px] font-black uppercase tracking-[0.15em] py-3.5 px-6 rounded-xl w-full text-center border border-gray-200">
-                            {curso.cursoActivo ? t('cursos.btn_sin_enlace', 'Enlace no disponible') : t('cursos.btn_cerrado', 'Periodo de inscripción cerrado')}
+                          <div className={`text-[10px] font-black uppercase tracking-[0.15em] py-3.5 px-6 rounded-xl w-full text-center border ${estado === 'proximamente' ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-gray-100 text-gray-400 border-gray-200'}`}>
+                            {btnText}
                           </div>
                         )}
                       </div>

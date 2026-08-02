@@ -178,7 +178,9 @@
     "alt_portada": "Portada del curso:",
     "btn_inscribirse": "Inscribirse Ahora",
     "btn_sin_enlace": "Enlace no disponible",
-    "btn_cerrado": "Periodo de inscripción cerrado"
+    "btn_cerrado": "Periodo de inscripción cerrado",
+    "btn_proximamente": "Disponible Próximamente",
+    "badge_proximamente": "Próximamente"
   },
   "incidencia": {
     "cargando": "Cargando documentos...",

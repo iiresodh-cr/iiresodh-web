@@ -172,6 +172,7 @@ export default function AdminPanel() {
   // NUEVOS ESTADOS PARA CURSOS
   const [enlaceInscripcion, setEnlaceInscripcion] = useState("");
   const [cursoActivo, setCursoActivo] = useState(true);
+  const [estadoInscripcion, setEstadoInscripcion] = useState("abierta");
   
   // ESTADOS PARA COMUNICACIONES
   const [tagsSeleccionados, setTagsSeleccionados] = useState([]);
@@ -582,6 +583,7 @@ useEffect(() => {
       if (vistaActiva === "cursos") {
         setEnlaceInscripcion(item.enlaceInscripcion || "");
         setCursoActivo(item.cursoActivo !== undefined ? item.cursoActivo : true);
+        setEstadoInscripcion(item.estadoInscripcion || (item.cursoActivo ? "abierta" : "cerrada"));
       }
       
       setImagenPrincipalAnterior(item.imagenPrincipalUrl || null);
@@ -642,6 +644,7 @@ useEffect(() => {
 
     setEnlaceInscripcion("");
     setCursoActivo(true);
+    setEstadoInscripcion("abierta");
     
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -899,7 +902,8 @@ useEffect(() => {
           delete datos.contenido;
         } else if (vistaActiva === "cursos") {
           datos.enlaceInscripcion = enlaceInscripcion || null;
-          datos.cursoActivo = cursoActivo;
+          datos.cursoActivo = estadoInscripcion === "abierta";
+          datos.estadoInscripcion = estadoInscripcion;
           delete datos.contenido;
         }
       }
@@ -1291,22 +1295,22 @@ useEffect(() => {
                           placeholder="https://forms.gle/..."
                         />
                         <div className="flex items-center gap-2 bg-white p-4 rounded-xl shadow-sm border border-orange-100">
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={cursoActivo}
-                                onChange={(e) => setCursoActivo(e.target.checked)}
-                                color="primary"
-                              />
-                            }
-                            label={
-                              <Box>
-                                <span className="text-sm font-bold text-gray-700 block">¿Inscripciones Abiertas?</span>
-                                <span className="text-xs text-gray-500 block leading-tight mt-0.5">Si desmarcas esto, el botón se desactivará.</span>
-                              </Box>
-                            }
-                            sx={{ m: 0 }}
-                          />
+                          <FormControl size="small" fullWidth>
+                            <InputLabel id="estado-inscripcion-label">Estado de Inscripción</InputLabel>
+                            <Select
+                              labelId="estado-inscripcion-label"
+                              value={estadoInscripcion}
+                              label="Estado de Inscripción"
+                              onChange={(e) => {
+                                setEstadoInscripcion(e.target.value);
+                                setCursoActivo(e.target.value === "abierta");
+                              }}
+                            >
+                              <MenuItem value="abierta">Inscripciones Abiertas</MenuItem>
+                              <MenuItem value="cerrada">Inscripciones Cerradas / Finalizado</MenuItem>
+                              <MenuItem value="proximamente">Próximamente</MenuItem>
+                            </Select>
+                          </FormControl>
                         </div>
                       </div>
                     )}

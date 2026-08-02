@@ -178,7 +178,9 @@
     "alt_portada": "Couverture du cours :",
     "btn_inscribirse": "S'inscrire Maintenant",
     "btn_sin_enlace": "Lien non disponible",
-    "btn_cerrado": "Période d'inscription fermée"
+    "btn_cerrado": "Période d'inscription fermée",
+    "btn_proximamente": "Bientôt Disponible",
+    "badge_proximamente": "Bientôt"
   },
   "incidencia": {
     "cargando": "Chargement des documents...",
