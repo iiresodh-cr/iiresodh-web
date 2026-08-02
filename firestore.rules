@@ -12,7 +12,7 @@ service cloud.firestore {
 
     // ACCESO DE LECTURA COMPILADO: Permite que el login consulte la colección de admins
     match /admins/{adminEmail} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow write: if false; // Blindado contra registros malintencionados
     }
 
