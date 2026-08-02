@@ -1,6 +1,6 @@
 const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleGenAI } = require("@google/genai");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
 const Stripe = require("stripe"); 
@@ -14,7 +14,6 @@ if (!admin.apps.length) {
 // ============================================================================
 // DECLARACIÓN DE SECRETOS GLOBALES
 // ============================================================================
-const geminiApiKey = defineSecret("GEMINI_API_KEY");
 const GMAIL_CLIENT_ID = defineSecret("GMAIL_CLIENT_ID");
 const GMAIL_CLIENT_SECRET = defineSecret("GMAIL_CLIENT_SECRET");
 const GMAIL_REFRESH_TOKEN = defineSecret("GMAIL_REFRESH_TOKEN");
@@ -42,7 +41,6 @@ function getPidaFirestore() {
 // 1. FUNCIÓN DE INTELIGENCIA ARTIFICIAL (GEMINI) - AHORA CON SOPORTE PDF
 // ============================================================================
 exports.generarResumenGemini = onCall({ 
-  secrets: [geminiApiKey], 
   region: "us-central1",
   cors: true
 }, async (request) => {
@@ -59,18 +57,11 @@ exports.generarResumenGemini = onCall({
   }
 
   try {
-    const apiKey = geminiApiKey.value();
-    
-    if (!apiKey) {
-      throw new HttpsError("internal", "El secreto GEMINI_API_KEY está vacío.");
-    }
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-    // Agregamos un header Referer falso/autorizado para evitar el bloqueo por restricciones de API Key (HTTP_REFERRER_BLOCKED)
-    const model = genAI.getGenerativeModel(
-      { model: "gemini-2.5-flash" },
-      { customHeaders: { "Referer": "https://iiresodh-web.web.app/" } }
-    );
+    const ai = new GoogleGenAI({
+      vertexai: true,
+      project: 'iiresodh-web',
+      location: 'us-central1'
+    });
 
     const prompt = `Actúa como un periodista experto. Genera un resumen atractivo de entre 15 y 20 palabras basado en el contenido proporcionado.
     
@@ -90,20 +81,34 @@ exports.generarResumenGemini = onCall({
           mimeType: mimeType || "application/pdf"
         }
       };
-      result = await model.generateContent([prompt, documentPart]);
+      result = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: prompt },
+              documentPart
+            ]
+          }
+        ]
+      });
     } else {
       // Flujo normal (solo texto)
-      result = await model.generateContent(prompt);
+      result = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt
+      });
     }
     
-    let textoLimpio = result.response.text().trim();
+    let textoLimpio = result.text.trim();
     textoLimpio = textoLimpio.replace(/\s*\(\d+\s*palabras?\)$/i, '');
 
     return { resumen: textoLimpio };
     
   } catch (error) {
     console.error("Detalle del error de IA:", error);
-    throw new HttpsError("internal", "Error procesando con Gemini.");
+    throw new HttpsError("internal", "Error procesando con Gemini en Vertex AI.");
   }
 });
 
@@ -237,7 +242,6 @@ exports.enviarFormularioContacto = onCall({
 // ============================================================================
 // 4. CHATBOT IRENE (GEMINI ENTERPRISE AGENT PLATFORM - VERTEX AI / IAM)
 // ============================================================================
-const { GoogleGenAI } = require("@google/genai");
 
 exports.chatPidaStream = onRequest({ 
   region: "us-central1",
