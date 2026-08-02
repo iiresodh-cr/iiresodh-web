@@ -66,7 +66,11 @@ exports.generarResumenGemini = onCall({
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    // Agregamos un header Referer falso/autorizado para evitar el bloqueo por restricciones de API Key (HTTP_REFERRER_BLOCKED)
+    const model = genAI.getGenerativeModel(
+      { model: "gemini-2.5-flash" },
+      { customHeaders: { "Referer": "https://iiresodh-web.web.app/" } }
+    );
 
     const prompt = `Actúa como un periodista experto. Genera un resumen atractivo de entre 15 y 20 palabras basado en el contenido proporcionado.
     
