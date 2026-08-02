@@ -58,22 +58,18 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [contacto, setContacto] = useState({ nombre: "", correo: "", mensaje: "" });
   const [estadoEnvio, setEstadoEnvio] = useState("idle");
-  const [cifrasImpacto, setCifrasImpacto] = useState({
-    cifra1: "", texto1: "",
-    cifra2: "", texto2: "",
-    cifra3: "", texto3: ""
-  });
+  const [tituloHome, setTituloHome] = useState("");
 
   useEffect(() => {
-    const fetchCifras = async () => {
+    const fetchConfiguracionVisual = async () => {
       try {
-        const docRef = doc(db, "configuracion", "home_impacto");
+        const docRef = doc(db, "configuracion", "home_visual");
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setCifrasImpacto(docSnap.data());
+          setTituloHome(docSnap.data().tituloPrincipal);
         }
       } catch (e) {
-        console.error("Error fetching cifras", e);
+        console.error("Error fetching configuracion", e);
       }
     };
 
@@ -99,7 +95,7 @@ export default function Home() {
       finally { setLoading(false); }
     };
     fetchNoticias();
-    fetchCifras();
+    fetchConfiguracionVisual();
   }, []);
 
   const handleEnviarContacto = async (e) => {
@@ -135,12 +131,16 @@ export default function Home() {
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center text-left">
               <div className="lg:col-span-8 max-w-4xl">
-                <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-black text-[#0B1E40] leading-[1.05] mb-6 tracking-tighter max-w-3xl">
-                  {t('home.hero_titulo_1', 'Defendiendo la')}
-                  {' '}
-                  {t('home.hero_titulo_2', 'dignidad y los')}
-                  {' '}
-                  {t('home.hero_titulo_3', 'Derechos Humanos')}
+                <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-black text-[#0B1E40] leading-[1.05] mb-6 tracking-tighter max-w-3xl whitespace-pre-wrap">
+                  {tituloHome || (
+                    <>
+                      {t('home.hero_titulo_1', 'Defendiendo la')}
+                      {' '}
+                      {t('home.hero_titulo_2', 'dignidad y los')}
+                      {' '}
+                      {t('home.hero_titulo_3', 'Derechos Humanos')}
+                    </>
+                  )}
                 </h1>
                 
                 <p className="text-lg md:text-xl text-gray-600 font-light mb-10 leading-relaxed max-w-2xl">

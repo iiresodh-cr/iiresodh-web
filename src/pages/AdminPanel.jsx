@@ -190,14 +190,12 @@ export default function AdminPanel() {
   const [cargandoMas, setCargandoMas] = useState(false);
   const ACTIVIDADES_POR_PAGINA = 50;
 
-  // ESTADOS PARA CIFRAS DE IMPACTO
-  const [cifrasImpacto, setCifrasImpacto] = useState({
-    cifra1: "", texto1: "",
-    cifra2: "", texto2: "",
-    cifra3: "", texto3: ""
+  // ESTADOS PARA CONFIGURACIÓN VISUAL
+  const [tituloHome, setTituloHome] = useState({
+    tituloPrincipal: ""
   });
-  const [cargandoCifras, setCargandoCifras] = useState(false);
-  const [guardandoCifras, setGuardandoCifras] = useState(false);
+  const [cargandoConfig, setCargandoConfig] = useState(false);
+  const [guardandoConfig, setGuardandoConfig] = useState(false);
 
   const [modalBorrar, setModalBorrar] = useState({ isOpen: false, id: null, titulo: "" });
 
@@ -979,37 +977,37 @@ useEffect(() => {
     }
   };
 
-  const cargarCifrasImpacto = async () => {
-    setCargandoCifras(true);
+  const cargarConfiguracionVisual = async () => {
+    setCargandoConfig(true);
     try {
-      const docRef = doc(db, "configuracion", "home_impacto");
+      const docRef = doc(db, "configuracion", "home_visual");
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        setCifrasImpacto(docSnap.data());
+        setTituloHome(docSnap.data());
       }
     } catch (e) {
-      console.error("Error al cargar cifras:", e);
+      console.error("Error al cargar configuracion:", e);
     }
-    setCargandoCifras(false);
+    setCargandoConfig(false);
   };
 
-  const guardarCifrasImpacto = async (e) => {
+  const guardarConfiguracionVisual = async (e) => {
     e.preventDefault();
-    setGuardandoCifras(true);
+    setGuardandoConfig(true);
     try {
-      await setDoc(doc(db, "configuracion", "home_impacto"), cifrasImpacto);
-      setMensaje("¡Cifras de impacto actualizadas con éxito!");
+      await setDoc(doc(db, "configuracion", "home_visual"), tituloHome);
+      setMensaje("¡Configuración visual actualizada con éxito!");
     } catch (e) {
-      console.error("Error al guardar cifras:", e);
-      setMensaje("Error al guardar las cifras de impacto.");
+      console.error("Error al guardar configuracion:", e);
+      setMensaje("Error al guardar la configuración.");
     }
-    setGuardandoCifras(false);
+    setGuardandoConfig(false);
     setTimeout(() => setMensaje(""), 3000);
   };
 
   useEffect(() => {
     if (vistaActiva === "adminWeb") {
-      cargarCifrasImpacto();
+      cargarConfiguracionVisual();
     }
   }, [vistaActiva]);
 
@@ -1817,28 +1815,27 @@ useEffect(() => {
               <header className="mb-6 flex justify-between items-center">
                 <div>
                   <h2 className="text-2xl font-bold tracking-tight text-gray-800">Configuración Visual (Home)</h2>
-                  <p className="text-sm text-gray-500 mt-1">Modifica las cifras de impacto mostradas en la portada principal del sitio.</p>
+                  <p className="text-sm text-gray-500 mt-1">Modifica el título principal mostrado en la portada del sitio.</p>
                 </div>
               </header>
-              {cargandoCifras ? (
+              {cargandoConfig ? (
                 <div className="flex justify-center p-4"><CircularProgress /></div>
               ) : (
-                <form onSubmit={guardarCifrasImpacto} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-gray-100">
-                    <AdminTextField label="Cifra 1 (Ej. 500+)" value={cifrasImpacto.cifra1 || ""} onChange={e => setCifrasImpacto({...cifrasImpacto, cifra1: e.target.value})} required />
-                    <AdminTextField label="Texto Cifra 1 (Ej. CASOS ATENDIDOS)" value={cifrasImpacto.texto1 || ""} onChange={e => setCifrasImpacto({...cifrasImpacto, texto1: e.target.value})} required />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-gray-100">
-                    <AdminTextField label="Cifra 2 (Ej. 1500+)" value={cifrasImpacto.cifra2 || ""} onChange={e => setCifrasImpacto({...cifrasImpacto, cifra2: e.target.value})} required />
-                    <AdminTextField label="Texto Cifra 2 (Ej. PROFESIONALES ENTRENADOS)" value={cifrasImpacto.texto2 || ""} onChange={e => setCifrasImpacto({...cifrasImpacto, texto2: e.target.value})} required />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-gray-100">
-                    <AdminTextField label="Cifra 3 (Ej. 13+)" value={cifrasImpacto.cifra3 || ""} onChange={e => setCifrasImpacto({...cifrasImpacto, cifra3: e.target.value})} required />
-                    <AdminTextField label="Texto Cifra 3 (Ej. AÑOS DE EXPERIENCIA)" value={cifrasImpacto.texto3 || ""} onChange={e => setCifrasImpacto({...cifrasImpacto, texto3: e.target.value})} required />
+                <form onSubmit={guardarConfiguracionVisual} className="space-y-6">
+                  <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
+                    <AdminTextField 
+                      label="Título Principal de la Portada" 
+                      multiline 
+                      rows={3} 
+                      value={tituloHome.tituloPrincipal || ""} 
+                      onChange={e => setTituloHome({...tituloHome, tituloPrincipal: e.target.value})} 
+                      required 
+                      placeholder="Ej: Defendiendo la dignidad y los Derechos Humanos" 
+                    />
                   </div>
                   <div className="flex justify-end">
-                    <Button type="submit" variant="contained" disabled={guardandoCifras} sx={{ px: 4, py: 1.5, bgcolor: '#1D3557', '&:hover': { bgcolor: '#457B9D' } }}>
-                      {guardandoCifras ? "Guardando..." : "Guardar Cifras de Impacto"}
+                    <Button type="submit" variant="contained" disabled={guardandoConfig} sx={{ px: 4, py: 1.5, bgcolor: '#1D3557', '&:hover': { bgcolor: '#457B9D' } }}>
+                      {guardandoConfig ? "Guardando..." : "Guardar Configuración"}
                     </Button>
                   </div>
                 </form>
