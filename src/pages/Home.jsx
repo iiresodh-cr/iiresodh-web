@@ -58,7 +58,11 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [contacto, setContacto] = useState({ nombre: "", correo: "", mensaje: "" });
   const [estadoEnvio, setEstadoEnvio] = useState("idle");
-  const [tituloHome, setTituloHome] = useState("");
+  const [tituloHome, setTituloHome] = useState({
+    tituloPrincipal: "",
+    tituloPrincipal_en: "",
+    tituloPrincipal_fr: ""
+  });
 
   useEffect(() => {
     const fetchConfiguracionVisual = async () => {
@@ -66,7 +70,7 @@ export default function Home() {
         const docRef = doc(db, "configuracion", "home_visual");
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setTituloHome(docSnap.data().tituloPrincipal);
+          setTituloHome(docSnap.data());
         }
       } catch (e) {
         console.error("Error fetching configuracion", e);
@@ -132,7 +136,7 @@ export default function Home() {
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center text-left">
               <div className="lg:col-span-8 max-w-4xl">
                 <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-black text-[#0B1E40] leading-[1.05] mb-6 tracking-tighter max-w-3xl whitespace-pre-wrap">
-                  {tituloHome || (
+                  {obtenerTextoTraducido(tituloHome, 'tituloPrincipal', i18n.language) || (
                     <>
                       {t('home.hero_titulo_1', 'Defendiendo la')}
                       {' '}

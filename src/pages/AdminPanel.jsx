@@ -192,7 +192,9 @@ export default function AdminPanel() {
 
   // ESTADOS PARA CONFIGURACIÓN VISUAL
   const [tituloHome, setTituloHome] = useState({
-    tituloPrincipal: ""
+    tituloPrincipal: "",
+    tituloPrincipal_en: "",
+    tituloPrincipal_fr: ""
   });
   const [cargandoConfig, setCargandoConfig] = useState(false);
   const [guardandoConfig, setGuardandoConfig] = useState(false);
@@ -1824,13 +1826,31 @@ useEffect(() => {
                 <form onSubmit={guardarConfiguracionVisual} className="space-y-6">
                   <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
                     <AdminTextField 
-                      label="Título Principal de la Portada" 
+                      label="Título Principal de la Portada (Español)" 
                       multiline 
-                      rows={3} 
+                      rows={2} 
                       value={tituloHome.tituloPrincipal || ""} 
                       onChange={e => setTituloHome({...tituloHome, tituloPrincipal: e.target.value})} 
                       required 
                       placeholder="Ej: Defendiendo la dignidad y los Derechos Humanos" 
+                      sx={{ mb: 3 }}
+                    />
+                    <AdminTextField 
+                      label="Título Principal de la Portada (Inglés)" 
+                      multiline 
+                      rows={2} 
+                      value={tituloHome.tituloPrincipal_en || ""} 
+                      onChange={e => setTituloHome({...tituloHome, tituloPrincipal_en: e.target.value})} 
+                      placeholder="Ej: Defending dignity and Human Rights" 
+                      sx={{ mb: 3 }}
+                    />
+                    <AdminTextField 
+                      label="Título Principal de la Portada (Francés)" 
+                      multiline 
+                      rows={2} 
+                      value={tituloHome.tituloPrincipal_fr || ""} 
+                      onChange={e => setTituloHome({...tituloHome, tituloPrincipal_fr: e.target.value})} 
+                      placeholder="Ej: Défendre la dignité et les droits de l'homme" 
                     />
                   </div>
                   <div className="flex justify-end">
