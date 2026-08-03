@@ -95,6 +95,17 @@ export default function Home() {
             .slice(0, faltantes);
         }
         setNoticias([...noticiasFijas, ...noticiasRecientes]);
+
+        // Preload the first image (Hero image)
+        const firstNews = noticiasFijas.length > 0 ? noticiasFijas[0] : noticiasRecientes[0];
+        if (firstNews && firstNews.imagenPrincipalUrl) {
+          const preloadLink = document.createElement("link");
+          preloadLink.href = firstNews.imagenPrincipalUrl;
+          preloadLink.rel = "preload";
+          preloadLink.as = "image";
+          preloadLink.fetchPriority = "high";
+          document.head.appendChild(preloadLink);
+        }
       } catch (e) { console.error(e); }
       finally { setLoading(false); }
     };
