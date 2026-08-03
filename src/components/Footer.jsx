@@ -16,7 +16,7 @@ export default function Footer() {
     <footer className="flex flex-col relative z-40 bg-main-blue text-white mt-auto">
       
       {/* SECCIÓN PRINCIPAL (3 COLUMNAS) */}
-      <div className="max-w-7xl mx-auto w-full px-8 py-16 md:py-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-16">
+      <div className="max-w-7xl mx-auto w-full px-8 py-8 md:py-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
         
         {/* Columna Izquierda: Logo e Info */}
         <div className="flex flex-col items-start space-y-6">
