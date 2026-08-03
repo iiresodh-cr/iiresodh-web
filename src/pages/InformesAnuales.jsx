@@ -114,16 +114,23 @@ export default function InformesAnuales() {
                     
                     <div className="w-12 h-1 bg-main-red rounded-full mb-6 transition-all duration-500 group-hover:w-24"></div>
 
-                    <a 
-                      href={informe.archivoInformeUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white text-white hover:text-main-blue backdrop-blur-md border border-white/30 text-sm font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl transition-all duration-300 w-full shadow-lg"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                      {t('informes.btn_descargar', 'Descargar PDF')}
-                    </a>
+                    {informe.año === 2020 || informe.año === 2021 || informe.año === "2020" || informe.año === "2021" ? (
+                      <span className="inline-flex items-center justify-center gap-2 bg-gray-500/50 text-gray-300 backdrop-blur-md border border-gray-400/30 text-sm font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl cursor-not-allowed w-full">
+                        <svg className="w-5 h-5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        {t('informes.btn_no_disponible', 'No Disponible')}
+                      </span>
+                    ) : (
+                      <a 
+                        href={informe.archivoInformeUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white text-white hover:text-main-blue backdrop-blur-md border border-white/30 text-sm font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl transition-all duration-300 w-full shadow-lg"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        {t('informes.btn_descargar', 'Descargar PDF')}
+                      </a>
+                    )}
                   </div>
                 </Paper>
               ))}
