@@ -120,14 +120,14 @@ export default function Privacidad() {
 
                   <div>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.gen_sec2_tit', '2. Responsable del Tratamiento de sus Datos')}</h3>
-                    <p>{t('privacidad.gen_sec2_p1', 'El responsable del tratamiento de sus datos personales es el Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH, organización con domicilio en Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica.')}</p>
+                    <p>{t('privacidad.gen_sec2_p1', 'El responsable general del tratamiento de sus datos personales es el Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH, organización con domicilio en Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica. Para las transacciones de libros y pagos realizados a través de Stripe, el responsable es IIRESODH PAYMENTS, LLC, con domicilio en 131 Continental Dr Suite 305, Newark, DE 19713, US.')}</p>
                   </div>
 
                   <div>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.gen_sec3_tit', '3. ¿Qué Información Recopilamos?')}</h3>
                     <ul className="list-disc pl-6 space-y-2">
                       <li><strong>{t('privacidad.gen_sec3_l1_tit', 'Información proporcionada directamente:')}</strong> {t('privacidad.gen_sec3_l1_txt', 'Recopilamos datos personales cuando nos contacta, se inscribe en nuestras actividades o realiza una donación. Esto incluye su nombre, dirección de correo electrónico, país de residencia y el contenido de sus mensajes.')}</li>
-                      <li><strong>{t('privacidad.gen_sec3_l2_tit', 'Datos de Trazabilidad Digital:')}</strong> {t('privacidad.gen_sec3_l2_txt', 'Para la adquisición de libros y manuales en formato PDF, recopilamos y procesamos su dirección IP, identificadores de dispositivo y datos de geolocalización para la prevención de piratería y cumplimiento de términos de licencia personal.')}</li>
+                      <li><strong>{t('privacidad.gen_sec3_l2_tit', 'Datos de Trazabilidad Digital:')}</strong> {t('privacidad.gen_sec3_l2_txt', 'Para la adquisición de libros y manuales en formato PDF, IIRESODH PAYMENTS, LLC recopila y procesa su dirección IP, identificadores de dispositivo y datos de geolocalización para la prevención de piratería y cumplimiento de términos de licencia personal.')}</li>
                       <li><strong>{t('privacidad.gen_sec3_l3_tit', 'Información recopilada automáticamente:')}</strong> {t('privacidad.gen_sec3_l3_txt', 'Al navegar por nuestro sitio, recopilamos información técnica estándar (dirección IP, tipo de navegador, páginas visitadas) con fines de análisis y seguridad para mejorar nuestros servicios institucionales.')}</li>
                     </ul>
                   </div>
@@ -205,7 +205,7 @@ export default function Privacidad() {
 
                   <div>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.mx_sec2_tit', '2. Identidad y Domicilio del Responsable')}</h3>
-                    <p>{t('privacidad.mx_sec2_p1', 'El Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH), con domicilio en Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica, es el Responsable de recabar sus datos personales, del uso que se le dé a los mismos y de su protección.')}</p>
+                    <p>{t('privacidad.mx_sec2_p1', 'El Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH), con domicilio en Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica, es el Responsable general de recabar sus datos personales, del uso que se le dé a los mismos y de su protección. Para las transacciones de libros y pagos realizados a través de Stripe, el responsable es IIRESODH PAYMENTS, LLC, con domicilio en 131 Continental Dr Suite 305, Newark, DE 19713, US.')}</p>
                   </div>
 
                   <div>
@@ -213,7 +213,7 @@ export default function Privacidad() {
                     <p className="mb-3">{t('privacidad.mx_sec3_p1', 'Para las finalidades señaladas en el presente aviso, podemos recabar los siguientes datos personales:')}</p>
                     <ul className="list-disc pl-6 space-y-2">
                       <li><strong>{t('privacidad.mx_sec3_l1_tit', 'Datos de Identificación y Contacto:')}</strong> {t('privacidad.mx_sec3_l1_txt', 'Nombre completo, correo electrónico, institución a la que pertenece y país.')}</li>
-                      <li><strong>{t('privacidad.mx_sec3_l2_tit', 'Datos de Navegación y Transacción Digital:')}</strong> {t('privacidad.mx_sec3_l2_txt', 'Dirección IP, metadatos de archivos descargados, geolocalización e identificadores únicos de dispositivos vinculados a la compra de manuales académicos.')}</li>
+                      <li><strong>{t('privacidad.mx_sec3_l2_tit', 'Datos de Navegación y Transacción Digital:')}</strong> {t('privacidad.mx_sec3_l2_txt', 'Para la compra de manuales académicos, IIRESODH PAYMENTS, LLC recopila y procesa su dirección IP, metadatos de archivos descargados, geolocalización e identificadores únicos de dispositivos.')}</li>
                     </ul>
                     <p className="mt-6 text-main-red font-bold uppercase tracking-wider text-sm">{t('privacidad.mx_sec3_sensibles', 'Datos Personales Sensibles:')}</p>
                     <p>{t('privacidad.mx_sec3_p2', 'El IIRESODH no recaba ni trata datos personales sensibles para la operación de este portal. Le rogamos abstenerse de enviar información clasificada como sensible a través de nuestros formularios de contacto general.')}</p>
