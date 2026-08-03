@@ -2,17 +2,16 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // FUNCIÓN CORREGIDA: Utiliza path() y concatenación (+) para que Firebase 
-    // pueda compilar el método .lower() sin romper el despliegue.
+    // FUNCIÓN CORREGIDA: Utiliza el binding de variables nativo de Firestore
     function esAdmin() {
       return request.auth != null && 
              request.auth.token.email != null &&
-             exists(path('/databases/' + database + '/documents/admins/' + request.auth.token.email.lower()));
+             exists(/databases/$(database)/documents/admins/$(request.auth.token.email.lower()));
     }
 
     // ACCESO DE LECTURA COMPILADO: Permite que el login consulte la colección de admins
     match /admins/{adminEmail} {
-      allow read: if request.auth != null && request.auth.token.email.lower() == adminEmail;
+      allow read: if request.auth != null;
       allow write: if false; // Blindado contra registros malintencionados
     }
 
