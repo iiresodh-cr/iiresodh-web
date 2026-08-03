@@ -162,7 +162,7 @@ export default function Home() {
               </div>
 
               {/* Noticia Destacada / Portada */}
-              <div className="lg:col-span-4 lg:flex justify-end relative z-20 mt-8 lg:mt-0">
+              <div className="hidden lg:flex lg:col-span-4 justify-end relative z-20 mt-8 lg:mt-0">
                 {noticias.length > 0 ? (
                   <Link 
                     to={`/noticias/${noticias[0].slug || noticias[0].id}`} 
