@@ -170,11 +170,12 @@ export default function QuienesSomos() {
             </div>
           </section>
 
+          {/* SECCIÓN OCULTA
           <div className="w-16 h-1 bg-main-red mx-auto rounded-full"></div>
 
           {/* =========================================
               BLOQUE 4: ORGANIGRAMA
-          ========================================= */}
+          ========================================= * /}
           <section id="organigrama" className="relative z-20 scroll-mt-32" aria-labelledby="organigrama-titulo">
             <div className="max-w-5xl mx-auto">
               <h2 id="organigrama-titulo" className="text-3xl md:text-4xl font-black text-center mb-8 uppercase tracking-tighter text-main-blue">
@@ -227,6 +228,7 @@ export default function QuienesSomos() {
               </div>
             </div>
           </section>
+          */}
 
         </section>
       </div>
