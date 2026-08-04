@@ -51,17 +51,45 @@ export const formatearTextoConLinksYHashtags = (texto) => {
   return parrafos.map(p => `<p>${p.replace(/\n/g, '<br />')}</p>`).join('');
 };
 
+
+// Funciones de caché para optimizar carga del Hero (TTL de 10 minutos)
+const CACHE_TTL_MINUTES = 10;
+const getCachedData = (key) => {
+  try {
+    const cached = localStorage.getItem(key);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Date.now() - parsed.timestamp < CACHE_TTL_MINUTES * 60 * 1000) {
+        return parsed.data;
+      }
+    }
+  } catch (e) { console.error('Cache read error', e); }
+  return null;
+};
+const setCachedData = (key, data) => {
+  try {
+    localStorage.setItem(key, JSON.stringify({ timestamp: Date.now(), data }));
+  } catch (e) { console.error('Cache write error', e); }
+};
+
 export default function Home() {
   const { t, i18n } = useTranslation(); 
   const navigate = useNavigate();
-  const [noticias, setNoticias] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  // Inicializar estado sincrónicamente desde caché para renderizado inmediato
+  const cachedNoticias = getCachedData('home_noticias');
+  const [noticias, setNoticias] = useState(cachedNoticias || []);
+  const [loading, setLoading] = useState(!cachedNoticias);
+  
   const [contacto, setContacto] = useState({ nombre: "", correo: "", mensaje: "" });
   const [estadoEnvio, setEstadoEnvio] = useState("idle");
-  const [tituloHome, setTituloHome] = useState({
-    tituloPrincipal: "",
-    tituloPrincipal_en: "",
-    tituloPrincipal_fr: ""
+
+  const [tituloHome, setTituloHome] = useState(() => {
+    return getCachedData('home_titulo') || {
+      tituloPrincipal: "",
+      tituloPrincipal_en: "",
+      tituloPrincipal_fr: ""
+    };
   });
 
   useEffect(() => {
@@ -70,7 +98,9 @@ export default function Home() {
         const docRef = doc(db, "configuracion", "home_visual");
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setTituloHome(docSnap.data());
+          const data = docSnap.data();
+          setTituloHome(data);
+          setCachedData('home_titulo', data);
         }
       } catch (e) {
         console.error("Error fetching configuracion", e);
@@ -94,9 +124,12 @@ export default function Home() {
             .filter(n => !idsFijas.includes(n.id))
             .slice(0, faltantes);
         }
-        setNoticias([...noticiasFijas, ...noticiasRecientes]);
+        
+        const finalNoticias = [...noticiasFijas, ...noticiasRecientes];
+        setNoticias(finalNoticias);
+        setCachedData('home_noticias', finalNoticias);
 
-        // Preload the first image (Hero image)
+        // Preload para la imagen principal
         const firstNews = noticiasFijas.length > 0 ? noticiasFijas[0] : noticiasRecientes[0];
         if (firstNews && firstNews.imagenPrincipalUrl) {
           const preloadLink = document.createElement("link");
@@ -109,6 +142,8 @@ export default function Home() {
       } catch (e) { console.error(e); }
       finally { setLoading(false); }
     };
+
+    // Actualizamos en background aunque haya caché
     fetchNoticias();
     fetchConfiguracionVisual();
   }, []);
