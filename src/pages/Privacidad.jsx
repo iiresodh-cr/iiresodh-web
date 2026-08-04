@@ -120,7 +120,7 @@ export default function Privacidad() {
 
                   <div>
                     <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.gen_sec2_tit', '2. Responsable del Tratamiento de sus Datos')}</h3>
-                    <p>{t('privacidad.gen_sec2_p1', 'El responsable general del tratamiento de sus datos personales es el Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH, organización con domicilio en Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica. Para las transacciones de libros y pagos realizados a través de Stripe, el responsable es IIRESODH PAYMENTS, LLC, con domicilio en 131 Continental Dr Suite 305, Newark, DE 19713, US.')}</p>
+                    <p>{t('privacidad.gen_sec2_p1', 'El responsable. general del tratamiento de sus datos personales es el Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH, organización con domicilio en Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica. Para las transacciones de libros y pagos realizados a través de Stripe, el responsable es IIRESODH PAYMENTS, LLC, con domicilio en 131 Continental Dr Suite 305, Newark, DE 19713, US.')}</p>
                   </div>
 
                   <div>
