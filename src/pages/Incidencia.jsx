@@ -152,10 +152,59 @@ export default function Incidencia() {
                       <h4 className="text-3xl font-extrabold text-main-blue mb-4 leading-tight uppercase">
                         {paisActivo.pais}
                       </h4>
-                      {/* MEJORA UX/UI: Empty state suavizado con ícono */}
-                      <div className="grow flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-xl bg-white/50 p-4 text-center">
-                         <svg className="w-8 h-8 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                         <span className="text-gray-400 text-sm font-medium">{t('incidencia.info_proximamente', 'Información de incidencia próximamente')}</span>
+                      {/* DIRECCIONES DE OFICINAS POR PAÍS */}
+                      <div className="grow flex flex-col justify-center border border-gray-200 rounded-xl bg-white p-4">
+                        {(() => {
+                          switch(paisActivo.id) {
+                            case 'cr':
+                              return (
+                                <div className="text-sm text-gray-600 space-y-2">
+                                  <p>{t('incidencia.dir_cr_1', 'Centro Corporativo San Rafael, nivel 3')}</p>
+                                  <p>{t('incidencia.dir_cr_2', 'San Rafael de Escazu, San José, Costa Rica')}</p>
+                                  <p>{t('incidencia.dir_cr_3', 'CP 10201')}</p>
+                                  <p>{t('incidencia.dir_cr_4', 'Teléfono: +506 4081 6188')}</p>
+                                </div>
+                              );
+                            case 'co':
+                              return (
+                                <div className="text-sm text-gray-600 space-y-2">
+                                  <p>{t('incidencia.dir_co_1', 'Carrera. 11C No. 117-05. Oficina 5')}</p>
+                                  <p>{t('incidencia.dir_co_2', 'Bogotá, Colombia')}</p>
+                                  <p>{t('incidencia.dir_co_3', 'Teléfono: Bogotá +7461964 y Móvil +57 301 4844324')}</p>
+                                </div>
+                              );
+                            case 'mx':
+                              return (
+                                <div className="text-sm text-gray-600 space-y-2">
+                                  <p>{t('incidencia.dir_gen_1', 'Atención virtual o presencial previa cita.')}</p>
+                                  <p>{t('incidencia.dir_gen_2', 'Email: contacto@iiresodh.org')}</p>
+                                </div>
+                              );
+                            case 'gt':
+                              return (
+                                <div className="text-sm text-gray-600 space-y-2">
+                                  <p>{t('incidencia.dir_gt_1', 'Diagonal 6 12-42, Edificio Design Center')}</p>
+                                  <p>{t('incidencia.dir_gt_2', 'Oficina No. 506, Torre 1, Zona 10, Ciudad de Guatemala')}</p>
+                                  <p>{t('incidencia.dir_gt_3', 'Teléfono: +502 5557 7466')}</p>
+                                </div>
+                              );
+                            case 'ca':
+                              return (
+                                <div className="text-sm text-gray-600 space-y-2">
+                                  <p>{t('incidencia.dir_ca_1', 'Atención virtual o presencial previa cita en la ciudad de Levis, Québec')}</p>
+                                  <p>{t('incidencia.dir_ca_2', 'En Toronto, Ontario de manera vinculada con la firma de abogados Waldman & Associates.')}</p>
+                                  <p>{t('incidencia.dir_gen_2', 'Email: contacto@iiresodh.org')}</p>
+                                </div>
+                              );
+                            default:
+                              return (
+                                <div className="text-sm text-gray-600 space-y-2">
+                                  <p>{t('incidencia.dir_gen_1', 'Atención virtual o presencial previa cita.')}</p>
+                                  <p>{t('incidencia.dir_gen_2', 'Email: contacto@iiresodh.org')}</p>
+                                </div>
+                              );
+                          }
+                        })()}
                       </div>
                     </Paper>
                   );
