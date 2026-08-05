@@ -1527,7 +1527,7 @@ useEffect(() => {
                         </div>
                       </div>
 
-                      {vistaActiva === "comunicaciones" && (
+                      {(vistaActiva === "comunicaciones" || vistaActiva === "cursos") && (
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Galería / Carrusel</label>
                           <input type="file" accept="image/*" multiple onChange={handleAgregarImagenes} className="sr-only" id="input-imagenes-carrusel" />
