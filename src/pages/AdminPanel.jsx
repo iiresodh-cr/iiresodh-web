@@ -584,6 +584,7 @@ useEffect(() => {
         setEnlaceInscripcion(item.enlaceInscripcion || "");
         setCursoActivo(item.cursoActivo !== undefined ? item.cursoActivo : true);
         setEstadoInscripcion(item.estadoInscripcion || (item.cursoActivo ? "abierta" : "cerrada"));
+        setCarruselExistente(item.imagenesCarruselUrls || []);
       }
       
       setImagenPrincipalAnterior(item.imagenPrincipalUrl || null);
@@ -839,7 +840,7 @@ useEffect(() => {
       }
 
       const nuevasUrls = [];
-      if (vistaActiva === "comunicaciones") {
+      if (vistaActiva === "comunicaciones" || vistaActiva === "cursos") {
         for (const file of imagenesCarrusel) {
           const refCar = ref(storage, `${carpeta}/carrusel/${Date.now()}_${file.name}`);
           await uploadBytes(refCar, file);
@@ -904,6 +905,7 @@ useEffect(() => {
           datos.enlaceInscripcion = enlaceInscripcion || null;
           datos.cursoActivo = estadoInscripcion === "abierta";
           datos.estadoInscripcion = estadoInscripcion;
+          datos.imagenesCarruselUrls = [...carruselExistente, ...nuevasUrls];
           delete datos.contenido;
         }
       }

@@ -1,7 +1,7 @@
 // src/pages/Cursos.jsx
 import { useEffect, useState } from "react";
 import PageHeader from "../components/PageHeader";
-import { Paper, CircularProgress } from "@mui/material";
+import { Paper, CircularProgress, Dialog, DialogContent, IconButton } from "@mui/material";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../firebase/config";
 
@@ -13,6 +13,33 @@ export default function Cursos() {
   const { t, i18n } = useTranslation(); 
   const [cursos, setCursos] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // ESTADOS PARA GALERÍA DE FOTOS (CURSOS CERRADOS)
+  const [galeriaAbierta, setGaleriaAbierta] = useState(false);
+  const [galeriaFotos, setGaleriaFotos] = useState([]);
+  const [fotoActualIndex, setFotoActualIndex] = useState(0);
+
+  const abrirGaleria = (fotos) => {
+    setGaleriaFotos(fotos);
+    setFotoActualIndex(0);
+    setGaleriaAbierta(true);
+  };
+
+  const cerrarGaleria = () => {
+    setGaleriaAbierta(false);
+    setTimeout(() => {
+      setGaleriaFotos([]);
+      setFotoActualIndex(0);
+    }, 300); // Wait for transition
+  };
+
+  const siguienteFoto = () => {
+    setFotoActualIndex((prev) => (prev + 1) % galeriaFotos.length);
+  };
+
+  const anteriorFoto = () => {
+    setFotoActualIndex((prev) => (prev - 1 + galeriaFotos.length) % galeriaFotos.length);
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -144,6 +171,13 @@ export default function Cursos() {
                           >
                             {btnText}
                           </a>
+                        ) : estado === 'cerrada' && curso.imagenesCarruselUrls && curso.imagenesCarruselUrls.length > 0 ? (
+                          <button
+                            onClick={() => abrirGaleria(curso.imagenesCarruselUrls)}
+                            className="bg-main-blue hover:bg-light-blue text-white text-[10px] font-black uppercase tracking-[0.15em] py-3.5 px-6 rounded-xl w-full text-center transition-all cursor-pointer shadow-md active:scale-95"
+                          >
+                            {t('cursos.btn_galeria', 'Ver Galería de Fotos')}
+                          </button>
                         ) : (
                           <div className={`text-[10px] font-black uppercase tracking-[0.15em] py-3.5 px-6 rounded-xl w-full text-center border ${estado === 'proximamente' ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-gray-100 text-gray-400 border-gray-200'}`}>
                             {btnText}
@@ -158,6 +192,59 @@ export default function Cursos() {
           )}
         </section>
       </div>
+
+      {/* MODAL DE GALERÍA DE FOTOS */}
+      <Dialog 
+        open={galeriaAbierta} 
+        onClose={cerrarGaleria} 
+        maxWidth="lg" 
+        fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: 'transparent',
+            boxShadow: 'none',
+            overflow: 'hidden'
+          }
+        }}
+      >
+        <div className="relative flex items-center justify-center min-h-[60vh] md:min-h-[80vh] w-full">
+          {galeriaFotos.length > 0 && (
+            <img 
+              src={galeriaFotos[fotoActualIndex]} 
+              alt={`Foto ${fotoActualIndex + 1}`} 
+              className="max-h-[80vh] max-w-full object-contain rounded-xl shadow-2xl"
+            />
+          )}
+
+          {galeriaFotos.length > 1 && (
+            <>
+              <IconButton 
+                onClick={anteriorFoto} 
+                className="absolute! left-4 top-1/2 -translate-y-1/2 bg-black/50! hover:bg-black/80! text-white!"
+              >
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+              </IconButton>
+              <IconButton 
+                onClick={siguienteFoto} 
+                className="absolute! right-4 top-1/2 -translate-y-1/2 bg-black/50! hover:bg-black/80! text-white!"
+              >
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+              </IconButton>
+            </>
+          )}
+
+          <IconButton 
+            onClick={cerrarGaleria} 
+            className="absolute! top-4 right-4 bg-black/50! hover:bg-main-red! text-white! transition-colors"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </IconButton>
+          
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 px-4 py-1.5 rounded-full text-white text-xs font-bold tracking-widest backdrop-blur-sm">
+            {fotoActualIndex + 1} / {galeriaFotos.length}
+          </div>
+        </div>
+      </Dialog>
     </main>
   );
 }
