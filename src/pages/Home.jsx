@@ -346,8 +346,8 @@ export default function Home() {
                       <div className="w-14 h-14 bg-main-red text-white rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-105 transition-transform">
                         <Scale className="w-7 h-7" strokeWidth={1.75} />
                       </div>
-                      <h3 className="text-xl font-bold text-main-blue mb-3">{t('home.litigio_titulo', 'Litigio Estratégico')}</h3>
-                      <p className="text-gray-500 font-light text-sm leading-relaxed grow">{t('home.litigio_desc', 'Defensa jurídica ante tribunals internacionales para sentar precedentes en la protección de derechos.')}</p>
+                      <h3 className="text-2xl font-bold text-main-blue mb-3">{t('home.litigio_titulo', 'Litigio Estratégico')}</h3>
+                      <p className="text-gray-500 font-light text-base leading-relaxed grow">{t('home.litigio_desc', 'Defensa jurídica ante tribunals internacionales para sentar precedentes en la protección de derechos.')}</p>
                     </article>
                   </Link>
 
@@ -357,8 +357,8 @@ export default function Home() {
                       <div className="w-14 h-14 bg-[#3B82F6] text-white rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-105 transition-transform">
                         <Earth className="w-7 h-7" strokeWidth={1.75} />
                       </div>
-                      <h3 className="text-xl font-bold text-main-blue mb-3">{t('home.incidencia_titulo', 'Incidencia Internacional')}</h3>
-                      <p className="text-gray-500 font-light text-sm leading-relaxed grow">{t('home.incidencia_desc', 'Investigaciones, informes de impacto y documentos de litigio estratégico.')}</p>
+                      <h3 className="text-2xl font-bold text-main-blue mb-3">{t('home.incidencia_titulo', 'Incidencia Internacional')}</h3>
+                      <p className="text-gray-500 font-light text-base leading-relaxed grow">{t('home.incidencia_desc', 'Investigaciones, informes de impacto y documentos de litigio estratégico.')}</p>
                     </article>
                   </Link>
 
@@ -369,8 +369,8 @@ export default function Home() {
                         <GraduationCap className="w-7 h-7" strokeWidth={1.75} />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-main-blue mb-2">{t('home.formacion_titulo', 'Formación Especializada')}</h3>
-                        <p className="text-gray-500 font-light text-sm leading-relaxed">{t('home.formacion_desc', 'Certificaciones y programas académicos diseñados para los líderes del cambio social.')}</p>
+                        <h3 className="text-2xl font-bold text-main-blue mb-2">{t('home.formacion_titulo', 'Formación Especializada')}</h3>
+                        <p className="text-gray-500 font-light text-base leading-relaxed">{t('home.formacion_desc', 'Certificaciones y programas académicos diseñados para los líderes del cambio social.')}</p>
                       </div>
                     </article>
                   </Link>

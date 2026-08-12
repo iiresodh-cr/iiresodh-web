@@ -1,0 +1,1 @@
+const fs = require("fs"); let c = fs.readFileSync("src/pages/Home.jsx", "utf8"); c = c.replace(/className="text-xl font-bold text-main-blue/g, "className=\"text-2xl font-bold text-main-blue"); c = c.replace(/className="text-gray-500 font-light text-sm leading-relaxed/g, "className=\"text-gray-500 font-light text-base leading-relaxed"); fs.writeFileSync("src/pages/Home.jsx", c);
