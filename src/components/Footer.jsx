@@ -98,7 +98,16 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-light text-gray-400">
           
           <div className="text-center md:text-left">
-            <span>IIRESODH© {new Date().getFullYear()} {t('footer.licencia', 'está bajo licencia CC BY-NC-ND 4.0')}</span>
+            <span>IIRESODH© {new Date().getFullYear()} {t('footer.licencia', 'está bajo licencia ')}
+              <a 
+                href={t('footer.licencia_url', 'https://creativecommons.org/licenses/by-nc-nd/4.0/deed.es')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors underline"
+              >
+                {t('footer.licencia_link', 'CC BY-NC-ND 4.0')}
+              </a>
+            </span>
           </div>
           
           <div className="flex items-center gap-4">

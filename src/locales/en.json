@@ -42,7 +42,9 @@
     "siguenos_linkedin": "Follow us on LinkedIn",
     "siguenos_tiktok": "Follow us on TikTok",
     "logo_alt": "IIRESODH institutional logo",
-    "licencia": "is licensed under CC BY-NC-ND 4.0"
+    "licencia": "is licensed under ",
+    "licencia_link": "CC BY-NC-ND 4.0",
+    "licencia_url": "https://creativecommons.org/licenses/by-nc-nd/4.0/deed.en"
   },
   "home": {
     "hero_titulo_1": "Defending",
