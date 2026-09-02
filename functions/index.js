@@ -750,8 +750,6 @@ exports.stripeWebhook = onRequest({
 // 8. TRADUCTOR AUTOMÁTICO (FIREBASE FUNCTIONS V2)
 // ============================================================================
 const { onDocumentWritten } = require("firebase-functions/v2/firestore");
-const { Translate } = require('@google-cloud/translate').v2;
-const translate = new Translate(); 
 
 const IDIOMAS_DESTINO = ['en', 'fr'];
 const CAMPOS_A_TRADUCIR = ['titulo', 'resumen', 'contenido', 'bio', 'cargo', 'texto1', 'texto2', 'texto3'];
@@ -765,24 +763,24 @@ exports.traductorAutomatico = onDocumentWritten(
   async (event) => {
     const coleccionActual = event.params.coleccion;
 
-    // 1. Verificamos si la colección está en nuestra lista blanca
     if (!COLECCIONES_PERMITIDAS.includes(coleccionActual)) return null;
 
-    // 2. Extraemos datos (Sintaxis V2)
+    // Carga diferida del SDK para evitar timeouts en el análisis
+    const { Translate } = require('@google-cloud/translate').v2;
+    const translate = new Translate();
+
     const datosNuevos = event.data.after.exists ? event.data.after.data() : null;
     const datosAnteriores = event.data.before.exists ? event.data.before.data() : null;
 
-    // Si el documento se eliminó, no hay nada que traducir
     if (!datosNuevos) return null;
 
     let actualizaciones = {};
     let necesitaActualizar = false;
 
-    // 3. Revisamos y traducimos campos
     for (const campo of CAMPOS_A_TRADUCIR) {
       if (datosNuevos[campo]) {
         const textoCambio = !datosAnteriores || datosNuevos[campo] !== datosAnteriores[campo];
-        
+
         if (textoCambio) {
           for (const idioma of IDIOMAS_DESTINO) {
             try {
@@ -797,7 +795,6 @@ exports.traductorAutomatico = onDocumentWritten(
       }
     }
 
-    // 4. Guardamos las traducciones en la BD
     if (necesitaActualizar) {
       return event.data.after.ref.update(actualizaciones);
     }
