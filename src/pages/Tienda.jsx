@@ -16,7 +16,7 @@ import { Button, Checkbox, FormControlLabel, Alert, Paper } from "@mui/material"
 import { useTranslation } from 'react-i18next';
 
 // Usa la variable de entorno para no dejar la clave en el código fuente (Mejor práctica)
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_test_51TG3Ix2cAGUeJe5mZ8VfsyNf1qmd7EYcncADyttNU7oZPLxpgi8VfjCWTVjOdluNcgeiyleaPgWmR1FQtZbwLj9E00RTW4N4Qs");
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_live_51TG3ISKDeuuPJXWXIeTw2sDt4bmmbkC0mgjumlrofRDWWWgRv33ozgrlHgDoCffs4egzf5wcXPp3lYDmkwpymYuS00gkAh1xWG");
 
 const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
   const { t } = useTranslation();
