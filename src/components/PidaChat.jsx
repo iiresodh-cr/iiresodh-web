@@ -46,6 +46,14 @@ export default function PidaChat() {
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const activeIntervalRef = useRef(null);
+
+  // Limpieza del intervalo al desmontar el componente para evitar fugas de memoria
+  useEffect(() => {
+    return () => {
+      if (activeIntervalRef.current) clearInterval(activeIntervalRef.current);
+    };
+  }, []);
 
   // Guardamos cada actualización del chat en sessionStorage
   useEffect(() => {
@@ -134,6 +142,9 @@ export default function PidaChat() {
       { text: "", isBot: true }
     ]);
 
+    let targetText = "";
+    let displayedText = "";
+
     try {
       const response = await fetch(STREAM_ENDPOINT, {
         method: "POST",
@@ -155,22 +166,40 @@ export default function PidaChat() {
       // Ocultamos los puntos de escritura cuando empiezan a llegar los primeros fragmentos
       setEscribiendo(false);
 
+      // Iniciamos el efecto de escritura progresiva (typewriter / stream fluido)
+      activeIntervalRef.current = setInterval(() => {
+        if (displayedText.length < targetText.length) {
+          const delta = targetText.length - displayedText.length;
+          // Si la red entrega chunks muy rápido, escribimos ráfagas más grandes para no quedarnos atrás
+          const charsToAppend = delta > 30 ? 4 : delta > 10 ? 2 : 1;
+          
+          displayedText += targetText.slice(displayedText.length, displayedText.length + charsToAppend);
+
+          setMensajes((prev) => {
+            const nuevos = [...prev];
+            const ultimoIndex = nuevos.length - 1;
+            if (nuevos[ultimoIndex] && nuevos[ultimoIndex].isBot) {
+              nuevos[ultimoIndex] = {
+                ...nuevos[ultimoIndex],
+                text: displayedText
+              };
+            }
+            return nuevos;
+          });
+        }
+      }, 15); // Intervalo ultra rápido pero lo suficientemente notorio (15ms)
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
         const chunkTexto = decoder.decode(value, { stream: true });
+        targetText += chunkTexto;
+      }
 
-        // Concatenamos cada fragmento en tiempo real a la última burbuja del chat
-        setMensajes((prev) => {
-          const nuevos = [...prev];
-          const ultimoIndex = nuevos.length - 1;
-          nuevos[ultimoIndex] = {
-            ...nuevos[ultimoIndex],
-            text: nuevos[ultimoIndex].text + chunkTexto
-          };
-          return nuevos;
-        });
+      // Esperamos a que la animación de renderizado alcance el final del texto recibido antes de terminar
+      while (displayedText.length < targetText.length) {
+        await new Promise((resolve) => setTimeout(resolve, 20));
       }
 
     } catch (error) {
@@ -185,6 +214,10 @@ export default function PidaChat() {
         return nuevos;
       });
     } finally {
+      if (activeIntervalRef.current) {
+        clearInterval(activeIntervalRef.current);
+        activeIntervalRef.current = null;
+      }
       setEscribiendo(false);
     }
   };
