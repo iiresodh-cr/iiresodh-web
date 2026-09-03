@@ -111,6 +111,34 @@ export default function AdminPanel() {
   
   const [vistaActiva, setVistaActiva] = useState("inicio");
 
+  const [misPermisos, setMisPermisos] = useState({
+    comunicaciones: false,
+    articulos: false,
+    cursos: false,
+    libros: false,
+    equipo: false,
+    informes: false,
+    incidencia: false,
+    estadisticas: false,
+    adminWeb: false
+  });
+
+  // Gestión de usuarios (solo para webmaster@iiresodh.org)
+  const [usuariosAdmins, setUsuariosAdmins] = useState([]);
+  const [nuevoEmailAdmin, setNuevoEmailAdmin] = useState("");
+  const [nuevoPermisos, setNuevoPermisos] = useState({
+    comunicaciones: false,
+    articulos: false,
+    cursos: false,
+    libros: false,
+    equipo: false,
+    informes: false,
+    incidencia: false,
+    estadisticas: false,
+    adminWeb: false
+  });
+  const [cargandoAdmins, setCargandoAdmins] = useState(false);
+
   const [titulo, setTitulo] = useState("");
   const [resumen, setResumen] = useState("");
   const [contenido, setContenido] = useState("");
@@ -298,9 +326,163 @@ const cargarActividades = async (isLoadMore = false) => {
   }
 };
 
+  useEffect(() => {
+    const fetchMisPermisos = async () => {
+      if (auth.currentUser) {
+        const email = auth.currentUser.email.toLowerCase().trim();
+        if (email === "webmaster@iiresodh.org") {
+          setMisPermisos({
+            comunicaciones: true,
+            articulos: true,
+            cursos: true,
+            libros: true,
+            equipo: true,
+            informes: true,
+            incidencia: true,
+            estadisticas: true,
+            adminWeb: true
+          });
+          return;
+        }
+        const docRef = doc(db, "admins", email);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setMisPermisos({
+            comunicaciones: data.permisos?.comunicaciones ?? false,
+            articulos: data.permisos?.articulos ?? false,
+            cursos: data.permisos?.cursos ?? false,
+            libros: data.permisos?.libros ?? false,
+            equipo: data.permisos?.equipo ?? false,
+            informes: data.permisos?.informes ?? false,
+            incidencia: data.permisos?.incidencia ?? false,
+            estadisticas: data.permisos?.estadisticas ?? false,
+            adminWeb: data.permisos?.adminWeb ?? false,
+          });
+        }
+      }
+    };
+    fetchMisPermisos();
+  }, []);
+
+  const cargarUsuariosAdmins = async () => {
+    if (auth.currentUser?.email !== "webmaster@iiresodh.org") return;
+    setCargandoAdmins(true);
+    try {
+      const q = query(collection(db, "admins"));
+      const snapshot = await getDocs(q);
+      const lista = snapshot.docs
+        .map(doc => ({ email: doc.id, ...doc.data() }))
+        .filter(u => u.email !== "webmaster@iiresodh.org");
+      setUsuariosAdmins(lista);
+    } catch (error) {
+      console.error("Error cargando administradores:", error);
+    } finally {
+      setCargandoAdmins(false);
+    }
+  };
+
+  const handleAgregarAdmin = async (e) => {
+    e.preventDefault();
+    const emailLimpio = nuevoEmailAdmin.trim().toLowerCase();
+    if (!emailLimpio.endsWith("@iiresodh.org")) {
+      setMensaje("Error: Solo se permiten correos del dominio iiresodh.org");
+      setTimeout(() => setMensaje(""), 4000);
+      return;
+    }
+    if (emailLimpio === "webmaster@iiresodh.org") {
+      setMensaje("Error: El superadministrador ya está registrado.");
+      setTimeout(() => setMensaje(""), 4000);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const docRef = doc(db, "admins", emailLimpio);
+      await setDoc(docRef, {
+        activo: true,
+        active: true,
+        permisos: nuevoPermisos,
+        creadoEn: serverTimestamp()
+      });
+      await logActividad(`Autorizó un nuevo usuario: ${emailLimpio}`);
+      setMensaje(`¡Usuario ${emailLimpio} autorizado con éxito!`);
+      setNuevoEmailAdmin("");
+      setNuevoPermisos({
+        comunicaciones: false,
+        articulos: false,
+        cursos: false,
+        libros: false,
+        equipo: false,
+        informes: false,
+        incidencia: false,
+        estadisticas: false,
+        adminWeb: false
+      });
+      cargarUsuariosAdmins();
+    } catch (error) {
+      console.error("Error agregando administrador:", error);
+      setMensaje("Error al autorizar el usuario.");
+    } finally {
+      setLoading(false);
+      setTimeout(() => setMensaje(""), 4000);
+    }
+  };
+
+  const handleTogglePermisoAdmin = async (email, moduloKey, valorActual) => {
+    try {
+      const docRef = doc(db, "admins", email);
+      await updateDoc(docRef, {
+        [`permisos.${moduloKey}`]: !valorActual
+      });
+      await logActividad(`Modificó permisos de ${email}`, `Módulo ${moduloKey} establecido en ${!valorActual}`);
+      setMensaje(`Permisos actualizados para ${email}`);
+      cargarUsuariosAdmins();
+    } catch (error) {
+      console.error("Error actualizando permisos:", error);
+      setMensaje("Error al actualizar permisos.");
+    } finally {
+      setTimeout(() => setMensaje(""), 3000);
+    }
+  };
+
+  const handleToggleActivoAdmin = async (email, activoActual) => {
+    try {
+      const docRef = doc(db, "admins", email);
+      const nuevoValor = !activoActual;
+      await updateDoc(docRef, {
+        activo: nuevoValor,
+        active: nuevoValor
+      });
+      await logActividad(`Cambió estado de cuenta de ${email}`, `Estado establecido en ${nuevoValor ? 'Activo' : 'Inactivo'}`);
+      setMensaje(`Estado de cuenta actualizado para ${email}`);
+      cargarUsuariosAdmins();
+    } catch (error) {
+      console.error("Error actualizando estado del usuario:", error);
+      setMensaje("Error al cambiar el estado del usuario.");
+    } finally {
+      setTimeout(() => setMensaje(""), 3000);
+    }
+  };
+
+  const handleEliminarAdmin = async (email) => {
+    try {
+      await deleteDoc(doc(db, "admins", email));
+      await logActividad(`Eliminó al usuario administrador: ${email}`);
+      setMensaje(`Se revocó el acceso para ${email}`);
+      cargarUsuariosAdmins();
+    } catch (error) {
+      console.error("Error eliminando administrador:", error);
+      setMensaje("Error al revocar acceso.");
+    } finally {
+      setTimeout(() => setMensaje(""), 3000);
+    }
+  };
+
 useEffect(() => {
   if (vistaActiva === "adminWeb") {
     cargarUsuariosUnicos();
+      cargarUsuariosAdmins();
   }
 }, [vistaActiva]);
 
@@ -1062,7 +1244,13 @@ useEffect(() => {
               <p className="text-gray-500 text-lg">Selecciona el módulo que deseas administrar hoy.</p>
             </div>
             <nav className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8" aria-label="Departamentos administrativos">
-              <button onClick={() => setVistaActiva("comunicaciones")} className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-main-blue/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center">
+              <button 
+                onClick={() => setVistaActiva("comunicaciones")} 
+                disabled={!misPermisos.comunicaciones}
+                className={`bg-white border border-gray-100 p-10 rounded-3xl shadow-sm transition-all duration-300 flex flex-col items-center justify-center gap-5 group text-center ${
+                  !misPermisos.comunicaciones ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:shadow-xl hover:-translate-y-1 hover:border-main-blue/30 cursor-pointer"
+                }`}
+              >
                 <div className="p-4 bg-blue-50 text-main-blue rounded-2xl group-hover:bg-main-blue group-hover:text-white transition-colors duration-300">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 8h8M8 12h8M8 16h4"></path></svg>
                 </div>
@@ -1072,7 +1260,13 @@ useEffect(() => {
                 </div>
               </button>
               
-              <button onClick={() => setVistaActiva("articulos")} className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-main-red/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center">
+              <button 
+                onClick={() => setVistaActiva("articulos")} 
+                disabled={!misPermisos.articulos}
+                className={`bg-white border border-gray-100 p-10 rounded-3xl shadow-sm transition-all duration-300 flex flex-col items-center justify-center gap-5 group text-center ${
+                  !misPermisos.articulos ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:shadow-xl hover:-translate-y-1 hover:border-main-red/30 cursor-pointer"
+                }`}
+              >
                 <div className="p-4 bg-red-50 text-main-red rounded-2xl group-hover:bg-main-red group-hover:text-white transition-colors duration-300">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                 </div>
@@ -1082,7 +1276,13 @@ useEffect(() => {
                 </div>
               </button>
 
-              <button onClick={() => setVistaActiva("cursos")} className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-orange-500/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center">
+              <button 
+                onClick={() => setVistaActiva("cursos")} 
+                disabled={!misPermisos.cursos}
+                className={`bg-white border border-gray-100 p-10 rounded-3xl shadow-sm transition-all duration-300 flex flex-col items-center justify-center gap-5 group text-center ${
+                  !misPermisos.cursos ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:shadow-xl hover:-translate-y-1 hover:border-orange-500/30 transition-all duration-300 cursor-pointer"
+                }`}
+              >
                 <div className="p-4 bg-orange-50 text-orange-600 rounded-2xl group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 14l9-5-9-5-9 5 9 5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
                 </div>
@@ -1092,7 +1292,13 @@ useEffect(() => {
                 </div>
               </button>
 
-              <button onClick={() => setVistaActiva("libros")} className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-green-500/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center">
+              <button 
+                onClick={() => setVistaActiva("libros")} 
+                disabled={!misPermisos.libros}
+                className={`bg-white border border-gray-100 p-10 rounded-3xl shadow-sm transition-all duration-300 flex flex-col items-center justify-center gap-5 group text-center ${
+                  !misPermisos.libros ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:shadow-xl hover:-translate-y-1 hover:border-green-500/30 transition-all duration-300 cursor-pointer"
+                }`}
+              >
                 <div className="p-4 bg-green-50 text-green-600 rounded-2xl group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
                 </div>
@@ -1122,7 +1328,13 @@ useEffect(() => {
                 </div>
               </button>
               
-              <button onClick={() => setVistaActiva("incidencia")} className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-rose-500/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center">
+              <button 
+                onClick={() => setVistaActiva("incidencia")} 
+                disabled={!misPermisos.incidencia}
+                className={`bg-white border border-gray-100 p-10 rounded-3xl shadow-sm transition-all duration-300 flex flex-col items-center justify-center gap-5 group text-center ${
+                  !misPermisos.incidencia ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:shadow-xl hover:-translate-y-1 hover:border-rose-500/30 transition-all duration-300 cursor-pointer"
+                }`}
+              >
                 <div className="p-4 bg-rose-50 text-rose-600 rounded-2xl group-hover:bg-rose-600 group-hover:text-white transition-colors duration-300">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 4v16m8-8H4"></path></svg>
                 </div>
@@ -1132,7 +1344,13 @@ useEffect(() => {
                 </div>
               </button>
 
-              <button onClick={() => setVistaActiva("estadisticas")} className="bg-white border border-gray-100 p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-indigo-500/30 transition-all duration-300 flex flex-col items-center justify-center gap-5 group cursor-pointer text-center">
+              <button 
+                onClick={() => setVistaActiva("estadisticas")} 
+                disabled={!misPermisos.estadisticas}
+                className={`bg-white border border-gray-100 p-10 rounded-3xl shadow-sm transition-all duration-300 flex flex-col items-center justify-center gap-5 group text-center ${
+                  !misPermisos.estadisticas ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:shadow-xl hover:-translate-y-1 hover:border-indigo-500/30 transition-all duration-300 cursor-pointer"
+                }`}
+              >
                 <div className="p-4 bg-indigo-50 text-indigo-600 rounded-2xl group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
@@ -1867,6 +2085,135 @@ useEffect(() => {
                 </form>
               )}
             </section>
+
+            {auth.currentUser?.email === "webmaster@iiresodh.org" && (
+              <section className="bg-white p-8 md:p-10 rounded-2xl shadow-sm border border-gray-100 mb-8 animate-fade-in-up">
+                <header className="mb-8">
+                  <h2 className="text-2xl font-bold tracking-tight text-gray-800">
+                    Gestión de Permisos de Usuarios
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Autoriza cuentas del dominio iiresodh.org y gestiona su nivel de acceso a los módulos.
+                  </p>
+                </header>
+
+                <form onSubmit={handleAgregarAdmin} className="bg-gray-50 p-6 rounded-xl border border-gray-100 mb-8 space-y-6">
+                  <h3 className="text-lg font-bold text-gray-700">Autorizar Nuevo Usuario</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                    <div className="md:col-span-2">
+                      <AdminTextField 
+                        label="Correo Institucional (@iiresodh.org)" 
+                        type="email" 
+                        required 
+                        value={nuevoEmailAdmin} 
+                        onChange={e => setNuevoEmailAdmin(e.target.value)} 
+                        placeholder="ejemplo@iiresodh.org"
+                      />
+                    </div>
+                    <div>
+                      <Button type="submit" variant="contained" disabled={loading} fullWidth sx={{ py: 1.5, bgcolor: '#1D3557', '&:hover': { bgcolor: '#457B9D' } }}>
+                        {loading ? "Autorizando..." : "Autorizar Usuario"}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <p className="text-sm font-bold text-gray-600">Asignar accesos iniciales:</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                      {Object.keys(nuevoPermisos).map(key => (
+                        <FormControlLabel
+                          key={key}
+                          control={
+                            <Checkbox 
+                              checked={nuevoPermisos[key]} 
+                              onChange={e => setNuevoPermisos({ ...nuevoPermisos, [key]: e.target.checked })}
+                            />
+                          }
+                          label={
+                            <span className="text-xs font-semibold text-gray-700 capitalize">
+                              {key === "comunicaciones" ? "Noticias" : key === "adminWeb" ? "Admin Web" : key}
+                            </span>
+                          }
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </form>
+
+                <h3 className="text-lg font-bold text-gray-700 mb-4">Usuarios Autorizados</h3>
+                {cargandoAdmins ? (
+                  <div className="flex justify-center p-6"><CircularProgress /></div>
+                ) : usuariosAdmins.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="border-b border-gray-200 bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                          <th className="p-4">Usuario</th>
+                          <th className="p-4">Módulos Permitidos</th>
+                          <th className="p-4 text-center">Estado</th>
+                          <th className="p-4 text-center">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
+                        {usuariosAdmins.map(u => (
+                          <tr key={u.email} className="hover:bg-gray-50/50">
+                            <td className="p-4 font-bold text-main-blue">{u.email}</td>
+                            <td className="p-4">
+                              <div className="flex flex-wrap gap-2">
+                                {Object.keys(nuevoPermisos).map(key => {
+                                  const tienePermiso = u.permisos?.[key] ?? false;
+                                  return (
+                                    <Chip 
+                                      key={key}
+                                      label={key === "comunicaciones" ? "Noticias" : key === "adminWeb" ? "Admin Web" : key}
+                                      onClick={() => handleTogglePermisoAdmin(u.email, key, tienePermiso)}
+                                      color={tienePermiso ? "primary" : "default"}
+                                      variant={tienePermiso ? "filled" : "outlined"}
+                                      size="small"
+                                      sx={{ fontSize: '10px', textTransform: 'capitalize' }}
+                                    />
+                                  );
+                                })}
+                              </div>
+                            </td>
+                            <td className="p-4 text-center">
+                              <Button 
+                                size="small"
+                                variant="outlined"
+                                color={u.activo || u.active ? "success" : "error"}
+                                onClick={() => handleToggleActivoAdmin(u.email, u.activo || u.active)}
+                                sx={{ textTransform: 'none', minWidth: '80px', borderRadius: '20px' }}
+                              >
+                                {u.activo || u.active ? "Activo" : "Inactivo"}
+                              </Button>
+                            </td>
+                            <td className="p-4 text-center">
+                              <Button 
+                                size="small" 
+                                color="error" 
+                                variant="contained"
+                                onClick={() => {
+                                  if(window.confirm(`¿Estás seguro de que deseas revocar permanentemente el acceso para ${u.email}?`)) {
+                                    handleEliminarAdmin(u.email);
+                                  }
+                                }}
+                                sx={{ textTransform: 'none', borderRadius: '20px' }}
+                              >
+                                Revocar
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-center text-gray-500 py-6 italic border border-dashed border-gray-200 rounded-xl">
+                    No hay otros usuarios administradores registrados.
+                  </p>
+                )}
+              </section>
+            )}
 
             <section className="bg-white p-8 md:p-10 rounded-2xl shadow-sm border border-gray-100">
               <header className="mb-8">
