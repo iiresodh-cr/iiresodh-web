@@ -120,7 +120,8 @@ export default function AdminPanel() {
     informes: false,
     incidencia: false,
     estadisticas: false,
-    adminWeb: false
+    adminWeb: false,
+    auditoria: false
   });
 
   // Gestión de usuarios (solo para webmaster@iiresodh.org)
@@ -135,7 +136,8 @@ export default function AdminPanel() {
     informes: false,
     incidencia: false,
     estadisticas: false,
-    adminWeb: false
+    adminWeb: false,
+    auditoria: false
   });
   const [cargandoAdmins, setCargandoAdmins] = useState(false);
 
@@ -340,7 +342,8 @@ const cargarActividades = async (isLoadMore = false) => {
             informes: true,
             incidencia: true,
             estadisticas: true,
-            adminWeb: true
+            adminWeb: true,
+            auditoria: true
           });
           return;
         }
@@ -358,6 +361,7 @@ const cargarActividades = async (isLoadMore = false) => {
             incidencia: data.permisos?.incidencia ?? false,
             estadisticas: data.permisos?.estadisticas ?? false,
             adminWeb: data.permisos?.adminWeb ?? false,
+              auditoria: data.permisos?.auditoria ?? false,
           });
         }
       }
@@ -417,7 +421,8 @@ const cargarActividades = async (isLoadMore = false) => {
         informes: false,
         incidencia: false,
         estadisticas: false,
-        adminWeb: false
+        adminWeb: false,
+        auditoria: false
       });
       cargarUsuariosAdmins();
     } catch (error) {
@@ -483,8 +488,11 @@ useEffect(() => {
   if (vistaActiva === "adminWeb") {
     cargarUsuariosUnicos();
       cargarUsuariosAdmins();
+      if (misPermisos.auditoria) {
+        cargarUsuariosUnicos();
+      }
   }
-}, [vistaActiva]);
+  }, [vistaActiva, misPermisos.auditoria]);
 
 useEffect(() => {
   if (vistaActiva === 'adminWeb') {
@@ -2131,7 +2139,7 @@ useEffect(() => {
                           }
                           label={
                             <span className="text-xs font-semibold text-gray-700 capitalize">
-                              {key === "comunicaciones" ? "Noticias" : key === "adminWeb" ? "Admin Web" : key}
+                              {key === "comunicaciones" ? "Noticias" : key === "adminWeb" ? "Admin Web" : key === "auditoria" ? "Auditoría" : key}
                             </span>
                           }
                         />
@@ -2165,7 +2173,7 @@ useEffect(() => {
                                   return (
                                     <Chip 
                                       key={key}
-                                      label={key === "comunicaciones" ? "Noticias" : key === "adminWeb" ? "Admin Web" : key}
+                                      label={key === "comunicaciones" ? "Noticias" : key === "adminWeb" ? "Admin Web" : key === "auditoria" ? "Auditoría" : key}
                                       onClick={() => handleTogglePermisoAdmin(u.email, key, tienePermiso)}
                                       color={tienePermiso ? "primary" : "default"}
                                       variant={tienePermiso ? "filled" : "outlined"}
@@ -2215,7 +2223,8 @@ useEffect(() => {
               </section>
             )}
 
-            <section className="bg-white p-8 md:p-10 rounded-2xl shadow-sm border border-gray-100">
+            {misPermisos.auditoria && (
+              <section className="bg-white p-8 md:p-10 rounded-2xl shadow-sm border border-gray-100">
               <header className="mb-8">
                 <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-800">
                   Auditoría de Actividad de Usuarios
@@ -2282,6 +2291,7 @@ useEffect(() => {
                 </div>
               )}
             </section>
+            )}
           </div>
         )}
 
