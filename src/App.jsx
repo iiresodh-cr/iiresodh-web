@@ -1,6 +1,8 @@
 // src/App.jsx
-import { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import { lazy, Suspense, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-dom";
+import { analytics } from "./firebase/config";
+import { logEvent, isSupported } from "firebase/analytics";
 
 // Importaciones de MUI para el estado de carga
 import { CircularProgress } from "@mui/material";
@@ -36,6 +38,36 @@ const Incidencia = lazy(() => import("./pages/Incidencia"));
 const Feedback = lazy(() => import("./pages/Feedback")); // <- NUEVA RUTA QA
 
 // ==========================================
+// SEGUIMIENTO DE GOOGLE ANALYTICS
+// ==========================================
+const AnalyticsTracker = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Si config.js ya inicializó analytics o lo está inicializando, lo verificamos.
+    // Usamos un try/catch por seguridad en caso de bloqueadores de anuncios.
+    const registrarVista = async () => {
+      try {
+        const supported = await isSupported();
+        if (supported && analytics) {
+          logEvent(analytics, 'page_view', {
+            page_path: location.pathname + location.search,
+            page_title: document.title,
+            page_location: window.location.href
+          });
+        }
+      } catch (e) {
+        console.error("Error al registrar vista de página en Analytics", e);
+      }
+    };
+    
+    registrarVista();
+  }, [location]);
+
+  return null;
+};
+
+// ==========================================
 // PANTALLA DE CARGA GENÉRICA
 // ==========================================
 const FallbackLoader = () => (
@@ -68,6 +100,7 @@ function PublicLayout() {
 function App() {
   return (
     <BrowserRouter>
+      <AnalyticsTracker />
       <Routes>
         {/* RUTAS PÚBLICAS (Con Navbar, Footer y PidaChat) */}
         <Route element={<PublicLayout />}>
