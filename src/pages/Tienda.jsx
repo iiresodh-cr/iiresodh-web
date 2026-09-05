@@ -3,9 +3,10 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { db, functions } from "../firebase/config";
+import { db, functions, analytics } from "../firebase/config";
 import { collection, query, where, getDocs, limit, orderBy } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
+import { logEvent } from "firebase/analytics";
 import PageHeader from "../components/PageHeader";
 
 // Importaciones de MUI y Wrappers
@@ -75,6 +76,16 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
       }
   }
 
+  let precioFinal = precio;
+  if (descuentoAplicado) {
+      if (descuentoAplicado.porcentaje) {
+          precioFinal = precio * (1 - descuentoAplicado.porcentaje / 100);
+      } else if (descuentoAplicado.montoFijo) {
+          precioFinal = precio - (descuentoAplicado.montoFijo / 100);
+      }
+  }
+  if (precioFinal < 0) precioFinal = 0;
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!stripe || !elements) return;
@@ -113,6 +124,25 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
         setError(resultadoPago.error.message);
       } else if (resultadoPago.paymentIntent.status === 'succeeded') {
         setExito(true);
+        if (analytics) {
+          try {
+            logEvent(analytics, 'purchase', {
+              transaction_id: resultadoPago.paymentIntent.id,
+              value: precioFinal,
+              currency: moneda,
+              items: [
+                {
+                  item_id: libroId,
+                  item_name: titulo,
+                  price: precioFinal,
+                  quantity: 1
+                }
+              ]
+            });
+          } catch (e) {
+            console.error("Error al registrar la compra en Analytics", e);
+          }
+        }
       }
     } catch (err) {
       console.error(err);
@@ -134,16 +164,6 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
       invalid: { color: '#B92F32' },
     },
   };
-
-  let precioFinal = precio;
-  if (descuentoAplicado) {
-      if (descuentoAplicado.porcentaje) {
-          precioFinal = precio * (1 - descuentoAplicado.porcentaje / 100);
-      } else if (descuentoAplicado.montoFijo) {
-          precioFinal = precio - (descuentoAplicado.montoFijo / 100);
-      }
-  }
-  if (precioFinal < 0) precioFinal = 0;
 
   const esMexico = moneda === "MXN";
   const urlPrivacidad = esMexico ? "/privacidad?tab=mexico" : "/privacidad?tab=general";

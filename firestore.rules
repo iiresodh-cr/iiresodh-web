@@ -2,21 +2,44 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // FUNCIÓN CORREGIDA: Utiliza el binding de variables nativo de Firestore
+    // Función para validar si el usuario es el Superadministrador (Webmaster)
+    function esSuperAdmin() {
+      return request.auth != null && 
+             request.auth.token.email != null &&
+             request.auth.token.email.lower() == 'webmaster@iiresodh.org';
+    }
+
+    // Función para validar si es un administrador autorizado (o el superadmin)
     function esAdmin() {
       return request.auth != null && 
              request.auth.token.email != null &&
-             exists(/databases/$(database)/documents/admins/$(request.auth.token.email.lower()));
+             (esSuperAdmin() || exists(/databases/$(database)/documents/admins/$(request.auth.token.email.lower())));
     }
 
     // ACCESO DE LECTURA COMPILADO: Permite que el login consulte la colección de admins
     match /admins/{adminEmail} {
       allow read: if request.auth != null;
-      allow write: if false; // Blindado contra registros malintencionados
+      allow write: if esSuperAdmin(); // ✅ Permite escrituras (crear, editar, borrar) solo al Webmaster
     }
 
+    // Helper: Verifica si el usuario autenticado tiene el permiso de Auditoría en su documento
+    function tienePermisoAuditoria() {
+      return request.auth != null && (
+        request.auth.token.email.lower() == 'webmaster@iiresodh.org' ||
+        get(/databases/$(database)/documents/admins/$(request.auth.token.email.lower())).data.permisos.auditoria == true
+      );
+    }
+
+    // Colección de auditoría protegida
     match /auditoria_actividad/{document=**} {
-      allow read, write: if esAdmin();
+      // Solo personas autorizadas a nivel individual pueden ver el historial de auditoría
+      allow read: if tienePermisoAuditoria();
+      
+      // Cualquier administrador autenticado puede generar un log al realizar una acción
+      allow create: if esAdmin();
+      
+      // Los registros de auditoría son inmutables (nadie los puede borrar o editar)
+      allow update, delete: if false; 
     }
     
     match /equipo/{docId=**} {
