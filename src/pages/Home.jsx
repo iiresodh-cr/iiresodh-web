@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { collection, query, orderBy, limit, getDocs, where, doc, getDoc } from "firebase/firestore";
 import { db, functions } from "../firebase/config";
 import { httpsCallable } from "firebase/functions";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 // Swiper
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -75,6 +75,7 @@ const setCachedData = (key, data) => {
 export default function Home() {
   const { t, i18n } = useTranslation(); 
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Inicializar estado sincrónicamente desde caché para renderizado inmediato
   const cachedNoticias = getCachedData('home_noticias');
@@ -91,6 +92,18 @@ export default function Home() {
       tituloPrincipal_fr: ""
     };
   });
+
+  useEffect(() => {
+    if (location.hash) {
+      setTimeout(() => {
+        const id = location.hash.replace('#', '');
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 300);
+    }
+  }, [location]);
 
   useEffect(() => {
     const fetchConfiguracionVisual = async () => {
