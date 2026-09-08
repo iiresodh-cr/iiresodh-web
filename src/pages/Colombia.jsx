@@ -137,9 +137,9 @@ export default function Colombia() {
                   Teléfono: Bogotá +7461964. Móvil: +57 301 4844324
                </p>
             </div>
-            <Link to="/contacto" className="bg-main-red text-white font-bold py-4 px-10 rounded-xl hover:bg-red-800 transition-all uppercase tracking-widest text-xs">
+            <a href="/#contacto" className="bg-main-red text-white font-bold py-4 px-10 rounded-xl hover:bg-red-800 transition-all uppercase tracking-widest text-xs">
                Contactar Sede
-            </Link>
+            </a>
          </Paper>
       </section>
     </main>

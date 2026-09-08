@@ -152,9 +152,9 @@ export default function PaginaPais({ paisKey: propsPaisKey }) {
                        </h2>
                        <p className="text-gray-600 font-light">{contactoPaisTraducido}</p>
                     </div>
-                    <Link to="/contacto" className="bg-main-red text-white font-bold py-4 px-10 rounded-xl uppercase text-xs hover:bg-red-800 transition-colors shrink-0">
+                    <a href="/#contacto" className="bg-main-red text-white font-bold py-4 px-10 rounded-xl uppercase text-xs hover:bg-red-800 transition-colors shrink-0">
                       {t('pagina_pais.btn_contactar', 'Contactar')}
-                    </Link>
+                    </a>
                  </div>
               </div>
 

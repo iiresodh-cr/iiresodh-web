@@ -324,7 +324,7 @@ export default function Home() {
           {/* =========================================
               BLOQUE 3: NUESTRA LABOR Y CONTACTO
           ========================================= */}
-          <section className="bg-white">
+          <section id="contacto" className="bg-white">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
               
               {/* COLUMNA IZQUIERDA: SERVICIOS */}
