@@ -103,7 +103,7 @@ const convertirAWebp = (file, calidad = 0.8) => {
 // CONFIGURACIÓN DE TAGS
 // ==========================================
 const TAGS_DISPONIBLES = [
-  "IIRESODH", "Noticia", "Anuncio", "Artículo", "Canadá", "Colombia", "Costa Rica", 
+  "IIRESODH", "Noticia", "Comunicado", "Anuncio", "Artículo", "Canadá", "Colombia", "Costa Rica", 
   "Guatemala", "México", "Institucional", "Evento"
 ];
 
@@ -1311,7 +1311,7 @@ useEffect(() => {
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 8h8M8 12h8M8 16h4"></path></svg>
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-800 mb-1">Noticias</h2>
+                  <h2 className="text-xl font-bold text-gray-800 mb-1">Noticias y Comunicados</h2>
                   <p className="text-sm text-gray-500">Gestión de noticias y comunicados</p>
                 </div>
               </button>
@@ -1450,15 +1450,15 @@ useEffect(() => {
                     <div>
                       <h2 id="form-title" className={`text-2xl md:text-3xl font-bold tracking-tight ${editandoId ? 'text-main-red' : 'text-gray-800'}`}>
                         {editandoId ? 
-                          (vistaActiva === 'equipo' ? "Editando Miembro" : (vistaActiva === 'informes' ? "Editando Informe" : (vistaActiva === 'incidencia' ? "Editando Documento" : (vistaActiva === 'articulos' ? "Editando Artículo" : "Editando Publicación")))) : 
-                          (vistaActiva === "articulos" ? "Redactar Nuevo Artículo" : (vistaActiva === "libros" ? "Registrar Nuevo Libro" : (vistaActiva === 'equipo' ? "Agregar Miembro" : (vistaActiva === 'informes' ? "Cargar Nuevo Informe" : (vistaActiva === 'incidencia' ? "Cargar Nuevo Documento" : "Crear Nueva Publicación")))))
+                          (vistaActiva === 'equipo' ? "Editando Miembro" : (vistaActiva === 'informes' ? "Editando Informe" : (vistaActiva === 'incidencia' ? "Editando Documento" : (vistaActiva === 'articulos' ? "Editando Artículo" : (vistaActiva === 'comunicaciones' ? "Editando Noticia o Comunicado" : "Editando Publicación"))))) : 
+                          (vistaActiva === "articulos" ? "Redactar Nuevo Artículo" : (vistaActiva === "libros" ? "Registrar Nuevo Libro" : (vistaActiva === 'equipo' ? "Agregar Miembro" : (vistaActiva === 'informes' ? "Cargar Nuevo Informe" : (vistaActiva === 'incidencia' ? "Cargar Nuevo Documento" : (vistaActiva === 'comunicaciones' ? "Crear Noticia o Comunicado" : "Crear Nueva Publicación"))))))
                         }
                       </h2>
                       <p className="text-sm text-gray-500 mt-1">
                         {vistaActiva === "articulos" ? 
                           "Puede utilizar el editor para redactar su contenido, añadir negritas, títulos, citas y enlaces de forma visual." :
                           `Módulo: ${
-                            vistaActiva === "comunicaciones" ? "Noticias institucionales" :
+                            vistaActiva === "comunicaciones" ? "Noticias y Comunicados" :
                             vistaActiva === "libros" ? "Tienda Editorial" :
                             vistaActiva === "informes" ? "Informes Anuales" :
                             vistaActiva === "incidencia" ? "Incidencia Internacional" :
@@ -1595,7 +1595,7 @@ useEffect(() => {
                             <div>
                               <div className="flex justify-between items-center mb-1">
                                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                  Título de la Noticia *
+                                  Título de la Noticia / Comunicado *
                                 </label>
                                 <button 
                                   type="button" 
@@ -1608,13 +1608,13 @@ useEffect(() => {
                                 </button>
                               </div>
                               <AdminTextField 
-                                label="Título de la Noticia"
+                                label="Título de la Noticia o Comunicado"
                                 value={titulo}
                                 onChange={(e) => setTitulo(e.target.value)}
                                 required
                                 multiline
                                 rows={2}
-                                placeholder="Ej: Nueva alianza internacional por los DDHH..."
+                                placeholder="Ej: Nueva alianza internacional por los DDHH o comunicado oficial..."
                               />
                             </div>
                           ) : (
@@ -2326,7 +2326,7 @@ useEffect(() => {
                           }
                           label={
                             <span className="text-xs font-semibold text-gray-700 capitalize">
-                              {key === "comunicaciones" ? "Noticias" : key === "adminWeb" ? "Admin Web" : key === "auditoria" ? "Auditoría" : key}
+                              {key === "comunicaciones" ? "Noticias y Comunicados" : key === "adminWeb" ? "Admin Web" : key === "auditoria" ? "Auditoría" : key}
                             </span>
                           }
                         />
@@ -2360,7 +2360,7 @@ useEffect(() => {
                                   return (
                                     <Chip 
                                       key={key}
-                                      label={key === "comunicaciones" ? "Noticias" : key === "adminWeb" ? "Admin Web" : key === "auditoria" ? "Auditoría" : key}
+                                      label={key === "comunicaciones" ? "Noticias y Comunicados" : key === "adminWeb" ? "Admin Web" : key === "auditoria" ? "Auditoría" : key}
                                       onClick={() => handleTogglePermisoAdmin(u.email, key, tienePermiso)}
                                       color={tienePermiso ? "primary" : "default"}
                                       variant={tienePermiso ? "filled" : "outlined"}

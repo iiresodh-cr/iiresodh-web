@@ -261,10 +261,10 @@ export default function Navbar() {
                 </button>
                 <div 
                   id="dropdown-actualidad"
-                  className={`${activeDropdown === 'actualidad' ? 'block' : 'hidden'} md:block md:absolute md:left-0 md:top-full md:w-56 md:bg-white md:shadow-xl md:rounded-b md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300 md:border-t-4 md:border-main-red w-full bg-gray-50 border-l-4 border-main-red md:border-l-0 z-50`}
+                  className={`${activeDropdown === 'actualidad' ? 'block' : 'hidden'} md:block md:absolute md:left-0 md:top-full md:w-64 md:bg-white md:shadow-xl md:rounded-b md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300 md:border-t-4 md:border-main-red w-full bg-gray-50 border-l-4 border-main-red md:border-l-0 z-50`}
                 >
                   <ul className="py-2 flex flex-col">
-                    <li><Link to="/noticias" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">{t('navbar.noticias', 'Noticias')}</Link></li>
+                    <li><Link to="/noticias" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">{t('navbar.noticias', 'Noticias y Comunicados')}</Link></li>
                     <li><Link to="/articulos-academicos" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">{t('navbar.articulos', 'Artículos')}</Link></li>
                   </ul>
                 </div>

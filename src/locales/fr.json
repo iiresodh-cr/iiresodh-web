@@ -8,7 +8,7 @@
     "incidencia": "Plaidoyer International",
     "cursos": "Cours",
     "recursos": "Ressources",
-    "noticias": "Actualités",
+    "noticias": "Actualités et Communiqués",
     "articulos": "Articles Académiques",
     "informes": "Rapports Annuels",
     "tienda": "Boutique",
@@ -212,10 +212,10 @@
   },
   "noticias": {
     "cargando": "Chargement des actualités...",
-    "header_titulo": "Centre d'Actualités",
+    "header_titulo": "Centre d'Actualités et Communiqués",
     "header_subtitulo": "Archives historiques et actualités institutionnelles de l'IIRESODH.",
     "filtro_etiqueta": "Filtrer par étiquette",
-    "todas": "Toutes les actualités",
+    "todas": "Toutes les actualités et communiqués",
     "orden_fecha": "Trier par date",
     "mas_recientes": "Plus récentes en premier",
     "mas_antiguas": "Plus anciennes en premier",
@@ -231,7 +231,8 @@
     "tag_guatemala": "Guatemala",
     "tag_costa_rica": "Costa Rica",
     "tag_colombia": "Colombie",
-    "tag_institucional": "Institutionnel"
+    "tag_institucional": "Institutionnel",
+    "tag_comunicado": "Communiqué"
   },
   "articulos": {
     "cargando": "Chargement du référentiel...",

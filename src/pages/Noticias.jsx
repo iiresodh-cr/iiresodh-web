@@ -15,7 +15,7 @@ import { obtenerTextoTraducido } from "../utils/traductorDinamico"; // <-- HELPE
 const NOTICIAS_POR_PAGINA = 10;
 
 // Utilizando tus tags reales del panel de administración
-const TAGS_DISPONIBLES = ["Canadá", "México", "Guatemala", "Costa Rica", "Colombia", "Institucional"];
+const TAGS_DISPONIBLES = ["Canadá", "México", "Guatemala", "Costa Rica", "Colombia", "Institucional", "Comunicado"];
 
 export default function Noticias() {
   const { t, i18n } = useTranslation(); 
@@ -116,6 +116,7 @@ export default function Noticias() {
       case 'Costa Rica': return t('noticias.tag_costa_rica', 'Costa Rica');
       case 'Colombia': return t('noticias.tag_colombia', 'Colombia');
       case 'Institucional': return t('noticias.tag_institucional', 'Institucional');
+      case 'Comunicado': return t('noticias.tag_comunicado', 'Comunicado');
       default: return tag;
     }
   };
@@ -135,7 +136,7 @@ export default function Noticias() {
     <main className="bg-white min-h-screen flex flex-col font-sans">
       
       <PageHeader 
-        titulo={t('noticias.header_titulo', 'Centro de Noticias')} 
+        titulo={t('noticias.header_titulo', 'Centro de Noticias y Comunicados')} 
         subtitulo={t('noticias.header_subtitulo', 'Archivo histórico y actualidad institucional del IIRESODH.')} 
       />
 
@@ -233,9 +234,16 @@ export default function Noticias() {
                               </span>
                               
                               {noticia.tags && noticia.tags.length > 0 && (
-                                <div className="flex gap-1">
+                                <div className="flex flex-wrap gap-1">
                                   {noticia.tags.map(tag => (
-                                    <span key={tag} className="text-[9px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md uppercase font-bold tracking-wider">
+                                    <span 
+                                      key={tag} 
+                                      className={`text-[9px] px-2 py-0.5 rounded-md uppercase font-bold tracking-wider ${
+                                        tag === 'Comunicado' 
+                                          ? 'bg-red-50 text-main-red border border-red-200' 
+                                          : 'bg-gray-100 text-gray-500'
+                                      }`}
+                                    >
                                       {traducirTag(tag)}
                                     </span>
                                   ))}
