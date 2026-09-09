@@ -88,7 +88,7 @@ export default function Login() {
       } catch (firestoreError) {
         console.error("Error de permisos al leer Firestore:", firestoreError);
         await signOut(auth);
-        setError("Error de conexión: No se pudo verificar tu identidad en la base de datos.");
+        setError(`Error de conexión al verificar permisos para (${userEmail}): ${firestoreError.message}`);
       }
 
     } catch (err) {
