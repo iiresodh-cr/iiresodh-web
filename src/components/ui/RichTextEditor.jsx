@@ -6,13 +6,14 @@ import {
   AlignLeft, 
   AlignCenter, 
   AlignRight, 
-  Link as LinkIcon 
+  Link as LinkIcon,
+  Video
 } from "lucide-react";
 
 export default function RichTextEditor({
   value = "",
   onChange,
-  placeholder = "Escribe el contenido del artículo aquí...",
+  placeholder = "Escribe el contenido aquí...",
   minHeight = "280px"
 }) {
   const editorRef = useRef(null);
@@ -104,6 +105,44 @@ export default function RichTextEditor({
     const url = window.prompt("Introduce la dirección web (URL):", previousUrl || "https://");
     if (url && url.trim() !== "" && url !== "https://") {
       executeCommand("createLink", url.trim());
+    }
+  };
+
+  const handleAddVideo = () => {
+    const url = window.prompt("Introduce el enlace del video (YouTube o Vimeo):", "https://www.youtube.com/watch?v=");
+    if (!url || !url.trim()) return;
+
+    const urlLimpia = url.trim();
+    let embedUrl = null;
+
+    // YouTube: formatos watch?v=, youtu.be/, shorts/, embed/
+    const ytMatch = urlLimpia.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+    if (ytMatch && ytMatch[1]) {
+      embedUrl = `https://www.youtube-nocookie.com/embed/${ytMatch[1]}`;
+    }
+
+    // Vimeo: formato vimeo.com/ID
+    const vimeoMatch = urlLimpia.match(/vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/([^\/]*)\/videos\/|album\/(\d+)\/video\/|)(\d+)/i);
+    if (vimeoMatch && vimeoMatch[3]) {
+      embedUrl = `https://player.vimeo.com/video/${vimeoMatch[3]}`;
+    }
+
+    if (embedUrl) {
+      const htmlVideo = `<div class="video-embed-wrapper my-6 aspect-video w-full rounded-2xl overflow-hidden shadow-md bg-black"><iframe src="${embedUrl}" class="w-full h-full border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><p><br></p>`;
+      if (editorRef.current) {
+        editorRef.current.focus();
+      }
+      document.execCommand("insertHTML", false, htmlVideo);
+      handleInput();
+    } else if (urlLimpia.match(/\.(mp4|webm|ogg)$/i)) {
+      const htmlVideo = `<div class="video-embed-wrapper my-6 w-full rounded-2xl overflow-hidden shadow-md bg-black"><video controls class="w-full h-auto"><source src="${urlLimpia}" type="video/mp4">Tu navegador no soporta video.</video></div><p><br></p>`;
+      if (editorRef.current) {
+        editorRef.current.focus();
+      }
+      document.execCommand("insertHTML", false, htmlVideo);
+      handleInput();
+    } else {
+      window.alert("Enlace no reconocido. Por favor usa un enlace válido de YouTube (ej. https://www.youtube.com/watch?v=...) o Vimeo.");
     }
   };
 
@@ -251,8 +290,8 @@ export default function RichTextEditor({
 
         <div className="w-px h-5 bg-gray-300 mx-1" aria-hidden="true" />
 
-        {/* ENLACE */}
-        <div className="flex items-center bg-white p-0.5 rounded-lg border border-gray-200 shadow-2xs">
+        {/* ENLACE Y VIDEO */}
+        <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-gray-200 shadow-2xs">
           <button
             type="button"
             title="Insertar enlace web"
@@ -260,6 +299,14 @@ export default function RichTextEditor({
             className="w-8 h-8 flex items-center justify-center rounded-md text-gray-700 hover:bg-gray-100 hover:text-main-blue cursor-pointer transition-colors"
           >
             <LinkIcon size={15} strokeWidth={2.5} />
+          </button>
+          <button
+            type="button"
+            title="Insertar video (YouTube o Vimeo)"
+            onClick={handleAddVideo}
+            className="w-8 h-8 flex items-center justify-center rounded-md text-gray-700 hover:bg-gray-100 hover:text-main-blue cursor-pointer transition-colors"
+          >
+            <Video size={15} strokeWidth={2.5} />
           </button>
         </div>
       </div>

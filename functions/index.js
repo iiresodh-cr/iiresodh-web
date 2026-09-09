@@ -49,7 +49,7 @@ exports.generarResumenGemini = onCall({
     throw new HttpsError("unauthenticated", "Usuario no autenticado.");
   }
 
-  const { contenido, archivoBase64, mimeType } = request.data;
+  const { contenido, archivoBase64, mimeType, tipo } = request.data;
   
   // Validamos que venga al menos un texto o un archivo
   if (!contenido && !archivoBase64) {
@@ -63,13 +63,24 @@ exports.generarResumenGemini = onCall({
       location: 'us-central1'
     });
 
-    const prompt = `Actúa como un periodista experto. Genera un resumen atractivo de entre 15 y 20 palabras basado en el contenido proporcionado.
+    let prompt;
+    if (tipo === "titulo_noticia") {
+      prompt = `Actúa como un editor periodístico de alto nivel. Lee el siguiente contenido y redacta un TÍTULO conciso, directo y atractivo de máximo entre 6 y 9 palabras.
+    
+    REGLAS ESTRICTAS E INQUEBRANTABLES:
+    1. Devuelve ÚNICA y EXCLUSIVAMENTE el texto del título.
+    2. NO uses comillas, ni negritas, ni punto final, ni saltos de línea.
+    3. ESTÁ PROHIBIDO incluir conteo de palabras o etiquetas como "Título:".
+    ${contenido ? `\nContenido de la noticia:\n${contenido}` : ""}`;
+    } else {
+      prompt = `Actúa como un periodista experto. Genera un resumen atractivo y conciso de entre 10 y 14 palabras basado en el contenido proporcionado.
     
     REGLAS ESTRICTAS E INQUEBRANTABLES:
     1. Devuelve ÚNICA y EXCLUSIVAMENTE el texto del resumen.
-    2. ESTÁ PROHIBIDO incluir el conteo de palabras al final. NUNCA escribas "(15 palabras)" ni nada similar.
+    2. ESTÁ PROHIBIDO incluir el conteo de palabras al final. NUNCA escribas "(12 palabras)" ni nada similar.
     3. NO uses comillas, ni negritas, ni saltos de línea.
     ${contenido ? `\nContenido del texto a resumir:\n${contenido}` : ""}`;
+    }
 
     let result;
 
@@ -103,8 +114,9 @@ exports.generarResumenGemini = onCall({
     
     let textoLimpio = result.text.trim();
     textoLimpio = textoLimpio.replace(/\s*\(\d+\s*palabras?\)$/i, '');
+    textoLimpio = textoLimpio.replace(/^["'«»“”]+|["'«»“”]+$/g, '').trim();
 
-    return { resumen: textoLimpio };
+    return { resumen: textoLimpio, titulo: textoLimpio };
     
   } catch (error) {
     console.error("Detalle del error de IA:", error);

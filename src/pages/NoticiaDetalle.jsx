@@ -18,12 +18,51 @@ import { CircularProgress, Button, Alert, Snackbar } from "@mui/material";
 import { useTranslation } from 'react-i18next';
 import { obtenerTextoTraducido } from "../utils/traductorDinamico";
 
+// Convertir enlace de YouTube o Vimeo a URL embebible
+export const convertirUrlAVideoEmbed = (url) => {
+  if (!url) return null;
+  const urlLimpia = url.trim();
+
+  // YouTube: formatos watch?v=, youtu.be/, shorts/, embed/
+  const ytMatch = urlLimpia.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+  if (ytMatch && ytMatch[1]) {
+    return `https://www.youtube-nocookie.com/embed/${ytMatch[1]}`;
+  }
+
+  // Vimeo: formato vimeo.com/ID
+  const vimeoMatch = urlLimpia.match(/vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/([^\/]*)\/videos\/|album\/(\d+)\/video\/|)(\d+)/i);
+  if (vimeoMatch && vimeoMatch[3]) {
+    return `https://player.vimeo.com/video/${vimeoMatch[3]}`;
+  }
+
+  return null;
+};
+
 // ==========================================
-// NUEVO MOTOR DE LINKS (INFALIBLE)
+// NUEVO MOTOR DE LINKS Y FORMATO ENRIQUECIDO
 // ==========================================
 export const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
   
+  // Detectar si el contenido ya viene formateado en HTML desde el editor enriquecido
+  const esHtml = /<\/?(p|div|h[1-6]|strong|b|em|i|blockquote|ul|ol|li|br|span|a|iframe|video)[^>]*>/i.test(texto);
+
+  if (esHtml) {
+    // Sanitizar etiquetas potencialmente peligrosas pero permitiendo iframes de video autorizados
+    let sanitizado = texto
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+      .replace(/\bon\w+\s*=\s*(['"]).*?\1/gi, "")
+      .replace(/\bon\w+\s*=\s*[^>\s]+/gi, "")
+      .replace(/javascript:/gi, "");
+
+    // Asegurar estilos en enlaces existentes
+    sanitizado = sanitizado.replace(/<a\s+(?:[^>]*?\s+)?href=(["'])(.*?)\1([^>]*)>/gi, (match, quote, url, rest) => {
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline wrap-break-words"${rest}>`;
+    });
+
+    return sanitizado;
+  }
+
   let procesado = texto.replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const linksGuardados = [];
 
@@ -107,6 +146,7 @@ export default function NoticiaDetalle() {
   // ==========================================
   const tituloTraducido = obtenerTextoTraducido(noticia, 'titulo', i18n.language);
   const contenidoTraducido = obtenerTextoTraducido(noticia, 'contenido', i18n.language);
+  const embedVideoUrl = noticia?.videoUrl ? convertirUrlAVideoEmbed(noticia.videoUrl) : null;
 
   useEffect(() => {
     if (tituloTraducido) {
@@ -195,6 +235,19 @@ export default function NoticiaDetalle() {
 
             <div className="px-6 md:px-12 lg:px-16 pb-12 md:pb-16 animate-fade-in-up w-full">
               
+              {/* VIDEO DESTACADO DE LA NOTICIA */}
+              {embedVideoUrl && (
+                <div className="mb-10 w-full rounded-2xl overflow-hidden shadow-xl bg-black aspect-video border border-gray-200">
+                  <iframe 
+                    src={embedVideoUrl} 
+                    title={`Video de la noticia: ${tituloTraducido}`}
+                    className="w-full h-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowFullScreen
+                  />
+                </div>
+              )}
+
               <div className="block">
                 
                 <div className="w-full lg:w-1/2 lg:float-left lg:mr-12 lg:mb-8 z-20">

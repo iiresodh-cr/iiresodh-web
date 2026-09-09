@@ -147,6 +147,7 @@ export default function AdminPanel() {
   const [resumen, setResumen] = useState("");
   const [contenido, setContenido] = useState("");
   const [fechaPersonalizada, setFechaPersonalizada] = useState(""); 
+  const [videoUrl, setVideoUrl] = useState("");
   const [slugOriginal, setSlugOriginal] = useState("");
   const [slugsAnterioresOriginal, setSlugsAnterioresOriginal] = useState([]);
 
@@ -711,11 +712,25 @@ useEffect(() => {
       } else {
         payload = { contenido };
       }
-  
+
+      if (vistaActiva === "comunicaciones") {
+        payload.tipo = "titulo_noticia";
+      }
+
       const resultado = await generarResumen(payload);
-      if (resultado.data && resultado.data.resumen) {
-        setResumen(resultado.data.resumen);
-        setMensaje("✨ Resumen inteligente generado por PIDA.");
+      if (resultado.data && (resultado.data.resumen || resultado.data.titulo)) {
+        const texto = (resultado.data.titulo || resultado.data.resumen).trim();
+        if (vistaActiva === "comunicaciones") {
+          // Si es noticia, convertir a título de pocas palabras (máximo 8-9 palabras) y asignar al título
+          const palabras = texto.split(/\s+/).filter(Boolean);
+          let tituloCorto = palabras.length > 10 ? palabras.slice(0, 9).join(" ") : texto;
+          tituloCorto = tituloCorto.replace(/\.$/, "").trim();
+          setTitulo(tituloCorto);
+          setMensaje("✨ Título conciso generado por PIDA.");
+        } else {
+          setResumen(resultado.data.resumen);
+          setMensaje("✨ Resumen inteligente generado por PIDA.");
+        }
       } else {
         throw new Error("Respuesta de IA no válida.");
       }
@@ -756,6 +771,7 @@ useEffect(() => {
         setTagsSeleccionados(item.tags || []);
         setPersistente(item.persistente || false);
         setCarruselExistente(item.imagenesCarruselUrls || []);
+        setVideoUrl(item.videoUrl || "");
       }
 
       if (item.fechaPublicacion) {
@@ -811,6 +827,7 @@ useEffect(() => {
     setResumen("");
     setContenido("");
     setFechaPersonalizada("");
+    setVideoUrl("");
     setSlugOriginal("");
     setSlugsAnterioresOriginal([]);
 
@@ -1086,6 +1103,7 @@ useEffect(() => {
           datos.imagenesCarruselUrls = [...carruselExistente, ...nuevasUrls];
           datos.tags = tagsSeleccionados;
           datos.persistente = persistente;
+          datos.videoUrl = videoUrl ? videoUrl.trim() : null;
         } else if (vistaActiva === "articulos") {
           const usuarioActual = auth.currentUser?.displayName || auth.currentUser?.email?.split('@')[0] || "IIRESODH";
           datos.subtitulo = subtitulo ? subtitulo.trim() : "";
@@ -1573,15 +1591,41 @@ useEffect(() => {
                       {/* Ocultar el Título si es Informe, ya que se autogenera con el Año */}
                       {vistaActiva !== "informes" && (
                         <div className={(vistaActiva === "libros") ? "md:col-span-1" : "md:col-span-2"}>
-                          <AdminTextField 
-                            label={vistaActiva === "cursos" ? "Título del Curso" : (vistaActiva === "articulos" ? "Título del Artículo" : (vistaActiva === "libros" ? "Título del Libro" : (vistaActiva === "incidencia" ? "Título del Documento" : "Título de la Noticia")))}
-                            value={titulo}
-                            onChange={(e) => setTitulo(e.target.value)}
-                            required
-                            multiline={vistaActiva === 'comunicaciones'}
-                            rows={2}
-                            placeholder="Ej: Nueva alianza internacional..."
-                          />
+                          {vistaActiva === "comunicaciones" ? (
+                            <div>
+                              <div className="flex justify-between items-center mb-1">
+                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                  Título de la Noticia *
+                                </label>
+                                <button 
+                                  type="button" 
+                                  onClick={handleAutoResumen} 
+                                  disabled={generandoResumen} 
+                                  className="text-xs font-semibold text-main-blue hover:text-light-blue bg-blue-50 hover:bg-blue-100 py-1 px-2.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50"
+                                  title="Genera un titular conciso automáticamente con PIDA a partir del contenido redactado"
+                                >
+                                  {generandoResumen ? "Generando..." : "✨ Auto-título con PIDA"}
+                                </button>
+                              </div>
+                              <AdminTextField 
+                                label="Título de la Noticia"
+                                value={titulo}
+                                onChange={(e) => setTitulo(e.target.value)}
+                                required
+                                multiline
+                                rows={2}
+                                placeholder="Ej: Nueva alianza internacional por los DDHH..."
+                              />
+                            </div>
+                          ) : (
+                            <AdminTextField 
+                              label={vistaActiva === "cursos" ? "Título del Curso" : (vistaActiva === "articulos" ? "Título del Artículo" : (vistaActiva === "libros" ? "Título del Libro" : (vistaActiva === "incidencia" ? "Título del Documento" : "Título")))}
+                              value={titulo}
+                              onChange={(e) => setTitulo(e.target.value)}
+                              required
+                              placeholder="Ej: Nueva alianza internacional..."
+                            />
+                          )}
                         </div>
                       )}
 
@@ -1627,6 +1671,21 @@ useEffect(() => {
                         
                       )}
                     </div>
+
+                    {/* Campo de Video para Noticias */}
+                    {vistaActiva === "comunicaciones" && (
+                      <div className="bg-gray-50/70 p-4 rounded-xl border border-gray-200/80">
+                        <AdminTextField 
+                          label="Enlace de Video (Opcional - YouTube o Vimeo)"
+                          value={videoUrl}
+                          onChange={(e) => setVideoUrl(e.target.value)}
+                          placeholder="Ej: https://www.youtube.com/watch?v=... o https://youtu.be/..."
+                        />
+                        <p className="text-xs text-gray-500 mt-1.5 ml-1">
+                          Si introduces un enlace de YouTube o Vimeo, se mostrará en el reproductor de la noticia. También puedes insertar videos en cualquier parte del texto usando el botón de video del editor.
+                        </p>
+                      </div>
+                    )}
                     {vistaActiva === "cursos" && (
                       <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 bg-orange-50/50 p-6 rounded-2xl border border-orange-100">
                         <AdminTextField 
@@ -1776,7 +1835,21 @@ useEffect(() => {
                       </div>
                     )}
 
-                    {vistaActiva !== "informes" && vistaActiva !== "cursos" && vistaActiva !== "incidencia" && vistaActiva !== "articulos" && (
+                    {/* CUERPO PARA NOTICIAS CON RICHTEXTEDITOR */}
+                    {vistaActiva === "comunicaciones" && (
+                      <div>
+                        <label className="block text-sm font-bold text-gray-800 mb-2">
+                          Cuerpo de la Noticia *
+                        </label>
+                        <RichTextEditor 
+                          value={contenido}
+                          onChange={setContenido}
+                          placeholder="Redacte aquí el contenido de la noticia. Puede añadir negritas, subtítulos, citas, listas, enlaces y videos..."
+                        />
+                      </div>
+                    )}
+
+                    {vistaActiva !== "informes" && vistaActiva !== "cursos" && vistaActiva !== "incidencia" && vistaActiva !== "articulos" && vistaActiva !== "comunicaciones" && (
                     <div>
                       <AdminTextField 
                         label={vistaActiva === "libros" ? "Descripción Larga" : "Cuerpo del texto"}
