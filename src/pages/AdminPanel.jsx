@@ -147,6 +147,8 @@ export default function AdminPanel() {
   const [resumen, setResumen] = useState("");
   const [contenido, setContenido] = useState("");
   const [fechaPersonalizada, setFechaPersonalizada] = useState(""); 
+  const [slugOriginal, setSlugOriginal] = useState("");
+  const [slugsAnterioresOriginal, setSlugsAnterioresOriginal] = useState([]);
 
   // ESTADOS PARA EQUIPO
   const [nombre, setNombre] = useState("");
@@ -743,6 +745,8 @@ useEffect(() => {
       setSubtitulo(item.subtitulo || "");
       setResumen(item.resumen || "");
       setContenido(item.contenido || "");
+      setSlugOriginal(item.slug || "");
+      setSlugsAnterioresOriginal(item.slugsAnteriores || []);
 
       if (vistaActiva === "articulos") {
         setAutor(item.autor || "");
@@ -807,6 +811,8 @@ useEffect(() => {
     setResumen("");
     setContenido("");
     setFechaPersonalizada("");
+    setSlugOriginal("");
+    setSlugsAnterioresOriginal([]);
 
     setNombre("");
     setCargo("");
@@ -1061,16 +1067,20 @@ useEffect(() => {
           pais
         };
       } else {
-        const slugGenerado = generarSlug(titulo);
+        const slugFinal = (editandoId && slugOriginal) ? slugOriginal : generarSlug(titulo);
         datos = {
           titulo, 
           resumen, 
           contenido,
-          slug: slugGenerado, 
+          slug: slugFinal, 
           imagenPrincipalUrl: finalPrincipalUrl || null,
           fechaPublicacion: fechaPersonalizada ? Timestamp.fromDate(new Date(fechaPersonalizada)) : serverTimestamp(),
           activa: true
         };
+
+        if (slugsAnterioresOriginal && slugsAnterioresOriginal.length > 0) {
+          datos.slugsAnteriores = slugsAnterioresOriginal;
+        }
 
         if (vistaActiva === "comunicaciones") {
           datos.imagenesCarruselUrls = [...carruselExistente, ...nuevasUrls];

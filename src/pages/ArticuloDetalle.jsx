@@ -92,9 +92,35 @@ export default function ArticuloDetalle() {
     
     const fetchArticulo = async () => {
       try {
-        const q = query(collection(db, "articulos_academicos"), where("slug", "==", slug));
-        const querySnapshot = await getDocs(q);
+        let q = query(collection(db, "articulos_academicos"), where("slug", "==", slug));
+        let querySnapshot = await getDocs(q);
         
+        // 1. Si no se encuentra por slug exacto, buscar en historial de slugs anteriores
+        if (querySnapshot.empty) {
+          const qHistorico = query(collection(db, "articulos_academicos"), where("slugsAnteriores", "array-contains", slug));
+          querySnapshot = await getDocs(qHistorico);
+        }
+
+        // 2. Si aún no se encuentra, buscar por el prefijo base del slug (en caso de que el sufijo aleatorio haya cambiado antes)
+        if (querySnapshot.empty) {
+          const baseSlugBuscado = slug.replace(/-[a-z0-9]{4,6}$/i, '');
+          if (baseSlugBuscado && baseSlugBuscado !== slug) {
+            const allArticlesSnap = await getDocs(collection(db, "articulos_academicos"));
+            const coincidencia = allArticlesSnap.docs.find(d => {
+              const dData = d.data();
+              const dSlug = dData.slug || "";
+              const dHist = dData.slugsAnteriores || [];
+              return dSlug === slug || 
+                     dSlug.startsWith(baseSlugBuscado) || 
+                     dHist.some(s => s.startsWith(baseSlugBuscado));
+            });
+            if (coincidencia) {
+              setArticulo({ id: coincidencia.id, ...coincidencia.data() });
+              return;
+            }
+          }
+        }
+
         if (!querySnapshot.empty) {
           setArticulo({ id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() });
         } else {
