@@ -56,6 +56,13 @@ export default function Login() {
       // ==========================================
       // 2. FILTRO DE PRIVILEGIOS EN FIRESTORE
       // ==========================================
+      // 🌟 Excepción directa para el Superadministrador (webmaster@iiresodh.org)
+      // Tiene privilegios a nivel de reglas de Firestore sin necesidad de estar en la colección admins
+      if (userEmail === "webmaster@iiresodh.org") {
+        navigate("/admin");
+        return;
+      }
+
       const adminRef = doc(db, "admins", userEmail);
       
       try {

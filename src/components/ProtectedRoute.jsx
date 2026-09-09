@@ -19,6 +19,15 @@ export default function ProtectedRoute({ children }) {
           // Sanitizamos el correo
           const userEmail = currentUser.email.toLowerCase().trim();
           
+          // Excepción directa para el Superadministrador (webmaster@iiresodh.org)
+          if (userEmail === "webmaster@iiresodh.org") {
+            if (isMounted) {
+              setIsAuthorized(true);
+              setLoading(false);
+            }
+            return;
+          }
+
           // Consultamos a la base de datos
           const adminRef = doc(db, "admins", userEmail);
           
