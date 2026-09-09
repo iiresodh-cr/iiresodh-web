@@ -192,16 +192,13 @@ export default function Equipo() {
                                 '&:hover': {
                                   transform: 'translateY(-4px)',
                                   boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)', 
-                                },
-                                '&:hover img': {
-                                  filter: 'grayscale(0%)',
                                 }
                               }}
                             >
                               <ImagenConSkeleton 
                                 src={miembro.fotoUrl} 
                                 alt={`${t('equipo.retrato_de', 'Retrato de')} ${miembro.nombre}`} 
-                                className="w-full h-full object-cover grayscale transition-all duration-300 group-hover:grayscale-0"
+                                className="w-full h-full object-cover transition-all duration-300"
                                 priority={false}
                               />
                             </Paper>
