@@ -15,7 +15,27 @@ import { obtenerTextoTraducido } from "../utils/traductorDinamico";
 export const formatearTextoConLinksYHashtags = (texto) => {
   if (!texto) return "";
   
-  // 1. Escapar < y > por seguridad, pero NO TOCAR el & para no romper URLs
+  // Detectar si el contenido ya viene formateado en HTML desde el editor enriquecido
+  const esHtml = /<\/?(p|div|h[1-6]|strong|b|em|i|blockquote|ul|ol|li|br|span|a)[^>]*>/i.test(texto);
+
+  if (esHtml) {
+    // Sanitizar etiquetas potencialmente peligrosas
+    let sanitizado = texto
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "")
+      .replace(/\bon\w+\s*=\s*(['"]).*?\1/gi, "")
+      .replace(/\bon\w+\s*=\s*[^>\s]+/gi, "")
+      .replace(/javascript:/gi, "");
+
+    // Asegurar estilos en enlaces existentes
+    sanitizado = sanitizado.replace(/<a\s+(?:[^>]*?\s+)?href=(["'])(.*?)\1([^>]*)>/gi, (match, quote, url, rest) => {
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline wrap-break-words"${rest}>`;
+    });
+
+    return sanitizado;
+  }
+
+  // 1. Escapar < y > por seguridad para texto plano heredado
   let procesado = texto.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
   const linksGuardados = []; // Caja fuerte temporal
@@ -114,6 +134,7 @@ export default function ArticuloDetalle() {
   // TRADUCCIÓN DINÁMICA DEL ARTÍCULO
   // ==========================================
   const tituloTraducido = obtenerTextoTraducido(articulo, 'titulo', i18n.language);
+  const subtituloTraducido = obtenerTextoTraducido(articulo, 'subtitulo', i18n.language);
   const contenidoTraducido = obtenerTextoTraducido(articulo, 'contenido', i18n.language);
 
   // Actualizar el título de la pestaña del navegador
@@ -161,10 +182,20 @@ export default function ArticuloDetalle() {
       <header className="bg-main-blue text-white py-14 px-6 text-center relative z-20">
         <span className="text-xs font-black text-main-red uppercase tracking-widest mb-4 block">
           {formatearFecha(articulo.fechaPublicacion) || t('articulo_detalle.etiqueta_default', 'Artículo Académico')}
+          {articulo.autor && (
+            <span className="text-white/85 font-semibold normal-case ml-2">
+              • Por {articulo.autor}
+            </span>
+          )}
         </span>
-        <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-8 max-w-5xl mx-auto leading-tight">
+        <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4 max-w-5xl mx-auto leading-tight">
           {tituloTraducido}
         </h1>
+        {(subtituloTraducido || articulo.subtitulo) && (
+          <p className="text-lg md:text-xl text-blue-100 font-light max-w-4xl mx-auto mb-6 leading-relaxed">
+            {subtituloTraducido || articulo.subtitulo}
+          </p>
+        )}
         <div className="w-24 h-1.5 bg-main-red mx-auto rounded-full" aria-hidden="true"></div>
       </header>
 

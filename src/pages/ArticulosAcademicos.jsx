@@ -158,10 +158,16 @@ export default function ArticulosAcademicos() {
                             <div className="p-6 flex flex-col grow">
                               <span className="text-xs font-black text-main-red uppercase tracking-widest mb-3 block">
                                 {formatearFecha(articulo.fechaPublicacion)}
+                                {articulo.autor && ` • Por ${articulo.autor}`}
                               </span>
-                              <h3 className="text-xl font-bold text-main-blue group-hover:text-light-blue transition-colors mb-3 line-clamp-2 leading-tight">
+                              <h3 className="text-xl font-bold text-main-blue group-hover:text-light-blue transition-colors mb-2 line-clamp-2 leading-tight">
                                 {tituloTraducido}
                               </h3>
+                              {articulo.subtitulo && (
+                                <h4 className="text-xs font-semibold text-gray-500 mb-3 line-clamp-1 italic">
+                                  {obtenerTextoTraducido(articulo, 'subtitulo', i18n.language) || articulo.subtitulo}
+                                </h4>
+                              )}
                               <p className="text-gray-600 font-light text-sm line-clamp-3 mb-6 leading-relaxed grow">
                                 {resumenTraducido}
                               </p>

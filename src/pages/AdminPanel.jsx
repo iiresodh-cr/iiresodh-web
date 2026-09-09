@@ -12,6 +12,7 @@ import logoColor from "../assets/Logo_Oficiale_200w-trim.png";
 import AdminTextField from "../components/ui/AdminTextField";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import ToastAlert from "../components/ui/ToastAlert";
+import RichTextEditor from "../components/ui/RichTextEditor";
 // prettier-ignore
 import { Button, Checkbox, FormControlLabel, Box, Chip, Select, MenuItem, FormControl, InputLabel, CircularProgress } from "@mui/material";
 
@@ -142,6 +143,7 @@ export default function AdminPanel() {
   const [cargandoAdmins, setCargandoAdmins] = useState(false);
 
   const [titulo, setTitulo] = useState("");
+  const [subtitulo, setSubtitulo] = useState("");
   const [resumen, setResumen] = useState("");
   const [contenido, setContenido] = useState("");
   const [fechaPersonalizada, setFechaPersonalizada] = useState(""); 
@@ -738,8 +740,13 @@ useEffect(() => {
       setImagenPrincipalAnterior(item.fotoUrl || null);
     } else {
       setTitulo(item.titulo || "");
+      setSubtitulo(item.subtitulo || "");
       setResumen(item.resumen || "");
       setContenido(item.contenido || "");
+
+      if (vistaActiva === "articulos") {
+        setAutor(item.autor || "");
+      }
 
       if (vistaActiva === "comunicaciones") {
         setTagsSeleccionados(item.tags || []);
@@ -796,6 +803,7 @@ useEffect(() => {
   const limpiarFormulario = () => {
     setEditandoId(null);
     setTitulo("");
+    setSubtitulo("");
     setResumen("");
     setContenido("");
     setFechaPersonalizada("");
@@ -1068,6 +1076,18 @@ useEffect(() => {
           datos.imagenesCarruselUrls = [...carruselExistente, ...nuevasUrls];
           datos.tags = tagsSeleccionados;
           datos.persistente = persistente;
+        } else if (vistaActiva === "articulos") {
+          const usuarioActual = auth.currentUser?.displayName || auth.currentUser?.email?.split('@')[0] || "IIRESODH";
+          datos.subtitulo = subtitulo ? subtitulo.trim() : "";
+          datos.autor = autor && autor.trim() ? autor.trim() : usuarioActual;
+          if (!resumen || !resumen.trim()) {
+            if (subtitulo && subtitulo.trim()) {
+              datos.resumen = subtitulo.trim();
+            } else if (contenido) {
+              const textoLimpio = contenido.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+              datos.resumen = textoLimpio.length > 200 ? textoLimpio.substring(0, 197) + '...' : textoLimpio;
+            }
+          }
         } else if (vistaActiva === "libros") {
           datos.precio = parseFloat(precio) || 0;
           datos.precioMXN = parseFloat(precioMXN) || 0;
@@ -1402,18 +1422,20 @@ useEffect(() => {
                     <div>
                       <h2 id="form-title" className={`text-2xl md:text-3xl font-bold tracking-tight ${editandoId ? 'text-main-red' : 'text-gray-800'}`}>
                         {editandoId ? 
-                          (vistaActiva === 'equipo' ? "Editando Miembro" : (vistaActiva === 'informes' ? "Editando Informe" : (vistaActiva === 'incidencia' ? "Editando Documento" : "Editando Publicación"))) : 
-                          (vistaActiva === "libros" ? "Registrar Nuevo Libro" : (vistaActiva === 'equipo' ? "Agregar Miembro" : (vistaActiva === 'informes' ? "Cargar Nuevo Informe" : (vistaActiva === 'incidencia' ? "Cargar Nuevo Documento" : "Crear Nueva Publicación"))))
+                          (vistaActiva === 'equipo' ? "Editando Miembro" : (vistaActiva === 'informes' ? "Editando Informe" : (vistaActiva === 'incidencia' ? "Editando Documento" : (vistaActiva === 'articulos' ? "Editando Artículo" : "Editando Publicación")))) : 
+                          (vistaActiva === "articulos" ? "Redactar Nuevo Artículo" : (vistaActiva === "libros" ? "Registrar Nuevo Libro" : (vistaActiva === 'equipo' ? "Agregar Miembro" : (vistaActiva === 'informes' ? "Cargar Nuevo Informe" : (vistaActiva === 'incidencia' ? "Cargar Nuevo Documento" : "Crear Nueva Publicación")))))
                         }
                       </h2>
                       <p className="text-sm text-gray-500 mt-1">
-                        Módulo: {
-                          vistaActiva === "comunicaciones" ? "Noticias institucionales" :
-                          vistaActiva === "articulos" ? "Artículos de investigación" :
-                          vistaActiva === "libros" ? "Tienda Editorial" :
-                          vistaActiva === "informes" ? "Informes Anuales" :
-                          vistaActiva === "incidencia" ? "Incidencia Internacional" :
-                          "Equipo de Trabajo"
+                        {vistaActiva === "articulos" ? 
+                          "Puede utilizar el editor para redactar su contenido, añadir negritas, títulos, citas y enlaces de forma visual." :
+                          `Módulo: ${
+                            vistaActiva === "comunicaciones" ? "Noticias institucionales" :
+                            vistaActiva === "libros" ? "Tienda Editorial" :
+                            vistaActiva === "informes" ? "Informes Anuales" :
+                            vistaActiva === "incidencia" ? "Incidencia Internacional" :
+                            "Equipo de Trabajo"
+                          }`
                         }
                       </p>
                     </div>
@@ -1452,8 +1474,90 @@ useEffect(() => {
                       )}
                     </>)}
 
-                    {/* FORMULARIO PARA NOTICIAS, ARTÍCULOS, LIBROS, INFORMES E INCIDENCIA */}
-                    {vistaActiva !== 'equipo' && (<>
+                    {/* FORMULARIO ESPECÍFICO PARA ARTÍCULOS */}
+                    {vistaActiva === "articulos" && (
+                      <div className="space-y-6">
+                        <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200/90 shadow-xs space-y-6">
+                          <AdminTextField 
+                            label="Título del Artículo *"
+                            value={titulo}
+                            onChange={(e) => setTitulo(e.target.value)}
+                            required
+                            placeholder="Ej: Análisis del Sistema Interamericano de Derechos Humanos..."
+                          />
+
+                          <AdminTextField 
+                            label="Subtítulo del Artículo (Opcional)"
+                            value={subtitulo}
+                            onChange={(e) => setSubtitulo(e.target.value)}
+                            placeholder="Ej: Un estudio comparado sobre estándares jurisprudenciales..."
+                          />
+
+                          <div>
+                            <AdminTextField 
+                              label="Autor del Artículo (Opcional)"
+                              value={autor}
+                              onChange={(e) => setAutor(e.target.value)}
+                              placeholder="Ej: Dr. Fabián Salvioli"
+                            />
+                            <p className="text-xs text-gray-500 mt-1.5 ml-1">
+                              Si se deja en blanco, se usará el nombre de tu usuario.
+                            </p>
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-bold text-gray-800 mb-2">
+                              Contenido del Artículo
+                            </label>
+                            <RichTextEditor 
+                              value={contenido}
+                              onChange={setContenido}
+                              placeholder="Redacte aquí el contenido del artículo, utilice la barra superior para dar formato..."
+                            />
+                          </div>
+                        </div>
+
+                        {/* RESUMEN CORTO Y FECHA */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          <div className="md:col-span-2">
+                            <div className="flex justify-between items-end mb-1.5">
+                              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                Resumen corto para catálogo (Opcional)
+                              </label>
+                              <button 
+                                type="button" 
+                                onClick={handleAutoResumen} 
+                                disabled={generandoResumen} 
+                                className="text-xs font-semibold text-main-blue hover:text-light-blue bg-blue-50 hover:bg-blue-100 py-1 px-2.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50"
+                              >
+                                {generandoResumen ? "Generando..." : "✨ Auto-completar con PIDA"}
+                              </button>
+                            </div>
+                            <AdminTextField 
+                              label="Resumen corto"
+                              multiline
+                              rows={2}
+                              value={resumen}
+                              onChange={(e) => setResumen(e.target.value)}
+                              placeholder="Un párrafo breve para atraer al lector en la lista de artículos..."
+                              inputProps={{ maxLength: 250 }}
+                            />
+                          </div>
+                          <div className="md:col-span-1">
+                            <AdminTextField 
+                              label="Fecha (Opcional)"
+                              type="datetime-local"
+                              value={fechaPersonalizada}
+                              onChange={(e) => setFechaPersonalizada(e.target.value)}
+                              InputLabelProps={{ shrink: true }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* FORMULARIO PARA NOTICIAS, LIBROS, INFORMES, CURSOS E INCIDENCIA */}
+                    {vistaActiva !== 'equipo' && vistaActiva !== 'articulos' && (<>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       
                       {/* Ocultar el Título si es Informe, ya que se autogenera con el Año */}
@@ -1568,8 +1672,8 @@ useEffect(() => {
                       </div>
                     )}
 
-                    {/* Ocultar el Resumen solo para Informes. */}
-                    {vistaActiva !== "informes" && (
+                    {/* Ocultar el Resumen para Informes y Artículos (ya tiene el suyo propio). */}
+                    {vistaActiva !== "informes" && vistaActiva !== "articulos" && (
                     <div>
                       <div className="flex justify-between items-end mb-1.5">
                         <div className="w-full flex justify-end">
@@ -1662,7 +1766,7 @@ useEffect(() => {
                       </div>
                     )}
 
-                    {vistaActiva !== "informes" && vistaActiva !== "cursos" && vistaActiva !== "incidencia" && (
+                    {vistaActiva !== "informes" && vistaActiva !== "cursos" && vistaActiva !== "incidencia" && vistaActiva !== "articulos" && (
                     <div>
                       <AdminTextField 
                         label={vistaActiva === "libros" ? "Descripción Larga" : "Cuerpo del texto"}
