@@ -12,70 +12,95 @@ import { useTranslation } from 'react-i18next';
 import { obtenerTextoTraducido } from "../utils/traductorDinamico";
 
 // MOTOR ESTRUCTURAL PURO
-export const formatearTextoConLinksYHashtags = (texto) => {
+export const formatearTextoConLinksYHashtags = (texto, idiomaActual = 'es') => {
   if (!texto) return "";
-  
-  // Detectar si el contenido ya viene formateado en HTML desde el editor enriquecido
-  const esHtml = /<\/?(p|div|h[1-6]|strong|b|em|i|blockquote|ul|ol|li|br|span|a)[^>]*>/i.test(texto);
 
-  if (esHtml) {
+  const lang = (idiomaActual || 'es').substring(0, 2).toLowerCase();
+  const labelClic = lang === 'en' ? 'Click here' : (lang === 'fr' ? 'Cliquez ici' : 'Clic aquí');
+
+  const esHtml = /<\/?(p|div|h[1-6]|strong|b|em|i|blockquote|ul|ol|li|br|span|a|iframe|video|img|font)[^>]*>/i.test(texto);
+
+  let procesado = texto;
+
+  if (!esHtml) {
+    procesado = procesado.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  } else {
     // Sanitizar etiquetas potencialmente peligrosas
-    let sanitizado = texto
+    procesado = procesado
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
       .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "")
       .replace(/\bon\w+\s*=\s*(['"]).*?\1/gi, "")
       .replace(/\bon\w+\s*=\s*[^>\s]+/gi, "")
       .replace(/javascript:/gi, "");
-
-    // Asegurar estilos en enlaces existentes
-    sanitizado = sanitizado.replace(/<a\s+(?:[^>]*?\s+)?href=(["'])(.*?)\1([^>]*)>/gi, (match, quote, url, rest) => {
-      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline wrap-break-words"${rest}>`;
-    });
-
-    return sanitizado;
   }
 
-  // 1. Escapar < y > por seguridad para texto plano heredado
-  let procesado = texto.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const tokens = [];
 
-  const linksGuardados = []; // Caja fuerte temporal
+  // 1. Procesar y proteger enlaces <a> existentes completos
+  procesado = procesado.replace(/<a\s+([^>]*?)>([\s\S]*?)<\/a>/gi, (match, attrs, innerText) => {
+    const textOnly = innerText.replace(/<[^>]+>/g, '').trim().toLowerCase();
+    const isUrl = /^https?:\/\//i.test(textOnly);
+    const isClicGeneric = ['clic aquí', 'clic aqui', 'click here', 'cliquez ici'].includes(textOnly);
 
-  // 2. Extraer Markdown: [Texto visible](URL)
+    let newInner = innerText;
+    if (isUrl || isClicGeneric) {
+      newInner = labelClic;
+    }
+
+    const hrefMatch = attrs.match(/href=(["'])(.*?)\1/i);
+    const href = hrefMatch ? hrefMatch[2] : '#';
+
+    const formatted = `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline wrap-break-words">${newInner}</a>`;
+    tokens.push(formatted);
+    return `\uE000${tokens.length - 1}\uE001`;
+  });
+
+  // 2. Proteger todas las demás etiquetas HTML (img, div, b, span, etc.)
+  procesado = procesado.replace(/<[^>]+>/g, (match) => {
+    tokens.push(match);
+    return `\uE000${tokens.length - 1}\uE001`;
+  });
+
+  // 3. Procesar Markdown: [Texto visible](URL)
   procesado = procesado.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, label, url) => {
-    let visible = label;
-    // Si la etiqueta visible es muy larga, la acortamos a 45 caracteres
-    if (visible.length > 45) {
-      visible = visible.substring(0, 42) + "...";
-    }
-    linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline break-all">${visible}</a>`);
-    return `__LINK_${linksGuardados.length - 1}__`; // Dejamos marcador
+    const link = `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline wrap-break-words">${label}</a>`;
+    tokens.push(link);
+    return `\uE000${tokens.length - 1}\uE001`;
   });
 
-  // 3. Extraer URLs crudas pegadas directamente
-  procesado = procesado.replace(/(https?:\/\/[^\s]+)/g, (match, url) => {
-    if (url.includes("__LINK_")) return match; // Evitar procesar los marcadores
-    
-    let visible = url;
-    // Acortar visualmente la URL a 45 caracteres
-    if (visible.length > 45) {
-      visible = visible.substring(0, 42) + "...";
+  // 4. Procesar URLs crudas pegadas en el texto
+  procesado = procesado.replace(/(https?:\/\/[^\s<>"'`\uE000\uE001]+)/g, (match, url) => {
+    let cleanUrl = url;
+    let suffix = '';
+    const trailingPunct = /[.,;:)!]+$/;
+    const punctMatch = cleanUrl.match(trailingPunct);
+    if (punctMatch) {
+      suffix = punctMatch[0];
+      cleanUrl = cleanUrl.slice(0, -punctMatch[0].length);
     }
-    linksGuardados.push(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline break-all">${visible}</a>`);
-    return `__LINK_${linksGuardados.length - 1}__`; // Dejamos marcador
+    const link = `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline wrap-break-words">${labelClic}</a>${suffix}`;
+    tokens.push(link);
+    return `\uE000${tokens.length - 1}\uE001`;
   });
 
-  // 4. Procesar Hashtags
+  // 5. Procesar Hashtags
   procesado = procesado.replace(/(#[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]+)/g, (match) => {
     const term = match.substring(1);
-    return `<a href="/buscar?q=${term}" class="text-light-blue hover:text-main-red font-bold">${match}</a>`;
+    const link = `<a href="/buscar?q=${term}" class="text-light-blue hover:text-main-red font-bold">${match}</a>`;
+    tokens.push(link);
+    return `\uE000${tokens.length - 1}\uE001`;
   });
 
-  // 5. Restaurar Links desde la caja fuerte
-  procesado = procesado.replace(/__LINK_(\d+)__/g, (match, i) => linksGuardados[i]);
+  // 6. Restaurar todos los tokens protegidos
+  procesado = procesado.replace(/\uE000(\d+)\uE001/g, (_, index) => tokens[Number(index)]);
 
-  // 6. Convertir saltos de línea a párrafos
-  const parrafos = procesado.split(/\n\s*\n/);
-  return parrafos.map(p => `<p>${p.replace(/\n/g, '<br />')}</p>`).join('');
+  // 7. Si no era HTML originalmente, convertir saltos de línea a párrafos
+  if (!esHtml) {
+    const parrafos = procesado.split(/\n\s*\n/);
+    return parrafos.map(p => `<p>${p.replace(/\n/g, '<br />')}</p>`).join('');
+  }
+
+  return procesado;
 };
 
 export default function ArticuloDetalle() {
@@ -269,7 +294,7 @@ export default function ArticuloDetalle() {
               {/* CONTENIDO DEL ARTÍCULO TRADUCIDO ALINEADO A LA IZQUIERDA */}
               <div 
                 className="noticia-content z-10 text-left [&>p]:text-left"
-                dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(contenidoTraducido) }}
+                dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(contenidoTraducido, i18n.language) }}
               />
 
               <footer className="mt-12 pt-8 border-t border-gray-100">
