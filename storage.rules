@@ -5,9 +5,16 @@ service firebase.storage {
     // ============================================================
     // FUNCIÓN AUXILIAR: CLUB DE ADMINISTRADORES (VERSIÓN STORAGE)
     // ============================================================
+    function esSuperAdmin() {
+      return request.auth != null && 
+             request.auth.token.email != null &&
+             request.auth.token.email.lower() == 'webmaster@iiresodh.org';
+    }
+
     function esAdmin() {
       return request.auth != null && 
-        firestore.exists(/databases/(default)/documents/admins/$(request.auth.token.email));
+        request.auth.token.email != null &&
+        (esSuperAdmin() || firestore.exists(/databases/(default)/documents/admins/$(request.auth.token.email.lower())));
     }
     
     // REGLAS ACTIVIDAD
