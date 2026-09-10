@@ -797,7 +797,14 @@ exports.traductorAutomatico = onDocumentWritten(
           for (const idioma of IDIOMAS_DESTINO) {
             try {
               const [traduccion] = await translate.translate(datosNuevos[campo], idioma);
-              actualizaciones[`${campo}_${idioma}`] = traduccion;
+              // Decodificar entidades HTML generadas por Google Translate (apóstrofes, comillas)
+              const traduccionLimpia = (traduccion || '')
+                .replace(/&(?:#39|#039|#x27|apos);/gi, "'")
+                .replace(/&(?:quot|#34|#034);/gi, '"')
+                .replace(/&amp;#39;/gi, "'")
+                .replace(/&amp;apos;/gi, "'")
+                .replace(/&amp;quot;/gi, '"');
+              actualizaciones[`${campo}_${idioma}`] = traduccionLimpia;
               necesitaActualizar = true;
             } catch (error) {
               console.error(`Error traduciendo ${campo} al ${idioma}:`, error);
