@@ -104,7 +104,8 @@ export default function NoticiaDetalle() {
   useEffect(() => {
     window.scrollTo(0, 0);
     
-    if (noticiaInicial) {
+    // Si ya viene precargada con sus traducciones completas, no volvemos a consultar
+    if (noticiaInicial && (noticiaInicial.titulo_en || noticiaInicial.contenido_en)) {
       return; 
     }
 

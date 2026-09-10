@@ -11,13 +11,16 @@ export const obtenerTextoTraducido = (documento, campoBase, idiomaActual) => {
   // Si no hay documento o no existe el campo, devolvemos vacío
   if (!documento || !documento[campoBase]) return "";
 
+  // Normalizar el idioma a código de 2 letras (ej: 'en-US' -> 'en', 'es-419' -> 'es')
+  const idioma = (idiomaActual || 'es').substring(0, 2).toLowerCase();
+
   // Si el idioma es español (o no está definido), devolvemos el campo original
-  if (!idiomaActual || idiomaActual === 'es') {
+  if (idioma === 'es') {
     return documento[campoBase];
   }
 
   // Si el idioma es inglés o francés, buscamos el campo traducido (ej. titulo_en)
-  const campoTraducido = `${campoBase}_${idiomaActual}`;
+  const campoTraducido = `${campoBase}_${idioma}`;
 
   // Si la traducción existe, la devolvemos. Si no (tal vez no se ha traducido aún), 
   // devolvemos el campo original en español como "salvavidas".
