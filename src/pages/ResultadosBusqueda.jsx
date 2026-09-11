@@ -94,6 +94,17 @@ export default function ResultadosBusqueda() {
     }
   ];
 
+  const obtenerUrlDescargaIncidencia = (incidencia) => {
+    if (!incidencia.archivoIncidenciaUrl) return "/incidencia-internacional";
+    const slug = (incidencia.titulo || "documento")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    return `/documentos/incidencia/${incidencia.id}/${slug}.pdf`;
+  };
+
   useEffect(() => {
     const buscarDatos = async () => {
       if (!terminoBusqueda.trim()) {
@@ -336,7 +347,7 @@ export default function ResultadosBusqueda() {
                             <article key={incidencia.id} role="listitem">
                               {/* AQUÍ ESTÁ EL CAMBIO: Ahora es una etiqueta <a> apuntando al PDF */}
                               <a 
-                                href={incidencia.archivoIncidenciaUrl || "/incidencia-internacional"} 
+                                href={obtenerUrlDescargaIncidencia(incidencia)} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 className="group bg-white p-4 rounded-2xl border border-gray-100 flex flex-col sm:flex-row gap-6 hover:shadow-xl hover:border-pale-blue transition-all duration-300 h-full" 

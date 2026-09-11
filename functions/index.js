@@ -821,3 +821,103 @@ exports.traductorAutomatico = onDocumentWritten(
     return null;
   }
 );
+
+// ============================================================================
+// 10. PROXY CDN PARA DESCARGA DE DOCUMENTOS CON DOMINIO INSTITUCIONAL (iiresodh.org)
+// ============================================================================
+exports.descargarDocumento = onRequest({ region: "us-central1" }, async (req, res) => {
+  // Rutas esperadas:
+  // /documentos/:coleccion/:id
+  // /documentos/:coleccion/:id/:nombreArchivo.pdf
+  const pathSegments = req.path.split("/").filter(Boolean);
+  // pathSegments[0] === 'documentos'
+  const coleccion = pathSegments[1]; // 'incidencia' | 'informes'
+  const docId = pathSegments[2];
+
+  if (!coleccion || !docId) {
+    return res.status(400).send("Parámetros de documento insuficientes.");
+  }
+
+  // Validamos colecciones permitidas
+  const coleccionesPermitidas = ["incidencia", "informes"];
+  if (!coleccionesPermitidas.includes(coleccion)) {
+    return res.status(404).send("Categoría de documento no válida.");
+  }
+
+  try {
+    const db = admin.firestore();
+    const docSnap = await db.collection(coleccion).doc(docId).get();
+
+    if (!docSnap.exists) {
+      return res.status(404).send("Documento no encontrado.");
+    }
+
+    const data = docSnap.data();
+    let fileUrl = null;
+    let tituloDocumento = "";
+
+    if (coleccion === "incidencia") {
+      fileUrl = data.archivoIncidenciaUrl;
+      tituloDocumento = data.titulo || "Documento_Incidencia_IIRESODH";
+    } else if (coleccion === "informes") {
+      fileUrl = data.archivoInformeUrl;
+      tituloDocumento = data.titulo || `Informe_Anual_${data.año || ""}_IIRESODH`;
+    }
+
+    if (!fileUrl) {
+      return res.status(404).send("El archivo solicitado no está disponible.");
+    }
+
+    // Nombre limpio para descarga/visualización
+    const nombreLimpio = tituloDocumento
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // eliminar acentos
+      .replace(/[^a-zA-Z0-9_\-\.]+/g, "_")
+      .substring(0, 120);
+    const nombreDescarga = nombreLimpio.toLowerCase().endsWith(".pdf")
+      ? nombreLimpio
+      : `${nombreLimpio}.pdf`;
+
+    // Intentamos servir directamente desde el bucket de Storage usando el path relativo
+    const bucket = admin.storage().bucket();
+    const match = fileUrl.match(/\/o\/([^?]+)/);
+
+    if (match && match[1]) {
+      const storagePath = decodeURIComponent(match[1]);
+      const file = bucket.file(storagePath);
+      const [exists] = await file.exists();
+
+      if (exists) {
+        const [metadata] = await file.getMetadata();
+        const contentType = metadata.contentType || "application/pdf";
+
+        res.set({
+          "Content-Type": contentType,
+          "Content-Disposition": `inline; filename="${nombreDescarga}"`,
+          "Cache-Control": "public, max-age=86400, s-maxage=604800"
+        });
+
+        return file.createReadStream().pipe(res);
+      }
+    }
+
+    // Fallback: Si no pudimos resolver el file del bucket directamente, hacemos streaming vía fetch
+    const response = await fetch(fileUrl);
+    if (!response.ok) {
+      return res.status(response.status).send("Error al obtener el archivo desde el almacenamiento.");
+    }
+
+    const contentType = response.headers.get("content-type") || "application/pdf";
+    res.set({
+      "Content-Type": contentType,
+      "Content-Disposition": `inline; filename="${nombreDescarga}"`,
+      "Cache-Control": "public, max-age=86400, s-maxage=604800"
+    });
+
+    const arrayBuffer = await response.arrayBuffer();
+    return res.status(200).send(Buffer.from(arrayBuffer));
+  } catch (error) {
+    console.error("Error al servir documento:", error);
+    return res.status(500).send("Error interno al procesar la descarga.");
+  }
+});

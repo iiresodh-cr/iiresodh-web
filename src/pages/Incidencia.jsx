@@ -69,6 +69,17 @@ export default function Incidencia() {
     return date.toLocaleDateString(i18n.language || "es-ES", { year: "numeric", month: "long" });
   };
 
+  const obtenerUrlDescarga = (doc) => {
+    if (!doc.archivoIncidenciaUrl) return "#";
+    const slug = (doc.titulo || "documento")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    return `/documentos/incidencia/${doc.id}/${slug}.pdf`;
+  };
+
   const handleCambioPagina = (event, value) => {
     setPaginaActual(value);
     if (listRef.current) {
@@ -337,7 +348,7 @@ export default function Incidencia() {
                     <div className="mt-auto pt-4 border-t border-gray-100">
                       {/* MEJORA UX/UI: Botón fantasma en lugar de solo texto */}
                       <a 
-                        href={doc.archivoIncidenciaUrl || "#"} 
+                        href={obtenerUrlDescarga(doc)} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2.5 text-xs font-bold text-main-red uppercase tracking-widest border-2 border-main-red/20 rounded-lg hover:bg-main-red hover:text-white hover:border-main-red transition-all duration-300"

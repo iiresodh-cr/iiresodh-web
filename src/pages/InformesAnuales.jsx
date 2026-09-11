@@ -37,6 +37,12 @@ export default function InformesAnuales() {
     fetchInformes();
   }, []);
 
+  const obtenerUrlDescargaInforme = (informe) => {
+    if (!informe.archivoInformeUrl) return "#";
+    const slug = `informe-anual-${informe.año || ""}`;
+    return `/documentos/informes/${informe.id}/${slug}.pdf`;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 pt-20" role="status">
@@ -115,7 +121,7 @@ export default function InformesAnuales() {
                     <div className="w-12 h-1 bg-main-red rounded-full mb-6 transition-all duration-500 group-hover:w-24"></div>
 
                     <a 
-                      href={informe.archivoInformeUrl} 
+                      href={obtenerUrlDescargaInforme(informe)} 
                       target="_blank" 
                       rel="noopener noreferrer" 
                       onClick={(e) => e.stopPropagation()}
