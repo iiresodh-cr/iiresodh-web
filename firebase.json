@@ -12,6 +12,48 @@
       "**/.*",
       "**/node_modules/**"
     ],
+    "redirects": [
+      {
+        "source": "/nosotros/equipo-de-trabajo",
+        "destination": "/equipo",
+        "type": 301
+      },
+      {
+        "source": "/nosotros/equipo-de-trabajo/",
+        "destination": "/equipo",
+        "type": 301
+      },
+      {
+        "source": "/nosotros/quienes-somos",
+        "destination": "/quienes-somos",
+        "type": 301
+      },
+      {
+        "source": "/nosotros/quienes-somos/",
+        "destination": "/quienes-somos",
+        "type": 301
+      },
+      {
+        "source": "/nosotros/informes-anuales",
+        "destination": "/informes-anuales",
+        "type": 301
+      },
+      {
+        "source": "/nosotros/informes-anuales/",
+        "destination": "/informes-anuales",
+        "type": 301
+      },
+      {
+        "source": "/areas-de-trabajo/litigio-estrategico",
+        "destination": "/litigio-estrategico",
+        "type": 301
+      },
+      {
+        "source": "/areas-de-trabajo/litigio-estrategico/",
+        "destination": "/litigio-estrategico",
+        "type": 301
+      }
+    ],
     "headers": [
       {
         "source": "**/*.@(js|css|png|jpg|jpeg|gif|svg|webp)",
