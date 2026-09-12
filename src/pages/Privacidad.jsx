@@ -12,15 +12,17 @@ import { useTranslation } from 'react-i18next';
 export default function Privacidad() {
   const { t } = useTranslation(); // HOOK DE TRADUCCIÓN
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState("general");
+  const [activeTab, setActiveTab] = useState("privacidad");
 
   // Leer el parámetro de la URL para abrir la pestaña correcta y hacer scroll
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const tab = searchParams.get("tab");
     
-    if (tab === "general" || tab === "costarica" || tab === "mexico" || tab === "terminos") {
-      setActiveTab(tab);
+    if (tab === "terminos") {
+      setActiveTab("terminos");
+    } else {
+      setActiveTab("privacidad");
     }
     
     window.scrollTo(0, 0);
@@ -77,7 +79,7 @@ export default function Privacidad() {
                     color: '#6B7280',
                     fontFamily: '"Work Sans", sans-serif',
                     transition: 'all 0.3s',
-                    px: { xs: 2, md: 4 },
+                    px: { xs: 3, md: 6 },
                     py: 2.5,
                     '&.Mui-selected': {
                       color: '#1D3557', 
@@ -89,9 +91,7 @@ export default function Privacidad() {
                   }
                 }}
               >
-                <Tab label={t('privacidad.tab_general', 'Política General')} value="general" />
-                <Tab label={t('privacidad.tab_costarica', 'Costa Rica (Ley 8968)')} value="costarica" />
-                <Tab label={t('privacidad.tab_mexico', 'Aviso para México')} value="mexico" />
+                <Tab label={t('privacidad.tab_integral', 'Política de Privacidad')} value="privacidad" />
                 <Tab label={t('privacidad.tab_terminos', 'Términos de Uso')} value="terminos" />
               </Tabs>
             </Box>
@@ -99,287 +99,157 @@ export default function Privacidad() {
             <div className="px-6 md:px-12 lg:px-16 pt-8 pb-12 w-full">
               
               {/* =========================================
-                  CONTENIDO: POLÍTICA GENERAL
+                  CONTENIDO: POLÍTICA DE PRIVACIDAD INTEGRAL
               ========================================= */}
-              {activeTab === "general" && (
+              {activeTab === "privacidad" && (
                 <div className={legalTextClass}>
                   <div className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
-                    <h2 className="text-2xl md:text-4xl font-bold text-main-blue mb-2">{t('privacidad.gen_titulo', 'Política de Privacidad de IIRESODH')}</h2>
-                    <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">{t('privacidad.ultima_act', 'Fecha de última actualización: 29 de marzo de 2026')}</p>
+                    <h2 className="text-2xl md:text-4xl font-bold text-main-blue mb-2">{t('privacidad.titulo_integral', 'Política de Privacidad y Protección de Datos Personales')}</h2>
+                    <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">{t('privacidad.subtitulo_integral', 'Estándares Interamericanos (OEA), Sede Costa Rica (Ley N° 8968 / PRODHAB) y Cláusulas Regionales')}</p>
+                    <p className="text-xs text-gray-400 mt-1">{t('privacidad.ultima_act', 'Fecha de última actualización: 29 de marzo de 2026')}</p>
                   </div>
 
                   <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.gen_sec1_tit', '1. Introducción y Alcance')}</h3>
-                    <p className="mb-3">{t('privacidad.gen_sec1_p1', 'Bienvenido a la Política de Privacidad del Instituto Internacional de Responsabilidad Social y Derechos Humanos (en adelante, “IIRESODH”, “nosotros” o “nuestro”).')}</p>
-                    <p className="mb-3">{t('privacidad.gen_sec1_p2', 'Esta política describe cómo recopilamos, utilizamos, protegemos y compartimos su información personal cuando visita nuestro sitio web institucional (https://iiresodh.org) y se comunica con nosotros.')}</p>
-                    <div className="bg-pale-blue/20 p-6 rounded-2xl mt-6">
+                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">1. Introducción y Marco Normativo Interamericano</h3>
+                    <p className="mb-3">Bienvenido a la Política de Privacidad del Instituto Internacional de Responsabilidad Social y Derechos Humanos (en adelante, “IIRESODH”, “nosotros” o “nuestro”).</p>
+                    <p className="mb-3">Como organismo dedicado a la defensa de los derechos fundamentales, el litigio estratégico ante tribunales internacionales y la formación académica en América Latina y el mundo, el IIRESODH asume el más alto compromiso ético y legal en la salvaguarda de la privacidad y la autodeterminación informativa de sus usuarios, lectores, estudiantes, colaboradores y donantes.</p>
+                    <p className="mb-3">El tratamiento de datos en este portal web (https://iiresodh.org) se rige primordialmente por la legislación de nuestra sede jurídica en la República de Costa Rica (<strong>Ley N° 8968</strong>, su Reglamento Decreto N° 37788-JP y la tutela de la <strong>PRODHAB</strong>), integrando armónicamente los <strong>Principios Actualizados sobre la Privacidad y la Protección de Datos Personales de la Organización de los Estados Americanos (OEA / Comité Jurídico Interamericano, CP/CAJP-3588/21)</strong>, así como las normativas protectoras aplicables en la región interamericana.</p>
+                    <div className="bg-pale-blue/20 p-6 rounded-2xl mt-4">
                       <p className="text-sm font-medium text-main-blue leading-relaxed">
-                        <strong>{t('privacidad.gen_sec1_nota', 'Nota sobre servicios externos:')}</strong> {t('privacidad.gen_sec1_p3', 'El servicio tecnológico asociado PIDA-AI (https://pida-ai.com) es gestionado por una entidad jurídica independiente y se rige estrictamente por su propia Política de Privacidad, disponible en su respectivo sitio web.')}
+                        <strong>Nota sobre servicios externos:</strong> El servicio tecnológico asociado PIDA-AI (https://pida-ai.com) es gestionado por una entidad jurídica independiente y se rige estrictamente por su propia Política de Privacidad, disponible en su respectivo sitio web.
                       </p>
                     </div>
                   </div>
 
                   <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.gen_sec2_tit', '2. Responsable del Tratamiento de sus Datos')}</h3>
-                    <p>{t('privacidad.gen_sec2_p1', 'El responsable general del tratamiento de sus datos personales es la Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH, cédula de persona jurídica N° 3-002-671392, con domicilio en Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica. Para las transacciones de libros y pagos realizados a través de Stripe, el responsable es IIRESODH PAYMENTS, LLC, con domicilio en 131 Continental Dr Suite 305, Newark, DE 19713, US.')}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.gen_sec3_tit', '3. ¿Qué Información Recopilamos?')}</h3>
-                    <ul className="list-disc pl-6 space-y-2">
-                      <li><strong>{t('privacidad.gen_sec3_l1_tit', 'Información proporcionada directamente:')}</strong> {t('privacidad.gen_sec3_l1_txt', 'Recopilamos datos personales cuando nos contacta, se inscribe en nuestras actividades o realiza una donación. Esto incluye su nombre, dirección de correo electrónico, país de residencia y el contenido de sus mensajes.')}</li>
-                      <li><strong>{t('privacidad.gen_sec3_l2_tit', 'Datos de Trazabilidad Digital:')}</strong> {t('privacidad.gen_sec3_l2_txt', 'Para la adquisición de libros y manuales en formato PDF, IIRESODH PAYMENTS, LLC recopila y procesa su dirección IP, identificadores de dispositivo y datos de geolocalización para la prevención de piratería y cumplimiento de términos de licencia personal.')}</li>
-                      <li><strong>{t('privacidad.gen_sec3_l3_tit', 'Información recopilada automáticamente:')}</strong> {t('privacidad.gen_sec3_l3_txt', 'Al navegar por nuestro sitio, recopilamos información técnica estándar (dirección IP, tipo de navegador, páginas visitadas) con fines de análisis y seguridad para mejorar nuestros servicios institucionales.')}</li>
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.gen_sec4_tit', '4. ¿Para Qué Utilizamos su Información? (Fines y Base Legal)')}</h3>
-                    <ul className="list-disc pl-6 space-y-2">
-                      <li><strong>{t('privacidad.gen_sec4_l1_tit', 'Atención y Comunicación:')}</strong> {t('privacidad.gen_sec4_l1_txt', 'Responder a sus consultas, solicitudes de información y gestionar inscripciones a nuestros programas. (Base legal: Consentimiento).')}</li>
-                      <li><strong>{t('privacidad.gen_sec4_l2_tit', 'Difusión Institucional:')}</strong> {t('privacidad.gen_sec4_l2_txt', 'Envío de boletines informativos o noticias sobre nuestras labores en defensa de los derechos humanos, siempre que usted haya aceptado recibirlos. (Base legal: Consentimiento).')}</li>
-                      <li><strong>{t('privacidad.gen_sec4_l3_tit', 'Protección de Propiedad Intelectual:')}</strong> {t('privacidad.gen_sec4_l3_txt', 'Validar la integridad de la entrega de material digital, rastrear el uso autorizado de archivos PDF y prevenir la distribución ilícita o piratería de contenidos protegidos. (Base legal: Interés legítimo y cumplimiento contractual).')}</li>
-                      <li><strong>{t('privacidad.gen_sec4_l4_tit', 'Mantenimiento y Seguridad:')}</strong> {t('privacidad.gen_sec4_l4_txt', 'Analizar el tráfico de nuestro sitio para optimizar la experiencia de usuario y prevenir fraudes informáticos. (Base legal: Interés legítimo).')}</li>
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.gen_sec5_tit', '5. ¿Con Quién Compartimos su Información?')}</h3>
-                    <p className="mb-3">{t('privacidad.gen_sec5_p1', 'IIRESODH no vende, alquila ni comercializa su información personal bajo ninguna circunstancia. Solo la compartimos en casos estrictamente necesarios:')}</p>
-                    <ul className="list-disc pl-6 space-y-2">
-                      <li><strong>{t('privacidad.gen_sec5_l1_tit', 'Proveedores Tecnológicos:')}</strong> {t('privacidad.gen_sec5_l1_txt', 'Empresas que nos brindan servicios de alojamiento web (hosting) o plataformas para el envío de boletines, quienes operan bajo estrictos acuerdos de confidencialidad.')}</li>
-                      <li><strong>{t('privacidad.gen_sec5_l2_tit', 'Obligación Legal:')}</strong> {t('privacidad.gen_sec5_l2_txt', 'Cuando una autoridad competente lo requiera en el marco de la ley y el debido proceso jurisdiccional.')}</li>
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.gen_sec6_tit', '6. Seguridad de su Información')}</h3>
-                    <p>{t('privacidad.gen_sec6_p1', 'IIRESODH aplica medidas de seguridad técnicas y organizativas para proteger su información contra accesos no autorizados, pérdida o alteración. Nuestro sitio utiliza certificados SSL para cifrar la información durante la transmisión. En el caso de libros digitales, se emplean metadatos de trazabilidad invisibles para garantizar la protección de la propiedad intelectual de la institución.')}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.gen_sec7_tit', '7. Retención de Datos')}</h3>
-                    <p>{t('privacidad.gen_sec7_p1', 'Conservaremos sus datos personales únicamente durante el tiempo que sea necesario para cumplir con las finalidades descritas en esta política o para dar cumplimiento a obligaciones legales o fiscales vigentes aplicables a la institución.')}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.gen_sec8_tit', '8. Sus Derechos')}</h3>
-                    <p className="mb-3">{t('privacidad.gen_sec8_p1', 'Como usuario, usted tiene derecho a Acceder a sus datos, Rectificarlos si son incorrectos, solicitar su Supresión, u Oponerse a ciertos tratamientos (como darse de baja de nuestros boletines). Para ejercer sus derechos, por favor escríbanos a:')}</p>
-                    <p className="font-bold text-main-blue pl-6"><a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">contacto@iiresodh.org</a></p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.gen_sec9_tit', '9. Modificaciones')}</h3>
-                    <p>{t('privacidad.gen_sec9_p1', 'IIRESODH se reserva el derecho de actualizar esta Política de Privacidad para reflejar cambios en nuestras prácticas institucionales o en la normativa aplicable. La fecha de la última revisión se publicará siempre en la parte superior de esta página.')}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.gen_sec10_tit', '10. Contacto')}</h3>
-                    <div className="bg-gray-50 p-8 rounded-2xl mt-4 text-left not-italic font-normal text-sm md:text-base border border-gray-100">
-                      <p className="font-bold text-main-blue mb-1 uppercase tracking-tight">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</p>
-                      <p className="mb-1"><strong>{t('privacidad.correo', 'Correo electrónico:')}</strong> <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">contacto@iiresodh.org</a></p>
-                      <p><strong>{t('privacidad.direccion', 'Dirección Sede Central:')}</strong> Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica.</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* =========================================
-                  CONTENIDO: AVISO PARA COSTA RICA (LEY 8968)
-              ========================================= */}
-              {activeTab === "costarica" && (
-                <div className={legalTextClass}>
-                  <div className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
-                    <h2 className="text-2xl md:text-4xl font-bold text-main-blue mb-2">{t('privacidad.cr_titulo', 'Aviso de Privacidad y Consentimiento Informado (COSTA RICA)')}</h2>
-                    <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">{t('privacidad.cr_subtitulo', 'Conforme a la Ley N° 8968 y la supervisión de la PRODHAB')}</p>
-                    <p className="text-xs text-gray-500 mt-1">{t('privacidad.ultima_act', 'Fecha de última actualización: 29 de marzo de 2026')}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.cr_sec1_tit', '1. Marco Normativo y Autodeterminación Informativa')}</h3>
-                    <p className="mb-3">{t('privacidad.cr_sec1_p1', 'El presente Aviso de Privacidad y Consentimiento Informado se fundamenta en el artículo 24 de la Constitución Política de la República de Costa Rica, la Ley de Protección de la Persona frente al Tratamiento de sus Datos Personales (Ley N° 8968) y su Reglamento ejecutivo (Decreto N° 37788-JP), bajo la tutela de la Agencia de Protección de Datos de los Habitantes (PRODHAB).')}</p>
-                    <p className="mb-3">{t('privacidad.cr_sec1_p2', 'El IIRESODH garantiza plenamente el derecho a la autodeterminación informativa de toda persona que visite, consulte o interactúe con nuestro portal web institucional (https://iiresodh.org).')}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.cr_sec2_tit', '2. Identidad y Domicilio del Responsable de la Base de Datos')}</h3>
-                    <p className="mb-2">{t('privacidad.cr_sec2_p1', 'El responsable legal de las bases de datos de carácter personal derivadas de este sitio web es:')}</p>
+                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">2. Responsable del Tratamiento de sus Datos</h3>
+                    <p className="mb-3">El responsable general y legal de las bases de datos personales generadas en este portal es:</p>
                     <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 mb-3 space-y-1 text-sm md:text-base">
                       <p className="font-bold text-main-blue">Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH)</p>
                       <p><strong>Cédula de persona jurídica:</strong> 3-002-671392</p>
-                      <p><strong>Domicilio legal:</strong> Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica</p>
-                      <p><strong>Correo electrónico para gestión de datos:</strong> <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue font-bold transition-colors">contacto@iiresodh.org</a></p>
+                      <p><strong>Domicilio legal:</strong> Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica.</p>
+                      <p><strong>Correo electrónico para atención de privacidad y derechos ARCO:</strong> <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue font-bold transition-colors">contacto@iiresodh.org</a></p>
                     </div>
-                    <p className="text-sm text-gray-600">{t('privacidad.cr_sec2_p2', 'Para las transacciones de libros y pasarela de pago Stripe, interviene conjuntamente IIRESODH PAYMENTS, LLC, con domicilio en 131 Continental Dr Suite 305, Newark, DE 19713, EE.UU.')}</p>
+                    <p className="text-sm text-gray-600">Para las transacciones de libros y pasarela de pago Stripe, interviene conjuntamente IIRESODH PAYMENTS, LLC, con domicilio en 131 Continental Dr Suite 305, Newark, DE 19713, EE.UU.</p>
                   </div>
 
                   <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.cr_sec3_tit', '3. Existencia de la Base de Datos y Finalidad del Tratamiento (Art. 5 Ley 8968)')}</h3>
-                    <p className="mb-3">{t('privacidad.cr_sec3_p1', 'De conformidad con el artículo 5 de la Ley N° 8968, se informa a los titulares de la existencia de bases de datos automatizadas internas, gestionadas por IIRESODH, cuyas finalidades son estrictamente legítimas e institucionales:')}</p>
-                    <ul className="list-disc pl-6 space-y-2">
-                      <li><strong>Atención de consultas y solicitudes:</strong> Tramitar y responder comunicaciones, peticiones de orientación en derechos humanos y consultas ciudadanas enviadas a través del formulario de contacto.</li>
-                      <li><strong>Difusión institucional y académica:</strong> Envío de boletines informativos, convocatorias a foros, seminarios o pronunciamientos institucionales (únicamente mediando consentimiento expreso).</li>
-                      <li><strong>Gestión de cursos y eventos:</strong> Tramitación de inscripciones, control de asistencia y emisión de acreditaciones académicas.</li>
-                      <li><strong>Distribución de publicaciones y material bibliográfico:</strong> Procesar pedidos de libros, trazabilidad digital de licencias de uso personal para prevención de piratería y entrega de enlaces seguros de descarga.</li>
+                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">3. Datos Personales que Recopilamos y Prohibición de Datos Sensibles</h3>
+                    <p className="mb-3">Recopilamos únicamente la información necesaria y pertinente para los fines legítimos de nuestra institución:</p>
+                    <ul className="list-disc pl-6 space-y-2 mb-4">
+                      <li><strong>Datos facilitados directamente por usted:</strong> Nombre completo, dirección de correo electrónico, país de residencia, institución de procedencia y el contenido de sus mensajes o solicitudes de orientación a través de nuestros formularios o inscripciones a actividades académicas.</li>
+                      <li><strong>Datos de trazabilidad de compras bibliográficas:</strong> Para la adquisición de manuales y libros en formato PDF, IIRESODH PAYMENTS, LLC procesa identificadores de dispositivo, dirección IP y metadatos criptográficos estrictamente orientados a la protección de la propiedad intelectual, licenciamiento personal y prevención de piratería.</li>
+                      <li><strong>Información técnica y analítica web consentida:</strong> Datos técnicos de navegación (tipo de navegador, páginas visitadas, métricas agregadas) a través de cookies técnicas esenciales y herramientas analíticas (Firebase Analytics) sujetas a su previo consentimiento.</li>
                     </ul>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.cr_sec4_tit', '4. Carácter Facultativo de la Entrega de Datos y Consecuencias de la Negativa')}</h3>
-                    <p className="mb-3">{t('privacidad.cr_sec4_p1', 'La entrega de sus datos personales a través de nuestros formularios digitales es enteramente voluntaria y facultativa.')}</p>
-                    <p>{t('privacidad.cr_sec4_p2', 'Consecuencias de la negativa: La no facilitación de los datos básicos e indispensables requeridos en los formularios (como su nombre y correo electrónico) tendrá como única consecuencia la imposibilidad material de contactarle, resolver su consulta, matricularle en las actividades solicitadas o emitir los comprobantes y materiales bibliográficos adquiridos.')}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.cr_sec5_tit', '5. Prohibición y Tratamiento de Datos Personales Sensibles (Art. 9 Ley 8968)')}</h3>
                     <div className="bg-red-50 p-6 rounded-2xl border border-red-100">
-                      <p className="text-sm md:text-base font-semibold text-main-red mb-2 uppercase tracking-wide">Aviso Riguroso sobre Datos Sensibles:</p>
-                      <p className="text-sm md:text-base text-gray-800 leading-relaxed">{t('privacidad.cr_sec5_p1', 'De conformidad con el artículo 9 de la Ley N° 8968, el IIRESODH NO solicita, no recaba ni trata datos sensibles para la navegación o contacto general en este portal web (tales como origen racial o étnico, opiniones políticas, convicciones religiosas o espirituales, afiliación sindical, información biométrica, estado de salud o preferencia sexual). Le solicitamos expresamente abstenerse de consignar datos de esta naturaleza en nuestros formularios abiertos o en el asistente virtual IRENE.')}</p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.cr_sec6_tit', '6. Destinatarios y Transferencia Internacional de Datos')}</h3>
-                    <p className="mb-3">{t('privacidad.cr_sec6_p1', 'El IIRESODH no comercializa, no vende, no alquila ni distribuye bases de datos con fines lucrativos o de explotación comercial a terceros.')}</p>
-                    <p className="mb-3">{t('privacidad.cr_sec6_p2', 'Conforme al artículo 14 del Reglamento N° 37788-JP, se informa que para la prestación técnica del servicio web se realizan transferencias internacionales de datos a los siguientes proveedores tecnológicos que operan bajo acuerdos de confidencialidad y altos estándares de ciberseguridad:')}</p>
-                    <ul className="list-disc pl-6 space-y-2">
-                      <li><strong>Google Cloud Platform / Firebase (EE.UU.):</strong> Infraestructura de nube, base de datos encriptada (Firestore) y computación sin servidor.</li>
-                      <li><strong>Stripe / IIRESODH PAYMENTS, LLC (EE.UU.):</strong> Procesamiento seguro de pagos con cifrado bancario PCI-DSS nivel 1 para adquisición de publicaciones.</li>
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.cr_sec7_tit', '7. Medidas de Seguridad de la Información')}</h3>
-                    <p>{t('privacidad.cr_sec7_p1', 'En cumplimiento de los artículos 10 de la Ley N° 8968 y 35 del Reglamento, IIRESODH adopta medidas de seguridad de índole técnica, física y organizativa para garantizar la integridad, confidencialidad y disponibilidad de sus datos personales, protegiéndolos contra alteración, pérdida, consulta indebida o acceso no autorizado. Todas las comunicaciones a través del sitio web se transmiten mediante certificados de seguridad SSL/TLS con cifrado de punto a punto.')}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.cr_sec8_tit', '8. Ejercicio de Derechos ARCO y Plazo Perentorio de Respuesta (Art. 32 del Reglamento)')}</h3>
-                    <p className="mb-3">{t('privacidad.cr_sec8_p1', 'Usted goza de los derechos de Acceso, Rectificación, Cancelación y Oposición (ARCO) sobre sus datos personales. Para ejercerlos, debe remitir una solicitud por escrito al correo institucional:')}</p>
-                    <p className="font-bold text-main-blue pl-6 mb-3"><a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">contacto@iiresodh.org</a></p>
-                    <p className="mb-2">La solicitud deberá acompañar:</p>
-                    <ol className="list-decimal pl-6 space-y-1 mb-4 font-medium text-gray-800">
-                      <li>Nombre completo del titular y dirección de correo electrónico para notificaciones.</li>
-                      <li>Copia digital legible de su documento oficial de identidad (cédula, DIMEX o pasaporte).</li>
-                      <li>Descripción clara del derecho que desea ejercer y los datos a los que se refiere.</li>
-                    </ol>
-                    <div className="bg-pale-blue/25 p-5 rounded-xl border border-main-blue/15">
-                      <p className="text-sm font-semibold text-main-blue">
-                        <strong>Plazo legal de respuesta:</strong> Conforme al Artículo 32 del Reglamento a la Ley N° 8968, IIRESODH dará respuesta formal y motivada a su solicitud dentro del plazo máximo de <strong>cinco (5) días hábiles</strong> posteriores a su recepción.
+                      <p className="text-sm md:text-base font-semibold text-main-red mb-2 uppercase tracking-wide">Aviso Riguroso: Prohibición de Consignar Datos Sensibles</p>
+                      <p className="text-sm md:text-base text-gray-800 leading-relaxed">
+                        De conformidad con el artículo 9 de la Ley N° 8968 y el Principio 4 de la OEA, el IIRESODH <strong>NO solicita, no recaba ni trata datos personales sensibles</strong> (tales como origen racial o étnico, convicciones religiosas o filosóficas, opiniones políticas, afiliación sindical, información de salud o vida sexual). Le solicitamos abstenerse expresamente de compartir información sensible a través de nuestros formularios de contacto general o del asistente virtual IRENE.
                       </p>
                     </div>
                   </div>
 
                   <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.cr_sec9_tit', '9. Tutela Administrativa ante la PRODHAB')}</h3>
-                    <p className="mb-3">{t('privacidad.cr_sec9_p1', 'En caso de que IIRESODH deniegue su solicitud de derechos ARCO, no emita respuesta dentro del plazo legal de cinco (5) días hábiles, o usted estime que sus derechos fundamentales de autodeterminación informativa han sido violentados, tiene expedita la vía para presentar el reclamo o denuncia formal ante:')}</p>
-                    <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
-                      <p className="font-bold text-main-blue text-base mb-1">Agencia de Protección de Datos de los Habitantes (PRODHAB)</p>
-                      <p className="text-xs text-gray-500 mb-2 uppercase tracking-wide">Órgano Desconcentrado del Ministerio de Justicia y Paz de Costa Rica</p>
-                      <p className="text-sm mb-1"><strong>Sitio web oficial:</strong> <a href="https://prodhab.go.cr" target="_blank" rel="noopener noreferrer" className="text-light-blue hover:text-main-blue font-bold underline">https://prodhab.go.cr</a></p>
-                      <p className="text-sm"><strong>Dirección:</strong> San José, Zapote, costado oeste del Edificio Registro Nacional, Costa Rica.</p>
+                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">4. ¿Para Qué Utilizamos su Información? (Finalidades del Tratamiento)</h3>
+                    <p className="font-bold mb-2 text-main-blue uppercase text-xs tracking-widest">Finalidades Primarias (Indispensables para la Relación con el Usuario):</p>
+                    <ul className="list-disc pl-6 mb-4 space-y-2">
+                      <li>Responder a consultas ciudadanas, orientación técnica y solicitudes de colaboración en derechos humanos enviadas por el formulario de contacto.</li>
+                      <li>Gestionar la matrícula, control de asistencia y emisión de acreditaciones o diplomas en cursos, foros y eventos académicos de IIRESODH.</li>
+                      <li>Procesar pedidos de material bibliográfico digital, generar enlaces de descarga segura y garantizar el licenciamiento personal anti-piratería.</li>
+                    </ul>
+
+                    <p className="font-bold mb-2 text-main-blue uppercase text-xs tracking-widest">Finalidades Secundarias (Requieren su Consentimiento Previo):</p>
+                    <ul className="list-disc pl-6 space-y-2">
+                      <li>Envío de boletines informativos institucionales, informes anuales y comunicados sobre derechos humanos.</li>
+                      <li>Análisis estadístico anónimo para evaluar el impacto de nuestras publicaciones y optimizar el rendimiento del sitio web.</li>
+                    </ul>
+                    <p className="mt-4 text-sm text-gray-600">Usted puede manifestar en cualquier momento su negativa al tratamiento de sus datos para Finalidades Secundarias enviando un correo a <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue underline font-bold">contacto@iiresodh.org</a>.</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">5. Carácter Facultativo de la Entrega de Datos</h3>
+                    <p className="mb-3">La entrega de sus datos personales a través de este portal es voluntaria y libre.</p>
+                    <p><strong>Consecuencias de la negativa:</strong> La no facilitación de los datos básicos solicitados en los formularios (nombre y correo electrónico) tendrá como único efecto la imposibilidad material de atender su consulta, inscribirle en nuestras actividades o emitir y entregar los libros digitales adquiridos.</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">6. Destinatarios y Transferencias Internacionales de Datos</h3>
+                    <p className="mb-3">El IIRESODH <strong>no vende, no alquila, no cede ni comercializa</strong> sus datos personales con terceros para fines publicitarios o lucrativos.</p>
+                    <p className="mb-3">Para la prestación de nuestros servicios digitales, realizamos transferencias internacionales indispensables a encargados tecnológicos internacionales que operan bajo rigurosos acuerdos de confidencialidad y estándares de seguridad:</p>
+                    <ul className="list-disc pl-6 space-y-2">
+                      <li><strong>Google Cloud Platform / Firebase (EE.UU.):</strong> Infraestructura de servidores seguros en la nube y base de datos con cifrado de punto a punto.</li>
+                      <li><strong>Stripe / IIRESODH PAYMENTS, LLC (EE.UU.):</strong> Pasarela de pago certificada bajo el estándar bancario internacional PCI-DSS Nivel 1 para la compra de publicaciones.</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">7. Seguridad de la Información</h3>
+                    <p>El IIRESODH aplica estrictas medidas de seguridad técnicas, físicas y organizativas orientadas a prevenir la adulteración, pérdida, consulta indebida o acceso no autorizado a sus datos. Toda la comunicación entre su navegador y nuestro portal viaja cifrada mediante protocolos de seguridad SSL/TLS de alta graduación.</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">8. Sus Derechos (ARCO) y Procedimiento para Ejercerlos</h3>
+                    <p className="mb-3">Todo usuario, sin importar su país de residencia, goza de los derechos de <strong>Acceso</strong>, <strong>Rectificación</strong>, <strong>Cancelación / Supresión</strong> y <strong>Oposición</strong> respecto a sus datos personales.</p>
+                    <p className="mb-3">Para ejercer cualquiera de sus derechos, envíe una solicitud formal por escrito a:</p>
+                    <p className="font-bold text-main-blue pl-6 mb-3"><a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">contacto@iiresodh.org</a></p>
+                    <p className="mb-2">La solicitud debe contener:</p>
+                    <ol className="list-decimal pl-6 space-y-1 mb-4 font-medium text-gray-800">
+                      <li>Nombre completo del titular y correo electrónico para recibir notificaciones.</li>
+                      <li>Copia digital legible de su documento oficial de identidad (cédula, DIMEX, pasaporte o documento de identidad nacional).</li>
+                      <li>Descripción clara del derecho que desea ejercer y los datos respecto de los cuales solicita la acción.</li>
+                    </ol>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">9. Disposiciones Específicas por Jurisdicción</h3>
+                    <p className="mb-4">Para garantizar el estricto apego a las legislaciones locales de nuestros usuarios y clientes, se establecen las siguientes directrices complementarias:</p>
+
+                    <div className="space-y-4">
+                      {/* Costa Rica */}
+                      <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                        <h4 className="text-base font-bold text-main-blue mb-2">9.1. Costa Rica (Sede Legal - Ley N° 8968 y Decreto N° 37788-JP)</h4>
+                        <ul className="list-disc pl-5 space-y-1 text-sm md:text-base mb-3">
+                          <li><strong>Plazo perentorio de respuesta:</strong> Conforme al Artículo 32 del Reglamento a la Ley N° 8968, IIRESODH dará respuesta formal y motivada a toda solicitud ARCO en un plazo máximo de <strong>cinco (5) días hábiles</strong>.</li>
+                          <li><strong>Tutela administrativa ante la PRODHAB:</strong> En caso de denegatoria, falta de respuesta en el plazo de ley o vulneración a su autodeterminación informativa, el titular puede interponer reclamo formal ante la <strong>Agencia de Protección de Datos de los Habitantes (PRODHAB)</strong>, órgano desconcentrado del Ministerio de Justicia y Paz de Costa Rica (sitio web: <a href="https://prodhab.go.cr" target="_blank" rel="noopener noreferrer" className="text-light-blue hover:text-main-blue underline font-bold">https://prodhab.go.cr</a>).</li>
+                        </ul>
+                      </div>
+
+                      {/* México */}
+                      <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                        <h4 className="text-base font-bold text-main-blue mb-2">9.2. México (LFPDPPP)</h4>
+                        <ul className="list-disc pl-5 space-y-1 text-sm md:text-base">
+                          <li>En estricto cumplimiento a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares aplicable a transacciones o actividades vinculadas a México, los usuarios pueden manifestar su negativa a finalidades secundarias o ejercer sus derechos ARCO ante el responsable institucional.</li>
+                          <li>Autoridad reguladora competente: <strong>Instituto Nacional de Transparencia, Acceso a la Información y Protección de Datos Personales (INAI)</strong>.</li>
+                        </ul>
+                      </div>
+
+                      {/* Colombia */}
+                      <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                        <h4 className="text-base font-bold text-main-blue mb-2">9.3. Colombia (Ley Estatutaria 1581 de 2012)</h4>
+                        <ul className="list-disc pl-5 space-y-1 text-sm md:text-base">
+                          <li>El tratamiento de datos de usuarios en Colombia se sustenta en la autorización previa, expresa e informada otorgada a través de las casillas de verificación de este portal.</li>
+                          <li>Autoridad de supervisión de Hábeas Data: <strong>Superintendencia de Industria y Comercio (SIC)</strong>.</li>
+                        </ul>
+                      </div>
+
+                      {/* OEA y Resto de las Américas */}
+                      <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                        <h4 className="text-base font-bold text-main-blue mb-2">9.4. Estados Miembros de la OEA y Comunidad Internacional</h4>
+                        <p className="text-sm md:text-base leading-relaxed">
+                          Para los usuarios de otros países de las Américas y la comunidad internacional, el IIRESODH aplica como marco vinculante y de tutela efectiva los <strong>Principios Jurídicos sobre Privacidad y Protección de Datos Personales de la OEA</strong>, asegurando los estándares universales de transparencia, lealtad, finalidad legítima y seguridad informática.
+                        </p>
+                      </div>
                     </div>
                   </div>
 
                   <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.cr_sec10_tit', '10. Contacto')}</h3>
+                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">10. Modificaciones y Contacto</h3>
+                    <p className="mb-3">El IIRESODH se reserva el derecho de actualizar la presente Política de Privacidad para reflejar cambios en nuestras prácticas institucionales o en las regulaciones internacionales aplicables. La fecha de la última revisión constará siempre en el encabezado de este documento.</p>
                     <div className="bg-gray-50 p-8 rounded-2xl mt-4 text-left not-italic font-normal text-sm md:text-base border border-gray-100">
                       <p className="font-bold text-main-blue mb-1 uppercase tracking-tight">Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</p>
                       <p className="mb-1"><strong>Cédula de persona jurídica:</strong> 3-002-671392</p>
-                      <p className="mb-1"><strong>Correo electrónico:</strong> <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">contacto@iiresodh.org</a></p>
+                      <p className="mb-1"><strong>Correo electrónico:</strong> <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors font-bold">contacto@iiresodh.org</a></p>
                       <p><strong>Dirección:</strong> Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica.</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* =========================================
-                  CONTENIDO: AVISO PARA MÉXICO
-              ========================================= */}
-              {activeTab === "mexico" && (
-                <div className={legalTextClass}>
-                  <div className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
-                    <h2 className="text-2xl md:text-4xl font-bold text-main-blue mb-2">{t('privacidad.mx_titulo', 'Aviso de Privacidad (MÉXICO)')}</h2>
-                    <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">{t('privacidad.ultima_act', 'Fecha de última actualización: 29 de marzo de 2026')}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.mx_sec1_tit', '1. Introducción y Marco Legal')}</h3>
-                    <p className="mb-3">{t('privacidad.mx_sec1_p1', 'En estricto cumplimiento a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP) aplicable en los Estados Unidos Mexicanos, se emite el presente Aviso de Privacidad para informar a los usuarios (en adelante, el “Titular”) sobre el tratamiento de sus datos en el sitio web institucional: https://iiresodh.org.')}</p>
-                    <div className="bg-pale-blue/20 p-6 rounded-2xl mt-6">
-                      <p className="text-sm font-medium text-main-blue leading-relaxed">
-                        <strong>{t('privacidad.mx_sec1_nota', 'Importante:')}</strong> {t('privacidad.mx_sec1_p2', 'Este Aviso no cubre el servicio tecnológico PIDA-AI, el cual cuenta con su propio Responsable jurídico y Aviso de Privacidad independiente en https://pida-ai.com.')}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.mx_sec2_tit', '2. Identidad y Domicilio del Responsable')}</h3>
-                    <p>{t('privacidad.mx_sec2_p1', 'El Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH), con domicilio en Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica, es el Responsable general de recabar sus datos personales, del uso que se le dé a los mismos y de su protección. Para las transacciones de libros y pagos realizados a través de Stripe, el responsable es IIRESODH PAYMENTS, LLC, con domicilio en 131 Continental Dr Suite 305, Newark, DE 19713, US.')}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.mx_sec3_tit', '3. Datos Personales que Tratamos')}</h3>
-                    <p className="mb-3">{t('privacidad.mx_sec3_p1', 'Para las finalidades señaladas en el presente aviso, podemos recabar los siguientes datos personales:')}</p>
-                    <ul className="list-disc pl-6 space-y-2">
-                      <li><strong>{t('privacidad.mx_sec3_l1_tit', 'Datos de Identificación y Contacto:')}</strong> {t('privacidad.mx_sec3_l1_txt', 'Nombre completo, correo electrónico, institución a la que pertenece y país.')}</li>
-                      <li><strong>{t('privacidad.mx_sec3_l2_tit', 'Datos de Navegación y Transacción Digital:')}</strong> {t('privacidad.mx_sec3_l2_txt', 'Para la compra de manuales académicos, IIRESODH PAYMENTS, LLC recopila y procesa su dirección IP, metadatos de archivos descargados, geolocalización e identificadores únicos de dispositivos.')}</li>
-                    </ul>
-                    <p className="mt-6 text-main-red font-bold uppercase tracking-wider text-sm">{t('privacidad.mx_sec3_sensibles', 'Datos Personales Sensibles:')}</p>
-                    <p>{t('privacidad.mx_sec3_p2', 'El IIRESODH no recaba ni trata datos personales sensibles para la operación de este portal. Le rogamos abstenerse de enviar información clasificada como sensible a través de nuestros formularios de contacto general.')}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.mx_sec4_tit', '4. Finalidades del Tratamiento')}</h3>
-                    <p className="font-bold mb-2 text-main-blue uppercase text-xs tracking-widest">{t('privacidad.mx_sec4_primarias', 'Finalidades Primarias:')}</p>
-                    <ul className="list-disc pl-6 mb-4 space-y-1">
-                      <li>{t('privacidad.mx_sec4_l1', 'Proveer la información solicitada respecto a nuestras actividades y defensa de derechos humanos.')}</li>
-                      <li>{t('privacidad.mx_sec4_l2', 'Contactar al Titular en respuesta a sus mensajes, dudas o comentarios.')}</li>
-                      <li>{t('privacidad.mx_sec4_l3', 'Gestionar la inscripción a eventos, foros o programas académicos dictados por el IIRESODH.')}</li>
-                      <li>{t('privacidad.mx_sec4_l4', 'Procesar la venta de material bibliográfico digital y asegurar la integridad de los activos mediante medidas técnicas de prevención de piratería e infracciones a la Ley Federal del Derecho de Autor.')}</li>
-                    </ul>
-
-                    <p className="font-bold mb-2 text-main-blue uppercase text-xs tracking-widest">{t('privacidad.mx_sec4_secundarias', 'Finalidades Secundarias:')}</p>
-                    <ul className="list-disc pl-6 space-y-1">
-                      <li>{t('privacidad.mx_sec4_l5', 'Envío de boletines informativos institucionales.')}</li>
-                      <li>{t('privacidad.mx_sec4_l6', 'Análisis estadístico del uso del sitio web para mejora continua.')}</li>
-                    </ul>
-                    <p className="mt-4">{t('privacidad.mx_sec4_p1', 'En caso de que no desee que sus datos personales sean tratados para las Finalidades Secundarias, usted puede manifestar su negativa enviando un correo a contacto@iiresodh.org.')}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.mx_sec5_tit', '5. Transferencias y/o Remisiones de Datos Personales')}</h3>
-                    <p className="mb-3">{t('privacidad.mx_sec5_p1', 'Le informamos que sus datos personales no son compartidos, vendidos ni transferidos a terceros (otros responsables) dentro ni fuera del país, salvo en aquellos casos en que la Ley lo exija expresamente (artículo 37 de la LFPDPPP).')}</p>
-                    <p>{t('privacidad.mx_sec5_p2', 'El IIRESODH podrá realizar remisiones de datos a proveedores de servicios (ej. servidores web, gestores de correo) que fungen como Encargados y asumen las mismas obligaciones de confidencialidad y seguridad establecidas en este Aviso.')}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.mx_sec6_tit', '6. Derechos ARCO y Revocación del Consentimiento')}</h3>
-                    <p className="mb-3">{t('privacidad.mx_sec6_p1', 'Usted tiene derecho a conocer qué datos personales tenemos de usted (Acceso); solicitar la corrección de su información en caso de ser inexacta (Rectificación); que la eliminemos de nuestros registros (Cancelación); así como Oponerse al uso de sus datos para fines específicos.')}</p>
-                    <p className="mb-3">{t('privacidad.mx_sec6_p2', 'Para ejercer cualquiera de los derechos ARCO, o revocar su consentimiento, deberá presentar la solicitud respectiva a través de un correo electrónico dirigido a contacto@iiresodh.org, incluyendo:')}</p>
-                    <ol className="list-decimal pl-6 mt-3 space-y-2 font-medium">
-                      <li>{t('privacidad.mx_sec6_l1', 'Su nombre y correo electrónico para recibir respuesta.')}</li>
-                      <li>{t('privacidad.mx_sec6_l2', 'Documento oficial que acredite su identidad.')}</li>
-                      <li>{t('privacidad.mx_sec6_l3', 'La descripción clara y precisa de los datos respecto de los cuales busca ejercer el derecho.')}</li>
-                    </ol>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.mx_sec7_tit', '7. Uso de Cookies')}</h3>
-                    <p>{t('privacidad.mx_sec7_p1', 'Nuestro sitio web utiliza tecnologías como cookies para mejorar su experiencia, analizar el tráfico y adaptar el contenido. Usted puede configurar su navegador web para rechazar todas las cookies o para que le avise cuando se envíe una cookie.')}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.mx_sec8_tit', '8. Modificaciones al Aviso de Privacidad')}</h3>
-                    <p>{t('privacidad.mx_sec8_p1', 'El IIRESODH se reserva el derecho de efectuar en cualquier momento modificaciones o actualizaciones al presente aviso de privacidad. Cualquier cambio estará disponible y visible al público en esta misma página web institucional.')}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.mx_sec9_tit', '9. Contacto')}</h3>
-                    <div className="bg-gray-50 p-8 rounded-2xl mt-4 text-left not-italic font-normal text-sm md:text-base border border-gray-100">
-                      <p className="font-bold text-main-blue mb-1 uppercase tracking-tight">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</p>
-                      <p className="mb-1"><strong>{t('privacidad.correo', 'Correo electrónico:')}</strong> <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors">contacto@iiresodh.org</a></p>
-                      <p><strong>{t('privacidad.domicilio', 'Domicilio:')}</strong> Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica.</p>
                     </div>
                   </div>
                 </div>

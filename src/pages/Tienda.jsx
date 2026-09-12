@@ -166,7 +166,7 @@ const FormularioPago = ({ libroId, precio, moneda, titulo }) => {
   };
 
   const esMexico = moneda === "MXN";
-  const urlPrivacidad = esMexico ? "/privacidad?tab=mexico" : "/privacidad?tab=costarica";
+  const urlPrivacidad = "/privacidad";
   const textoPrivacidad = esMexico ? t('tienda.aviso_privacidad', "Aviso de Privacidad") : t('tienda.politica_privacidad', "Política de Privacidad");
   const articuloPrivacidad = esMexico ? t('tienda.el', "el ") : t('tienda.la', "la ");
 

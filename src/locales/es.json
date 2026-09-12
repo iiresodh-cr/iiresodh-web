@@ -75,19 +75,19 @@
     "btn_enviando": "Enviando...",
     "btn_enviar": "Enviar Mensaje",
     "acepto_privacidad_1": "He leído y autorizo el tratamiento de mis datos de conformidad con la",
-    "acepto_privacidad_link": "Política de Privacidad y Ley N° 8968"
+    "acepto_privacidad_link": "Política de Privacidad"
   },
   "cookies": {
     "aria_label": "Aviso de privacidad y cookies",
     "titulo": "Transparencia y Protección de Datos",
-    "descripcion": "En IIRESODH utilizamos cookies técnicas indispensables y herramientas analíticas para optimizar tu experiencia y evaluar el impacto de nuestros recursos en derechos humanos, de conformidad con la Ley N° 8968 de Costa Rica.",
+    "descripcion": "En IIRESODH utilizamos cookies técnicas indispensables y herramientas analíticas para optimizar tu experiencia y evaluar el impacto de nuestros recursos en derechos humanos, de conformidad con la Ley N° 8968 de Costa Rica y estándares de la OEA.",
     "ver_politica": "Conoce nuestra Política de Privacidad",
     "solo_necesarias": "Solo Necesarias",
     "aceptar_todas": "Aceptar Todas"
   },
   "irene": {
     "aviso_datos": "IRENE es una asistente virtual. No ingreses datos personales sensibles.",
-    "ver_privacidad": "Privacidad (Ley 8968)"
+    "ver_privacidad": "Política de Privacidad"
   },
   "quienes_somos": {
     "header_titulo": "¿Quiénes Somos?",

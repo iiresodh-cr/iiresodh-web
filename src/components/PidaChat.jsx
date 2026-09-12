@@ -434,12 +434,12 @@ export default function PidaChat() {
           <div className="px-3 py-1.5 bg-gray-50 text-[10px] text-gray-400 text-center border-t border-gray-100 flex flex-wrap items-center justify-center gap-1">
             <span>{t('irene.aviso_datos', 'IRENE es una asistente virtual. No ingreses datos personales sensibles.')}</span>
             <a 
-              href="/privacidad?tab=costarica" 
+              href="/privacidad" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="text-gray-500 hover:text-main-blue underline font-medium"
             >
-              {t('irene.ver_privacidad', 'Privacidad (Ley 8968)')}
+              {t('irene.ver_privacidad', 'Política de Privacidad')}
             </a>
           </div>
         </Paper>

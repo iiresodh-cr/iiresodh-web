@@ -524,7 +524,7 @@ export default function Home() {
                         }
                         label={
                           <span className="text-xs font-medium text-gray-700 leading-snug">
-                            {t('home.acepto_privacidad_1', 'He leído y autorizo el tratamiento de mis datos de conformidad con la')} <a href="/privacidad?tab=costarica" target="_blank" rel="noopener noreferrer" className="text-main-blue font-bold hover:underline">{t('home.acepto_privacidad_link', 'Política de Privacidad y Ley N° 8968')}</a>.
+                            {t('home.acepto_privacidad_1', 'He leído y autorizo el tratamiento de mis datos de conformidad con la')} <a href="/privacidad" target="_blank" rel="noopener noreferrer" className="text-main-blue font-bold hover:underline">{t('home.acepto_privacidad_link', 'Política de Privacidad')}</a>.
                           </span>
                         }
                         sx={{ m: 0, alignItems: 'flex-start', '& .MuiFormControlLabel-label': { mt: '2px' } }}

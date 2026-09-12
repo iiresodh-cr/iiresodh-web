@@ -57,7 +57,7 @@ export default function CookieConsentBanner() {
                 'En IIRESODH utilizamos cookies técnicas indispensables y herramientas analíticas para optimizar tu experiencia y evaluar el impacto de nuestros recursos en derechos humanos, de conformidad con la Ley N° 8968 de Costa Rica.'
               )}{' '}
               <Link 
-                to="/privacidad?tab=costarica" 
+                to="/privacidad" 
                 className="text-amber-300 hover:text-white underline font-medium ml-1 transition-colors"
               >
                 {t('cookies.ver_politica', 'Conoce nuestra Política de Privacidad')}
