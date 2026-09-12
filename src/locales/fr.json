@@ -73,7 +73,21 @@
     "form_email": "E-mail",
     "form_mensaje": "Message",
     "btn_enviando": "Envoi en cours...",
-    "btn_enviar": "Envoyer le Message"
+    "btn_enviar": "Envoyer le Message",
+    "acepto_privacidad_1": "J'ai lu et j'autorise le traitement de mes données personnelles conformément à la",
+    "acepto_privacidad_link": "Politique de Confidentialité et Loi N° 8968"
+  },
+  "cookies": {
+    "aria_label": "Avis de confidentialité et cookies",
+    "titulo": "Transparence et Protection des Données",
+    "descripcion": "À l'IIRESODH, nous utilisons des cookies techniques nécessaires et des outils analytiques pour optimiser votre expérience et évaluer l'impact de nos ressources en droits de l'homme, conformément à la Loi N° 8968 du Costa Rica.",
+    "ver_politica": "Consultez notre Politique de Confidentialité",
+    "solo_necesarias": "Nécessaires Uniquement",
+    "aceptar_todas": "Tout Accepter"
+  },
+  "irene": {
+    "aviso_datos": "IRENE est une assistante virtuelle. Veuillez ne pas saisir de données personnelles sensibles.",
+    "ver_privacidad": "Confidentialité (Loi 8968)"
   },
   "quienes_somos": {
     "header_titulo": "Qui Sommes-Nous ?",

@@ -22,7 +22,7 @@ import AdminTextField from "../components/ui/AdminTextField";
 import ToastAlert from "../components/ui/ToastAlert";
 
 // UI Externa
-import { Button, Paper, CircularProgress } from "@mui/material";
+import { Button, Paper, CircularProgress, FormControlLabel, Checkbox } from "@mui/material";
 
 // IMPORTACIONES PARA i18n Y TRADUCCIÓN DINÁMICA
 import { useTranslation } from 'react-i18next';
@@ -154,6 +154,7 @@ export default function Home() {
   const [loading, setLoading] = useState(!cachedNoticias);
   
   const [contacto, setContacto] = useState({ nombre: "", correo: "", mensaje: "" });
+  const [aceptaPrivacidad, setAceptaPrivacidad] = useState(false);
   const [estadoEnvio, setEstadoEnvio] = useState("idle");
 
   const [tituloHome, setTituloHome] = useState(() => {
@@ -234,12 +235,20 @@ export default function Home() {
 
   const handleEnviarContacto = async (e) => {
     e.preventDefault();
+    if (!aceptaPrivacidad) return;
+
     setEstadoEnvio("enviando");
     try {
       const enviarCorreo = httpsCallable(functions, 'enviarFormularioContacto');
-      await enviarCorreo(contacto);
+      await enviarCorreo({
+        ...contacto,
+        consentimientoPrivacidad: true,
+        fechaConsentimiento: new Date().toISOString(),
+        marcoLegal: "Ley N° 8968 - Costa Rica"
+      });
       setEstadoEnvio("exito");
       setContacto({ nombre: "", correo: "", mensaje: "" });
+      setAceptaPrivacidad(false);
       setTimeout(() => setEstadoEnvio("idle"), 5000);
     } catch (error) {
       console.error("Error sending email:", error);
@@ -501,11 +510,32 @@ export default function Home() {
                       />
                     </div>
                     
+                    <div className="bg-white p-3 rounded-xl border border-gray-200">
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={aceptaPrivacidad}
+                            onChange={(e) => setAceptaPrivacidad(e.target.checked)}
+                            sx={{
+                              color: '#D1D5DB',
+                              '&.Mui-checked': { color: '#1D3557' },
+                            }}
+                          />
+                        }
+                        label={
+                          <span className="text-xs font-medium text-gray-700 leading-snug">
+                            {t('home.acepto_privacidad_1', 'He leído y autorizo el tratamiento de mis datos de conformidad con la')} <a href="/privacidad?tab=costarica" target="_blank" rel="noopener noreferrer" className="text-main-blue font-bold hover:underline">{t('home.acepto_privacidad_link', 'Política de Privacidad y Ley N° 8968')}</a>.
+                          </span>
+                        }
+                        sx={{ m: 0, alignItems: 'flex-start', '& .MuiFormControlLabel-label': { mt: '2px' } }}
+                      />
+                    </div>
+
                     <Button 
                       type="submit" 
                       variant="contained" 
                       color="secondary" 
-                      disabled={estadoEnvio === "enviando"} 
+                      disabled={estadoEnvio === "enviando" || !aceptaPrivacidad} 
                       sx={{ 
                         py: 1.5, 
                         width: '100%', 

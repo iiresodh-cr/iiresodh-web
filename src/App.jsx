@@ -12,6 +12,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PidaChat from "./components/PidaChat";
+import CookieConsentBanner, { COOKIE_CONSENT_KEY } from "./components/CookieConsentBanner";
 
 // ==========================================
 // CODE SPLITTING (Carga Perezosa de Páginas)
@@ -44,10 +45,12 @@ const AnalyticsTracker = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Si config.js ya inicializó analytics o lo está inicializando, lo verificamos.
-    // Usamos un try/catch por seguridad en caso de bloqueadores de anuncios.
     const registrarVista = async () => {
       try {
+        const consent = localStorage.getItem(COOKIE_CONSENT_KEY);
+        // Si el usuario rechazó explícitamente las cookies analíticas, respetamos su decisión
+        if (consent === "necessary") return;
+
         const supported = await isSupported();
         if (supported && analytics) {
           logEvent(analytics, 'page_view', {
@@ -62,6 +65,15 @@ const AnalyticsTracker = () => {
     };
     
     registrarVista();
+
+    const handleConsentUpdate = (e) => {
+      if (e.detail === "all") {
+        registrarVista();
+      }
+    };
+
+    window.addEventListener("cookie_consent_updated", handleConsentUpdate);
+    return () => window.removeEventListener("cookie_consent_updated", handleConsentUpdate);
   }, [location]);
 
   return null;
@@ -93,6 +105,9 @@ function PublicLayout() {
       
       {/* PidaChat visible solo en la interfaz pública */}
       <PidaChat />
+
+      {/* Banner de consentimiento de cookies conforme a la Ley 8968 */}
+      <CookieConsentBanner />
     </div>
   );
 }

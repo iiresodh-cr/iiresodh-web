@@ -429,6 +429,19 @@ export default function PidaChat() {
                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
             </IconButton>
           </Paper>
+
+          {/* AVISO DE PRIVACIDAD Y PROTECCIÓN DE DATOS (LEY 8968) */}
+          <div className="px-3 py-1.5 bg-gray-50 text-[10px] text-gray-400 text-center border-t border-gray-100 flex flex-wrap items-center justify-center gap-1">
+            <span>{t('irene.aviso_datos', 'IRENE es una asistente virtual. No ingreses datos personales sensibles.')}</span>
+            <a 
+              href="/privacidad?tab=costarica" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-gray-500 hover:text-main-blue underline font-medium"
+            >
+              {t('irene.ver_privacidad', 'Privacidad (Ley 8968)')}
+            </a>
+          </div>
         </Paper>
       )}
     </div>
