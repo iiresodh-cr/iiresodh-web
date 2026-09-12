@@ -139,7 +139,6 @@ export default function Footer() {
                 href={t('footer.licencia_url', 'https://creativecommons.org/licenses/by-nc-nd/4.0/deed.es')}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label={t('footer.licencia_aria', 'Licencia Creative Commons Atribución-NoComercial-SinDerivadas 4.0 Internacional')}
                 className="hover:text-white transition-colors underline"
               >
                 {t('footer.licencia_link', 'CC BY-NC-ND 4.0')}
@@ -165,7 +164,6 @@ export default function Footer() {
             >
               <button 
                 type="button" 
-                aria-label={t('footer.aviso_sugef_aria', 'Ver advertencia regulatoria SUGEF')}
                 className="hover:text-white transition-colors cursor-help hover:border-white pb-0.5 outline-none"
               >
                 {t('footer.aviso_sugef', 'Aviso SUGEF')}
