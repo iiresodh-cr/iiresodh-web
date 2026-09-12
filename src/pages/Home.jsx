@@ -337,7 +337,7 @@ export default function Home() {
                 </h2>
                 <div className="w-16 h-1 bg-main-red mt-4 rounded-full"></div>
               </div>
-              <Link to="/noticias" className="hidden md:flex text-xs font-black text-gray-400 hover:text-main-red transition-colors uppercase tracking-[0.2em] items-center gap-2">
+              <Link to="/noticias" className="hidden md:flex text-xs font-black text-gray-600 hover:text-main-red transition-colors uppercase tracking-[0.2em] items-center gap-2">
                 {t('home.archivo_noticias', 'Archivo de Noticias')} <span aria-hidden="true" className="text-lg">&rarr;</span>
               </Link>
             </div>
@@ -403,10 +403,10 @@ export default function Home() {
                 </Swiper>
 
                 <button className="swiper-btn-prev absolute top-1/2 left-4 md:left-8 z-20 -translate-y-1/2 w-12 h-12 bg-white/90 backdrop-blur-sm shadow-md border border-gray-100 rounded-full text-main-blue hover:bg-main-red hover:text-white hover:border-main-red transition-colors duration-300 outline-none flex items-center justify-center cursor-pointer" aria-label="Ver noticia anterior">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
                 </button>
                 <button className="swiper-btn-next absolute top-1/2 right-4 md:right-8 z-20 -translate-y-1/2 w-12 h-12 bg-white/90 backdrop-blur-sm shadow-md border border-gray-100 rounded-full text-main-blue hover:bg-main-red hover:text-white hover:border-main-red transition-colors duration-300 outline-none flex items-center justify-center cursor-pointer" aria-label="Ver siguiente noticia">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
                 </button>
               </div>
             ) : null}
@@ -427,7 +427,7 @@ export default function Home() {
                   <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-main-blue tracking-tighter mb-4 leading-tight">
                     {t('home.que_hacemos_titulo', '¿Qué hacemos en IIRESODH?')}
                   </h2>
-                  <p className="text-gray-500 text-base md:text-lg font-light leading-relaxed">
+                  <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed">
                     {t('home.que_hacemos_subtitulo', 'Combinamos acción jurídica, cooperación técnica y formación académica para generar un impacto real en la sociedad.')}
                   </p>
                 </div>
@@ -440,7 +440,7 @@ export default function Home() {
                         <Scale className="w-7 h-7" strokeWidth={1.75} />
                       </div>
                       <h3 className="text-2xl font-bold text-main-blue mb-3">{t('home.litigio_titulo', 'Litigio Estratégico')}</h3>
-                      <p className="text-gray-500 font-light text-base leading-relaxed grow">{t('home.litigio_desc', 'Defensa jurídica ante tribunals internacionales para sentar precedentes en la protección de derechos.')}</p>
+                      <p className="text-gray-600 font-light text-base leading-relaxed grow">{t('home.litigio_desc', 'Defensa jurídica ante tribunals internacionales para sentar precedentes en la protección de derechos.')}</p>
                     </article>
                   </Link>
 
@@ -451,7 +451,7 @@ export default function Home() {
                         <Earth className="w-7 h-7" strokeWidth={1.75} />
                       </div>
                       <h3 className="text-2xl font-bold text-main-blue mb-3">{t('home.incidencia_titulo', 'Incidencia Internacional')}</h3>
-                      <p className="text-gray-500 font-light text-base leading-relaxed grow">{t('home.incidencia_desc', 'Investigaciones, informes de impacto y documentos de litigio estratégico.')}</p>
+                      <p className="text-gray-600 font-light text-base leading-relaxed grow">{t('home.incidencia_desc', 'Investigaciones, informes de impacto y documentos de litigio estratégico.')}</p>
                     </article>
                   </Link>
 
@@ -463,7 +463,7 @@ export default function Home() {
                       </div>
                       <div>
                         <h3 className="text-2xl font-bold text-main-blue mb-2">{t('home.formacion_titulo', 'Formación Especializada')}</h3>
-                        <p className="text-gray-500 font-light text-base leading-relaxed">{t('home.formacion_desc', 'Certificaciones y programas académicos diseñados para los líderes del cambio social.')}</p>
+                        <p className="text-gray-600 font-light text-base leading-relaxed">{t('home.formacion_desc', 'Certificaciones y programas académicos diseñados para los líderes del cambio social.')}</p>
                       </div>
                     </article>
                   </Link>
@@ -474,7 +474,7 @@ export default function Home() {
               <div className="lg:col-span-5 flex flex-col h-full">
                 <article className="bg-gray-50/50 p-8 md:p-10 border border-gray-100 rounded-3xl flex flex-col h-full shadow-sm">
                   <h3 className="text-2xl md:text-3xl font-black text-main-blue mb-2">{t('home.contacto_titulo', '¿Hablamos?')}</h3>
-                  <p className="text-gray-500 font-light mb-8 text-sm md:text-base leading-relaxed">
+                  <p className="text-gray-600 font-light mb-8 text-sm md:text-base leading-relaxed">
                     {t('home.contacto_subtitulo', 'Estamos aquí para colaborar y responder tus dudas.')}
                   </p>
                   

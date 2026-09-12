@@ -158,8 +158,8 @@ export default function Navbar() {
                 <button 
                   type="button"
                   onClick={() => cambiarIdioma('es')}
-                  className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${idiomaActual === 'es' ? 'bg-white text-main-blue shadow-sm border border-gray-100' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
-                  aria-label="Cambiar a Español"
+                  className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${idiomaActual === 'es' ? 'bg-white text-main-blue shadow-sm border border-gray-100' : 'text-gray-600 hover:text-main-blue hover:bg-gray-100'}`}
+                  aria-label="ES - Español"
                   aria-pressed={idiomaActual === 'es'}
                   aria-current={idiomaActual === 'es' ? 'true' : undefined}
                 >
@@ -168,8 +168,8 @@ export default function Navbar() {
                 <button 
                   type="button"
                   onClick={() => cambiarIdioma('en')}
-                  className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${idiomaActual === 'en' ? 'bg-white text-main-blue shadow-sm border border-gray-100' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
-                  aria-label="Switch to English"
+                  className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${idiomaActual === 'en' ? 'bg-white text-main-blue shadow-sm border border-gray-100' : 'text-gray-600 hover:text-main-blue hover:bg-gray-100'}`}
+                  aria-label="EN - English"
                   aria-pressed={idiomaActual === 'en'}
                   aria-current={idiomaActual === 'en' ? 'true' : undefined}
                 >
@@ -178,8 +178,8 @@ export default function Navbar() {
                 <button 
                   type="button"
                   onClick={() => cambiarIdioma('fr')}
-                  className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${idiomaActual === 'fr' ? 'bg-white text-main-blue shadow-sm border border-gray-100' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
-                  aria-label="Passer en Français"
+                  className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${idiomaActual === 'fr' ? 'bg-white text-main-blue shadow-sm border border-gray-100' : 'text-gray-600 hover:text-main-blue hover:bg-gray-100'}`}
+                  aria-label="FR - Français"
                   aria-pressed={idiomaActual === 'fr'}
                   aria-current={idiomaActual === 'fr' ? 'true' : undefined}
                 >
@@ -195,7 +195,7 @@ export default function Navbar() {
             
             <div className="w-full md:w-auto flex justify-start order-2 md:order-1 mt-4 md:mt-0 mb-4 md:mb-0">
               {!isHome ? (
-                <Link to="/" className="flex items-center gap-2 text-sm font-bold tracking-wider uppercase text-main-blue hover:text-light-blue transition-colors" aria-label="Regresar a la página principal">
+                <Link to="/" className="flex items-center gap-2 text-sm font-bold tracking-wider uppercase text-main-blue hover:text-light-blue transition-colors">
                   <span className="text-lg leading-none" aria-hidden="true">&larr;</span> {t('navbar.volver', 'VOLVER')}
                 </Link>
               ) : <span className="hidden md:block w-24"></span>}
@@ -213,7 +213,7 @@ export default function Navbar() {
                   aria-controls="dropdown-nosotros"
                 >
                   {t('navbar.nosotros', 'NOSOTROS')}
-                  <svg className={`w-4 h-4 text-pale-blue transition-transform duration-300 ${activeDropdown === 'nosotros' ? 'rotate-180' : ''} md:group-hover:rotate-180`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                  <svg className={`w-4 h-4 text-light-blue transition-transform duration-300 ${activeDropdown === 'nosotros' ? 'rotate-180' : ''} md:group-hover:rotate-180`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
                 <div 
                   id="dropdown-nosotros"
@@ -237,7 +237,7 @@ export default function Navbar() {
                   aria-controls="dropdown-areas"
                 >
                   {t('navbar.nuestro_trabajo', 'NUESTRO TRABAJO')}
-                  <svg className={`w-4 h-4 text-pale-blue transition-transform duration-300 ${activeDropdown === 'areas' ? 'rotate-180' : ''} md:group-hover:rotate-180`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                  <svg className={`w-4 h-4 text-light-blue transition-transform duration-300 ${activeDropdown === 'areas' ? 'rotate-180' : ''} md:group-hover:rotate-180`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
                 <div 
                   id="dropdown-areas"
@@ -272,7 +272,7 @@ export default function Navbar() {
                   aria-controls="dropdown-actualidad"
                 >
                   {t('navbar.actualidad', 'ACTUALIDAD')}
-                  <svg className={`w-4 h-4 text-pale-blue transition-transform duration-300 ${activeDropdown === 'actualidad' ? 'rotate-180' : ''} md:group-hover:rotate-180`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                  <svg className={`w-4 h-4 text-light-blue transition-transform duration-300 ${activeDropdown === 'actualidad' ? 'rotate-180' : ''} md:group-hover:rotate-180`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
                 <div 
                   id="dropdown-actualidad"
