@@ -37,7 +37,7 @@ export default function Privacidad() {
   const legalTextClass = "space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify animate-fade-in-up";
 
   return (
-    <div className="bg-white flex flex-col min-h-screen font-sans">
+    <main id="main-content" className="bg-white flex flex-col min-h-screen font-sans">
       
       {/* ENCABEZADO Estandarizado */}
       <PageHeader 
@@ -58,6 +58,7 @@ export default function Privacidad() {
               <Tabs
                 value={activeTab}
                 onChange={handleChangeTab}
+                aria-label={t('privacidad.aria_tabs', 'Pestañas de documentos legales')}
                 variant="scrollable"
                 scrollButtons="auto"
                 allowScrollButtonsMobile
@@ -91,8 +92,18 @@ export default function Privacidad() {
                   }
                 }}
               >
-                <Tab label={t('privacidad.tab_integral', 'Política de Privacidad')} value="privacidad" />
-                <Tab label={t('privacidad.tab_terminos', 'Términos de Uso')} value="terminos" />
+                <Tab 
+                  id="tab-privacidad"
+                  aria-controls="panel-privacidad"
+                  label={t('privacidad.tab_integral', 'Política de Privacidad')} 
+                  value="privacidad" 
+                />
+                <Tab 
+                  id="tab-terminos"
+                  aria-controls="panel-terminos"
+                  label={t('privacidad.tab_terminos', 'Términos de Uso')} 
+                  value="terminos" 
+                />
               </Tabs>
             </Box>
 
@@ -102,7 +113,13 @@ export default function Privacidad() {
                   CONTENIDO: POLÍTICA DE PRIVACIDAD INTEGRAL
               ========================================= */}
               {activeTab === "privacidad" && (
-                <div className={legalTextClass}>
+                <div 
+                  id="panel-privacidad"
+                  role="tabpanel"
+                  aria-labelledby="tab-privacidad"
+                  tabIndex={0}
+                  className={legalTextClass}
+                >
                   <div className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
                     <h2 className="text-2xl md:text-4xl font-bold text-main-blue mb-2">{t('privacidad.titulo_integral', 'Política de Privacidad y Protección de Datos Personales')}</h2>
                     <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">{t('privacidad.subtitulo_integral', 'Estándares Interamericanos (OEA), Sede Costa Rica (Ley N° 8968 / PRODHAB) y Cláusulas Regionales')}</p>
@@ -259,7 +276,13 @@ export default function Privacidad() {
                   CONTENIDO: TÉRMINOS Y CONDICIONES
               ========================================= */}
               {activeTab === "terminos" && (
-                <div className={legalTextClass}>
+                <div 
+                  id="panel-terminos"
+                  role="tabpanel"
+                  aria-labelledby="tab-terminos"
+                  tabIndex={0}
+                  className={legalTextClass}
+                >
                   <div className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
                     <h2 className="text-2xl md:text-4xl font-bold text-main-blue mb-2">{t('privacidad.term_titulo', 'Términos y Condiciones del Sitio Web')}</h2>
                     <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">{t('privacidad.ultima_act', 'Fecha de última actualización: 12 de septiembre de 2026')}</p>
@@ -431,6 +454,6 @@ export default function Privacidad() {
         </section>
 
       </div>
-    </div>
+    </main>
   );
 }

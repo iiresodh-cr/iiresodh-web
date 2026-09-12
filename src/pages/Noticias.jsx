@@ -273,12 +273,13 @@ export default function Noticias() {
               )}
 
               {noticias.length > 0 && (
-                <nav className="mt-16 flex items-center justify-center gap-8 border-t border-gray-100 pt-10">
+                <nav className="mt-16 flex items-center justify-center gap-8 border-t border-gray-100 pt-10" aria-label={t('noticias.paginacion_aria', 'Navegación de páginas de noticias')}>
                   <Button 
                     onClick={paginaAnterior}
                     disabled={pagina === 1 || loading}
+                    aria-label={t('noticias.anterior_aria', 'Ir a la página anterior de noticias')}
                     variant="outlined"
-                    startIcon={<span className="text-lg leading-none">&larr;</span>}
+                    startIcon={<span className="text-lg leading-none" aria-hidden="true">&larr;</span>}
                     sx={{
                       px: 4, py: 1, borderRadius: '50px', fontWeight: 'bold', fontSize: '0.75rem',
                       letterSpacing: '0.1em', color: 'primary.main', borderColor: 'primary.main',
@@ -289,15 +290,16 @@ export default function Noticias() {
                     {t('noticias.anterior', 'Anterior')}
                   </Button>
 
-                  <span className="text-main-blue font-black text-xl">
-                    {pagina}
+                  <span className="text-main-blue font-black text-xl" aria-current="page">
+                    <span className="sr-only">Página actual: </span>{pagina}
                   </span>
 
                   <Button 
                     onClick={paginaSiguiente}
                     disabled={!hayMas || loading}
+                    aria-label={t('noticias.siguiente_aria', 'Ir a la página siguiente de noticias')}
                     variant="outlined"
-                    endIcon={<span className="text-lg leading-none">&rarr;</span>}
+                    endIcon={<span className="text-lg leading-none" aria-hidden="true">&rarr;</span>}
                     sx={{
                       px: 4, py: 1, borderRadius: '50px', fontWeight: 'bold', fontSize: '0.75rem',
                       letterSpacing: '0.1em', color: 'primary.main', borderColor: 'primary.main',

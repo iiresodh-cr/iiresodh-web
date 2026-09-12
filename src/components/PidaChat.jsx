@@ -231,7 +231,9 @@ export default function PidaChat() {
             component="button"
             onClick={toggleChat}
             elevation={4}
-            aria-label="Abrir asistente IRENE"
+            aria-label={t('irene.abrir_asistente_aria', 'Abrir asistente virtual IRENE')}
+            aria-haspopup="dialog"
+            aria-expanded={isOpen}
             sx={{
               display: 'flex',
               alignItems: 'center',
@@ -249,7 +251,7 @@ export default function PidaChat() {
               }
             }}
           >
-            <img src={pidaImg} alt="PIDA Bot" className="w-12 h-12 object-contain mt-1 drop-shadow-sm" />
+            <img src={pidaImg} alt="" aria-hidden="true" className="w-12 h-12 object-contain mt-1 drop-shadow-sm" />
           </Paper>
         </Tooltip>
       )}
@@ -258,6 +260,9 @@ export default function PidaChat() {
       {isOpen && (
         <Paper 
           elevation={12} 
+          role="dialog"
+          aria-label={t('irene.dialog_label', 'Asistente Virtual IRENE')}
+          aria-modal="false"
           sx={{
             position: 'relative',
             display: 'flex',
@@ -275,12 +280,18 @@ export default function PidaChat() {
         >
           {/* MODAL DE CONFIRMACIÓN INTERNO */}
           {mostrarConfirmacion && (
-            <div className="absolute inset-0 z-20 bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center animate-fade-in-up">
-              <div className="w-16 h-16 bg-blue-50 text-main-red rounded-full flex items-center justify-center mb-4">
+            <div 
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="irene-modal-titulo"
+              aria-describedby="irene-modal-desc"
+              className="absolute inset-0 z-20 bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center animate-fade-in-up"
+            >
+              <div className="w-16 h-16 bg-blue-50 text-main-red rounded-full flex items-center justify-center mb-4" aria-hidden="true">
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               </div>
-              <h3 className="text-lg font-bold text-gray-800 mb-2">{t('irene.modal_titulo', '¿Empezar de cero?')}</h3>
-              <p className="text-sm text-gray-500 mb-6">
+              <h3 id="irene-modal-titulo" className="text-lg font-bold text-gray-800 mb-2">{t('irene.modal_titulo', '¿Empezar de cero?')}</h3>
+              <p id="irene-modal-desc" className="text-sm text-gray-500 mb-6">
                 {t('irene.modal_desc', 'IRENE olvidará la conversación actual y comenzarán una nueva.')}
               </p>
               <div className="flex gap-3 w-full">
@@ -310,7 +321,7 @@ export default function PidaChat() {
           <div className="bg-main-red p-4 flex items-center justify-between text-white shadow-md z-10 border-b border-white/10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center overflow-hidden border border-white/20">
-                <img src={pidaImg} alt="PIDA Avatar" className="w-8 h-8 object-contain mt-1" />
+                <img src={pidaImg} alt="" aria-hidden="true" className="w-8 h-8 object-contain mt-1" />
               </div>
               <div>
                 <h3 className="font-bold text-base leading-tight">IRENE</h3>
@@ -323,10 +334,10 @@ export default function PidaChat() {
                 <IconButton 
                   onClick={solicitarReinicio} 
                   size="small"
-                  aria-label="Reiniciar chat"
+                  aria-label={t('irene.aria_reiniciar', 'Reiniciar conversación')}
                   sx={{ color: 'rgba(255,255,255,0.8)', '&:hover': { color: 'white', bgcolor: 'rgba(255,255,255,0.2)' } }}
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                 </IconButton>
               </Tooltip>
               
@@ -334,17 +345,23 @@ export default function PidaChat() {
                 <IconButton 
                   onClick={toggleChat} 
                   size="small"
-                  aria-label="Cerrar chat"
+                  aria-label={t('irene.aria_cerrar', 'Cerrar asistente')}
                   sx={{ color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' } }}
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </IconButton>
               </Tooltip>
             </div>
           </div>
 
-          {/* ÁREA DE MENSAJES */}
-          <div className="flex-1 p-4 overflow-y-auto bg-gray-50 flex flex-col gap-3 min-h-75 custom-scrollbar">
+          {/* ÁREA DE MENSAJES CON LIVE REGION PARA LECTORES DE PANTALLA */}
+          <div 
+            role="log"
+            aria-live="polite"
+            aria-atomic="false"
+            aria-label={t('irene.historial_label', 'Historial de mensajes con IRENE')}
+            className="flex-1 p-4 overflow-y-auto bg-gray-50 flex flex-col gap-3 min-h-75 custom-scrollbar"
+          >
             {mensajes.map((msg, index) => {
               // Evitar renderizar la burbuja vacía si IRENE está "pensando" (mostrando los puntos)
               if (msg.isBot && !msg.text && escribiendo) return null;
@@ -353,8 +370,8 @@ export default function PidaChat() {
                 <div key={index} className={`flex ${msg.isBot ? 'justify-start' : 'justify-end'}`}>
                   <div className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm whitespace-pre-line ${
                     msg.isBot 
-                      ? 'bg-white border border-gray-100 text-gray-700 rounded-tl-sm leading-relaxed' 
-                      : 'bg-main-red text-white rounded-tr-sm leading-relaxed'
+                       ? 'bg-white border border-gray-100 text-gray-700 rounded-tl-sm leading-relaxed' 
+                       : 'bg-main-red text-white rounded-tr-sm leading-relaxed'
                   }`}>
                     {formatearMensaje(msg.text)}
                   </div>
@@ -363,8 +380,9 @@ export default function PidaChat() {
             })}
             
             {escribiendo && (
-              <div className="flex justify-start">
-                <div className="bg-white border border-gray-100 p-4 rounded-2xl rounded-tl-sm shadow-sm flex gap-1.5 items-center">
+              <div className="flex justify-start" role="status" aria-label={t('irene.escribiendo', 'IRENE está escribiendo...')}>
+                <span className="sr-only">{t('irene.escribiendo', 'IRENE está escribiendo...')}</span>
+                <div className="bg-white border border-gray-100 p-4 rounded-2xl rounded-tl-sm shadow-sm flex gap-1.5 items-center" aria-hidden="true">
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
@@ -394,6 +412,7 @@ export default function PidaChat() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={t('irene.input_placeholder', 'Escribe tu mensaje aquí...')}
+              inputProps={{ 'aria-label': t('irene.input_aria', 'Mensaje para IRENE') }}
               disabled={escribiendo}
               sx={{
                 flex: 1, 
@@ -415,6 +434,7 @@ export default function PidaChat() {
             <IconButton
               type="submit"
               disabled={!input.trim() || escribiendo}
+              aria-label={t('irene.btn_enviar_aria', 'Enviar mensaje a IRENE')}
               color="secondary" 
               sx={{
                 bgcolor: 'secondary.main', 
@@ -426,7 +446,7 @@ export default function PidaChat() {
                 '&.Mui-disabled': { bgcolor: '#E5E7EB', color: '#9CA3AF' }
               }}
             >
-               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
             </IconButton>
           </Paper>
 

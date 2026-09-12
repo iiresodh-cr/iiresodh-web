@@ -100,13 +100,14 @@ export default function InformesAnuales() {
                 >
                   {/* Imagen de fondo (Portada del informe) */}
                   <div 
+                    role="img"
                     className="absolute inset-0 bg-cover bg-top transition-transform duration-700 group-hover:scale-110"
                     style={{ backgroundImage: `url(${informe.imagenPrincipalUrl || 'https://via.placeholder.com/600x800?text=Sin+Portada'})` }}
                     aria-label={`${t('informes.aria_portada', 'Portada del Informe')} ${informe.año}`}
                   />
                   
                   {/* Filtro oscuro para legibilidad */}
-                  <div className="absolute inset-0 bg-linear-to-t from-main-blue via-main-blue/50 to-transparent opacity-90 group-hover:opacity-75 transition-opacity duration-500" />
+                  <div className="absolute inset-0 bg-linear-to-t from-main-blue via-main-blue/50 to-transparent opacity-90 group-hover:opacity-75 transition-opacity duration-500" aria-hidden="true" />
                   
                     {/* Contenido de la tarjeta */}
                   <div className="absolute inset-0 p-6 flex flex-col justify-end">
@@ -118,16 +119,17 @@ export default function InformesAnuales() {
                       {t('informes.tarjeta_titulo', 'Informe Anual de Gestión')}
                     </h3>
                     
-                    <div className="w-12 h-1 bg-main-red rounded-full mb-6 transition-all duration-500 group-hover:w-24"></div>
+                    <div className="w-12 h-1 bg-main-red rounded-full mb-6 transition-all duration-500 group-hover:w-24" aria-hidden="true"></div>
 
                     <a 
                       href={obtenerUrlDescargaInforme(informe)} 
                       target="_blank" 
                       rel="noopener noreferrer" 
                       onClick={(e) => e.stopPropagation()}
+                      aria-label={`${t('informes.btn_descargar', 'Descargar PDF')} - ${t('informes.tarjeta_titulo', 'Informe Anual de Gestión')} ${informe.año}`}
                       className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white text-white hover:text-main-blue backdrop-blur-md border border-white/30 text-sm font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl transition-all duration-300 w-full shadow-lg"
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                       {t('informes.btn_descargar', 'Descargar PDF')}
                     </a>
                   </div>

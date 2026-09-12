@@ -154,25 +154,34 @@ export default function Navbar() {
             <div className="flex items-center gap-4 md:gap-6 w-full md:w-auto justify-center md:justify-end shrink-0">
               
               {/* Selector de Idiomas */}
-              <div className="flex bg-gray-50 rounded-lg p-1 border border-gray-200 shadow-inner">
+              <div className="flex bg-gray-50 rounded-lg p-1 border border-gray-200 shadow-inner" role="group" aria-label="Selector de idioma">
                 <button 
+                  type="button"
                   onClick={() => cambiarIdioma('es')}
                   className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${idiomaActual === 'es' ? 'bg-white text-main-blue shadow-sm border border-gray-100' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
                   aria-label="Cambiar a Español"
+                  aria-pressed={idiomaActual === 'es'}
+                  aria-current={idiomaActual === 'es' ? 'true' : undefined}
                 >
                   ES
                 </button>
                 <button 
+                  type="button"
                   onClick={() => cambiarIdioma('en')}
                   className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${idiomaActual === 'en' ? 'bg-white text-main-blue shadow-sm border border-gray-100' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
                   aria-label="Switch to English"
+                  aria-pressed={idiomaActual === 'en'}
+                  aria-current={idiomaActual === 'en' ? 'true' : undefined}
                 >
                   EN
                 </button>
                 <button 
+                  type="button"
                   onClick={() => cambiarIdioma('fr')}
                   className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${idiomaActual === 'fr' ? 'bg-white text-main-blue shadow-sm border border-gray-100' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
                   aria-label="Passer en Français"
+                  aria-pressed={idiomaActual === 'fr'}
+                  aria-current={idiomaActual === 'fr' ? 'true' : undefined}
                 >
                   FR
                 </button>
@@ -223,11 +232,17 @@ export default function Navbar() {
                 <button 
                   className="flex items-center justify-between md:justify-center w-full gap-1.5 hover:text-light-blue transition-colors py-3 md:py-2 cursor-pointer" 
                   onClick={() => toggleDropdown('areas')}
+                  aria-haspopup="true"
+                  aria-expanded={activeDropdown === 'areas'}
+                  aria-controls="dropdown-areas"
                 >
                   {t('navbar.nuestro_trabajo', 'NUESTRO TRABAJO')}
-                  <svg className={`w-4 h-4 text-pale-blue transition-transform duration-300 ${activeDropdown === 'areas' ? 'rotate-180' : ''} md:group-hover:rotate-180`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                  <svg className={`w-4 h-4 text-pale-blue transition-transform duration-300 ${activeDropdown === 'areas' ? 'rotate-180' : ''} md:group-hover:rotate-180`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
-                <div className={`${activeDropdown === 'areas' ? 'block' : 'hidden'} md:block md:absolute md:left-0 md:top-full md:w-80 md:bg-white md:shadow-xl md:rounded-b md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300 md:border-t-4 md:border-main-red w-full bg-gray-50 border-l-4 border-main-red md:border-l-0 z-50`}>
+                <div 
+                  id="dropdown-areas"
+                  className={`${activeDropdown === 'areas' ? 'block' : 'hidden'} md:block md:absolute md:left-0 md:top-full md:w-80 md:bg-white md:shadow-xl md:rounded-b md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300 md:border-t-4 md:border-main-red w-full bg-gray-50 border-l-4 border-main-red md:border-l-0 z-50`}
+                >
                   <ul className="py-2 flex flex-col">
                     <li><Link to="/litigio-estrategico" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors">{t('navbar.litigio', 'Litigio Estratégico')}</Link></li>
                     <li><Link to="/cursos" className="block w-full px-5 py-3 md:py-2 hover:bg-gray-100 transition-colors mt-1">{t('navbar.formacion', 'Formación Especializada')}</Link></li>

@@ -26,4 +26,12 @@ i18n
     }
   });
 
+// Sincronizar dinámicamente el atributo lang en <html> para lectores de pantalla y accesibilidad (WCAG 3.1.1 / 3.1.2)
+if (typeof document !== 'undefined') {
+  document.documentElement.lang = i18n.language ? i18n.language.substring(0, 2) : 'es';
+  i18n.on('languageChanged', (lng) => {
+    document.documentElement.lang = lng ? lng.substring(0, 2) : 'es';
+  });
+}
+
 export default i18n;

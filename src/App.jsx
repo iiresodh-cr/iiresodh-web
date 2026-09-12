@@ -94,8 +94,15 @@ const FallbackLoader = () => (
 function PublicLayout() {
   return (
     <div className="flex flex-col min-h-screen relative">
+      {/* Enlace accesible para saltar directamente al contenido principal (WCAG 2.4.1) */}
+      <a 
+        href="#main-content" 
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-main-blue focus:text-white focus:font-bold focus:rounded-lg focus:shadow-xl focus:outline-none focus:ring-2 focus:ring-main-red"
+      >
+        Saltar al contenido principal
+      </a>
       <Navbar />
-      <div className="grow">
+      <div id="main-content" className="grow focus:outline-none" tabIndex="-1">
         {/* El Suspense envuelve solo el contenido para no desaparecer el Navbar */}
         <Suspense fallback={<FallbackLoader />}>
           <Outlet />

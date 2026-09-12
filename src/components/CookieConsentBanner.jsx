@@ -38,6 +38,7 @@ export default function CookieConsentBanner() {
   return (
     <aside 
       role="region" 
+      aria-live="polite"
       aria-label={t('cookies.aria_label', 'Aviso de privacidad y cookies')}
       className="fixed bottom-0 inset-x-0 z-50 p-4 md:p-6 bg-[#172B47]/95 backdrop-blur-md border-t border-white/10 text-white shadow-2xl animate-fade-in-up"
     >
