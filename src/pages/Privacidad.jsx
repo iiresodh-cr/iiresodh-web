@@ -106,7 +106,7 @@ export default function Privacidad() {
                   <div className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
                     <h2 className="text-2xl md:text-4xl font-bold text-main-blue mb-2">{t('privacidad.titulo_integral', 'Política de Privacidad y Protección de Datos Personales')}</h2>
                     <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">{t('privacidad.subtitulo_integral', 'Estándares Interamericanos (OEA), Sede Costa Rica (Ley N° 8968 / PRODHAB) y Cláusulas Regionales')}</p>
-                    <p className="text-xs text-gray-400 mt-1">{t('privacidad.ultima_act', 'Fecha de última actualización: 29 de marzo de 2026')}</p>
+                    <p className="text-xs text-gray-400 mt-1">{t('privacidad.ultima_act', 'Fecha de última actualización: 12 de septiembre de 2026')}</p>
                   </div>
 
                   <div>
@@ -262,7 +262,7 @@ export default function Privacidad() {
                 <div className={legalTextClass}>
                   <div className="border-b border-gray-100 pb-6 mb-8 text-center md:text-left">
                     <h2 className="text-2xl md:text-4xl font-bold text-main-blue mb-2">{t('privacidad.term_titulo', 'Términos y Condiciones del Sitio Web')}</h2>
-                    <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">{t('privacidad.ultima_act', 'Fecha de última actualización: 29 de marzo de 2026')}</p>
+                    <p className="text-xs md:text-sm font-bold text-light-blue uppercase tracking-widest">{t('privacidad.ultima_act', 'Fecha de última actualización: 12 de septiembre de 2026')}</p>
                   </div>
 
                   <div>
