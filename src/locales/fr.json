@@ -85,10 +85,6 @@
     "solo_necesarias": "Nécessaires Uniquement",
     "aceptar_todas": "Tout Accepter"
   },
-  "irene": {
-    "aviso_datos": "IRENE est une assistante virtuelle. Veuillez ne pas saisir de données personnelles sensibles.",
-    "ver_privacidad": "Politique de Confidentialité"
-  },
   "quienes_somos": {
     "header_titulo": "Qui Sommes-Nous ?",
     "header_subtitulo": "Défendre la démocratie et les droits de l'homme depuis le Costa Rica pour le monde.",
@@ -562,6 +558,8 @@
     "btn_cancelar": "Annuler",
     "btn_reiniciar": "Oui, redémarrer",
     "input_placeholder": "Écrivez votre message ici...",
-    "rol": "Assistante Virtuelle IIRESODH"
+    "rol": "Assistante Virtuelle IIRESODH",
+    "aviso_datos": "IRENE est une assistante virtuelle. Veuillez ne pas saisir de données personnelles sensibles.",
+    "ver_privacidad": "Politique de Confidentialité"
   }
 }

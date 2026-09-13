@@ -85,10 +85,6 @@
     "solo_necesarias": "Necessary Only",
     "aceptar_todas": "Accept All"
   },
-  "irene": {
-    "aviso_datos": "IRENE is a virtual assistant. Please do not enter sensitive personal data.",
-    "ver_privacidad": "Privacy Policy"
-  },
   "quienes_somos": {
     "header_titulo": "Who Are We?",
     "header_subtitulo": "Defending democracy and human rights from Costa Rica to the world.",
@@ -562,6 +558,8 @@
     "btn_cancelar": "Cancel",
     "btn_reiniciar": "Yes, restart",
     "input_placeholder": "Type your message here...",
-    "rol": "IIRESODH Virtual Assistant"
+    "rol": "IIRESODH Virtual Assistant",
+    "aviso_datos": "IRENE is a virtual assistant. Please do not enter sensitive personal data.",
+    "ver_privacidad": "Privacy Policy"
   }
 }
