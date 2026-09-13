@@ -194,8 +194,8 @@ export default function Privacidad() {
                     <p className="mb-3">El IIRESODH <strong>no vende, no alquila, no cede ni comercializa</strong> sus datos personales con terceros para fines publicitarios o lucrativos.</p>
                     <p className="mb-3">Para la prestación de nuestros servicios digitales, realizamos transferencias internacionales indispensables a encargados tecnológicos internacionales que operan bajo rigurosos acuerdos de confidencialidad y estándares de seguridad:</p>
                     <ul className="list-disc pl-6 space-y-2">
-                      <li><strong>Google Cloud Platform / Firebase (EE.UU.):</strong> Infraestructura de servidores seguros en la nube y base de datos con cifrado de punto a punto.</li>
-                      <li><strong>Stripe / IIRESODH PAYMENTS, LLC (EE.UU.):</strong> Pasarela de pago certificada bajo el estándar bancario internacional PCI-DSS Nivel 1 para la compra de publicaciones.</li>
+                      <li><strong>Infraestructura de Nube y Almacenamiento Seguro (EE.UU.):</strong> Proveedor internacional líder de infraestructura cloud computacional (Google Cloud Platform / Firebase) que opera bajo rigurosos acuerdos de procesamiento de datos y confidencialidad, con bases de datos protegidas mediante cifrado de punto a punto y estándares internacionales de ciberseguridad.</li>
+                      <li><strong>Stripe / IIRESODH PAYMENTS, LLC (EE.UU.):</strong> Pasarela de pago certificada bajo el estándar bancario internacional PCI-DSS Nivel 1 para el procesamiento de transacciones y adquisición de publicaciones.</li>
                     </ul>
                   </div>
 
@@ -438,12 +438,14 @@ export default function Privacidad() {
                   </div>
 
                   <div>
-                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.term_sec23_tit', '23. Información de Contacto')}</h3>
-                    <p className="mb-4">{t('privacidad.term_sec23_p1', 'Este Sitio Web es propiedad y está gestionado por el IIRESODH. Puede contactarnos en relación con estos Términos y Condiciones escribiéndonos a la siguiente dirección de correo electrónico o postal:')}</p>
-                    <div className="bg-gray-50 p-8 rounded-2xl mt-4 text-left not-italic font-normal text-sm md:text-base border border-gray-100">
-                      <p className="font-bold text-main-blue mb-1 uppercase tracking-tight">Instituto Internacional de Responsabilidad Social y Derechos Humanos – IIRESODH</p>
-                      <p className="mb-1"><strong>{t('privacidad.correo', 'Correo electrónico:')}</strong> <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors font-bold">contacto@iiresodh.org</a></p>
-                      <p><strong>{t('privacidad.direccion_postal', 'Dirección postal:')}</strong> Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica.</p>
+                    <h3 className="text-lg md:text-xl font-bold text-main-blue mb-3">{t('privacidad.term_sec23_tit', '23. Información Institucional y de Contacto')}</h3>
+                    <p className="mb-4">{t('privacidad.term_sec23_p1', 'Este Sitio Web es de titularidad y se encuentra administrado formalmente por la Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH). Puede contactarnos en relación con estos Términos y Condiciones escribiéndonos a las siguientes direcciones:')}</p>
+                    <div className="bg-gray-50 p-8 rounded-2xl mt-4 text-left not-italic font-normal text-sm md:text-base border border-gray-100 space-y-2">
+                      <p className="font-bold text-main-blue mb-1 uppercase tracking-tight">Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH)</p>
+                      <p className="mb-1"><strong>Cédula de persona jurídica:</strong> 3-002-671392</p>
+                      <p className="mb-1"><strong>{t('privacidad.correo', 'Correo electrónico institucional:')}</strong> <a href="mailto:contacto@iiresodh.org" className="text-light-blue hover:text-main-blue transition-colors font-bold">contacto@iiresodh.org</a></p>
+                      <p><strong>{t('privacidad.direccion_postal', 'Domicilio legal / Sede central:')}</strong> Centro Corporativo San Rafael, piso 3, oficina 28, San José, CP-10203, Costa Rica.</p>
+                      <p className="pt-2 text-xs text-gray-500 border-t border-gray-200">Para las transacciones de libros y pasarela de pago, interviene conjuntamente IIRESODH PAYMENTS, LLC, con domicilio en 131 Continental Dr Suite 305, Newark, DE 19713, EE.UU.</p>
                     </div>
                   </div>
                 </div>
