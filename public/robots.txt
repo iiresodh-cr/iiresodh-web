@@ -1,2 +1,11 @@
+# robots.txt para https://iiresodh.org
 User-agent: *
-Disallow: /
+Allow: /
+
+# Rutas privadas y administrativas
+Disallow: /admin
+Disallow: /login
+Disallow: /qa-feedback
+
+# Ubicación del Sitemap oficial
+Sitemap: https://iiresodh.org/sitemap.xml
