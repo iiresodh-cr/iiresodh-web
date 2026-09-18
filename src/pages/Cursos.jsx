@@ -196,12 +196,12 @@ export default function Cursos() {
                         ) : (
                           <div className={`text-[10px] font-black uppercase tracking-[0.15em] py-3.5 px-6 rounded-xl w-full text-center border flex flex-col items-center justify-center gap-1.5 ${estado === 'proximamente' ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-gray-100 text-gray-400 border-gray-200'}`}>
                             <span>{btnText}</span>
-                            {estado === 'proximamente' && (esAdmin || curso.titulo?.toLowerCase().includes('palermo')) && (
+                            {estado === 'proximamente' && esAdmin && (
                               <Link
-                                to={`/cursos/${curso.slug || 'curso-internacional-palermo-2027'}?preview=true`}
+                                to={`/cursos/${curso.slug || 'curso-internacional-palermo-2027'}?preview=admin`}
                                 className="text-[9px] text-main-blue hover:text-main-red font-bold underline transition-colors"
                               >
-                                [Ver Vista Previa / Borrador]
+                                [Ver Vista Previa / Borrador (Solo Admin)]
                               </Link>
                             )}
                           </div>

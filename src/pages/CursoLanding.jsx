@@ -177,6 +177,7 @@ export default function CursoLanding() {
   const [curso, setCurso] = useState(null);
   const [loading, setLoading] = useState(true);
   const [esAdmin, setEsAdmin] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   // Estados del formulario interactivo de registro / solicitud bancaria
   const [formData, setFormData] = useState({
@@ -201,6 +202,7 @@ export default function CursoLanding() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setEsAdmin(!!user);
+      setAuthChecked(true);
     });
     return () => unsubscribe();
   }, []);
@@ -312,7 +314,7 @@ export default function CursoLanding() {
     }
   };
 
-  if (loading) {
+  if (loading || !authChecked) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4">
         <CircularProgress size={50} thickness={4} sx={{ color: "#1D3557" }} />
@@ -325,9 +327,10 @@ export default function CursoLanding() {
 
   const landing = curso?.landingPage || DATOS_PALERMO_2027.landingPage;
   const esPublica = landing.publicada === true;
-  const tieneAccesoVistaPrevia = esPublica || isPreviewParam || esAdmin;
+  // Acceso permitido únicamente si la página está publicada o si el usuario es administrador autenticado
+  const tieneAcceso = esPublica || esAdmin;
 
-  if (!tieneAccesoVistaPrevia) {
+  if (!tieneAcceso) {
     return (
       <main className="min-h-[80vh] flex items-center justify-center px-6 bg-basic-beige/50 font-sans">
         <div className="max-w-xl bg-white p-8 md:p-12 rounded-3xl shadow-xl border border-gray-100 text-center space-y-6">
@@ -339,7 +342,7 @@ export default function CursoLanding() {
           <h1 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
             Programa Académico en Preparación
           </h1>
-          <p className="text-gray-600 font-light leading-relaxed">
+          <p className="text-gray-600 font-light leading-relaxed text-sm">
             La página oficial y el programa detallado de este curso se encuentran en proceso de configuración editorial y estarán disponibles próximamente.
           </p>
           <div className="pt-4 flex flex-col sm:flex-row gap-3 justify-center">
@@ -349,16 +352,12 @@ export default function CursoLanding() {
             >
               Volver a Cursos
             </Link>
-            <button
-              onClick={() => {
-                const newUrl = new URL(window.location.href);
-                newUrl.searchParams.set("preview", "true");
-                window.location.href = newUrl.toString();
-              }}
-              className="border border-gray-300 hover:border-main-blue text-gray-700 hover:text-main-blue text-xs font-bold uppercase tracking-widest py-3.5 px-6 rounded-xl transition-all cursor-pointer"
+            <Link
+              to="/login"
+              className="border border-gray-300 hover:border-main-blue text-gray-700 hover:text-main-blue text-xs font-bold uppercase tracking-widest py-3.5 px-6 rounded-xl transition-all"
             >
-              Ver en Modo Vista Previa
-            </button>
+              Acceso Administrativo
+            </Link>
           </div>
         </div>
       </main>
