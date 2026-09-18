@@ -831,37 +831,63 @@ exports.descargarDocumento = onRequest({ region: "us-central1" }, async (req, re
   // /documentos/:coleccion/:id/:nombreArchivo.pdf
   const pathSegments = req.path.split("/").filter(Boolean);
   // pathSegments[0] === 'documentos'
-  const coleccion = pathSegments[1]; // 'incidencia' | 'informes'
+  const coleccion = pathSegments[1]; // 'incidencia' | 'informes' | 'anuncios' | 'comunicados'
   const docId = pathSegments[2];
 
-  if (!coleccion || !docId) {
+  if (!coleccion) {
     return res.status(400).send("Parámetros de documento insuficientes.");
   }
 
   // Validamos colecciones permitidas
-  const coleccionesPermitidas = ["incidencia", "informes"];
+  const coleccionesPermitidas = ["incidencia", "informes", "anuncios", "comunicados"];
   if (!coleccionesPermitidas.includes(coleccion)) {
     return res.status(404).send("Categoría de documento no válida.");
   }
 
   try {
     const db = admin.firestore();
-    const docSnap = await db.collection(coleccion).doc(docId).get();
-
-    if (!docSnap.exists) {
-      return res.status(404).send("Documento no encontrado.");
-    }
-
-    const data = docSnap.data();
+    let docSnap = null;
+    let data = null;
     let fileUrl = null;
     let tituloDocumento = "";
 
-    if (coleccion === "incidencia") {
-      fileUrl = data.archivoIncidenciaUrl;
-      tituloDocumento = data.titulo || "Documento_Incidencia_IIRESODH";
-    } else if (coleccion === "informes") {
-      fileUrl = data.archivoInformeUrl;
-      tituloDocumento = data.titulo || `Informe_Anual_${data.año || ""}_IIRESODH`;
+    if (coleccion === "anuncios" || coleccion === "comunicados") {
+      // Para anuncios emergentes, podemos recibir docId como ID del historial o "activo"
+      if (!docId || docId === "activo" || docId.toLowerCase().endsWith(".pdf")) {
+        docSnap = await db.collection("configuracion").doc("anuncio_emergente").get();
+      } else {
+        // Buscar primero en el historial
+        docSnap = await db.collection("configuracion").doc("anuncio_emergente").collection("historial").doc(docId).get();
+        if (!docSnap.exists) {
+          docSnap = await db.collection("configuracion").doc("anuncio_emergente").get();
+        }
+      }
+
+      if (!docSnap || !docSnap.exists) {
+        return res.status(404).send("Comunicado o anuncio no encontrado.");
+      }
+
+      data = docSnap.data();
+      fileUrl = data.archivoPdfUrl;
+      tituloDocumento = data.archivoPdfNombre || data.titulo || "Comunicado_IIRESODH";
+    } else {
+      if (!docId) {
+        return res.status(400).send("Parámetros de documento insuficientes.");
+      }
+
+      docSnap = await db.collection(coleccion).doc(docId).get();
+      if (!docSnap.exists) {
+        return res.status(404).send("Documento no encontrado.");
+      }
+
+      data = docSnap.data();
+      if (coleccion === "incidencia") {
+        fileUrl = data.archivoIncidenciaUrl;
+        tituloDocumento = data.titulo || "Documento_Incidencia_IIRESODH";
+      } else if (coleccion === "informes") {
+        fileUrl = data.archivoInformeUrl;
+        tituloDocumento = data.titulo || `Informe_Anual_${data.año || ""}_IIRESODH`;
+      }
     }
 
     if (!fileUrl) {
