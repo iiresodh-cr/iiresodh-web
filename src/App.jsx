@@ -38,6 +38,7 @@ const ArticuloDetalle = lazy(() => import("./pages/ArticuloDetalle"));
 const Tienda = lazy(() => import("./pages/Tienda"));
 const Incidencia = lazy(() => import("./pages/Incidencia"));
 const Feedback = lazy(() => import("./pages/Feedback")); // <- NUEVA RUTA QA
+const DocumentoProxy = lazy(() => import("./pages/DocumentoProxy"));
 
 // ==========================================
 // SEGUIMIENTO DE GOOGLE ANALYTICS
@@ -156,6 +157,11 @@ function App() {
 
           {/* QA Y FEEDBACK INTERNO */}
           <Route path="/qa-feedback" element={<Feedback />} />
+          
+          {/* PROXY Y RESOLUCIÓN DE DOCUMENTOS INSTITUCIONALES */}
+          <Route path="/documentos/:coleccion" element={<DocumentoProxy />} />
+          <Route path="/documentos/:coleccion/:id" element={<DocumentoProxy />} />
+          <Route path="/documentos/:coleccion/:id/:slug" element={<DocumentoProxy />} />
           
           <Route path="*" element={<NotFound />} />
         </Route>

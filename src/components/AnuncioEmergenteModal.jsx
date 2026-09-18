@@ -116,7 +116,27 @@ export default function AnuncioEmergenteModal({
   };
 
   const defaultUrl = typeof window !== "undefined" ? window.location.origin : "https://iiresodh.org";
-  const urlParaCompartir = anuncio?.archivoPdfUrl || defaultUrl;
+  
+  // Si el anuncio tiene archivo PDF, generamos la URL institucional sobre el dominio raíz (/documentos/anuncios/...)
+  const obtenerUrlPdfInstitucional = () => {
+    if (!anuncio?.archivoPdfUrl) return defaultUrl;
+    if (anuncio.archivoPdfUrl.startsWith("blob:")) {
+      return anuncio.archivoPdfUrl;
+    }
+
+    const docId = anuncio.id || "activo";
+    const textoBase = (anuncio.archivoPdfNombre || anuncio.titulo || "comunicado")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    
+    const slug = textoBase.replace(/-pdf$/, "").replace(/\.pdf$/, "") || "comunicado";
+    return `${defaultUrl}/documentos/anuncios/${docId}/${slug}.pdf`;
+  };
+
+  const urlParaCompartir = anuncio?.archivoPdfUrl ? obtenerUrlPdfInstitucional() : defaultUrl;
 
   const handleCopiarEnlace = async () => {
     try {
@@ -231,7 +251,7 @@ export default function AnuncioEmergenteModal({
                 {/* Acciones del PDF (Abrir en pantalla completa y Descargar) */}
                 <div className="flex items-center gap-2 shrink-0">
                   <a
-                    href={anuncio.archivoPdfUrl}
+                    href={urlParaCompartir}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-main-blue bg-white border border-gray-200 hover:border-main-blue rounded-xl transition-all shadow-2xs hover:shadow-xs cursor-pointer"
@@ -242,7 +262,7 @@ export default function AnuncioEmergenteModal({
                   </a>
 
                   <a
-                    href={anuncio.archivoPdfUrl}
+                    href={urlParaCompartir}
                     download={anuncio.archivoPdfNombre || "comunicado_iiresodh.pdf"}
                     target="_blank"
                     rel="noopener noreferrer"
