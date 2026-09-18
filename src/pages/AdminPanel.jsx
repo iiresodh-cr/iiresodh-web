@@ -13,6 +13,8 @@ import AdminTextField from "../components/ui/AdminTextField";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import ToastAlert from "../components/ui/ToastAlert";
 import RichTextEditor from "../components/ui/RichTextEditor";
+import AdminAnunciosEmergentes from "../components/admin/AdminAnunciosEmergentes";
+import { Megaphone } from "lucide-react";
 // prettier-ignore
 import { Button, Checkbox, FormControlLabel, Box, Chip, Select, MenuItem, FormControl, InputLabel, CircularProgress, Switch } from "@mui/material";
 import { DATOS_PALERMO_2027 } from "./CursoLanding";
@@ -757,7 +759,7 @@ useEffect(() => {
 
   // 2. Motor de carga inteligente (Instantáneo vs Retrasado)
   useEffect(() => {
-    if (vistaActiva === "inicio" || vistaActiva === "adminWeb" || vistaActiva === "estadisticas") return;
+    if (vistaActiva === "inicio" || vistaActiva === "adminWeb" || vistaActiva === "estadisticas" || vistaActiva === "anunciosEmergentes") return;
 
     if (!busquedaTexto && !busquedaFecha) {
       cargarItems();
@@ -1476,6 +1478,22 @@ useEffect(() => {
                   <p className="text-sm text-gray-500">Gestión de noticias y comunicados</p>
                 </div>
               </button>
+
+              <button 
+                onClick={() => setVistaActiva("anunciosEmergentes")} 
+                disabled={!misPermisos.comunicaciones}
+                className={`bg-white border border-gray-100 p-10 rounded-3xl shadow-sm transition-all duration-300 flex flex-col items-center justify-center gap-5 group text-center ${
+                  !misPermisos.comunicaciones ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:shadow-xl hover:-translate-y-1 hover:border-amber-500/30 cursor-pointer"
+                }`}
+              >
+                <div className="p-4 bg-amber-50 text-amber-600 rounded-2xl group-hover:bg-amber-600 group-hover:text-white transition-colors duration-300">
+                  <Megaphone className="w-10 h-10" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-800 mb-1">Ventana Emergente</h2>
+                  <p className="text-sm text-gray-500">Popups de anuncios y documentos PDF</p>
+                </div>
+              </button>
               
               <button 
                 onClick={() => setVistaActiva("articulos")} 
@@ -1593,7 +1611,7 @@ useEffect(() => {
           </section>
         )}
 
-        {(vistaActiva !== "inicio" && vistaActiva !== "adminWeb" && vistaActiva !== "estadisticas") && (
+        {(vistaActiva !== "inicio" && vistaActiva !== "adminWeb" && vistaActiva !== "estadisticas" && vistaActiva !== "anunciosEmergentes") && (
           <div className="animate-fade-in-up">
             <button onClick={() => { limpiarFormulario(); setVistaActiva("inicio"); }} className="mb-8 flex items-center gap-2 text-gray-500 font-medium hover:text-main-blue transition-colors cursor-pointer group">
               <div className="bg-white p-1.5 rounded-full shadow-sm group-hover:shadow border border-gray-100 transition-all">
@@ -2903,6 +2921,13 @@ useEffect(() => {
               </div>
             </section>
           </div>
+        )}
+
+        {vistaActiva === "anunciosEmergentes" && (
+          <AdminAnunciosEmergentes 
+            onVolver={() => setVistaActiva("inicio")} 
+            logActividad={logActividad} 
+          />
         )}
       </div>
     </main>
