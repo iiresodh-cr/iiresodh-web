@@ -14,7 +14,8 @@ import ConfirmDialog from "../components/ui/ConfirmDialog";
 import ToastAlert from "../components/ui/ToastAlert";
 import RichTextEditor from "../components/ui/RichTextEditor";
 // prettier-ignore
-import { Button, Checkbox, FormControlLabel, Box, Chip, Select, MenuItem, FormControl, InputLabel, CircularProgress } from "@mui/material";
+import { Button, Checkbox, FormControlLabel, Box, Chip, Select, MenuItem, FormControl, InputLabel, CircularProgress, Switch } from "@mui/material";
+import { DATOS_PALERMO_2027 } from "./CursoLanding";
 
 const generarSlug = (texto) => {
   if (!texto) return `item-${Math.random().toString(36).substring(2, 6)}`;
@@ -273,6 +274,22 @@ export default function AdminPanel() {
   const [enlaceInscripcion, setEnlaceInscripcion] = useState("");
   const [cursoActivo, setCursoActivo] = useState(true);
   const [estadoInscripcion, setEstadoInscripcion] = useState("abierta");
+
+  // ESTADOS PARA LANDING PAGE DE CURSOS
+  const [landingHabilitada, setLandingHabilitada] = useState(false);
+  const [landingPublicada, setLandingPublicada] = useState(false); // Por defecto NO pública como solicitó el usuario
+  const [landingLema, setLandingLema] = useState("");
+  const [landingUbicacionFechas, setLandingUbicacionFechas] = useState("");
+  const [landingPrecioInversion, setLandingPrecioInversion] = useState("");
+  const [landingInversionDetalle, setLandingInversionDetalle] = useState("");
+  const [landingEnlaceStripe, setLandingEnlaceStripe] = useState("");
+  const [landingHeroCita, setLandingHeroCita] = useState("");
+  const [landingHeroCitaAutor, setLandingHeroCitaAutor] = useState("");
+  const [landingLegadoTitulo, setLandingLegadoTitulo] = useState("");
+  const [landingLegadoTexto, setLandingLegadoTexto] = useState("");
+  const [landingSedeNombre, setLandingSedeNombre] = useState("");
+  const [landingSedeTexto, setLandingSedeTexto] = useState("");
+  const [landingPrograma, setLandingPrograma] = useState([]);
   
   // ESTADOS PARA COMUNICACIONES
   const [tagsSeleccionados, setTagsSeleccionados] = useState([]);
@@ -319,6 +336,29 @@ export default function AdminPanel() {
     } catch (error) {
       console.error("Error al registrar actividad:", error);
     }
+  };
+
+  const cargarPlantillaPalermo = () => {
+    setTitulo(DATOS_PALERMO_2027.titulo);
+    setResumen(DATOS_PALERMO_2027.resumen);
+    setEstadoInscripcion("proximamente");
+    setCursoActivo(false);
+    setLandingHabilitada(true);
+    setLandingPublicada(false); // Por defecto NO público
+    setLandingLema(DATOS_PALERMO_2027.landingPage.lema);
+    setLandingUbicacionFechas(DATOS_PALERMO_2027.landingPage.ubicacionFechas);
+    setLandingPrecioInversion(DATOS_PALERMO_2027.landingPage.precioInversion);
+    setLandingInversionDetalle(DATOS_PALERMO_2027.landingPage.inversionDetalle);
+    setLandingEnlaceStripe(DATOS_PALERMO_2027.landingPage.enlaceStripe || "");
+    setLandingHeroCita(DATOS_PALERMO_2027.landingPage.heroCita);
+    setLandingHeroCitaAutor(DATOS_PALERMO_2027.landingPage.heroCitaAutor);
+    setLandingLegadoTitulo(DATOS_PALERMO_2027.landingPage.legadoTitulo);
+    setLandingLegadoTexto(DATOS_PALERMO_2027.landingPage.legadoTexto);
+    setLandingSedeNombre(DATOS_PALERMO_2027.landingPage.sedeNombre);
+    setLandingSedeTexto(DATOS_PALERMO_2027.landingPage.sedeTexto);
+    setLandingPrograma(DATOS_PALERMO_2027.landingPage.programa);
+    setSlugOriginal(DATOS_PALERMO_2027.slug);
+    setMensaje("¡Plantilla del Curso Palermo 2027 cargada con éxito en el formulario!");
   };
 
   const handleLogout = () => {
@@ -867,6 +907,22 @@ useEffect(() => {
         setCursoActivo(item.cursoActivo !== undefined ? item.cursoActivo : true);
         setEstadoInscripcion(item.estadoInscripcion || (item.cursoActivo ? "abierta" : "cerrada"));
         setCarruselExistente(item.imagenesCarruselUrls || []);
+
+        const lp = item.landingPage || {};
+        setLandingHabilitada(!!lp.habilitada);
+        setLandingPublicada(!!lp.publicada);
+        setLandingLema(lp.lema || "");
+        setLandingUbicacionFechas(lp.ubicacionFechas || "");
+        setLandingPrecioInversion(lp.precioInversion || "");
+        setLandingInversionDetalle(lp.inversionDetalle || "");
+        setLandingEnlaceStripe(lp.enlaceStripe || "");
+        setLandingHeroCita(lp.heroCita || "");
+        setLandingHeroCitaAutor(lp.heroCitaAutor || "");
+        setLandingLegadoTitulo(lp.legadoTitulo || "");
+        setLandingLegadoTexto(lp.legadoTexto || "");
+        setLandingSedeNombre(lp.sedeNombre || "");
+        setLandingSedeTexto(lp.sedeTexto || "");
+        setLandingPrograma(lp.programa || []);
       }
       
       setImagenPrincipalAnterior(item.imagenPrincipalUrl || null);
@@ -932,6 +988,21 @@ useEffect(() => {
     setEnlaceInscripcion("");
     setCursoActivo(true);
     setEstadoInscripcion("abierta");
+
+    setLandingHabilitada(false);
+    setLandingPublicada(false);
+    setLandingLema("");
+    setLandingUbicacionFechas("");
+    setLandingPrecioInversion("");
+    setLandingInversionDetalle("");
+    setLandingEnlaceStripe("");
+    setLandingHeroCita("");
+    setLandingHeroCitaAutor("");
+    setLandingLegadoTitulo("");
+    setLandingLegadoTexto("");
+    setLandingSedeNombre("");
+    setLandingSedeTexto("");
+    setLandingPrograma([]);
     
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -1209,6 +1280,31 @@ useEffect(() => {
           datos.cursoActivo = estadoInscripcion === "abierta";
           datos.estadoInscripcion = estadoInscripcion;
           datos.imagenesCarruselUrls = [...carruselExistente, ...nuevasUrls];
+          
+          if (landingHabilitada) {
+            datos.landingPage = {
+              habilitada: true,
+              publicada: landingPublicada,
+              lema: landingLema || "",
+              ubicacionFechas: landingUbicacionFechas || "",
+              precioInversion: landingPrecioInversion || "",
+              inversionDetalle: landingInversionDetalle || "",
+              enlaceStripe: landingEnlaceStripe || "",
+              heroCita: landingHeroCita || "",
+              heroCitaAutor: landingHeroCitaAutor || "",
+              legadoTitulo: landingLegadoTitulo || "",
+              legadoTexto: landingLegadoTexto || "",
+              sedeNombre: landingSedeNombre || "",
+              sedeTexto: landingSedeTexto || "",
+              programa: landingPrograma.length > 0 ? landingPrograma : (DATOS_PALERMO_2027.landingPage.programa || []),
+              destacados: DATOS_PALERMO_2027.landingPage.destacados,
+              pilares: DATOS_PALERMO_2027.landingPage.pilares,
+              sedeLogistica: DATOS_PALERMO_2027.landingPage.sedeLogistica,
+              bancoInfo: DATOS_PALERMO_2027.landingPage.bancoInfo
+            };
+          } else {
+            datos.landingPage = { habilitada: false, publicada: false };
+          }
           delete datos.contenido;
         }
       }
@@ -1777,6 +1873,234 @@ useEffect(() => {
                               <MenuItem value="proximamente">Próximamente</MenuItem>
                             </Select>
                           </FormControl>
+                        </div>
+
+                        {/* BOTÓN RÁPIDO PARA CARGAR EJEMPLO PALERMO 2027 */}
+                        <div className="md:col-span-2 bg-gradient-to-r from-blue-950 via-main-blue to-slate-900 p-5 rounded-2xl text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
+                          <div className="space-y-1 text-center sm:text-left">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-amber-300 bg-black/40 px-2.5 py-0.5 rounded">
+                              Plantilla Rápida
+                            </span>
+                            <h4 className="font-bold text-sm md:text-base">
+                              Curso Internacional 2027 — Palermo, Sicilia
+                            </h4>
+                            <p className="text-xs text-pale-blue font-light">
+                              Carga automáticamente la estructura completa con Falcone & Borsellino, syllabus de 5 días e inversión.
+                            </p>
+                          </div>
+                          <Button
+                            variant="contained"
+                            onClick={cargarPlantillaPalermo}
+                            sx={{
+                              bgcolor: '#B92F32',
+                              '&:hover': { bgcolor: '#8b1d20' },
+                              fontWeight: 'bold',
+                              fontSize: '11px',
+                              textTransform: 'none',
+                              borderRadius: '12px',
+                              px: 3,
+                              py: 1.2,
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            ⚡ Cargar Plantilla Palermo 2027
+                          </Button>
+                        </div>
+
+                        {/* TARJETA DE CONFIGURACIÓN DE LANDING */}
+                        <div className="md:col-span-2 bg-white border-2 border-main-blue/20 rounded-2xl p-6 shadow-sm space-y-6">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg">🌐</span>
+                                <h3 className="text-lg font-black text-main-blue">
+                                  Landing Page Dinámica del Curso
+                                </h3>
+                              </div>
+                              <p className="text-xs text-gray-500 font-light mt-0.5">
+                                Genera una página de presentación completa con hero histórico, syllabus, sede e inscripción directa.
+                              </p>
+                            </div>
+
+                            <div className="flex items-center gap-4">
+                              <FormControlLabel
+                                control={
+                                  <Switch
+                                    checked={landingHabilitada}
+                                    onChange={(e) => setLandingHabilitada(e.target.checked)}
+                                    color="primary"
+                                  />
+                                }
+                                label={
+                                  <span className="text-xs font-bold text-gray-700">
+                                    {landingHabilitada ? "Habilitada" : "Deshabilitada"}
+                                  </span>
+                                }
+                              />
+                            </div>
+                          </div>
+
+                          {landingHabilitada && (
+                            <div className="space-y-6">
+                              
+                              {/* INTERRUPTOR DE PUBLICACIÓN (PRIVACIDAD) */}
+                              <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-black uppercase tracking-wider text-amber-900">
+                                      Estado de Publicación:
+                                    </span>
+                                    <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full ${landingPublicada ? 'bg-green-600 text-white' : 'bg-amber-600 text-white'}`}>
+                                      {landingPublicada ? "Pública en la Web" : "Borrador (No Pública)"}
+                                    </span>
+                                  </div>
+                                  <p className="text-[11px] text-amber-800 font-light">
+                                    {landingPublicada 
+                                      ? "La página es accesible por el público y el botón en /cursos dirigirá a los visitantes a ella."
+                                      : "La página NO es accesible al público general en /cursos. Solo administradores pueden verla con el botón de vista previa."}
+                                  </p>
+                                </div>
+
+                                <div className="flex items-center gap-3 shrink-0">
+                                  <FormControlLabel
+                                    control={
+                                      <Switch
+                                        checked={landingPublicada}
+                                        onChange={(e) => setLandingPublicada(e.target.checked)}
+                                        color="success"
+                                      />
+                                    }
+                                    label={
+                                      <span className="text-xs font-bold text-gray-700">
+                                        {landingPublicada ? "Pública" : "Oculta"}
+                                      </span>
+                                    }
+                                  />
+
+                                  <a
+                                    href={`/cursos/${slugOriginal || (titulo?.toLowerCase().includes('palermo') ? 'curso-internacional-palermo-2027' : 'palermo-2027')}?preview=admin`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="bg-main-blue hover:bg-light-blue text-white text-xs font-bold py-2 px-4 rounded-lg shadow-sm transition flex items-center gap-1.5"
+                                  >
+                                    <span>👁️ Vista Previa</span>
+                                  </a>
+                                </div>
+                              </div>
+
+                              {/* CAMPOS ESPECÍFICOS DE LA LANDING */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="md:col-span-2">
+                                  <AdminTextField
+                                    label="Lema / Enfoque Temático del Hero"
+                                    value={landingLema}
+                                    onChange={(e) => setLandingLema(e.target.value)}
+                                    placeholder="Ej: APLICACIÓN DE LAS CONVENCIONES DE PALERMO CONTRA EL CRIMEN ORGANIZADO"
+                                  />
+                                </div>
+
+                                <div>
+                                  <AdminTextField
+                                    label="Ubicación y Fechas del Evento"
+                                    value={landingUbicacionFechas}
+                                    onChange={(e) => setLandingUbicacionFechas(e.target.value)}
+                                    placeholder="Ej: Palermo, Sicilia, Italia | Del 17 al 23 de mayo de 2027"
+                                  />
+                                </div>
+
+                                <div>
+                                  <AdminTextField
+                                    label="Inversión / Costo Oficial"
+                                    value={landingPrecioInversion}
+                                    onChange={(e) => setLandingPrecioInversion(e.target.value)}
+                                    placeholder="Ej: 5.000 €"
+                                  />
+                                </div>
+
+                                <div className="md:col-span-2">
+                                  <AdminTextField
+                                    label="Detalle de lo que incluye la inversión"
+                                    value={landingInversionDetalle}
+                                    onChange={(e) => setLandingInversionDetalle(e.target.value)}
+                                    placeholder="Ej: Por persona. Incluye sesiones magistrales, visitas de campo, materiales exclusivos y certificación internacional."
+                                  />
+                                </div>
+
+                                <div className="md:col-span-2">
+                                  <AdminTextField
+                                    label="Enlace Directo de Pago Stripe (Opcional)"
+                                    type="url"
+                                    value={landingEnlaceStripe}
+                                    onChange={(e) => setLandingEnlaceStripe(e.target.value)}
+                                    placeholder="https://buy.stripe.com/..."
+                                  />
+                                </div>
+
+                                <div>
+                                  <AdminTextField
+                                    label="Cita Emblemática del Hero (Opcional)"
+                                    value={landingHeroCita}
+                                    onChange={(e) => setLandingHeroCita(e.target.value)}
+                                    placeholder="«La mafia è un fenomeno umano...»"
+                                  />
+                                </div>
+
+                                <div>
+                                  <AdminTextField
+                                    label="Autor de la Cita"
+                                    value={landingHeroCitaAutor}
+                                    onChange={(e) => setLandingHeroCitaAutor(e.target.value)}
+                                    placeholder="Ej: Giovanni Falcone (1939 – 1992)"
+                                  />
+                                </div>
+
+                                <div>
+                                  <AdminTextField
+                                    label="Título Sección Legado y Visión"
+                                    value={landingLegadoTitulo}
+                                    onChange={(e) => setLandingLegadoTitulo(e.target.value)}
+                                    placeholder="Ej: Nuestro Legado y Visión"
+                                  />
+                                </div>
+
+                                <div>
+                                  <AdminTextField
+                                    label="Nombre de la Sede"
+                                    value={landingSedeNombre}
+                                    onChange={(e) => setLandingSedeNombre(e.target.value)}
+                                    placeholder="Ej: Palermo, Sicilia (Italia)"
+                                  />
+                                </div>
+
+                                <div className="md:col-span-2">
+                                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                                    Texto Descriptivo del Legado y Enfoque Histórico
+                                  </label>
+                                  <textarea
+                                    rows={4}
+                                    value={landingLegadoTexto}
+                                    onChange={(e) => setLandingLegadoTexto(e.target.value)}
+                                    placeholder="Describe la trascendencia del curso, el legado de los jueces y el marco de las Naciones Unidas..."
+                                    className="w-full text-sm p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue transition"
+                                  />
+                                </div>
+
+                                <div className="md:col-span-2">
+                                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                                    Texto Descriptivo de la Sede (Palermo)
+                                  </label>
+                                  <textarea
+                                    rows={3}
+                                    value={landingSedeTexto}
+                                    onChange={(e) => setLandingSedeTexto(e.target.value)}
+                                    placeholder="Información sobre la ciudad sede, trascendencia jurídica, atractivos y logística..."
+                                    className="w-full text-sm p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue transition"
+                                  />
+                                </div>
+                              </div>
+
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}

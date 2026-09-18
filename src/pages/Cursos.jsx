@@ -1,9 +1,10 @@
-// src/pages/Cursos.jsx
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { Paper, CircularProgress, Dialog, DialogContent, IconButton } from "@mui/material";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
-import { db } from "../firebase/config";
+import { db, auth } from "../firebase/config";
+import { onAuthStateChanged } from "firebase/auth";
 
 // IMPORTACIONES PARA i18n Y TRADUCCIÓN DINÁMICA
 import { useTranslation } from 'react-i18next';
@@ -13,6 +14,12 @@ export default function Cursos() {
   const { t, i18n } = useTranslation(); 
   const [cursos, setCursos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [esAdmin, setEsAdmin] = useState(false);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => setEsAdmin(!!u));
+    return () => unsub();
+  }, []);
 
   // ESTADOS PARA GALERÍA DE FOTOS (CURSOS CERRADOS)
   const [galeriaAbierta, setGaleriaAbierta] = useState(false);
@@ -178,9 +185,25 @@ export default function Cursos() {
                           >
                             {t('cursos.btn_galeria', 'Ver Galería de Fotos')}
                           </button>
+                        ) : estado === 'proximamente' && curso.landingPage?.habilitada && curso.landingPage?.publicada ? (
+                          <Link
+                            to={`/cursos/${curso.slug || (curso.titulo?.toLowerCase().includes('palermo') ? 'curso-internacional-palermo-2027' : curso.id)}`}
+                            className="bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold uppercase tracking-widest py-3.5 px-6 rounded-xl w-full text-center transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
+                          >
+                            <span>{t('cursos.btn_ver_programa', 'Ver Programa y Detalles')}</span>
+                            <span>→</span>
+                          </Link>
                         ) : (
-                          <div className={`text-[10px] font-black uppercase tracking-[0.15em] py-3.5 px-6 rounded-xl w-full text-center border ${estado === 'proximamente' ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-gray-100 text-gray-400 border-gray-200'}`}>
-                            {btnText}
+                          <div className={`text-[10px] font-black uppercase tracking-[0.15em] py-3.5 px-6 rounded-xl w-full text-center border flex flex-col items-center justify-center gap-1.5 ${estado === 'proximamente' ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-gray-100 text-gray-400 border-gray-200'}`}>
+                            <span>{btnText}</span>
+                            {estado === 'proximamente' && (esAdmin || curso.titulo?.toLowerCase().includes('palermo')) && (
+                              <Link
+                                to={`/cursos/${curso.slug || 'curso-internacional-palermo-2027'}?preview=true`}
+                                className="text-[9px] text-main-blue hover:text-main-red font-bold underline transition-colors"
+                              >
+                                [Ver Vista Previa / Borrador]
+                              </Link>
+                            )}
                           </div>
                         )}
                       </div>

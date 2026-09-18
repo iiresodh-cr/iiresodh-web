@@ -31,6 +31,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const InformesAnuales = lazy(() => import("./pages/InformesAnuales"));
 const PaginaPais = lazy(() => import("./pages/PaginaPais"));
 const Cursos = lazy(() => import("./pages/Cursos"));
+const CursoLanding = lazy(() => import("./pages/CursoLanding"));
 const Equipo = lazy(() => import("./pages/Equipo"));
 const ArticulosAcademicos = lazy(() => import("./pages/ArticulosAcademicos"));
 const ArticuloDetalle = lazy(() => import("./pages/ArticuloDetalle"));
@@ -140,6 +141,7 @@ function App() {
           <Route path="/incidencia-internacional/colombia" element={<PaginaPais paisKey="colombia" />} />
           
           <Route path="/cursos" element={<Cursos />} />
+          <Route path="/cursos/:slug" element={<CursoLanding />} />
           <Route path="/donaciones" element={<Donaciones />} />
           <Route path="/noticias" element={<Noticias />} />
           <Route path="/noticias/:id" element={<NoticiaDetalle />} />
