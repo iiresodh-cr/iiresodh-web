@@ -86,6 +86,11 @@ service cloud.firestore {
       allow write: if esAdmin();
     }
 
+    match /anuncios_emergentes/{docId=**} {
+      allow read: if true;
+      allow write: if esAdmin();
+    }
+
     // ===== FEEDBACK QA TEMPORAL =====
     match /feedback_qa/{docId=**} {
       allow read, write: if true;

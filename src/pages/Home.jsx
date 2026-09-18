@@ -20,6 +20,7 @@ import isotipoFondo from "../assets/Isotipo-color-512.webp";
 // UI Propia
 import AdminTextField from "../components/ui/AdminTextField";
 import ToastAlert from "../components/ui/ToastAlert";
+import AnuncioEmergenteModal from "../components/AnuncioEmergenteModal";
 
 // UI Externa
 import { Button, Paper, CircularProgress, FormControlLabel, Checkbox } from "@mui/material";
@@ -568,6 +569,9 @@ export default function Home() {
 
         </div>
       </div>
+
+      {/* Ventana Emergente para comunicados y documentos PDF oficiales */}
+      <AnuncioEmergenteModal />
     </main>
   );
 }

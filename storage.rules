@@ -59,6 +59,12 @@ service firebase.storage {
       allow write: if esAdmin();
     }
 
+    // REGLAS PARA ANUNCIOS Y COMUNICADOS EMERGENTES (Imágenes y PDFs públicos)
+    match /anuncios/{allPaths=**} {
+      allow read: if true; 
+      allow write: if esAdmin();
+    }
+
     // TIENDA DE LIBROS
     match /libros {
       match /portadas/{allPaths=**} {
