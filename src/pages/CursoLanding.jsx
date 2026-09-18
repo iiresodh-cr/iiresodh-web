@@ -467,26 +467,31 @@ export default function CursoLanding() {
               </p>
 
               {/* TARJETA COMPACTA DE INVERSIÓN Y ACCIÓN RÁPIDA */}
-              <div className="bg-white/10 border border-white/15 p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 backdrop-blur-xs">
-                <div className="flex items-baseline gap-3">
-                  <span className="text-2xl md:text-3xl font-black text-amber-400">
-                    {landing.precioInversion || "5.000 €"}
-                  </span>
-                  <span className="text-xs text-gray-300 font-light">
+              <div className="bg-white/10 border border-white/15 p-4 sm:p-5 rounded-2xl backdrop-blur-sm shadow-xl flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+                <div className="space-y-1.5 flex-1 min-w-0 text-left">
+                  <div className="flex items-baseline gap-2.5 flex-wrap">
+                    <span className="text-2xl sm:text-3xl font-black text-amber-400 tracking-tight">
+                      {landing.precioInversion || "5.000 €"}
+                    </span>
+                    <span className="text-[10px] sm:text-xs uppercase font-bold tracking-widest text-amber-200/90 bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-400/20">
+                      Inversión Académica
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-200/90 font-light leading-relaxed">
                     {landing.inversionDetalle || "Inversión por persona con certificación internacional."}
-                  </span>
+                  </p>
                 </div>
 
-                <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 w-full xl:w-auto shrink-0 pt-1 xl:pt-0">
                   <button
                     onClick={() => irASeccion("inscripcion")}
-                    className="bg-main-red hover:bg-red-800 text-white font-bold text-xs uppercase tracking-widest py-2.5 px-5 rounded-lg shadow-md transition-all active:scale-95 text-center cursor-pointer shrink-0"
+                    className="flex-1 sm:flex-initial bg-main-red hover:bg-red-800 text-white font-bold text-xs uppercase tracking-widest py-3 px-5 rounded-xl shadow-md hover:shadow-red-900/30 transition-all active:scale-95 text-center cursor-pointer whitespace-nowrap"
                   >
                     Inscríbete Ahora
                   </button>
                   <button
                     onClick={() => irASeccion("programa")}
-                    className="bg-white/15 hover:bg-white/25 text-white font-semibold text-xs uppercase tracking-wider py-2.5 px-4 rounded-lg border border-white/20 transition-all text-center cursor-pointer shrink-0"
+                    className="flex-1 sm:flex-initial bg-white/15 hover:bg-white/25 text-white font-semibold text-xs uppercase tracking-wider py-3 px-4 rounded-xl border border-white/25 transition-all text-center cursor-pointer whitespace-nowrap"
                   >
                     Ver Programa
                   </button>
