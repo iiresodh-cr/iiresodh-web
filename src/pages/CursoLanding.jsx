@@ -188,7 +188,10 @@ export default function CursoLanding() {
     comentarios: ""
   });
   const [enviandoSolicitud, setEnviandoSolicitud] = useState(false);
-  const [solicitudExit  // Tab activo principal del Hub Interactivo del Curso
+  const [solicitudExitosa, setSolicitudExitosa] = useState(false);
+  const [alerta, setAlerta] = useState({ open: false, mensaje: "", tipo: "success" });
+
+  // Tab activo principal del Hub Interactivo del Curso
   const [seccionActiva, setSeccionActiva] = useState("legado"); // 'legado' | 'programa' | 'destacados' | 'sede' | 'inscripcion'
 
   // Tab activo en la estructura del programa (Días)
@@ -1064,31 +1067,6 @@ export default function CursoLanding() {
           </div>
         </div>
       </footer>
-
-      {/* SNACKBAR DE NOTIFICACIONES */}
-      <Snackbar
-        open={alerta.open}
-        autoHideDuration={6000}
-        onClose={() => setAlerta({ ...alerta, open: false })}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={() => setAlerta({ ...alerta, open: false })}
-          severity={alerta.tipo}
-          sx={{ width: "100%", borderRadius: "16px" }}
-        >
-          {alerta.mensaje}
-        </Alert>
-      </Snackbar>
-    </main>
-  );
-}me="font-semibold text-gray-700">Contacto de Admisiones Académicas:</p>
-            <p>formacion@iiresodh.org • (+506) 2224-0000</p>
-            <p className="text-[11px] text-gray-400">Derechos Reservados 2024 – 2027 • IIRESODH</p>
-          </div>
-
-        </div>
-      </section>
 
       {/* SNACKBAR DE NOTIFICACIONES */}
       <Snackbar
