@@ -115,14 +115,16 @@ export default function AnuncioEmergenteModal({
     }
   };
 
+  const defaultUrl = typeof window !== "undefined" ? window.location.origin : "https://iiresodh.org";
+  const urlParaCompartir = anuncio?.archivoPdfUrl || defaultUrl;
+
   const handleCopiarEnlace = async () => {
-    const url = window.location.origin;
     try {
       if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(url);
+        await navigator.clipboard.writeText(urlParaCompartir);
       } else {
         const tempInput = document.createElement("input");
-        tempInput.value = url;
+        tempInput.value = urlParaCompartir;
         document.body.appendChild(tempInput);
         tempInput.select();
         document.execCommand("copy");
@@ -137,14 +139,13 @@ export default function AnuncioEmergenteModal({
 
   if (cargando || !abierto || !anuncio) return null;
 
-  const currentUrl = typeof window !== "undefined" ? window.location.origin : "https://iiresodh.org";
   const shareText = `${anuncio.titulo || "Comunicado Oficial IIRESODH"}`;
   
   const shareUrls = {
-    whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + " - " + currentUrl)}`,
-    twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(shareText)}`,
-    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`,
-    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`
+    whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + " - " + urlParaCompartir)}`,
+    twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(urlParaCompartir)}&text=${encodeURIComponent(shareText)}`,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(urlParaCompartir)}`,
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(urlParaCompartir)}`
   };
 
   return (
@@ -357,7 +358,7 @@ export default function AnuncioEmergenteModal({
                       ? "bg-green-600 text-white border-green-600" 
                       : "bg-white text-gray-600 hover:text-main-blue border-gray-200"
                   }`}
-                  title="Copiar enlace al comunicado"
+                  title={anuncio?.archivoPdfUrl ? "Copiar enlace al documento PDF" : "Copiar enlace"}
                 >
                   {copiado ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
                   {copiado && <span className="text-xs font-bold pr-1">¡Copiado!</span>}
