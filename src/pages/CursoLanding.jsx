@@ -1056,21 +1056,7 @@ export default function CursoLanding() {
 
       </div>
 
-      {/* FOOTER INSTITUCIONAL COMPACTO */}
-      <footer className="py-8 bg-gray-100 border-t border-gray-200 text-xs text-gray-600">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <span className="font-bold text-main-blue">IIRESODH</span>
-            <span>•</span>
-            <span>UNODC Framework</span>
-            <span>•</span>
-            <span>Palermo 2027</span>
-          </div>
-          <div>
-            <span>Admisiones: formacion@iiresodh.org • Derechos Reservados 2024 – 2027</span>
-          </div>
-        </div>
-      </footer>
+
 
       {/* SNACKBAR DE NOTIFICACIONES */}
       <Snackbar
