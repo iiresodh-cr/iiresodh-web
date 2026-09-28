@@ -5,6 +5,8 @@ const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
 const Stripe = require("stripe"); 
 const { PDFDocument, rgb, StandardFonts } = require("pdf-lib"); // LIBRERÍA DE SOCIAL DRM
+const path = require("path");
+const fs = require("fs");
 
 // Inicializamos Firebase Admin
 if (!admin.apps.length) {
@@ -1118,20 +1120,28 @@ async function enviarCorreoConfirmacionCurso({
       }
     });
 
+    const formatMontoEmail = (num) => {
+      const n = Number(num) || 0;
+      const hasDecimals = n % 1 !== 0;
+      return n.toLocaleString('en-US', {
+        minimumFractionDigits: hasDecimals ? 2 : 0,
+        maximumFractionDigits: 2
+      });
+    };
+
     const esCuotas = Number(planCuotas) > 1;
     const cuotaTexto = esCuotas
       ? `Plan en ${planCuotas} cuotas (Pago de cuota ${numCuotaActual} de ${planCuotas})`
       : 'Pago único de inversión completa';
 
     const saldoTexto = (esCuotas && Number(saldoPendiente) > 0)
-      ? `<p style="margin: 8px 0 0 0; color: #b45309; font-weight: bold; font-size: 13px;">Saldo restante por liquidar: ${moneda} ${Number(saldoPendiente).toLocaleString()} (${planCuotas - numCuotaActual} cuotas mensuales sin interés restantes)</p>`
+      ? `<p style="margin: 8px 0 0 0; color: #b45309; font-weight: bold; font-size: 13px;">Saldo restante por liquidar: ${moneda} ${formatMontoEmail(saldoPendiente)} (${planCuotas - numCuotaActual} cuotas mensuales sin interés restantes)</p>`
       : '<p style="margin: 8px 0 0 0; color: #047857; font-weight: bold; font-size: 13px;">✓ Inversión del curso liquidada al 100%</p>';
 
     const htmlContent = `
       <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden;">
-        <div style="background-color: #1D3557; padding: 28px 24px; text-align: center;">
-          <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 0.5px;">IIRESODH</h1>
-          <p style="color: #cbd5e1; margin: 6px 0 0 0; font-size: 13px;">Instituto Internacional de Responsabilidad Social y Derechos Humanos</p>
+        <div style="background-color: #1D3557; padding: 24px; text-align: center;">
+          <img src="cid:logo_iiresodh" alt="IIRESODH" style="max-height: 54px; width: auto; max-width: 260px; margin: 0 auto; display: block; border: 0;" />
         </div>
 
         <div style="padding: 32px 24px;">
@@ -1170,7 +1180,7 @@ async function enviarCorreoConfirmacionCurso({
               </tr>
               <tr>
                 <td style="padding: 6px 0; color: #64748b;">Monto abonado hoy:</td>
-                <td style="padding: 6px 0; font-weight: 800; font-size: 15px; color: #B92F32; text-align: right;">${moneda} ${Number(montoTotal).toLocaleString()}</td>
+                <td style="padding: 6px 0; font-weight: 800; font-size: 15px; color: #B92F32; text-align: right;">${moneda} ${formatMontoEmail(montoTotal)}</td>
               </tr>
             </table>
             ${saldoTexto}
@@ -1206,12 +1216,23 @@ async function enviarCorreoConfirmacionCurso({
       </div>
     `;
 
+    const logoPath = path.join(__dirname, 'assets', 'logo.png');
+    const attachments = [];
+    if (fs.existsSync(logoPath)) {
+      attachments.push({
+        filename: 'logo.png',
+        path: logoPath,
+        cid: 'logo_iiresodh'
+      });
+    }
+
     await transporter.sendMail({
       from: `"IIRESODH - Cursos Internacionales" <contacto@iiresodh.org>`,
       to: email,
       bcc: 'contacto@iiresodh.org',
       subject: `Confirmación de Inscripción: ${cursoTitulo}`,
-      html: htmlContent
+      html: htmlContent,
+      attachments: attachments
     });
     console.log(`Correo de confirmación enviado exitosamente a ${email} (bcc: contacto@iiresodh.org).`);
   } catch (error) {

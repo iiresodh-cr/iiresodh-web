@@ -26,7 +26,7 @@ export const DATOS_PALERMO_2027 = {
     publicada: false, // Por defecto no pública como solicitó el usuario
     lema: "APLICACIÓN DE LAS CONVENCIONES DE PALERMO CONTRA EL CRIMEN ORGANIZADO",
     ubicacionFechas: "Palermo, Sicilia, Italia | Del 17 al 23 de mayo de 2027",
-    precioInversion: "3.350 USD",
+    precioInversion: "3,350 USD",
     inversionDetalle: "Por persona. Incluye sesiones magistrales, visitas de campo, materiales exclusivos y certificación internacional.",
     enlaceStripe: "",
     heroImagenUrl: falconeDefaultImg,
@@ -531,7 +531,7 @@ export default function CursoLanding() {
                 <div className="space-y-1.5 flex-1 min-w-0 text-left">
                   <div className="flex items-baseline gap-2.5 flex-wrap">
                     <span className="text-2xl sm:text-3xl font-black text-amber-400 tracking-tight">
-                      {landing.precioInversion || "3.350 USD"}
+                      {landing.precioInversion ? landing.precioInversion.replace("3.350", "3,350") : "3,350 USD"}
                     </span>
                     <span className="text-[10px] sm:text-xs uppercase font-bold tracking-widest text-amber-200/90 bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-400/20">
                       Inversión Académica
@@ -923,7 +923,7 @@ export default function CursoLanding() {
                     }`}
                   >
                     <span>💳 Pago en Línea (Cuotas Sin Intereses)</span>
-                    <span className="hidden sm:inline-block text-[9px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded">
+                    <span className="hidden sm:inline-block text-[9px] bg-sky-100 text-sky-800 font-bold px-1.5 py-0.5 rounded border border-sky-200">
                       0% Interés
                     </span>
                   </button>
@@ -956,17 +956,17 @@ export default function CursoLanding() {
                         </h3>
                       </div>
                       <span className="text-2xl font-black text-main-blue">
-                        {landing.precioInversion || "3.350 USD"}
+                        {landing.precioInversion ? landing.precioInversion.replace("3.350", "3,350") : "3,350 USD"}
                       </span>
                     </div>
 
-                    {/* FINANCIACIÓN A 0% DE INTERÉS */}
-                    <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-xs space-y-1.5">
-                      <div className="flex items-center gap-2 text-emerald-900 font-bold">
-                        <span>✨</span>
+                    {/* FINANCIACIÓN EN CUOTAS */}
+                    <div className="bg-sky-50/70 border border-sky-200 rounded-2xl p-4 text-xs space-y-1.5">
+                      <div className="flex items-center gap-2 text-sky-950 font-bold">
+                        <span>💳</span>
                         <span>Financiación en 2, 3 o 4 Cuotas Sin Intereses</span>
                       </div>
-                      <p className="text-emerald-800 font-light text-[11px] leading-relaxed">
+                      <p className="text-sky-800 font-light text-[11px] leading-relaxed">
                         Puedes diferir tu pago en hasta 4 mensualidades directas sin ningún tipo de recargo financiero institucional.
                       </p>
                     </div>
@@ -978,19 +978,19 @@ export default function CursoLanding() {
                       </span>
                       <ul className="space-y-2 text-[11px]">
                         <li className="flex items-start gap-2">
-                          <span className="text-green-600 font-bold">✓</span>
+                          <span className="text-sky-700 font-bold">✓</span>
                           <span>Sesiones magistrales y talleres de litigio con fiscales y jueces antimafia.</span>
                         </li>
                         <li className="flex items-start gap-2">
-                          <span className="text-green-600 font-bold">✓</span>
+                          <span className="text-sky-700 font-bold">✓</span>
                           <span>Visitas institucionales en Palermo y tribunales de justicia histórica.</span>
                         </li>
                         <li className="flex items-start gap-2">
-                          <span className="text-green-600 font-bold">✓</span>
+                          <span className="text-sky-700 font-bold">✓</span>
                           <span>Certificación académica internacional de alta especialización emitida por IIRESODH.</span>
                         </li>
                         <li className="flex items-start gap-2">
-                          <span className="text-green-600 font-bold">✓</span>
+                          <span className="text-sky-700 font-bold">✓</span>
                           <span>Expediente documental, lecturas y materiales exclusivos de investigación.</span>
                         </li>
                       </ul>
@@ -1003,12 +1003,12 @@ export default function CursoLanding() {
                     </div>
                   </div>
 
-                  <div className="bg-amber-50/60 border border-amber-200 p-5 rounded-3xl text-xs space-y-2">
-                    <div className="flex items-center gap-2 text-amber-900 font-bold">
+                  <div className="bg-slate-50 border border-slate-200 p-5 rounded-3xl text-xs space-y-2">
+                    <div className="flex items-center gap-2 text-slate-800 font-bold">
                       <span>🏛️</span>
                       <span>Facturación para Instituciones y Despachos</span>
                     </div>
-                    <p className="text-gray-600 font-light text-[11px] leading-relaxed">
+                    <p className="text-slate-600 font-light text-[11px] leading-relaxed">
                       Para tramitar pagos a través de Poder Judicial, Fiscalía, Ministerios o Universidades, emitimos factura proforma oficial y certificado bancario SWIFT/IBAN.
                     </p>
                   </div>

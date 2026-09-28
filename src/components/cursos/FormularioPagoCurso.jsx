@@ -71,7 +71,7 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
   const [reciboPago, setReciboPago] = useState(null);
 
   // Cálculo del monto total y moneda
-  const precioTexto = landing?.precioInversion || "3.350 USD";
+  const precioTexto = landing?.precioInversion || "3,350 USD";
   const monedaDetectada = precioTexto.includes("€") || precioTexto.toUpperCase().includes("EUR") ? "EUR" : "USD";
   const simboloMoneda = monedaDetectada === "EUR" ? "€" : "$";
   
@@ -79,6 +79,16 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
   const digitos = String(precioTexto).replace(/[^0-9]/g, "");
   let montoTotal = Number(digitos) || 3350;
   if (montoTotal < 50) montoTotal = 3350;
+
+  // Formateador estándar internacional USD (coma para miles, punto para decimales con 2 dígitos)
+  const formatMonto = (num) => {
+    const n = Number(num) || 0;
+    const hasDecimals = n % 1 !== 0;
+    return n.toLocaleString("en-US", {
+      minimumFractionDigits: hasDecimals ? 2 : 0,
+      maximumFractionDigits: 2,
+    });
+  };
 
   // Monto por cuota según plan
   const calcularMontoCuota = (cuotas) => {
@@ -92,7 +102,7 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
       cuotas: 1,
       titulo: "Pago Único Completo",
       badge: "Inscripción Total",
-      badgeColor: "bg-blue-100 text-blue-800 border-blue-200",
+      badgeColor: "bg-sky-50 text-sky-700 border-sky-200 font-medium",
       montoPorCuota: montoTotal,
       descripcion: "1 solo pago para liquidar la totalidad de la matrícula.",
       destacado: false
@@ -101,27 +111,27 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
       cuotas: 2,
       titulo: "2 Pagos Sin Intereses",
       badge: "0% Interés",
-      badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-200 font-bold",
+      badgeColor: "bg-sky-50 text-sky-700 border-sky-200 font-medium",
       montoPorCuota: calcularMontoCuota(2),
-      descripcion: `1ª cuota hoy (${calcularMontoCuota(2).toLocaleString()} ${simboloMoneda}) y 2ª cuota en 30 días.`,
+      descripcion: `1ª cuota hoy (${simboloMoneda}${formatMonto(calcularMontoCuota(2))}) y 2ª cuota en 30 días.`,
       destacado: false
     },
     {
       cuotas: 3,
       titulo: "3 Pagos Sin Intereses",
       badge: "0% Interés • Recomendado",
-      badgeColor: "bg-amber-100 text-amber-900 border-amber-300 font-bold",
+      badgeColor: "bg-sky-100 text-sky-800 border-sky-300 font-bold",
       montoPorCuota: calcularMontoCuota(3),
-      descripcion: `1ª cuota hoy (${calcularMontoCuota(3).toLocaleString()} ${simboloMoneda}) y 2 cuotas mensuales restantes.`,
+      descripcion: `1ª cuota hoy (${simboloMoneda}${formatMonto(calcularMontoCuota(3))}) y 2 cuotas mensuales restantes.`,
       destacado: true
     },
     {
       cuotas: 4,
       titulo: "4 Pagos Sin Intereses",
-      badge: "0% Interés • Máxima Flexibilidad",
-      badgeColor: "bg-purple-100 text-purple-900 border-purple-200 font-bold",
+      badge: "0% Interés • Flexible",
+      badgeColor: "bg-sky-50 text-sky-700 border-sky-200 font-medium",
       montoPorCuota: calcularMontoCuota(4),
-      descripcion: `1ª cuota hoy (${calcularMontoCuota(4).toLocaleString()} ${simboloMoneda}) y 3 cuotas mensuales restantes.`,
+      descripcion: `1ª cuota hoy (${simboloMoneda}${formatMonto(calcularMontoCuota(4))}) y 3 cuotas mensuales restantes.`,
       destacado: false
     }
   ];
@@ -284,14 +294,14 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
           <div className="flex justify-between border-b border-gray-200 pb-2">
             <span className="text-gray-500">Monto Cobrado Hoy:</span>
             <span className="font-extrabold text-green-700 text-sm">
-              {simboloMoneda}{reciboPago.montoPagado.toLocaleString()} {reciboPago.moneda}
+              {simboloMoneda}{formatMonto(reciboPago.montoPagado)} {reciboPago.moneda}
             </span>
           </div>
           {reciboPago.planCuotas > 1 && (
             <div className="flex justify-between border-b border-gray-200 pb-2">
               <span className="text-gray-500">Saldo Restante ({reciboPago.planCuotas - 1} cuotas):</span>
               <span className="font-bold text-gray-800">
-                {simboloMoneda}{reciboPago.saldoRestante.toLocaleString()} {reciboPago.moneda}
+                {simboloMoneda}{formatMonto(reciboPago.saldoRestante)} {reciboPago.moneda}
               </span>
             </div>
           )}
@@ -326,7 +336,7 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
           <label className="block text-xs font-black text-main-blue uppercase tracking-wider">
             1. Selecciona tu Modalidad de Pago
           </label>
-          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+          <span className="text-[10px] font-bold text-sky-700 bg-sky-50 px-2.5 py-0.5 rounded-full border border-sky-200">
             ✓ 0% Costo Financiero
           </span>
         </div>
@@ -340,8 +350,8 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
                 onClick={() => setPlanCuotas(opcion.cuotas)}
                 className={`relative p-3.5 sm:p-4 rounded-2xl border-2 transition-all cursor-pointer text-left ${
                   isSelected
-                    ? "border-main-blue bg-blue-50/40 shadow-sm"
-                    : "border-gray-200 bg-white hover:border-gray-300"
+                    ? "border-sky-600 bg-sky-50/40 shadow-xs"
+                    : "border-gray-200 bg-white hover:border-sky-200"
                 }`}
               >
                 {/* Radio y Badge */}
@@ -349,7 +359,7 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
                   <div className="flex items-center gap-2">
                     <div
                       className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
-                        isSelected ? "border-main-blue bg-main-blue" : "border-gray-300 bg-white"
+                        isSelected ? "border-sky-600 bg-sky-600" : "border-gray-300 bg-white"
                       }`}
                     >
                       {isSelected && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
@@ -367,7 +377,7 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
                 <div className="pl-6">
                   <div className="flex items-baseline gap-1">
                     <span className="text-lg sm:text-xl font-black text-main-blue">
-                      {simboloMoneda}{opcion.montoPorCuota.toLocaleString()}
+                      {simboloMoneda}{formatMonto(opcion.montoPorCuota)}
                     </span>
                     <span className="text-[11px] font-bold text-gray-600">USD</span>
                     {opcion.cuotas > 1 && (
@@ -636,33 +646,30 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
           <label className="block text-xs font-black text-main-blue uppercase tracking-wider">
             4. Datos de Tarjeta de Crédito / Débito
           </label>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 rounded-lg border border-slate-200 text-[10px] font-bold text-slate-700">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-sky-50 rounded-lg border border-sky-100 text-[10px] font-bold text-sky-800">
+            <span className="inline-block w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
             <span>Conexión Segura SSL 256-bit</span>
           </div>
         </div>
 
         {/* SELLO Y GARANTÍA STRIPE */}
-        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-slate-50 via-blue-50/40 to-slate-50 border border-slate-200 flex items-start gap-3">
-          <div className="w-9 h-9 rounded-xl bg-main-blue text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <div className="p-3 rounded-2xl bg-sky-50/60 border border-sky-100 flex items-start gap-3">
+          <div className="w-8 h-8 rounded-lg bg-sky-700 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
           <div className="text-left space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-extrabold text-main-blue tracking-tight">
+              <span className="text-xs font-bold text-slate-800 tracking-tight">
                 Pasarela Oficial Stripe Certificada
               </span>
-              <span className="text-[10px] font-black px-2 py-0.5 rounded bg-[#635bff] text-white tracking-wider lowercase shadow-xs">
-                stripe
-              </span>
-              <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-800 border border-sky-200">
                 PCI-DSS Nivel 1
               </span>
             </div>
-            <p className="text-[11px] text-gray-600 leading-snug font-normal">
-              Tus datos bancarios son procesados de forma encriptada y directa por Stripe bajo los más rigurosos estándares de seguridad bancaria internacional. IIRESODH nunca almacena ni tiene acceso a tu número de tarjeta.
+            <p className="text-[11px] text-slate-600 leading-snug font-normal">
+              Tus datos bancarios son procesados de forma encriptada y directa por Stripe bajo estándares de seguridad bancaria internacional. IIRESODH nunca almacena ni tiene acceso a tu número de tarjeta.
             </p>
           </div>
         </div>
@@ -688,17 +695,17 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
       <div className="bg-slate-50 border border-gray-200 rounded-2xl p-4 text-xs space-y-2">
         <div className="flex items-center justify-between text-gray-700">
           <span>Inversión total del curso:</span>
-          <span className="font-bold text-gray-900">{simboloMoneda}{montoTotal.toLocaleString()} USD</span>
+          <span className="font-bold text-gray-900">{simboloMoneda}{formatMonto(montoTotal)} USD</span>
         </div>
         <div className="flex items-center justify-between text-main-blue font-bold text-sm border-t border-gray-200 pt-2">
           <span>Importe a cobrar hoy ({planCuotas === 1 ? "Pago total" : "1ª Cuota"}):</span>
           <span className="text-base text-main-red font-black">
-            {simboloMoneda}{montoCuotaActual.toLocaleString()} USD
+            {simboloMoneda}{formatMonto(montoCuotaActual)} USD
           </span>
         </div>
         {planCuotas > 1 && (
           <p className="text-[11px] text-gray-500 font-light leading-relaxed">
-            Las <strong>{planCuotas - 1} cuotas mensuales restantes</strong> de {simboloMoneda}{montoCuotaActual.toLocaleString()} USD se programarán mensualmente sin ningún tipo de interés bancario ni recargo adicional.
+            Las <strong>{planCuotas - 1} cuotas mensuales restantes</strong> de {simboloMoneda}{formatMonto(montoCuotaActual)} USD se programarán mensualmente sin ningún tipo de interés bancario ni recargo adicional.
           </p>
         )}
 
@@ -758,7 +765,7 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
             </>
           ) : (
             <>
-              <span>🔒 Confirmar Pago de {simboloMoneda}{montoCuotaActual.toLocaleString()} USD</span>
+              <span>🔒 Confirmar Pago de {simboloMoneda}{formatMonto(montoCuotaActual)} USD</span>
               {planCuotas > 1 && (
                 <span className="text-[10px] bg-red-950/40 px-2 py-0.5 rounded-full font-medium">
                   Cuota 1 de {planCuotas}
