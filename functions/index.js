@@ -19,7 +19,25 @@ const GMAIL_CLIENT_SECRET = defineSecret("GMAIL_CLIENT_SECRET");
 const GMAIL_REFRESH_TOKEN = defineSecret("GMAIL_REFRESH_TOKEN");
 const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY"); 
 const STRIPE_WEBHOOK_SECRET = defineSecret("STRIPE_WEBHOOK_SECRET"); 
+const STRIPE_CURSOS_SECRET_KEY = defineSecret("STRIPE_CURSOS_SECRET_KEY");
+const STRIPE_CURSOS_WEBHOOK_SECRET = defineSecret("STRIPE_CURSOS_WEBHOOK_SECRET");
 const PIDA_SERVICE_ACCOUNT = defineSecret("PIDA_SERVICE_ACCOUNT"); 
+
+function getStripeCursosKey() {
+  try {
+    const val = STRIPE_CURSOS_SECRET_KEY.value();
+    if (val) return val;
+  } catch (_) {}
+  return process.env.STRIPE_CURSOS_SECRET_KEY || "";
+}
+
+function getStripeCursosWebhookSecret() {
+  try {
+    const val = STRIPE_CURSOS_WEBHOOK_SECRET.value();
+    if (val) return val;
+  } catch (_) {}
+  return process.env.STRIPE_CURSOS_WEBHOOK_SECRET || "";
+}
 
 // ============================================================================
 // CONEXIÓN A BASE DE DATOS DE PIDA (SOLO LECTURA)
@@ -947,3 +965,351 @@ exports.descargarDocumento = onRequest({ region: "us-central1" }, async (req, re
     return res.status(500).send("Error interno al procesar la descarga.");
   }
 });
+
+// ============================================================================
+// 12. CREAR INTENTO DE PAGO PARA CURSOS PRESENCIALES (STRIPE DEDICADO)
+// ============================================================================
+exports.crearIntentoPagoCurso = onCall({ 
+  region: "us-central1",
+  cors: true
+}, async (request) => {
+  const { 
+    cursoId, 
+    cursoTitulo, 
+    email, 
+    nombre, 
+    telefono, 
+    institucion, 
+    pais, 
+    monto, 
+    montoTotal, 
+    moneda, 
+    planCuotas, 
+    numCuota,
+    profesion,
+    experienciaTemas,
+    motivoParticipacion,
+    cursosPrevios,
+    alumnoIiresodh
+  } = request.data || {};
+
+  if (!email) {
+    throw new HttpsError("invalid-argument", "El correo electrónico es obligatorio.");
+  }
+
+  try {
+    const stripeKey = getStripeCursosKey();
+    const stripe = new Stripe(stripeKey);
+
+    const currencyLower = (moneda || "usd").toLowerCase();
+    const numPlan = Number(planCuotas) || 1;
+    const cuotaMonto = Number(monto) || 3350;
+    const totalInversion = Number(montoTotal) || cuotaMonto;
+    const amountInCents = Math.round(cuotaMonto * 100);
+
+    // Buscar o crear cliente en Stripe para asociar su método de pago a futuro
+    let customerId = undefined;
+    try {
+      const existingCustomers = await stripe.customers.list({ 
+        email: email.toLowerCase().trim(), 
+        limit: 1 
+      });
+      if (existingCustomers.data && existingCustomers.data.length > 0) {
+        customerId = existingCustomers.data[0].id;
+      } else {
+        const newCustomer = await stripe.customers.create({
+          email: email.toLowerCase().trim(),
+          name: nombre || "Participante Curso",
+          phone: telefono || undefined,
+          metadata: {
+            cursoId: cursoId || "palermo-2027",
+            cursoTitulo: cursoTitulo || "Curso Internacional - Palermo",
+            profesion: String(profesion || "").slice(0, 200)
+          }
+        });
+        customerId = newCustomer.id;
+      }
+    } catch (errCust) {
+      console.warn("Advertencia gestionando Customer en Stripe:", errCust.message);
+    }
+
+    const expTemasStr = Array.isArray(experienciaTemas) 
+      ? experienciaTemas.join(", ") 
+      : String(experienciaTemas || "");
+
+    const paymentIntentData = {
+      amount: amountInCents,
+      currency: currencyLower,
+      receipt_email: email,
+      metadata: {
+        cursoId: cursoId || "palermo-2027",
+        cursoTitulo: cursoTitulo || "Curso Internacional - Palermo",
+        email: email,
+        nombre: nombre || "",
+        telefono: telefono || "",
+        institucion: institucion || "",
+        pais: pais || "",
+        profesion: String(profesion || "").slice(0, 200),
+        experienciaTemas: expTemasStr.slice(0, 450),
+        motivoParticipacion: String(motivoParticipacion || "").slice(0, 450),
+        cursosPrevios: String(cursosPrevios || "").slice(0, 200),
+        alumnoIiresodh: String(alumnoIiresodh || "no").slice(0, 50),
+        planCuotas: String(numPlan),
+        numCuotaActual: String(numCuota || 1),
+        montoCuota: String(cuotaMonto),
+        montoTotal: String(totalInversion),
+        saldoPendiente: String(Math.max(0, totalInversion - cuotaMonto))
+      },
+      automatic_payment_methods: { enabled: true, allow_redirects: 'never' },
+    };
+
+    if (customerId) {
+      paymentIntentData.customer = customerId;
+      if (numPlan > 1) {
+        // Guarda la tarjeta para poder procesar las cuotas restantes de forma segura
+        paymentIntentData.setup_future_usage = 'off_session';
+      }
+    }
+
+    const paymentIntent = await stripe.paymentIntents.create(paymentIntentData);
+
+    return { 
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id,
+      customerId: customerId || null
+    };
+  } catch (error) {
+    console.error("Error creando PaymentIntent para curso:", error);
+    throw new HttpsError("internal", error.message || "No se pudo iniciar el pago del curso.");
+  }
+});
+
+
+// ============================================================================
+// 13. WEBHOOK DE STRIPE PARA CURSOS PRESENCIALES (CUENTA DEDICADA)
+// ============================================================================
+exports.stripeWebhookCursos = onRequest({ 
+  region: "us-central1",
+  memory: "512MiB",
+  timeoutSeconds: 60
+}, async (req, res) => {
+  const stripeKey = getStripeCursosKey();
+  const endpointSecret = getStripeCursosWebhookSecret();
+  const stripe = new Stripe(stripeKey);
+
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret);
+  } catch (err) {
+    console.error(`Error de firma del Webhook Cursos: ${err.message}`);
+    res.status(400).send(`Webhook Error: ${err.message}`);
+    return;
+  }
+
+  const db = admin.firestore();
+
+  try {
+    // -------------------------------------------------------------
+    // EVENTO 1: checkout.session.completed (Payment Links / Checkout)
+    // -------------------------------------------------------------
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object;
+
+      // Idempotencia: evitar duplicados
+      const existing = await db.collection("solicitudesCursos")
+        .where("stripeSessionId", "==", session.id)
+        .limit(1)
+        .get();
+
+      if (!existing.empty) {
+        console.log(`Sesión de checkout ${session.id} ya fue procesada anteriormente.`);
+        return res.json({ received: true });
+      }
+
+      const email = session.customer_details?.email || session.customer_email || "cliente@anonimo.com";
+      const nombre = session.customer_details?.name || "Participante Confirmado";
+      const telefono = session.customer_details?.phone || "";
+      const pais = session.customer_details?.address?.country || "No especificado";
+      const montoTotal = (session.amount_total || 0) / 100;
+      const moneda = (session.currency || "eur").toUpperCase();
+      const metadata = session.metadata || {};
+      const cursoId = metadata.cursoId || "palermo-2027";
+      const cursoTitulo = metadata.cursoTitulo || metadata.cursoNombre || "Curso Internacional - Palermo";
+
+      // Si existía una solicitud previa con ese correo y curso, actualizarla
+      const solicitudesPrevias = await db.collection("solicitudesCursos")
+        .where("email", "==", email.toLowerCase().trim())
+        .where("cursoId", "==", cursoId)
+        .limit(1)
+        .get();
+
+      if (!solicitudesPrevias.empty) {
+        const docId = solicitudesPrevias.docs[0].id;
+        await db.collection("solicitudesCursos").doc(docId).update({
+          estado: "confirmado",
+          metodoPago: "stripe",
+          montoPagado: montoTotal,
+          moneda: moneda,
+          stripeSessionId: session.id,
+          stripePaymentIntentId: session.payment_intent || null,
+          fechaPago: admin.firestore.FieldValue.serverTimestamp()
+        });
+        console.log(`Solicitud de curso previa ${docId} actualizada a 'confirmado' exitosamente.`);
+      } else {
+        await db.collection("solicitudesCursos").add({
+          cursoId: cursoId,
+          cursoTitulo: cursoTitulo,
+          nombre: nombre,
+          email: email.toLowerCase().trim(),
+          telefono: telefono,
+          institucion: metadata.institucion || "Inscripción en línea vía Stripe",
+          pais: pais,
+          comentarios: `Pago de inscripción completado en Stripe Checkout (${moneda} ${montoTotal}).`,
+          estado: "confirmado",
+          metodoPago: "stripe",
+          montoPagado: montoTotal,
+          moneda: moneda,
+          stripeSessionId: session.id,
+          stripePaymentIntentId: session.payment_intent || null,
+          fechaSolicitud: admin.firestore.FieldValue.serverTimestamp(),
+          fechaPago: admin.firestore.FieldValue.serverTimestamp()
+        });
+        console.log(`Nueva inscripción creada en solicitudesCursos para ${email}.`);
+      }
+
+      return res.json({ received: true });
+    }
+
+    // -------------------------------------------------------------
+    // EVENTO 2: payment_intent.succeeded (Stripe Elements / Directo)
+    // -------------------------------------------------------------
+    if (event.type === 'payment_intent.succeeded') {
+      const paymentIntent = event.data.object;
+
+      // Idempotencia
+      const existing = await db.collection("solicitudesCursos")
+        .where("stripePaymentIntentId", "==", paymentIntent.id)
+        .limit(1)
+        .get();
+
+      if (!existing.empty) {
+        console.log(`PaymentIntent ${paymentIntent.id} ya fue procesado anteriormente.`);
+        return res.json({ received: true });
+      }
+
+      const metadata = paymentIntent.metadata || {};
+      const email = paymentIntent.receipt_email || metadata.email || metadata.emailCliente || "cliente@anonimo.com";
+      const nombre = metadata.nombre || "Participante Confirmado";
+      const montoTotal = (paymentIntent.amount || 0) / 100;
+      const moneda = (paymentIntent.currency || "eur").toUpperCase();
+      const cursoId = metadata.cursoId || "palermo-2027";
+      const cursoTitulo = metadata.cursoTitulo || metadata.cursoNombre || "Curso Internacional - Palermo";
+
+      const planCuotas = Number(metadata.planCuotas) || 1;
+      const numCuotaActual = Number(metadata.numCuotaActual) || 1;
+      const totalInversion = Number(metadata.montoTotal) || montoTotal;
+      const saldoPendiente = Number(metadata.saldoPendiente) || 0;
+
+      // Verificar si ya existía una solicitud con este email y curso
+      const checkPrev = await db.collection("solicitudesCursos")
+        .where("email", "==", email.toLowerCase().trim())
+        .where("cursoId", "==", cursoId)
+        .limit(1)
+        .get();
+
+      if (!checkPrev.empty) {
+        const docId = checkPrev.docs[0].id;
+        const current = checkPrev.docs[0].data();
+        const nuevaCuota = (current.cuotasPagadas || 0) + 1;
+        const totalAbonado = (current.montoPagado || 0) + montoTotal;
+        const saldoRestante = Math.max(0, (current.montoTotalInversion || totalInversion) - totalAbonado);
+
+        await db.collection("solicitudesCursos").doc(docId).update({
+          estado: "confirmado",
+          metodoPago: "stripe",
+          planCuotas: planCuotas,
+          cuotasPagadas: nuevaCuota,
+          montoPagado: totalAbonado,
+          montoTotalInversion: totalInversion,
+          saldoPendiente: saldoRestante,
+          stripePaymentIntentId: paymentIntent.id,
+          stripeCustomerId: paymentIntent.customer || current.stripeCustomerId || null,
+          fechaPago: admin.firestore.FieldValue.serverTimestamp(),
+          profesion: metadata.profesion || current.profesion || "",
+          experienciaTemas: metadata.experienciaTemas || current.experienciaTemas || "",
+          motivoParticipacion: metadata.motivoParticipacion || current.motivoParticipacion || "",
+          cursosPrevios: metadata.cursosPrevios || current.cursosPrevios || "",
+          alumnoIiresodh: metadata.alumnoIiresodh || current.alumnoIiresodh || "no",
+          comentarios: `Pago procesado con Stripe (${moneda} ${montoTotal}). Cuota ${nuevaCuota}/${planCuotas}. Saldo pendiente: ${saldoRestante}.`
+        });
+        console.log(`Solicitud ${docId} actualizada con pago Stripe para ${email}.`);
+      } else {
+        await db.collection("solicitudesCursos").add({
+          cursoId: cursoId,
+          cursoTitulo: cursoTitulo,
+          nombre: nombre,
+          email: email.toLowerCase().trim(),
+          telefono: metadata.telefono || "",
+          institucion: metadata.institucion || "Pago directo con tarjeta Stripe",
+          pais: metadata.pais || "No especificado",
+          comentarios: planCuotas > 1
+            ? `Pago Cuota ${numCuotaActual} de ${planCuotas} (${moneda} ${montoTotal}). Saldo restante: ${moneda} ${saldoPendiente}.`
+            : `Pago completo completado con tarjeta vía Stripe (${moneda} ${montoTotal}).`,
+          profesion: metadata.profesion || "",
+          experienciaTemas: metadata.experienciaTemas || "",
+          motivoParticipacion: metadata.motivoParticipacion || "",
+          cursosPrevios: metadata.cursosPrevios || "",
+          alumnoIiresodh: metadata.alumnoIiresodh || "no",
+          estado: "confirmado",
+          metodoPago: "stripe",
+          planCuotas: planCuotas,
+          cuotasPagadas: numCuotaActual,
+          montoPagado: montoTotal,
+          montoTotalInversion: totalInversion,
+          saldoPendiente: saldoPendiente,
+          stripePaymentIntentId: paymentIntent.id,
+          stripeCustomerId: paymentIntent.customer || null,
+          fechaSolicitud: admin.firestore.FieldValue.serverTimestamp(),
+          fechaPago: admin.firestore.FieldValue.serverTimestamp()
+        });
+        console.log(`Inscripción registrada por payment_intent.succeeded para ${email}. Plan: ${planCuotas} pagos.`);
+      }
+
+      return res.json({ received: true });
+    }
+
+    // -------------------------------------------------------------
+    // EVENTO 3: charge.refunded (Reembolsos)
+    // -------------------------------------------------------------
+    if (event.type === 'charge.refunded') {
+      const charge = event.data.object;
+      const paymentIntentId = charge.payment_intent;
+
+      if (paymentIntentId) {
+        const snapshot = await db.collection("solicitudesCursos")
+          .where("stripePaymentIntentId", "==", paymentIntentId)
+          .limit(1)
+          .get();
+
+        if (!snapshot.empty) {
+          await snapshot.docs[0].ref.update({
+            estado: "cancelado",
+            reembolsado: true,
+            fechaReembolso: admin.firestore.FieldValue.serverTimestamp()
+          });
+          console.log(`Inscripción vinculada a ${paymentIntentId} marcada como cancelada por reembolso.`);
+        }
+      }
+
+      return res.json({ received: true });
+    }
+
+    // Para cualquier otro evento de Stripe no explícito
+    return res.json({ received: true });
+  } catch (error) {
+    console.error("Error en procesamiento de stripeWebhookCursos:", error);
+    return res.status(500).json({ error: "Error interno procesando evento de cursos." });
+  }
+});

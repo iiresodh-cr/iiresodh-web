@@ -14,6 +14,7 @@ import ConfirmDialog from "../components/ui/ConfirmDialog";
 import ToastAlert from "../components/ui/ToastAlert";
 import RichTextEditor from "../components/ui/RichTextEditor";
 import AdminAnunciosEmergentes from "../components/admin/AdminAnunciosEmergentes";
+import AdminSolicitudesCursos from "../components/admin/AdminSolicitudesCursos";
 import { Megaphone } from "lucide-react";
 // prettier-ignore
 import { Button, Checkbox, FormControlLabel, Box, Chip, Select, MenuItem, FormControl, InputLabel, CircularProgress, Switch } from "@mui/material";
@@ -759,7 +760,7 @@ useEffect(() => {
 
   // 2. Motor de carga inteligente (Instantáneo vs Retrasado)
   useEffect(() => {
-    if (vistaActiva === "inicio" || vistaActiva === "adminWeb" || vistaActiva === "estadisticas" || vistaActiva === "anunciosEmergentes") return;
+    if (vistaActiva === "inicio" || vistaActiva === "adminWeb" || vistaActiva === "estadisticas" || vistaActiva === "anunciosEmergentes" || vistaActiva === "solicitudesCursos") return;
 
     if (!busquedaTexto && !busquedaFecha) {
       cargarItems();
@@ -1611,14 +1612,27 @@ useEffect(() => {
           </section>
         )}
 
-        {(vistaActiva !== "inicio" && vistaActiva !== "adminWeb" && vistaActiva !== "estadisticas" && vistaActiva !== "anunciosEmergentes") && (
+        {(vistaActiva !== "inicio" && vistaActiva !== "adminWeb" && vistaActiva !== "estadisticas" && vistaActiva !== "anunciosEmergentes" && vistaActiva !== "solicitudesCursos") && (
           <div className="animate-fade-in-up">
-            <button onClick={() => { limpiarFormulario(); setVistaActiva("inicio"); }} className="mb-8 flex items-center gap-2 text-gray-500 font-medium hover:text-main-blue transition-colors cursor-pointer group">
-              <div className="bg-white p-1.5 rounded-full shadow-sm group-hover:shadow border border-gray-100 transition-all">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7"></path></svg>
-              </div>
-              Regresar al menú
-            </button>
+            <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <button onClick={() => { limpiarFormulario(); setVistaActiva("inicio"); }} className="flex items-center gap-2 text-gray-500 font-medium hover:text-main-blue transition-colors cursor-pointer group">
+                <div className="bg-white p-1.5 rounded-full shadow-sm group-hover:shadow border border-gray-100 transition-all">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7"></path></svg>
+                </div>
+                Regresar al menú
+              </button>
+
+              {vistaActiva === "cursos" && (
+                <button
+                  type="button"
+                  onClick={() => setVistaActiva("solicitudesCursos")}
+                  className="bg-main-blue hover:bg-light-blue text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-sm transition-all cursor-pointer"
+                >
+                  <span>📋</span>
+                  <span>Ver Solicitudes de Reserva y Datos Bancarios</span>
+                </button>
+              )}
+            </div>
 
 
 
@@ -2926,6 +2940,13 @@ useEffect(() => {
         {vistaActiva === "anunciosEmergentes" && (
           <AdminAnunciosEmergentes 
             onVolver={() => setVistaActiva("inicio")} 
+            logActividad={logActividad} 
+          />
+        )}
+
+        {vistaActiva === "solicitudesCursos" && (
+          <AdminSolicitudesCursos 
+            onVolver={() => setVistaActiva("cursos")} 
             logActividad={logActividad} 
           />
         )}

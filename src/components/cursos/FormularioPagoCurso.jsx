@@ -1,0 +1,759 @@
+// src/components/cursos/FormularioPagoCurso.jsx
+import React, { useState } from "react";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { functions } from "../../firebase/config";
+import { httpsCallable } from "firebase/functions";
+import { CircularProgress, Alert } from "@mui/material";
+
+// Carga la clave pública de Stripe para cursos (por defecto usa la key de prueba provista)
+const STRIPE_CURSOS_KEY = import.meta.env.VITE_STRIPE_CURSOS_PUBLIC_KEY || "pk_test_51R0ovD2c2u6cty9mPu0lrl7lQrjpLsrfH5buxYVayH58IZjHjVfXqKLhdPObJN1rY2vD92jSlPHU9DNZr1NYbiT500sNDUpxbR";
+const stripeCursosPromise = loadStripe(STRIPE_CURSOS_KEY);
+
+const cardElementOptions = {
+  hidePostalCode: false,
+  style: {
+    base: {
+      fontSize: "16px", // Previene auto-zoom en iOS Safari
+      color: "#1D3557",
+      fontFamily: '"Work Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      fontWeight: "500",
+      "::placeholder": {
+        color: "#94a3b8",
+      },
+      iconColor: "#1D3557",
+    },
+    invalid: {
+      color: "#B92F32",
+      iconColor: "#B92F32",
+    },
+  },
+};
+
+const TEMAS_EXPERIENCIA_OPCIONES = [
+  "Crimen organizado",
+  "Trata de personas",
+  "Lavado de activos",
+  "Litigio estratégico",
+  "Otro"
+];
+
+// Formulario interno con acceso al hook de Stripe Elements
+function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
+  const stripe = useStripe();
+  const elements = useElements();
+
+  // Estados de datos del participante y perfil académico
+  const [formData, setFormData] = useState({
+    nombre: "",
+    email: "",
+    telefono: "",
+    institucion: "",
+    pais: "Costa Rica",
+    profesion: "",
+    experienciaTemas: [],
+    experienciaOtro: "",
+    motivoParticipacion: "",
+    cursosPrevios: "no",
+    detalleCursosPrevios: "",
+    alumnoIiresodh: "no"
+  });
+
+  // Plan de cuotas seleccionado (1 = Pago único, 2 = 2 pagos, 3 = 3 pagos, 4 = 4 pagos)
+  const [planCuotas, setPlanCuotas] = useState(1);
+  const [aceptarTerminos, setAceptarTerminos] = useState(false);
+
+  // Estados de proceso
+  const [loadingPago, setLoadingPago] = useState(false);
+  const [errorPago, setErrorPago] = useState(null);
+  const [exito, setExito] = useState(false);
+  const [reciboPago, setReciboPago] = useState(null);
+
+  // Cálculo del monto total y moneda
+  const precioTexto = landing?.precioInversion || "3.350 USD";
+  const monedaDetectada = precioTexto.includes("€") || precioTexto.toUpperCase().includes("EUR") ? "EUR" : "USD";
+  const simboloMoneda = monedaDetectada === "EUR" ? "€" : "$";
+  
+  // Limpieza de caracteres no numéricos
+  const digitos = String(precioTexto).replace(/[^0-9]/g, "");
+  let montoTotal = Number(digitos) || 3350;
+  if (montoTotal < 50) montoTotal = 3350;
+
+  // Monto por cuota según plan
+  const calcularMontoCuota = (cuotas) => {
+    return Math.round((montoTotal / cuotas) * 100) / 100;
+  };
+
+  const montoCuotaActual = calcularMontoCuota(planCuotas);
+
+  const opcionesPlanes = [
+    {
+      cuotas: 1,
+      titulo: "Pago Único Completo",
+      badge: "Inscripción Total",
+      badgeColor: "bg-blue-100 text-blue-800 border-blue-200",
+      montoPorCuota: montoTotal,
+      descripcion: "1 solo pago para liquidar la totalidad de la matrícula.",
+      destacado: false
+    },
+    {
+      cuotas: 2,
+      titulo: "2 Pagos Sin Intereses",
+      badge: "0% Interés",
+      badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-200 font-bold",
+      montoPorCuota: calcularMontoCuota(2),
+      descripcion: `1ª cuota hoy (${calcularMontoCuota(2).toLocaleString()} ${simboloMoneda}) y 2ª cuota en 30 días.`,
+      destacado: false
+    },
+    {
+      cuotas: 3,
+      titulo: "3 Pagos Sin Intereses",
+      badge: "0% Interés • Recomendado",
+      badgeColor: "bg-amber-100 text-amber-900 border-amber-300 font-bold",
+      montoPorCuota: calcularMontoCuota(3),
+      descripcion: `1ª cuota hoy (${calcularMontoCuota(3).toLocaleString()} ${simboloMoneda}) y 2 cuotas mensuales restantes.`,
+      destacado: true
+    },
+    {
+      cuotas: 4,
+      titulo: "4 Pagos Sin Intereses",
+      badge: "0% Interés • Máxima Flexibilidad",
+      badgeColor: "bg-purple-100 text-purple-900 border-purple-200 font-bold",
+      montoPorCuota: calcularMontoCuota(4),
+      descripcion: `1ª cuota hoy (${calcularMontoCuota(4).toLocaleString()} ${simboloMoneda}) y 3 cuotas mensuales restantes.`,
+      destacado: false
+    }
+  ];
+
+  const handleToggleTema = (tema) => {
+    setFormData((prev) => {
+      const existe = prev.experienciaTemas.includes(tema);
+      if (existe) {
+        return { ...prev, experienciaTemas: prev.experienciaTemas.filter((t) => t !== tema) };
+      } else {
+        return { ...prev, experienciaTemas: [...prev.experienciaTemas, tema] };
+      }
+    });
+  };
+
+  const handleSubmitPago = async (e) => {
+    e.preventDefault();
+
+    if (!stripe || !elements) {
+      setErrorPago("El sistema de pagos de Stripe se está inicializando. Por favor intenta en unos segundos.");
+      return;
+    }
+
+    if (!formData.nombre.trim() || !formData.email.trim() || !formData.telefono.trim()) {
+      setErrorPago("Por favor completa tu nombre completo, correo electrónico y teléfono de contacto.");
+      return;
+    }
+
+    if (!formData.profesion.trim()) {
+      setErrorPago("Por favor indica tu profesión u ocupación profesional.");
+      return;
+    }
+
+    if (!formData.motivoParticipacion.trim()) {
+      setErrorPago("Por favor cuéntanos brevemente por qué deseas participar en este curso.");
+      return;
+    }
+
+    if (!aceptarTerminos) {
+      setErrorPago("Debes aceptar las condiciones de inscripción y la política de privacidad para proceder.");
+      return;
+    }
+
+    setLoadingPago(true);
+    setErrorPago(null);
+
+    // Formatear experiencia
+    const temasFinales = formData.experienciaTemas.includes("Otro") && formData.experienciaOtro.trim()
+      ? [...formData.experienciaTemas.filter(t => t !== "Otro"), `Otro: ${formData.experienciaOtro.trim()}`]
+      : formData.experienciaTemas;
+
+    const cursosPreviosFinal = formData.cursosPrevios === "si"
+      ? (formData.detalleCursosPrevios.trim() ? `Sí (${formData.detalleCursosPrevios.trim()})` : "Sí")
+      : "No";
+
+    try {
+      // 1. Invocar la Cloud Function para crear el PaymentIntent con la cuenta dedicada de cursos
+      const crearIntento = httpsCallable(functions, "crearIntentoPagoCurso");
+      const { data } = await crearIntento({
+        cursoId: curso?.id || "palermo-2027",
+        cursoTitulo: curso?.titulo || "Curso Internacional - Palermo 2027",
+        email: formData.email.trim(),
+        nombre: formData.nombre.trim(),
+        telefono: formData.telefono.trim(),
+        institucion: formData.institucion.trim(),
+        pais: formData.pais,
+        profesion: formData.profesion.trim(),
+        experienciaTemas: temasFinales,
+        motivoParticipacion: formData.motivoParticipacion.trim(),
+        cursosPrevios: cursosPreviosFinal,
+        alumnoIiresodh: formData.alumnoIiresodh,
+        monto: montoCuotaActual,
+        montoTotal: montoTotal,
+        moneda: monedaDetectada,
+        planCuotas: planCuotas,
+        numCuota: 1
+      });
+
+      if (!data || !data.clientSecret) {
+        throw new Error("No se recibió la confirmación de sesión segura de Stripe.");
+      }
+
+      // 2. Confirmar el pago de la tarjeta con Stripe Elements
+      const cardElement = elements.getElement(CardElement);
+      const resultado = await stripe.confirmCardPayment(data.clientSecret, {
+        payment_method: {
+          card: cardElement,
+          billing_details: {
+            name: formData.nombre.trim(),
+            email: formData.email.trim(),
+            phone: formData.telefono.trim(),
+            address: {
+              country: formData.pais === "Costa Rica" ? "CR" : undefined
+            }
+          }
+        },
+        receipt_email: formData.email.trim()
+      });
+
+      if (resultado.error) {
+        setErrorPago(resultado.error.message || "La tarjeta fue rechazada o los datos son inválidos.");
+      } else if (resultado.paymentIntent && resultado.paymentIntent.status === "succeeded") {
+        setReciboPago({
+          id: resultado.paymentIntent.id,
+          montoPagado: montoCuotaActual,
+          montoTotal: montoTotal,
+          planCuotas: planCuotas,
+          moneda: monedaDetectada,
+          email: formData.email.trim(),
+          nombre: formData.nombre.trim(),
+          profesion: formData.profesion.trim(),
+          saldoRestante: Math.max(0, montoTotal - montoCuotaActual)
+        });
+        setExito(true);
+      }
+    } catch (err) {
+      console.error("Error al procesar pago de curso:", err);
+      setErrorPago(err.message || "Ocurrió un error al procesar el pago. Por favor intenta de nuevo o solicita transferencia.");
+    } finally {
+      setLoadingPago(false);
+    }
+  };
+
+  // PANTALLA DE ÉXITO
+  if (exito && reciboPago) {
+    return (
+      <div className="bg-white rounded-3xl p-5 sm:p-8 md:p-10 border border-green-200 shadow-xl space-y-6 animate-fade-in text-center max-w-xl mx-auto">
+        <div className="w-16 h-16 bg-green-100 text-green-700 rounded-full flex items-center justify-center mx-auto text-3xl shadow-inner">
+          ✓
+        </div>
+
+        <div className="space-y-2">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+            Inscripción Confirmada
+          </span>
+          <h3 className="text-xl sm:text-2xl font-black text-main-blue tracking-tight">
+            ¡Pago Realizado con Éxito!
+          </h3>
+          <p className="text-xs text-gray-600 font-light max-w-md mx-auto leading-relaxed">
+            Hemos recibido el pago de tu matrícula y tu plaza en el curso ha quedado formalmente reservada.
+          </p>
+        </div>
+
+        {/* DETALLE DEL RECIBO */}
+        <div className="bg-slate-50 rounded-2xl p-4 sm:p-5 border border-gray-200 text-left text-xs space-y-2.5">
+          <div className="flex justify-between border-b border-gray-200 pb-2">
+            <span className="text-gray-500">Participante:</span>
+            <span className="font-bold text-gray-900">{reciboPago.nombre}</span>
+          </div>
+          {reciboPago.profesion && (
+            <div className="flex justify-between border-b border-gray-200 pb-2">
+              <span className="text-gray-500">Profesión:</span>
+              <span className="font-semibold text-gray-800">{reciboPago.profesion}</span>
+            </div>
+          )}
+          <div className="flex justify-between border-b border-gray-200 pb-2">
+            <span className="text-gray-500">Correo Electrónico:</span>
+            <span className="font-bold text-gray-900 break-all">{reciboPago.email}</span>
+          </div>
+          <div className="flex justify-between border-b border-gray-200 pb-2">
+            <span className="text-gray-500">Modalidad de Pago:</span>
+            <span className="font-bold text-main-blue">
+              {reciboPago.planCuotas === 1 ? "1 Pago Único" : `${reciboPago.planCuotas} Pagos Sin Intereses`}
+            </span>
+          </div>
+          <div className="flex justify-between border-b border-gray-200 pb-2">
+            <span className="text-gray-500">Monto Cobrado Hoy:</span>
+            <span className="font-extrabold text-green-700 text-sm">
+              {simboloMoneda}{reciboPago.montoPagado.toLocaleString()} {reciboPago.moneda}
+            </span>
+          </div>
+          {reciboPago.planCuotas > 1 && (
+            <div className="flex justify-between border-b border-gray-200 pb-2">
+              <span className="text-gray-500">Saldo Restante ({reciboPago.planCuotas - 1} cuotas):</span>
+              <span className="font-bold text-gray-800">
+                {simboloMoneda}{reciboPago.saldoRestante.toLocaleString()} {reciboPago.moneda}
+              </span>
+            </div>
+          )}
+          <div className="flex justify-between pt-1 text-[11px] text-gray-400">
+            <span>Referencia Stripe:</span>
+            <span className="font-mono">{reciboPago.id.slice(0, 18)}...</span>
+          </div>
+        </div>
+
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-xs text-blue-900 font-light text-left leading-relaxed">
+          ℹ️ Hemos enviado el comprobante oficial y los detalles del programa a <strong>{reciboPago.email}</strong>. Nuestro equipo académico se pondrá en contacto para tramitar tu acreditación y expediente.
+        </div>
+
+        <button
+          onClick={() => {
+            setExito(false);
+            setReciboPago(null);
+          }}
+          className="w-full sm:w-auto bg-main-blue hover:bg-blue-900 text-white font-bold text-xs uppercase tracking-wider py-3.5 px-8 rounded-xl transition shadow-sm cursor-pointer"
+        >
+          Finalizar y Volver
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmitPago} className="space-y-6">
+      {/* 1. SELECTOR DE PLAN DE PAGOS (1, 2, 3 o 4 PAGOS SIN INTERESES) */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between flex-wrap gap-1">
+          <label className="block text-xs font-black text-main-blue uppercase tracking-wider">
+            1. Selecciona tu Modalidad de Pago
+          </label>
+          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+            ✓ 0% Costo Financiero
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {opcionesPlanes.map((opcion) => {
+            const isSelected = planCuotas === opcion.cuotas;
+            return (
+              <div
+                key={opcion.cuotas}
+                onClick={() => setPlanCuotas(opcion.cuotas)}
+                className={`relative p-3.5 sm:p-4 rounded-2xl border-2 transition-all cursor-pointer text-left ${
+                  isSelected
+                    ? "border-main-blue bg-blue-50/40 shadow-sm"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                }`}
+              >
+                {/* Radio y Badge */}
+                <div className="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+                        isSelected ? "border-main-blue bg-main-blue" : "border-gray-300 bg-white"
+                      }`}
+                    >
+                      {isSelected && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                    </div>
+                    <span className="text-xs font-bold text-gray-900 leading-tight">
+                      {opcion.titulo}
+                    </span>
+                  </div>
+                  <span className={`text-[9px] px-2 py-0.5 rounded-full border font-bold uppercase tracking-wider ${opcion.badgeColor}`}>
+                    {opcion.badge}
+                  </span>
+                </div>
+
+                {/* Importe */}
+                <div className="pl-6">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-lg sm:text-xl font-black text-main-blue">
+                      {simboloMoneda}{opcion.montoPorCuota.toLocaleString()}
+                    </span>
+                    <span className="text-[11px] font-bold text-gray-600">USD</span>
+                    {opcion.cuotas > 1 && (
+                      <span className="text-[10px] text-gray-500 font-medium">/ cuota mensual</span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-gray-500 font-light mt-0.5 leading-snug">
+                    {opcion.descripcion}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 2. DATOS PERSONALES Y PROFESIONALES */}
+      <div className="space-y-4 pt-2 border-t border-gray-100">
+        <label className="block text-xs font-black text-main-blue uppercase tracking-wider">
+          2. Datos Personales y Profesionales
+        </label>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+              Nombre Completo *
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.nombre}
+              onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+              placeholder="Dr. / Lic. Carlos Mendoza"
+              className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+              Profesión / Cargo Actual *
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.profesion}
+              onChange={(e) => setFormData({ ...formData, profesion: e.target.value })}
+              placeholder="Ej: Juez Penal / Fiscal / Abogado Litigante"
+              className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+              Correo Electrónico *
+            </label>
+            <input
+              type="email"
+              required
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="tu.correo@institucion.org"
+              className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+              Teléfono / WhatsApp *
+            </label>
+            <input
+              type="tel"
+              required
+              value={formData.telefono}
+              onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+              placeholder="+506 8888 8888"
+              className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+              Institución / Despacho / Universidad
+            </label>
+            <input
+              type="text"
+              value={formData.institucion}
+              onChange={(e) => setFormData({ ...formData, institucion: e.target.value })}
+              placeholder="Poder Judicial / Fiscalía / Bufete"
+              className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+              País de Residencia *
+            </label>
+            <select
+              value={formData.pais}
+              onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
+              className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+            >
+              <option value="Costa Rica">Costa Rica</option>
+              <option value="México">México</option>
+              <option value="Colombia">Colombia</option>
+              <option value="Guatemala">Guatemala</option>
+              <option value="Panamá">Panamá</option>
+              <option value="Perú">Perú</option>
+              <option value="Chile">Chile</option>
+              <option value="Argentina">Argentina</option>
+              <option value="Ecuador">Ecuador</option>
+              <option value="España">España</option>
+              <option value="Italia">Italia</option>
+              <option value="Estados Unidos">Estados Unidos</option>
+              <option value="Canadá">Canadá</option>
+              <option value="Otro">Otro país</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. PERFIL ACADÉMICO Y EXPERIENCIA PREVIA */}
+      <div className="space-y-4 pt-2 border-t border-gray-100">
+        <label className="block text-xs font-black text-main-blue uppercase tracking-wider">
+          3. Perfil Académico y Experiencia en la Materia
+        </label>
+
+        {/* EXPERIENCIA EN TEMAS */}
+        <div>
+          <span className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+            ¿Posees experiencia o vinculación en alguno de estos temas? (Selecciona los que apliquen)
+          </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {TEMAS_EXPERIENCIA_OPCIONES.map((tema) => {
+              const checked = formData.experienciaTemas.includes(tema);
+              return (
+                <label
+                  key={tema}
+                  className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-xs cursor-pointer select-none transition-all ${
+                    checked
+                      ? "bg-blue-50/70 border-main-blue text-main-blue font-bold shadow-xs"
+                      : "bg-white border-gray-200 text-gray-700 hover:border-gray-300"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => handleToggleTema(tema)}
+                    className="w-4 h-4 rounded border-gray-300 text-main-blue focus:ring-main-blue cursor-pointer"
+                  />
+                  <span>{tema}</span>
+                </label>
+              );
+            })}
+          </div>
+
+          {/* Campo si selecciona Otro */}
+          {formData.experienciaTemas.includes("Otro") && (
+            <div className="mt-2.5 animate-fade-in">
+              <input
+                type="text"
+                value={formData.experienciaOtro}
+                onChange={(e) => setFormData({ ...formData, experienciaOtro: e.target.value })}
+                placeholder="Indica el área o materia específica..."
+                className="w-full text-xs px-3.5 py-2 rounded-xl border border-blue-200 focus:outline-none focus:ring-1 focus:ring-main-blue bg-blue-50/30"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* MOTIVACIÓN */}
+        <div>
+          <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+            ¿Por qué deseas participar en el curso? *
+          </label>
+          <textarea
+            rows={3}
+            required
+            value={formData.motivoParticipacion}
+            onChange={(e) => setFormData({ ...formData, motivoParticipacion: e.target.value })}
+            placeholder="Describe tus expectativas, objetivos profesionales o aplicación práctica en tus labores..."
+            className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue resize-none bg-white"
+          />
+        </div>
+
+        {/* PREGUNTAS CONDICIONALES RÁPIDAS (CURSOS PREVIOS Y ALUMNO IIRESODH) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-gray-200 text-xs">
+          {/* Cursos previos */}
+          <div className="space-y-2">
+            <span className="block font-bold text-gray-800 leading-tight">
+              ¿Has participado en cursos internacionales sobre estos temas anteriormente?
+            </span>
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-1.5 cursor-pointer font-medium text-gray-700">
+                <input
+                  type="radio"
+                  name="cursosPreviosStripe"
+                  value="si"
+                  checked={formData.cursosPrevios === "si"}
+                  onChange={() => setFormData({ ...formData, cursosPrevios: "si" })}
+                  className="text-main-blue focus:ring-main-blue"
+                />
+                <span>Sí</span>
+              </label>
+              <label className="flex items-center gap-1.5 cursor-pointer font-medium text-gray-700">
+                <input
+                  type="radio"
+                  name="cursosPreviosStripe"
+                  value="no"
+                  checked={formData.cursosPrevios === "no"}
+                  onChange={() => setFormData({ ...formData, cursosPrevios: "no", detalleCursosPrevios: "" })}
+                  className="text-main-blue focus:ring-main-blue"
+                />
+                <span>No</span>
+              </label>
+            </div>
+            {formData.cursosPrevios === "si" && (
+              <input
+                type="text"
+                value={formData.detalleCursosPrevios}
+                onChange={(e) => setFormData({ ...formData, detalleCursosPrevios: e.target.value })}
+                placeholder="¿Cuáles cursos o en qué instituciones?"
+                className="w-full text-xs px-3 py-1.5 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-main-blue animate-fade-in"
+              />
+            )}
+          </div>
+
+          {/* Ex-alumno IIRESODH */}
+          <div className="space-y-2">
+            <span className="block font-bold text-gray-800 leading-tight">
+              ¿Has sido alumno(a) de IIRESODH anteriormente?
+            </span>
+            <div className="flex items-center gap-4 pt-1">
+              <label className="flex items-center gap-1.5 cursor-pointer font-medium text-gray-700">
+                <input
+                  type="radio"
+                  name="alumnoIiresodhStripe"
+                  value="si"
+                  checked={formData.alumnoIiresodh === "si"}
+                  onChange={() => setFormData({ ...formData, alumnoIiresodh: "si" })}
+                  className="text-main-blue focus:ring-main-blue"
+                />
+                <span className="text-emerald-700 font-bold">Sí (Comunidad IIRESODH)</span>
+              </label>
+              <label className="flex items-center gap-1.5 cursor-pointer font-medium text-gray-700">
+                <input
+                  type="radio"
+                  name="alumnoIiresodhStripe"
+                  value="no"
+                  checked={formData.alumnoIiresodh === "no"}
+                  onChange={() => setFormData({ ...formData, alumnoIiresodh: "no" })}
+                  className="text-main-blue focus:ring-main-blue"
+                />
+                <span>No (Primera vez)</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. DATOS DE TARJETA CON STRIPE ELEMENTS */}
+      <div className="space-y-3 pt-2 border-t border-gray-100">
+        <div className="flex items-center justify-between flex-wrap gap-1">
+          <label className="block text-xs font-black text-main-blue uppercase tracking-wider">
+            4. Datos de Tarjeta de Crédito / Débito
+          </label>
+          <div className="flex items-center gap-1.5 text-[9px] font-bold text-gray-500">
+            <span className="bg-blue-900 text-white px-1.5 py-0.5 rounded text-[8px]">VISA</span>
+            <span className="bg-red-600 text-white px-1.5 py-0.5 rounded text-[8px]">MC</span>
+            <span className="bg-blue-500 text-white px-1.5 py-0.5 rounded text-[8px]">AMEX</span>
+            <span>🔒 SSL 256-bit</span>
+          </div>
+        </div>
+
+        <div className="p-3.5 sm:p-4 rounded-xl border border-gray-300 bg-white focus-within:ring-2 focus-within:ring-main-blue/30 focus-within:border-main-blue shadow-xs transition">
+          <CardElement options={cardElementOptions} />
+        </div>
+      </div>
+
+      {/* 5. RESUMEN DE CARGO Y TÉRMINOS */}
+      <div className="bg-slate-50 border border-gray-200 rounded-2xl p-4 text-xs space-y-2">
+        <div className="flex items-center justify-between text-gray-700">
+          <span>Inversión total del curso:</span>
+          <span className="font-bold text-gray-900">{simboloMoneda}{montoTotal.toLocaleString()} USD</span>
+        </div>
+        <div className="flex items-center justify-between text-main-blue font-bold text-sm border-t border-gray-200 pt-2">
+          <span>Importe a cobrar hoy ({planCuotas === 1 ? "Pago total" : "1ª Cuota"}):</span>
+          <span className="text-base text-main-red font-black">
+            {simboloMoneda}{montoCuotaActual.toLocaleString()} USD
+          </span>
+        </div>
+        {planCuotas > 1 && (
+          <p className="text-[11px] text-gray-500 font-light leading-relaxed">
+            Las <strong>{planCuotas - 1} cuotas mensuales restantes</strong> de {simboloMoneda}{montoCuotaActual.toLocaleString()} USD se programarán mensualmente sin ningún tipo de interés bancario ni recargo adicional.
+          </p>
+        )}
+
+        <label className="flex items-start gap-2.5 pt-2 text-[11px] text-gray-600 font-light cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={aceptarTerminos}
+            onChange={(e) => setAceptarTerminos(e.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-main-blue focus:ring-main-blue cursor-pointer"
+          />
+          <span className="leading-snug">
+            He leído y acepto los términos de acreditación académica, el reglamento de admisiones y la política de privacidad de IIRESODH.
+          </span>
+        </label>
+      </div>
+
+      {/* ALERTA DE ERROR */}
+      {errorPago && (
+        <Alert severity="error" sx={{ borderRadius: "12px", fontSize: "12px" }}>
+          {errorPago}
+        </Alert>
+      )}
+
+      {/* BOTÓN DE ACCIÓN */}
+      <div className="space-y-3">
+        <button
+          type="submit"
+          disabled={loadingPago || !stripe}
+          className="w-full bg-main-red hover:bg-red-800 disabled:bg-gray-400 text-white font-bold text-xs uppercase tracking-widest py-4 px-6 rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
+        >
+          {loadingPago ? (
+            <>
+              <CircularProgress size={16} thickness={5} sx={{ color: "white" }} />
+              <span>Procesando inscripción y pago seguro...</span>
+            </>
+          ) : (
+            <>
+              <span>🔒 Confirmar Pago de {simboloMoneda}{montoCuotaActual.toLocaleString()} USD</span>
+              {planCuotas > 1 && (
+                <span className="text-[10px] bg-red-950/40 px-2 py-0.5 rounded-full font-medium">
+                  Cuota 1 de {planCuotas}
+                </span>
+              )}
+            </>
+          )}
+        </button>
+
+        {/* ALTERNATIVAS */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 text-[11px] text-gray-500 text-center sm:text-left">
+          {landing?.enlaceStripe && (
+            <a
+              href={landing.enlaceStripe}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-main-blue hover:underline font-semibold flex items-center gap-1"
+            >
+              <span>🔗 O pagar vía Stripe Checkout externo</span>
+            </a>
+          )}
+          
+          {onSwitchToTransferencia && (
+            <button
+              type="button"
+              onClick={onSwitchToTransferencia}
+              className="text-gray-600 hover:text-main-blue font-medium underline cursor-pointer"
+            >
+              🏛️ ¿Prefieres transferencia bancaria institucional?
+            </button>
+          )}
+        </div>
+      </div>
+    </form>
+  );
+}
+
+// Wrapper exportado que incluye el Provider <Elements>
+export default function FormularioPagoCurso({ curso, landing, onSwitchToTransferencia }) {
+  return (
+    <Elements stripe={stripeCursosPromise}>
+      <CheckoutFormCurso 
+        curso={curso} 
+        landing={landing} 
+        onSwitchToTransferencia={onSwitchToTransferencia} 
+      />
+    </Elements>
+  );
+}
