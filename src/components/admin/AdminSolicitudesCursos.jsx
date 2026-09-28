@@ -139,6 +139,9 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
       "Monto Total Inversión USD",
       "Saldo Pendiente USD",
       "ID Stripe PaymentIntent",
+      "Consentimiento Ley 8968",
+      "Fecha Aceptación Privacidad",
+      "Versión Política",
       "Curso",
       "Comentarios"
     ];
@@ -149,6 +152,12 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
         : s.fechaSolicitud?.seconds
         ? new Date(s.fechaSolicitud.seconds * 1000).toLocaleString("es-CR")
         : "Sin fecha";
+
+      const fechaPrivacidad = s.fechaAceptacionPrivacidad?.toDate
+        ? s.fechaAceptacionPrivacidad.toDate().toLocaleString("es-CR")
+        : s.fechaAceptacionPrivacidad?.seconds
+        ? new Date(s.fechaAceptacionPrivacidad.seconds * 1000).toLocaleString("es-CR")
+        : (s.aceptaPoliticaPrivacidad ? "Aceptado al registrarse" : "No registrado");
 
       const temas = Array.isArray(s.experienciaTemas)
         ? s.experienciaTemas.join("; ")
@@ -174,6 +183,9 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
         `"${s.montoTotalInversion || 3350}"`,
         `"${s.saldoPendiente !== undefined ? s.saldoPendiente : (s.metodoPago === 'stripe' ? 0 : 3350)}"`,
         `"${(s.stripePaymentIntentId || s.stripeSessionId || '').replace(/"/g, '""')}"`,
+        `"${s.aceptaPoliticaPrivacidad ? 'SÍ (Otorgado)' : 'No registrado'}"`,
+        `"${fechaPrivacidad}"`,
+        `"${s.versionPoliticaPrivacidad || '2026-09-12'}"`,
         `"${(s.cursoTitulo || s.cursoId || '').replace(/"/g, '""')}"`,
         `"${(s.comentarios || '').replace(/"/g, '""')}"`
       ];
@@ -600,6 +612,32 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
                           </div>
                         ) : (
                           <p className="text-gray-400 italic">Sin teléfono registrado</p>
+                        )}
+                      </div>
+
+                      {/* CONSTANCIA LEGAL DE PROTECCIÓN DE DATOS (LEY 8968) */}
+                      <div className="pt-2 border-t border-gray-100 space-y-0.5">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                          Consentimiento Ley N° 8968 (Privacidad)
+                        </span>
+                        <div className="flex items-center gap-1.5 text-xs">
+                          {solicitud.aceptaPoliticaPrivacidad ? (
+                            <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 inline-flex items-center gap-1 text-[11px]">
+                              ✓ Consentimiento Otorgado
+                              <span className="text-[10px] font-normal text-emerald-800">
+                                (Ver. {solicitud.versionPoliticaPrivacidad || "2026-09-12"})
+                              </span>
+                            </span>
+                          ) : (
+                            <span className="font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded text-[11px]">
+                              Aceptado previo al envío
+                            </span>
+                          )}
+                        </div>
+                        {solicitud.fechaAceptacionPrivacidad && (
+                          <span className="text-[10px] text-gray-400 block">
+                            Constancia: {formatearFecha(solicitud.fechaAceptacionPrivacidad)}
+                          </span>
                         )}
                       </div>
                     </div>

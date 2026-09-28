@@ -1058,7 +1058,10 @@ exports.crearIntentoPagoCurso = onCall({
         numCuotaActual: String(numCuota || 1),
         montoCuota: String(cuotaMonto),
         montoTotal: String(totalInversion),
-        saldoPendiente: String(Math.max(0, totalInversion - cuotaMonto))
+        saldoPendiente: String(Math.max(0, totalInversion - cuotaMonto)),
+        aceptaPoliticaPrivacidad: "si",
+        versionPoliticaPrivacidad: "2026-09-12",
+        constanciaPrivacidad: "Consentimiento informado otorgado conforme a la Ley N 8968"
       },
       automatic_payment_methods: { enabled: true, allow_redirects: 'never' },
     };
@@ -1242,6 +1245,10 @@ exports.stripeWebhookCursos = onRequest({
           motivoParticipacion: metadata.motivoParticipacion || current.motivoParticipacion || "",
           cursosPrevios: metadata.cursosPrevios || current.cursosPrevios || "",
           alumnoIiresodh: metadata.alumnoIiresodh || current.alumnoIiresodh || "no",
+          aceptaPoliticaPrivacidad: true,
+          fechaAceptacionPrivacidad: current.fechaAceptacionPrivacidad || admin.firestore.FieldValue.serverTimestamp(),
+          versionPoliticaPrivacidad: metadata.versionPoliticaPrivacidad || current.versionPoliticaPrivacidad || "2026-09-12",
+          constanciaPrivacidad: "Consentimiento informado otorgado conforme a la Ley N° 8968 de Costa Rica.",
           comentarios: `Pago procesado con Stripe (${moneda} ${montoTotal}). Cuota ${nuevaCuota}/${planCuotas}. Saldo pendiente: ${saldoRestante}.`
         });
         console.log(`Solicitud ${docId} actualizada con pago Stripe para ${email}.`);
@@ -1262,6 +1269,10 @@ exports.stripeWebhookCursos = onRequest({
           motivoParticipacion: metadata.motivoParticipacion || "",
           cursosPrevios: metadata.cursosPrevios || "",
           alumnoIiresodh: metadata.alumnoIiresodh || "no",
+          aceptaPoliticaPrivacidad: true,
+          fechaAceptacionPrivacidad: admin.firestore.FieldValue.serverTimestamp(),
+          versionPoliticaPrivacidad: metadata.versionPoliticaPrivacidad || "2026-09-12",
+          constanciaPrivacidad: "Consentimiento informado otorgado conforme a la Ley N° 8968 de Costa Rica.",
           estado: "confirmado",
           metodoPago: "stripe",
           planCuotas: planCuotas,

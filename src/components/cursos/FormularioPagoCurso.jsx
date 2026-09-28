@@ -160,7 +160,7 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
     }
 
     if (!aceptarTerminos) {
-      setErrorPago("Debes aceptar las condiciones de inscripción y la política de privacidad para proceder.");
+      setErrorPago("Debes aceptar la Política de Privacidad y autorizar el tratamiento de datos para proceder con la inscripción.");
       return;
     }
 
@@ -196,7 +196,9 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
         montoTotal: montoTotal,
         moneda: monedaDetectada,
         planCuotas: planCuotas,
-        numCuota: 1
+        numCuota: 1,
+        aceptaPoliticaPrivacidad: true,
+        versionPoliticaPrivacidad: "2026-09-12"
       });
 
       if (!data || !data.clientSecret) {
@@ -673,7 +675,20 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
           </p>
         )}
 
-        <label className="flex items-start gap-2.5 pt-2 text-[11px] text-gray-600 font-light cursor-pointer select-none">
+        {/* CLÁUSULA INFORMATIVA DE PROTECCIÓN DE DATOS - LEY N° 8968 (COSTA RICA) */}
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-gray-600 leading-relaxed text-left space-y-2">
+          <p className="font-bold text-gray-800 flex items-center gap-1.5 text-xs">
+            <span>🛡️</span> Protección de Datos Personales (Ley N° 8968 / Costa Rica)
+          </p>
+          <p className="text-[11px] leading-relaxed">
+            De conformidad con la Ley N° 8968 (Protección de la Persona frente al Tratamiento de sus Datos Personales), se le informa que sus datos personales y de perfil académico serán incorporados a las bases de datos de la <strong>Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH)</strong>, Cédula de Persona Jurídica 3-002-671392, con la finalidad exclusiva de gestionar su postulación, registro, emisión de acreditaciones de participación y coordinación académica y administrativa del curso.
+          </p>
+          <p className="text-[11px] leading-relaxed text-gray-500">
+            La entrega de sus datos es voluntaria, con la consecuencia de que no facilitarlos imposibilita tramitar su inscripción. Sus datos no serán cedidos a terceros con fines comerciales o publicitarios. Puede ejercer en cualquier momento sus derechos de Acceso, Rectificación, Cancelación y Oposición (ARCO) escribiendo a <a href="mailto:contacto@iiresodh.org" className="text-main-blue font-bold hover:underline">contacto@iiresodh.org</a>.
+          </p>
+        </div>
+
+        <label className="flex items-start gap-2.5 pt-1 text-xs text-gray-700 font-medium cursor-pointer select-none text-left">
           <input
             type="checkbox"
             checked={aceptarTerminos}
@@ -681,7 +696,16 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
             className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-main-blue focus:ring-main-blue cursor-pointer"
           />
           <span className="leading-snug">
-            He leído y acepto los términos de acreditación académica, el reglamento de admisiones y la política de privacidad de IIRESODH.
+            He leído y acepto la{" "}
+            <a
+              href="/privacidad"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-main-blue font-bold underline hover:text-light-blue"
+            >
+              Política de Privacidad y Protección de Datos Personales
+            </a>{" "}
+            de IIRESODH y autorizo expresamente el tratamiento de mis datos para los fines académicos del curso.
           </span>
         </label>
       </div>
