@@ -12,6 +12,7 @@ const stripeCursosPromise = loadStripe(STRIPE_CURSOS_KEY);
 
 const cardElementOptions = {
   hidePostalCode: true,
+  disableLink: true,
   style: {
     base: {
       fontSize: "16px", // Previene auto-zoom en iOS Safari
@@ -146,11 +147,6 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
 
     if (!formData.nombre.trim() || !formData.email.trim() || !formData.telefono.trim()) {
       setErrorPago("Por favor completa tu nombre completo, correo electrónico y teléfono de contacto.");
-      return;
-    }
-
-    if (!formData.profesion.trim()) {
-      setErrorPago("Por favor indica tu profesión u ocupación profesional.");
       return;
     }
 
@@ -411,11 +407,10 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
 
           <div>
             <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-              Profesión / Cargo Actual *
+              Profesión / Cargo Actual <span className="text-gray-400 font-normal lowercase">(opcional)</span>
             </label>
             <input
               type="text"
-              required
               value={formData.profesion}
               onChange={(e) => setFormData({ ...formData, profesion: e.target.value })}
               placeholder="Ej: Juez Penal / Fiscal / Abogado Litigante"
@@ -635,22 +630,57 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
         </div>
       </div>
 
-      {/* 4. DATOS DE TARJETA CON STRIPE ELEMENTS */}
-      <div className="space-y-3 pt-2 border-t border-gray-100">
-        <div className="flex items-center justify-between flex-wrap gap-1">
+      {/* 4. DATOS DE TARJETA CON STRIPE ELEMENTS Y SELLO DE CONFIANZA */}
+      <div className="space-y-3 pt-3 border-t border-gray-100">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <label className="block text-xs font-black text-main-blue uppercase tracking-wider">
             4. Datos de Tarjeta de Crédito / Débito
           </label>
-          <div className="flex items-center gap-1.5 text-[9px] font-bold text-gray-500">
-            <span className="bg-blue-900 text-white px-1.5 py-0.5 rounded text-[8px]">VISA</span>
-            <span className="bg-red-600 text-white px-1.5 py-0.5 rounded text-[8px]">MC</span>
-            <span className="bg-blue-500 text-white px-1.5 py-0.5 rounded text-[8px]">AMEX</span>
-            <span>🔒 SSL 256-bit</span>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 rounded-lg border border-slate-200 text-[10px] font-bold text-slate-700">
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Conexión Segura SSL 256-bit</span>
           </div>
         </div>
 
-        <div className="p-3.5 sm:p-4 rounded-xl border border-gray-300 bg-white focus-within:ring-2 focus-within:ring-main-blue/30 focus-within:border-main-blue shadow-xs transition">
-          <CardElement options={cardElementOptions} />
+        {/* SELLO Y GARANTÍA STRIPE */}
+        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-slate-50 via-blue-50/40 to-slate-50 border border-slate-200 flex items-start gap-3">
+          <div className="w-9 h-9 rounded-xl bg-main-blue text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <div className="text-left space-y-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-extrabold text-main-blue tracking-tight">
+                Pasarela Oficial Stripe Certificada
+              </span>
+              <span className="text-[10px] font-black px-2 py-0.5 rounded bg-[#635bff] text-white tracking-wider lowercase shadow-xs">
+                stripe
+              </span>
+              <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                PCI-DSS Nivel 1
+              </span>
+            </div>
+            <p className="text-[11px] text-gray-600 leading-snug font-normal">
+              Tus datos bancarios son procesados de forma encriptada y directa por Stripe bajo los más rigurosos estándares de seguridad bancaria internacional. IIRESODH nunca almacena ni tiene acceso a tu número de tarjeta.
+            </p>
+          </div>
+        </div>
+
+        {/* INPUT DE TARJETA CON LOGOS DE MARCAS */}
+        <div className="space-y-1.5">
+          <div className="p-3.5 sm:p-4 rounded-xl border border-gray-300 bg-white focus-within:ring-2 focus-within:ring-main-blue/30 focus-within:border-main-blue shadow-xs transition">
+            <CardElement options={cardElementOptions} />
+          </div>
+          <div className="flex items-center justify-between text-[10px] text-gray-400 px-1 pt-0.5 flex-wrap gap-1">
+            <span className="flex items-center gap-1.5 font-medium text-gray-500">
+              <span>Aceptamos:</span>
+              <span className="font-bold text-gray-700">Visa, Mastercard, Amex, Diners, Discover</span>
+            </span>
+            <span className="font-semibold text-slate-500 flex items-center gap-1">
+              <span>🔒</span> Cifrado bancario de punto a punto
+            </span>
+          </div>
         </div>
       </div>
 
@@ -737,6 +767,35 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
             </>
           )}
         </button>
+
+        {/* SELLOS DE CONFIANZA INSTITUCIONAL */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-gray-100 text-left">
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-lg">🔒</span>
+            <div>
+              <p className="text-[10px] font-bold text-gray-900 leading-tight">Cifrado Bancario</p>
+              <p className="text-[9px] text-gray-500">SSL 256-bit certificado</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-lg">🏛️</span>
+            <div>
+              <p className="text-[10px] font-bold text-gray-900 leading-tight">Garantía Académica</p>
+              <p className="text-[9px] text-gray-500">Comprobante y plaza formal</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-lg">🛡️</span>
+            <div>
+              <p className="text-[10px] font-bold text-gray-900 leading-tight">Protección Antifraude</p>
+              <p className="text-[9px] text-gray-500">Stripe Radar AI activo</p>
+            </div>
+          </div>
+        </div>
+
+        <p className="text-[11px] text-gray-500 text-center leading-relaxed">
+          Al confirmar tu pago recibirás inmediatamente el recibo oficial y la confirmación de matrícula en tu correo electrónico con copia a <strong className="text-gray-700">contacto@iiresodh.org</strong>.
+        </p>
 
         {/* ALTERNATIVAS */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 text-[11px] text-gray-500 text-center sm:text-left">

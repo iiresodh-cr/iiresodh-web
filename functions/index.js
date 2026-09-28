@@ -1090,10 +1090,146 @@ exports.crearIntentoPagoCurso = onCall({
 
 
 // ============================================================================
+// HELPER: ENVÍO DE CORREO DE CONFIRMACIÓN DE INSCRIPCIÓN A CURSO
+// ============================================================================
+async function enviarCorreoConfirmacionCurso({
+  email,
+  nombre,
+  cursoTitulo,
+  montoTotal,
+  moneda,
+  planCuotas,
+  numCuotaActual,
+  saldoPendiente,
+  paymentIntentId,
+  profesion,
+  institucion,
+  pais
+}) {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        type: 'OAuth2',
+        user: 'contacto@iiresodh.org',
+        clientId: GMAIL_CLIENT_ID.value(),
+        clientSecret: GMAIL_CLIENT_SECRET.value(),
+        refreshToken: GMAIL_REFRESH_TOKEN.value()
+      }
+    });
+
+    const esCuotas = Number(planCuotas) > 1;
+    const cuotaTexto = esCuotas
+      ? `Plan en ${planCuotas} cuotas (Pago de cuota ${numCuotaActual} de ${planCuotas})`
+      : 'Pago único de inversión completa';
+
+    const saldoTexto = (esCuotas && Number(saldoPendiente) > 0)
+      ? `<p style="margin: 8px 0 0 0; color: #b45309; font-weight: bold; font-size: 13px;">Saldo restante por liquidar: ${moneda} ${Number(saldoPendiente).toLocaleString()} (${planCuotas - numCuotaActual} cuotas mensuales sin interés restantes)</p>`
+      : '<p style="margin: 8px 0 0 0; color: #047857; font-weight: bold; font-size: 13px;">✓ Inversión del curso liquidada al 100%</p>';
+
+    const htmlContent = `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden;">
+        <div style="background-color: #1D3557; padding: 28px 24px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 0.5px;">IIRESODH</h1>
+          <p style="color: #cbd5e1; margin: 6px 0 0 0; font-size: 13px;">Instituto Internacional de Responsabilidad Social y Derechos Humanos</p>
+        </div>
+
+        <div style="padding: 32px 24px;">
+          <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; padding: 14px 18px; margin-bottom: 24px;">
+            <p style="color: #065f46; font-size: 14px; font-weight: bold; margin: 0;">
+              ✓ ¡Inscripción confirmada exitosamente!
+            </p>
+          </div>
+
+          <p style="font-size: 15px; color: #1e293b; line-height: 1.6; margin-top: 0;">
+            Estimado/a <strong>${nombre}</strong>,
+          </p>
+          <p style="font-size: 14px; color: #475569; line-height: 1.6;">
+            Hemos recibido con éxito el pago de tu matrícula para el programa académico internacional <strong>${cursoTitulo}</strong>. Tu plaza se encuentra formalmente reservada en el expediente del curso.
+          </p>
+
+          <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; margin: 24px 0;">
+            <h3 style="color: #1D3557; font-size: 14px; font-weight: 700; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px;">
+              Detalles del Registro y Pago
+            </h3>
+            <table style="width: 100%; font-size: 13px; color: #334155; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 6px 0; color: #64748b;">Programa:</td>
+                <td style="padding: 6px 0; font-weight: 600; text-align: right;">${cursoTitulo}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b;">Participante:</td>
+                <td style="padding: 6px 0; font-weight: 600; text-align: right;">${nombre}</td>
+              </tr>
+              ${profesion && profesion.trim() ? `<tr><td style="padding: 6px 0; color: #64748b;">Profesión:</td><td style="padding: 6px 0; font-weight: 600; text-align: right;">${profesion}</td></tr>` : ''}
+              ${institucion && institucion.trim() && !institucion.toLowerCase().includes('pago directo') && !institucion.toLowerCase().includes('stripe') && !institucion.toLowerCase().includes('inscripción en línea') ? `<tr><td style="padding: 6px 0; color: #64748b;">Institución:</td><td style="padding: 6px 0; font-weight: 600; text-align: right;">${institucion}</td></tr>` : ''}
+              ${pais ? `<tr><td style="padding: 6px 0; color: #64748b;">País:</td><td style="padding: 6px 0; text-align: right;">${pais}</td></tr>` : ''}
+              <tr>
+                <td style="padding: 6px 0; color: #64748b;">Modalidad de Pago:</td>
+                <td style="padding: 6px 0; font-weight: 600; color: #1D3557; text-align: right;">${cuotaTexto}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b;">Monto abonado hoy:</td>
+                <td style="padding: 6px 0; font-weight: 800; font-size: 15px; color: #B92F32; text-align: right;">${moneda} ${Number(montoTotal).toLocaleString()}</td>
+              </tr>
+            </table>
+            ${saldoTexto}
+            ${paymentIntentId ? `
+              <p style="font-size: 11px; color: #94a3b8; margin: 12px 0 0 0; border-top: 1px dashed #e2e8f0; padding-top: 8px;">
+                Referencia de Transacción Stripe: <code style="background-color: #ffffff; padding: 2px 4px; border: 1px solid #e2e8f0; border-radius: 4px;">${paymentIntentId}</code>
+              </p>
+            ` : ''}
+          </div>
+
+          <h3 style="color: #1D3557; font-size: 14px; font-weight: 700; margin: 20px 0 8px 0;">
+            Próximos Pasos Académicos
+          </h3>
+          <p style="font-size: 13px; color: #475569; line-height: 1.6;">
+            Nuestro equipo de coordinación académica se pondrá en contacto contigo para remitirte el expediente oficial de admisión, el cronograma detallado de ponencias y las orientaciones logísticas para tu estancia académica en Palermo.
+          </p>
+
+          <p style="font-size: 13px; color: #475569; line-height: 1.6;">
+            Si requieres factura institucional, orden de compra o certificado de admisión para trámites oficiales de tu despacho u organización, puedes responder directamente a este correo o contactarnos a <a href="mailto:contacto@iiresodh.org" style="color: #1D3557; font-weight: bold;">contacto@iiresodh.org</a>.
+          </p>
+
+          <p style="font-size: 13px; color: #1e293b; margin-top: 28px;">
+            Atentamente,<br>
+            <strong>Coordinación Académica Internacional</strong><br>
+            Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH)<br>
+            <a href="https://iiresodh.org" style="color: #B92F32; text-decoration: none; font-size: 12px;">www.iiresodh.org</a>
+          </p>
+        </div>
+
+        <div style="background-color: #f1f5f9; padding: 16px 24px; text-align: center; font-size: 11px; color: #64748b;">
+          Este es un comprobante automático de confirmación generado por IIRESODH. Por favor, conserva este correo para tu expediente.
+        </div>
+      </div>
+    `;
+
+    await transporter.sendMail({
+      from: `"IIRESODH - Cursos Internacionales" <contacto@iiresodh.org>`,
+      to: email,
+      bcc: 'contacto@iiresodh.org',
+      subject: `Confirmación de Inscripción: ${cursoTitulo}`,
+      html: htmlContent
+    });
+    console.log(`Correo de confirmación enviado exitosamente a ${email} (bcc: contacto@iiresodh.org).`);
+  } catch (error) {
+    console.error(`Error enviando correo de confirmación a ${email}:`, error);
+  }
+}
+
+// ============================================================================
 // 13. WEBHOOK DE STRIPE PARA CURSOS PRESENCIALES (CUENTA DEDICADA)
 // ============================================================================
 exports.stripeWebhookCursos = onRequest({ 
-  secrets: [STRIPE_CURSOS_SECRET_KEY, STRIPE_CURSOS_WEBHOOK_SECRET],
+  secrets: [
+    STRIPE_CURSOS_SECRET_KEY, 
+    STRIPE_CURSOS_WEBHOOK_SECRET,
+    GMAIL_CLIENT_ID,
+    GMAIL_CLIENT_SECRET,
+    GMAIL_REFRESH_TOKEN
+  ],
   region: "us-central1",
   memory: "512MiB",
   timeoutSeconds: 60
@@ -1169,7 +1305,7 @@ exports.stripeWebhookCursos = onRequest({
           nombre: nombre,
           email: email.toLowerCase().trim(),
           telefono: telefono,
-          institucion: metadata.institucion || "Inscripción en línea vía Stripe",
+          institucion: metadata.institucion || "",
           pais: pais,
           comentarios: `Pago de inscripción completado en Stripe Checkout (${moneda} ${montoTotal}).`,
           estado: "confirmado",
@@ -1183,6 +1319,22 @@ exports.stripeWebhookCursos = onRequest({
         });
         console.log(`Nueva inscripción creada en solicitudesCursos para ${email}.`);
       }
+
+      // Enviar correo de confirmación de inscripción al participante
+      await enviarCorreoConfirmacionCurso({
+        email,
+        nombre,
+        cursoTitulo,
+        montoTotal,
+        moneda,
+        planCuotas: 1,
+        numCuotaActual: 1,
+        saldoPendiente: 0,
+        paymentIntentId: session.payment_intent || session.id,
+        profesion: metadata.profesion || "",
+        institucion: metadata.institucion || "",
+        pais: pais
+      });
 
       return res.json({ received: true });
     }
@@ -1254,6 +1406,22 @@ exports.stripeWebhookCursos = onRequest({
           comentarios: `Pago procesado con Stripe (${moneda} ${montoTotal}). Cuota ${nuevaCuota}/${planCuotas}. Saldo pendiente: ${saldoRestante}.`
         });
         console.log(`Solicitud ${docId} actualizada con pago Stripe para ${email}.`);
+
+        // Enviar correo de confirmación de cuota/inscripción
+        await enviarCorreoConfirmacionCurso({
+          email,
+          nombre,
+          cursoTitulo,
+          montoTotal,
+          moneda,
+          planCuotas,
+          numCuotaActual: nuevaCuota,
+          saldoPendiente: saldoRestante,
+          paymentIntentId: paymentIntent.id,
+          profesion: metadata.profesion || current.profesion || "",
+          institucion: metadata.institucion || current.institucion || "",
+          pais: metadata.pais || current.pais || ""
+        });
       } else {
         await db.collection("solicitudesCursos").add({
           cursoId: cursoId,
@@ -1261,7 +1429,7 @@ exports.stripeWebhookCursos = onRequest({
           nombre: nombre,
           email: email.toLowerCase().trim(),
           telefono: metadata.telefono || "",
-          institucion: metadata.institucion || "Pago directo con tarjeta Stripe",
+          institucion: metadata.institucion || "",
           pais: metadata.pais || "No especificado",
           comentarios: planCuotas > 1
             ? `Pago Cuota ${numCuotaActual} de ${planCuotas} (${moneda} ${montoTotal}). Saldo restante: ${moneda} ${saldoPendiente}.`
@@ -1288,6 +1456,22 @@ exports.stripeWebhookCursos = onRequest({
           fechaPago: admin.firestore.FieldValue.serverTimestamp()
         });
         console.log(`Inscripción registrada por payment_intent.succeeded para ${email}. Plan: ${planCuotas} pagos.`);
+
+        // Enviar correo de confirmación de inscripción
+        await enviarCorreoConfirmacionCurso({
+          email,
+          nombre,
+          cursoTitulo,
+          montoTotal,
+          moneda,
+          planCuotas,
+          numCuotaActual,
+          saldoPendiente,
+          paymentIntentId: paymentIntent.id,
+          profesion: metadata.profesion || "",
+          institucion: metadata.institucion || "",
+          pais: metadata.pais || ""
+        });
       }
 
       return res.json({ received: true });
@@ -1324,5 +1508,80 @@ exports.stripeWebhookCursos = onRequest({
   } catch (error) {
     console.error("Error en procesamiento de stripeWebhookCursos:", error);
     return res.status(500).json({ error: "Error interno procesando evento de cursos." });
+  }
+});
+
+// ============================================================================
+// 14. ENDPOINT ADMINISTRATIVO / REENVIAR CONFIRMACIÓN DE CURSO
+// ============================================================================
+exports.reenviarConfirmacionCurso = onRequest({
+  secrets: [
+    GMAIL_CLIENT_ID,
+    GMAIL_CLIENT_SECRET,
+    GMAIL_REFRESH_TOKEN
+  ],
+  region: "us-central1",
+  memory: "512MiB",
+  timeoutSeconds: 60
+}, async (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
+  if (req.method === "OPTIONS") {
+    res.set("Access-Control-Allow-Methods", "GET, POST");
+    res.set("Access-Control-Allow-Headers", "Content-Type");
+    return res.status(204).send("");
+  }
+
+  const emailParam = req.query.email || req.body?.email;
+  const docIdParam = req.query.id || req.body?.id;
+
+  if (!emailParam && !docIdParam) {
+    return res.status(400).json({ error: "Debe proporcionar un email o id de documento." });
+  }
+
+  const db = admin.firestore();
+  try {
+    let docData = null;
+    if (docIdParam) {
+      const snap = await db.collection("solicitudesCursos").doc(docIdParam).get();
+      if (snap.exists) docData = snap.data();
+    } else {
+      const snap = await db.collection("solicitudesCursos")
+        .where("email", "==", String(emailParam).toLowerCase().trim())
+        .limit(5)
+        .get();
+      if (!snap.empty) {
+        docData = snap.docs[0].data();
+      }
+    }
+
+    if (!docData) {
+      return res.status(404).json({ error: "No se encontró registro para el email o ID indicado." });
+    }
+
+    await enviarCorreoConfirmacionCurso({
+      email: docData.email,
+      nombre: docData.nombre || "Participante",
+      cursoTitulo: docData.cursoTitulo || "Curso Internacional - Palermo",
+      montoTotal: docData.montoPagado || 0,
+      moneda: docData.moneda || "USD",
+      planCuotas: docData.planCuotas || 1,
+      numCuotaActual: docData.cuotasPagadas || 1,
+      saldoPendiente: docData.saldoPendiente || 0,
+      paymentIntentId: docData.stripePaymentIntentId || "",
+      profesion: docData.profesion || "",
+      institucion: (docData.institucion && !docData.institucion.toLowerCase().includes('pago directo') && !docData.institucion.toLowerCase().includes('stripe') && !docData.institucion.toLowerCase().includes('inscripción en línea')) ? docData.institucion : "",
+      pais: docData.pais || ""
+    });
+
+    return res.json({ 
+      success: true, 
+      message: `Correo de confirmación enviado exitosamente a ${docData.email}`,
+      destinatario: docData.email,
+      nombre: docData.nombre,
+      curso: docData.cursoTitulo
+    });
+  } catch (err) {
+    console.error("Error reenviando confirmación de curso:", err);
+    return res.status(500).json({ error: err.message });
   }
 });
