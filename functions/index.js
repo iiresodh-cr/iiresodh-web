@@ -26,17 +26,17 @@ const PIDA_SERVICE_ACCOUNT = defineSecret("PIDA_SERVICE_ACCOUNT");
 function getStripeCursosKey() {
   try {
     const val = STRIPE_CURSOS_SECRET_KEY.value();
-    if (val) return val;
+    if (val) return String(val).trim();
   } catch (_) {}
-  return process.env.STRIPE_CURSOS_SECRET_KEY || "";
+  return String(process.env.STRIPE_CURSOS_SECRET_KEY || "").trim();
 }
 
 function getStripeCursosWebhookSecret() {
   try {
     const val = STRIPE_CURSOS_WEBHOOK_SECRET.value();
-    if (val) return val;
+    if (val) return String(val).trim();
   } catch (_) {}
-  return process.env.STRIPE_CURSOS_WEBHOOK_SECRET || "";
+  return String(process.env.STRIPE_CURSOS_WEBHOOK_SECRET || "").trim();
 }
 
 // ============================================================================
