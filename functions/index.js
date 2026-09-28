@@ -970,6 +970,7 @@ exports.descargarDocumento = onRequest({ region: "us-central1" }, async (req, re
 // 12. CREAR INTENTO DE PAGO PARA CURSOS PRESENCIALES (STRIPE DEDICADO)
 // ============================================================================
 exports.crearIntentoPagoCurso = onCall({ 
+  secrets: [STRIPE_CURSOS_SECRET_KEY],
   region: "us-central1",
   cors: true
 }, async (request) => {
@@ -1092,6 +1093,7 @@ exports.crearIntentoPagoCurso = onCall({
 // 13. WEBHOOK DE STRIPE PARA CURSOS PRESENCIALES (CUENTA DEDICADA)
 // ============================================================================
 exports.stripeWebhookCursos = onRequest({ 
+  secrets: [STRIPE_CURSOS_SECRET_KEY, STRIPE_CURSOS_WEBHOOK_SECRET],
   region: "us-central1",
   memory: "512MiB",
   timeoutSeconds: 60
