@@ -11,7 +11,7 @@ const STRIPE_CURSOS_KEY = import.meta.env.VITE_STRIPE_CURSOS_PUBLIC_KEY || "pk_t
 const stripeCursosPromise = loadStripe(STRIPE_CURSOS_KEY);
 
 const cardElementOptions = {
-  hidePostalCode: false,
+  hidePostalCode: true,
   style: {
     base: {
       fontSize: "16px", // Previene auto-zoom en iOS Safari
@@ -213,10 +213,7 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
           billing_details: {
             name: formData.nombre.trim(),
             email: formData.email.trim(),
-            phone: formData.telefono.trim(),
-            address: {
-              country: formData.pais === "Costa Rica" ? "CR" : undefined
-            }
+            phone: formData.telefono.trim()
           }
         },
         receipt_email: formData.email.trim()

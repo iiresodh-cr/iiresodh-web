@@ -1063,7 +1063,7 @@ exports.crearIntentoPagoCurso = onCall({
         versionPoliticaPrivacidad: "2026-09-12",
         constanciaPrivacidad: "Consentimiento informado otorgado conforme a la Ley N 8968"
       },
-      automatic_payment_methods: { enabled: true, allow_redirects: 'never' },
+      payment_method_types: ['card'],
     };
 
     if (customerId) {
