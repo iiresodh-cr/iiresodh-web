@@ -13,6 +13,15 @@ import palermoDefaultImg from "../assets/cursos/palermo_catedral.jpg";
 import logoIiresodh from "../assets/logo.webp";
 import FormularioPagoCurso from "../components/cursos/FormularioPagoCurso";
 
+export const normalizarPrecio = (precioStr) => {
+  if (!precioStr) return "3,350.00 USD";
+  let s = String(precioStr).replace("3.350", "3,350");
+  if (s.includes("3,350") && !s.includes("3,350.")) {
+    s = s.replace("3,350", "3,350.00");
+  }
+  return s;
+};
+
 // Datos por defecto para el Curso Internacional 2027 en Palermo (Fallback y Semilla visual)
 export const DATOS_PALERMO_2027 = {
   id: "palermo-2027",
@@ -26,7 +35,7 @@ export const DATOS_PALERMO_2027 = {
     publicada: false, // Por defecto no pública como solicitó el usuario
     lema: "APLICACIÓN DE LAS CONVENCIONES DE PALERMO CONTRA EL CRIMEN ORGANIZADO",
     ubicacionFechas: "Palermo, Sicilia, Italia | Del 17 al 23 de mayo de 2027",
-    precioInversion: "3,350 USD",
+    precioInversion: "3,350.00 USD",
     inversionDetalle: "Por persona. Incluye sesiones magistrales, visitas de campo, materiales exclusivos y certificación internacional.",
     enlaceStripe: "",
     heroImagenUrl: falconeDefaultImg,
@@ -531,7 +540,7 @@ export default function CursoLanding() {
                 <div className="space-y-1.5 flex-1 min-w-0 text-left">
                   <div className="flex items-baseline gap-2.5 flex-wrap">
                     <span className="text-2xl sm:text-3xl font-black text-amber-400 tracking-tight">
-                      {landing.precioInversion ? landing.precioInversion.replace("3.350", "3,350") : "3,350 USD"}
+                      {normalizarPrecio(landing.precioInversion)}
                     </span>
                     <span className="text-[10px] sm:text-xs uppercase font-bold tracking-widest text-amber-200/90 bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-400/20">
                       Inversión Académica
@@ -956,7 +965,7 @@ export default function CursoLanding() {
                         </h3>
                       </div>
                       <span className="text-2xl font-black text-main-blue">
-                        {landing.precioInversion ? landing.precioInversion.replace("3.350", "3,350") : "3,350 USD"}
+                        {normalizarPrecio(landing.precioInversion)}
                       </span>
                     </div>
 

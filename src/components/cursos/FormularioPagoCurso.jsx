@@ -80,12 +80,11 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
   let montoTotal = Number(digitos) || 3350;
   if (montoTotal < 50) montoTotal = 3350;
 
-  // Formateador estándar internacional USD (coma para miles, punto para decimales con 2 dígitos)
+  // Formateador estándar internacional USD: siempre con dos dígitos decimales
   const formatMonto = (num) => {
     const n = Number(num) || 0;
-    const hasDecimals = n % 1 !== 0;
     return n.toLocaleString("en-US", {
-      minimumFractionDigits: hasDecimals ? 2 : 0,
+      minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
   };

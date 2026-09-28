@@ -1122,9 +1122,8 @@ async function enviarCorreoConfirmacionCurso({
 
     const formatMontoEmail = (num) => {
       const n = Number(num) || 0;
-      const hasDecimals = n % 1 !== 0;
       return n.toLocaleString('en-US', {
-        minimumFractionDigits: hasDecimals ? 2 : 0,
+        minimumFractionDigits: 2,
         maximumFractionDigits: 2
       });
     };
