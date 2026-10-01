@@ -887,18 +887,23 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
           </p>
         )}
 
-        {/* CLÁUSULA INFORMATIVA DE PROTECCIÓN DE DATOS - LEY N° 8968 (COSTA RICA) */}
-        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-gray-600 leading-relaxed text-left space-y-2">
-          <p className="font-bold text-gray-800 flex items-center gap-1.5 text-xs">
-            <span>🛡️</span> Protección de Datos Personales (Ley N° 8968 / Costa Rica)
-          </p>
-          <p className="text-[11px] leading-relaxed">
-            De conformidad con la Ley N° 8968 (Protección de la Persona frente al Tratamiento de sus Datos Personales), se le informa que sus datos personales y de perfil académico serán incorporados a las bases de datos de la <strong>Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH)</strong>, Cédula de Persona Jurídica 3-002-671392, con la finalidad exclusiva de gestionar su postulación, registro, emisión de acreditaciones de participación y coordinación académica y administrativa del curso.
-          </p>
-          <p className="text-[11px] leading-relaxed text-gray-500">
-            La entrega de sus datos es voluntaria, con la consecuencia de que no facilitarlos imposibilita tramitar su inscripción. Sus datos no serán cedidos a terceros con fines comerciales o publicitarios. Puede ejercer en cualquier momento sus derechos de Acceso, Rectificación, Cancelación y Oposición (ARCO) escribiendo a <a href="mailto:contacto@iiresodh.org" className="text-main-blue font-bold hover:underline">contacto@iiresodh.org</a>.
-          </p>
-        </div>
+        {/* CLÁUSULA INFORMATIVA DE PROTECCIÓN DE DATOS - LEY N° 8968 (COSTA RICA) (COLAPSABLE, CERRADA POR DEFECTO) */}
+        <details className="group bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-gray-600 leading-relaxed text-left">
+          <summary className="font-bold text-gray-800 flex items-center justify-between cursor-pointer select-none text-xs list-none">
+            <span className="flex items-center gap-1.5">
+              <span>🛡️</span> Protección de Datos Personales (Ley N° 8968 / Costa Rica)
+            </span>
+            <span className="text-gray-400 group-open:rotate-180 transition-transform text-xs">▼</span>
+          </summary>
+          <div className="pt-2.5 space-y-2 border-t border-slate-200/60 mt-2">
+            <p className="text-[11px] leading-relaxed">
+              De conformidad con la Ley N° 8968 (Protección de la Persona frente al Tratamiento de sus Datos Personales), se le informa que sus datos personales y de perfil académico serán incorporados a las bases de datos de la <strong>Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH)</strong>, Cédula de Persona Jurídica 3-002-671392, con la finalidad exclusiva de gestionar su postulación, registro, emisión de acreditaciones de participación y coordinación académica y administrativa del curso.
+            </p>
+            <p className="text-[11px] leading-relaxed text-gray-500">
+              La entrega de sus datos es voluntaria, con la consecuencia de que no facilitarlos imposibilita tramitar su inscripción. Sus datos no serán cedidos a terceros con fines comerciales o publicitarios. Puede ejercer en cualquier momento sus derechos de Acceso, Rectificación, Cancelación y Oposición (ARCO) escribiendo a <a href="mailto:contacto@iiresodh.org" className="text-main-blue font-bold hover:underline">contacto@iiresodh.org</a>.
+            </p>
+          </div>
+        </details>
 
         <label className="flex items-start gap-2.5 pt-1 text-xs text-gray-700 font-medium cursor-pointer select-none text-left">
           <input
@@ -931,12 +936,6 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
 
       {/* BOTÓN DE ACCIÓN */}
       <div className="space-y-3">
-        <div className="bg-amber-50/90 border border-amber-200/80 rounded-xl px-3.5 py-2 text-center text-amber-950 flex items-center justify-center gap-2 shadow-2xs">
-          <span className="text-sm">⚡</span>
-          <span className="text-[11px] font-medium leading-tight">
-            <strong className="font-extrabold text-amber-950">Cupos Limitados:</strong> Tu plaza oficial queda asegurada en tiempo real al procesar tu pago.
-          </span>
-        </div>
 
         <button
           type="submit"
@@ -986,7 +985,7 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
         </div>
 
         <p className="text-[11px] text-gray-500 text-center leading-relaxed">
-          Al confirmar tu pago recibirás inmediatamente el recibo oficial y la confirmación de matrícula en tu correo electrónico con copia a <strong className="text-gray-700">contacto@iiresodh.org</strong>.
+          Al confirmar tu pago recibirás inmediatamente el recibo oficial y la confirmación de matrícula en tu correo electrónico.
         </p>
 
         {/* ALTERNATIVAS */}

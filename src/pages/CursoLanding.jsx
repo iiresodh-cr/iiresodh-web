@@ -14,8 +14,8 @@ import palermoJusticiaBw from "../assets/cursos/palermo_justicia_bw.jpg";
 import palermoAulaBunkerBw from "../assets/cursos/palermo_aula_bunker_bw.jpg";
 import palermoCollageHeroBw from "../assets/cursos/palermo_collage_hero_bw.jpg";
 import logoUnlp from "../assets/cursos/logo_unlp_ddhh.png";
-import brochureP1 from "../assets/cursos/brochure_palermo_p1.jpg";
-import brochureP2 from "../assets/cursos/brochure_palermo_p2.jpg";
+import brochureP1 from "../assets/cursos/brochure_palermo_p2.jpg";
+import brochureP2 from "../assets/cursos/brochure_palermo_p1.jpg";
 import logoIiresodh from "../assets/logo.webp";
 import logoIiresodhColor from "../assets/logo-color.png";
 import FormularioPagoCurso from "../components/cursos/FormularioPagoCurso";
@@ -1496,25 +1496,6 @@ export default function CursoLanding() {
                 <div className="w-12 h-1 bg-main-red mx-auto my-2 rounded-full" />
               </div>
 
-              {/* CARD DESTACADA DE ESCASEZ Y CUPOS LIMITADOS */}
-              <div className="max-w-2xl mx-auto mb-6 bg-gradient-to-r from-amber-500/10 via-rose-500/5 to-amber-500/10 border border-amber-300/80 rounded-2xl p-4 sm:p-5 shadow-xs text-left flex items-start sm:items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-900 flex items-center justify-center shrink-0 text-xl font-bold shadow-xs">
-                  ⏳
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-amber-950">
-                      Cupos Estrictamente Limitados
-                    </span>
-                    <span className="bg-red-600 text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-xs">
-                      Convocatoria Reducida
-                    </span>
-                  </div>
-                  <p className="text-[11px] sm:text-xs text-gray-700 font-light mt-1 leading-relaxed">
-                    Por requerimientos de seguridad institucional y protocolos de acreditación para el ingreso exclusivo al <strong>Palacio de Justicia y Aula Búnker de Palermo</strong>, el cupo de admisión es estrictamente restringido. Las plazas se confirman por riguroso orden de recepción de pagos en línea o solicitudes de transferencia.
-                  </p>
-                </div>
-              </div>
 
               {/* SELECTOR DE MÉTODO DE INSCRIPCIÓN Y PAGO */}
               <div className="flex justify-center mb-6">
@@ -1577,21 +1558,24 @@ export default function CursoLanding() {
                       </span>
                     </div>
 
-                    {/* FINANCIACIÓN EN CUOTAS */}
-                    <div className="bg-sky-50/70 border border-sky-200 rounded-2xl p-4 text-xs space-y-1.5">
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                    {/* FINANCIACIÓN EN CUOTAS (COLAPSABLE, CERRADO POR DEFECTO) */}
+                    <details className="group bg-sky-50/70 border border-sky-200 rounded-2xl p-3.5 text-xs">
+                      <summary className="flex items-center justify-between gap-2 cursor-pointer select-none list-none">
                         <div className="flex items-center gap-2 text-sky-950 font-bold">
                           <span>💳</span>
                           <span>Financiación en Cuotas Sin Intereses</span>
                         </div>
-                        <span className="text-[10px] font-bold text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full border border-sky-200">
-                          0% Recargo
-                        </span>
-                      </div>
-                      <p className="text-sky-900 font-light text-[11px] leading-relaxed">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full border border-sky-200">
+                            0% Recargo
+                          </span>
+                          <span className="text-sky-600 group-open:rotate-180 transition-transform text-xs">▼</span>
+                        </div>
+                      </summary>
+                      <p className="text-sky-900 font-light text-[11px] leading-relaxed pt-2.5 mt-2 border-t border-sky-200/60">
                         Difiere tu matrícula sin recargo financiero. Por estricto control institucional, <strong>todas las cuotas deben quedar concluidas a más tardar el último día del mes anterior al evento ({landing.fechaLimiteTexto || "30 de abril de 2027"})</strong>. Los planes disponibles se calculan y limitan automáticamente en el formulario según tu fecha de registro.
                       </p>
-                    </div>
+                    </details>
 
                     {/* QUÉ INCLUYE */}
                     <div className="space-y-2 pt-1 text-xs text-gray-600">
@@ -1939,18 +1923,23 @@ export default function CursoLanding() {
                             />
                           </div>
 
-                          {/* CLÁUSULA INFORMATIVA DE PROTECCIÓN DE DATOS - LEY N° 8968 (COSTA RICA) */}
-                          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-gray-600 leading-relaxed text-left space-y-2">
-                            <p className="font-bold text-gray-800 flex items-center gap-1.5 text-xs">
-                              <span>🛡️</span> Protección de Datos Personales (Ley N° 8968 / Costa Rica)
-                            </p>
-                            <p className="text-[11px] leading-relaxed">
-                              De conformidad con la Ley N° 8968 (Protección de la Persona frente al Tratamiento de sus Datos Personales), se le informa que sus datos personales y de perfil académico serán incorporados a las bases de datos de la <strong>Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH)</strong>, Cédula de Persona Jurídica 3-002-671392, con la finalidad exclusiva de remitirle la información bancaria para la reserva de cupo, emitir el expediente del curso y coordinar su participación académica.
-                            </p>
-                            <p className="text-[11px] leading-relaxed text-gray-500">
-                              La entrega de datos es voluntaria, con la consecuencia de que no facilitarlos imposibilita remitirle el expediente bancario e inscribirle. Sus datos no serán cedidos a terceros con fines comerciales o publicitarios. Puede ejercer en cualquier momento sus derechos de Acceso, Rectificación, Cancelación y Oposición (ARCO) escribiendo a <a href="mailto:contacto@iiresodh.org" className="text-main-blue font-bold hover:underline">contacto@iiresodh.org</a>.
-                            </p>
-                          </div>
+                          {/* CLÁUSULA INFORMATIVA DE PROTECCIÓN DE DATOS - LEY N° 8968 (COSTA RICA) (COLAPSABLE, CERRADA POR DEFECTO) */}
+                          <details className="group bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-gray-600 leading-relaxed text-left">
+                            <summary className="font-bold text-gray-800 flex items-center justify-between cursor-pointer select-none text-xs list-none">
+                              <span className="flex items-center gap-1.5">
+                                <span>🛡️</span> Protección de Datos Personales (Ley N° 8968 / Costa Rica)
+                              </span>
+                              <span className="text-gray-400 group-open:rotate-180 transition-transform text-xs">▼</span>
+                            </summary>
+                            <div className="pt-2.5 space-y-2 border-t border-slate-200/60 mt-2">
+                              <p className="text-[11px] leading-relaxed">
+                                De conformidad con la Ley N° 8968 (Protección de la Persona frente al Tratamiento de sus Datos Personales), se le informa que sus datos personales y de perfil académico serán incorporados a las bases de datos de la <strong>Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH)</strong>, Cédula de Persona Jurídica 3-002-671392, con la finalidad exclusiva de remitirle la información bancaria para la reserva de cupo, emitir el expediente del curso y coordinar su participación académica.
+                              </p>
+                              <p className="text-[11px] leading-relaxed text-gray-500">
+                                La entrega de datos es voluntaria, con la consecuencia de que no facilitarlos imposibilita remitirle el expediente bancario e inscribirle. Sus datos no serán cedidos a terceros con fines comerciales o publicitarios. Puede ejercer en cualquier momento sus derechos de Acceso, Rectificación, Cancelación y Oposición (ARCO) escribiendo a <a href="mailto:contacto@iiresodh.org" className="text-main-blue font-bold hover:underline">contacto@iiresodh.org</a>.
+                              </p>
+                            </div>
+                          </details>
 
                           <label className="flex items-start gap-2.5 text-xs text-gray-700 font-medium cursor-pointer select-none text-left">
                             <input
