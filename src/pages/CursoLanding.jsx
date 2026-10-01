@@ -689,7 +689,7 @@ export default function CursoLanding() {
           
           {/* CONVOCATORIA OFICIAL CONJUNTA IIRESODH & INSTITUTO DE DDHH UNLP */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-5 border-b border-white/15">
-            <div className="inline-flex items-center gap-4 bg-white px-5 py-2.5 rounded-xl shadow-xl border border-white/20">
+            <div className="inline-flex items-center gap-4 sm:gap-5 bg-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-2xl shadow-xl border border-white/20">
               {/* Logo IIRESODH en Color Oficial */}
               <img
                 src={logoIiresodhColor}
@@ -697,19 +697,19 @@ export default function CursoLanding() {
                 className="h-8 sm:h-9 w-auto object-contain"
               />
 
-              <div className="h-6 w-px bg-slate-200" />
+              <div className="h-8 w-px bg-slate-200" />
 
               <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-600 whitespace-nowrap">
                 En conjunto con
               </span>
 
-              <div className="h-6 w-px bg-slate-200" />
+              <div className="h-8 w-px bg-slate-200" />
 
-              {/* Logo Instituto de Derechos Humanos UNLP en Color */}
+              {/* Logo Instituto de Derechos Humanos UNLP en Color (Tamaño proporcional optimizado) */}
               <img
                 src={logoUnlp}
                 alt="Instituto de Derechos Humanos - Universidad Nacional de La Plata"
-                className="h-8 sm:h-9 w-auto object-contain"
+                className="h-12 sm:h-14 w-auto object-contain"
               />
             </div>
 
@@ -876,10 +876,10 @@ export default function CursoLanding() {
               {/* BLOQUE INSTITUCIONAL CO-ORGANIZADORES */}
               <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl flex flex-col lg:flex-row items-center justify-between gap-6 shadow-xs">
                 <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
-                  <div className="flex items-center gap-4 bg-white px-5 py-3 rounded-xl border border-slate-200 shadow-xs shrink-0">
-                    <img src={logoIiresodhColor} alt="IIRESODH" className="h-9 w-auto object-contain" />
-                    <div className="h-6 w-px bg-slate-200" />
-                    <img src={logoUnlp} alt="Instituto de Derechos Humanos UNLP" className="h-9 w-auto object-contain" />
+                  <div className="flex items-center gap-4 sm:gap-5 bg-white px-5 sm:px-6 py-3 rounded-2xl border border-slate-200 shadow-xs shrink-0">
+                    <img src={logoIiresodhColor} alt="IIRESODH" className="h-8 sm:h-9 w-auto object-contain" />
+                    <div className="h-8 w-px bg-slate-200" />
+                    <img src={logoUnlp} alt="Instituto de Derechos Humanos UNLP" className="h-12 sm:h-14 w-auto object-contain" />
                   </div>
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest text-main-red block">
