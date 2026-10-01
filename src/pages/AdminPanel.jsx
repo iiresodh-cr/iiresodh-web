@@ -285,6 +285,8 @@ export default function AdminPanel() {
   const [landingUbicacionFechas, setLandingUbicacionFechas] = useState("");
   const [landingPrecioInversion, setLandingPrecioInversion] = useState("");
   const [landingInversionDetalle, setLandingInversionDetalle] = useState("");
+  const [landingCuposTexto, setLandingCuposTexto] = useState("");
+  const [landingFechaLimitePago, setLandingFechaLimitePago] = useState("");
   const [landingEnlaceStripe, setLandingEnlaceStripe] = useState("");
   const [landingHeroCita, setLandingHeroCita] = useState("");
   const [landingHeroCitaAutor, setLandingHeroCitaAutor] = useState("");
@@ -352,6 +354,8 @@ export default function AdminPanel() {
     setLandingUbicacionFechas(DATOS_PALERMO_2027.landingPage.ubicacionFechas);
     setLandingPrecioInversion(DATOS_PALERMO_2027.landingPage.precioInversion);
     setLandingInversionDetalle(DATOS_PALERMO_2027.landingPage.inversionDetalle);
+    setLandingCuposTexto(DATOS_PALERMO_2027.landingPage.cuposTexto || "Cupos Estrictamente Limitados");
+    setLandingFechaLimitePago(DATOS_PALERMO_2027.landingPage.fechaLimitePago || "2027-04-30");
     setLandingEnlaceStripe(DATOS_PALERMO_2027.landingPage.enlaceStripe || "");
     setLandingHeroCita(DATOS_PALERMO_2027.landingPage.heroCita);
     setLandingHeroCitaAutor(DATOS_PALERMO_2027.landingPage.heroCitaAutor);
@@ -918,6 +922,8 @@ useEffect(() => {
         setLandingUbicacionFechas(lp.ubicacionFechas || "");
         setLandingPrecioInversion(lp.precioInversion || "");
         setLandingInversionDetalle(lp.inversionDetalle || "");
+        setLandingCuposTexto(lp.cuposTexto || "");
+        setLandingFechaLimitePago(lp.fechaLimitePago || "");
         setLandingEnlaceStripe(lp.enlaceStripe || "");
         setLandingHeroCita(lp.heroCita || "");
         setLandingHeroCitaAutor(lp.heroCitaAutor || "");
@@ -998,6 +1004,8 @@ useEffect(() => {
     setLandingUbicacionFechas("");
     setLandingPrecioInversion("");
     setLandingInversionDetalle("");
+    setLandingCuposTexto("");
+    setLandingFechaLimitePago("");
     setLandingEnlaceStripe("");
     setLandingHeroCita("");
     setLandingHeroCitaAutor("");
@@ -1292,6 +1300,8 @@ useEffect(() => {
               ubicacionFechas: landingUbicacionFechas || "",
               precioInversion: landingPrecioInversion || "",
               inversionDetalle: landingInversionDetalle || "",
+              cuposTexto: landingCuposTexto || (DATOS_PALERMO_2027.landingPage.cuposTexto || "Cupos Estrictamente Limitados"),
+              fechaLimitePago: landingFechaLimitePago || (DATOS_PALERMO_2027.landingPage.fechaLimitePago || "2027-04-30"),
               enlaceStripe: landingEnlaceStripe || "",
               heroCita: landingHeroCita || "",
               heroCitaAutor: landingHeroCitaAutor || "",
@@ -2046,6 +2056,25 @@ useEffect(() => {
                                     value={landingPrecioInversion}
                                     onChange={(e) => setLandingPrecioInversion(e.target.value)}
                                     placeholder="Ej: 5.000 €"
+                                  />
+                                </div>
+
+                                <div>
+                                  <AdminTextField
+                                    label="Aviso de Disponibilidad / Cupos Limitados"
+                                    value={landingCuposTexto}
+                                    onChange={(e) => setLandingCuposTexto(e.target.value)}
+                                    placeholder="Ej: Cupos Estrictamente Limitados"
+                                  />
+                                </div>
+
+                                <div>
+                                  <AdminTextField
+                                    label="Fecha Límite Final de Pago de Cuotas"
+                                    type="date"
+                                    value={landingFechaLimitePago}
+                                    onChange={(e) => setLandingFechaLimitePago(e.target.value)}
+                                    helperText="Último día del mes anterior al evento (a esta fecha deben quedar saldadas todas las cuotas)"
                                   />
                                 </div>
 

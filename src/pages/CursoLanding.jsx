@@ -37,6 +37,9 @@ export const DATOS_PALERMO_2027 = {
     ubicacionFechas: "Palermo, Sicilia, Italia | Del 17 al 23 de mayo de 2027",
     precioInversion: "3,350.00 USD",
     inversionDetalle: "Por persona. Incluye sesiones magistrales, visitas de campo, materiales exclusivos y certificación internacional.",
+    cuposTexto: "Cupos Estrictamente Limitados",
+    fechaLimitePago: "2027-04-30",
+    fechaLimiteTexto: "30 de abril de 2027",
     enlaceStripe: "",
     heroImagenUrl: falconeDefaultImg,
     heroCita: "«La mafia è un fenomeno umano e come tutti i fenomeni umani ha un principio, una sua evoluzione e avrà quindi anche una fine.»",
@@ -153,6 +156,11 @@ export const DATOS_PALERMO_2027 = {
         titulo: "Acreditación Internacional Oficial",
         descripcion: "Diploma oficial de alta especialización emitido por IIRESODH con validez curricular internacional.",
         icono: "certificado"
+      },
+      {
+        titulo: "Grupo Exclusivo con Cupos Limitados",
+        descripcion: "Aforo estrictamente restringido para garantizar el intercambio directo con magistrados y el acceso seguro a sedes judiciales históricas.",
+        icono: "candado"
       }
     ],
 
@@ -172,7 +180,7 @@ export const DATOS_PALERMO_2027 = {
       beneficiario: "Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH)",
       banco: "Banco Internacional / IBAN / SWIFT",
       pais: "Costa Rica / Internacional",
-      moneda: "Euros (€) y Dólares (USD)",
+      moneda: "Dólares Americanos (USD)",
       nota: "Una vez solicitado el cupo, el departamento académico emitirá una factura proforma oficial con los códigos bancarios y número de reserva para su trámite institucional o personal."
     }
   }
@@ -512,9 +520,15 @@ export default function CursoLanding() {
 
             {/* CONTENIDO PRINCIPAL */}
             <div className="lg:col-span-8 space-y-4 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-amber-300 font-semibold backdrop-blur-xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-                Alta Especialización Internacional
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
+                <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-amber-300 font-semibold backdrop-blur-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                  Alta Especialización Internacional
+                </div>
+                <div className="inline-flex items-center gap-1.5 bg-rose-500/20 border border-rose-400/30 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-rose-200 font-bold backdrop-blur-xs shadow-xs">
+                  <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
+                  {landing.cuposTexto || "Cupos Estrictamente Limitados"}
+                </div>
               </div>
 
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight leading-tight uppercase font-sans text-white">
@@ -545,9 +559,17 @@ export default function CursoLanding() {
                     <span className="text-[10px] sm:text-xs uppercase font-bold tracking-widest text-amber-200/90 bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-400/20">
                       Inversión Académica
                     </span>
+                    <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs uppercase font-extrabold tracking-wider text-rose-300 bg-rose-500/20 px-2.5 py-0.5 rounded-full border border-rose-400/30">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
+                      Cupos Limitados
+                    </span>
                   </div>
                   <p className="text-xs text-gray-200/90 font-light leading-relaxed">
                     {landing.inversionDetalle || "Inversión por persona con certificación internacional."}
+                  </p>
+                  <p className="text-[11px] text-amber-300/95 font-medium flex items-center gap-1.5 pt-0.5">
+                    <span>⚡</span>
+                    <span>Plazas asignadas por riguroso orden de inscripción y verificación de expediente.</span>
                   </p>
                 </div>
 
@@ -793,24 +815,41 @@ export default function CursoLanding() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {destacados.map((item, index) => (
-                  <div 
-                    key={index}
-                    className="p-5 rounded-2xl border border-gray-100 bg-slate-50/70 hover:bg-white hover:border-main-blue/30 hover:shadow-md transition flex items-start gap-4"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-main-blue/10 text-main-blue flex items-center justify-center shrink-0 text-xl shadow-xs">
-                      {index === 0 ? "🎓" : index === 1 ? "📁" : index === 2 ? "🤝" : "📜"}
+                {destacados.map((item, index) => {
+                  const esUltimoImpar = destacados.length % 2 !== 0 && index === destacados.length - 1;
+                  const esCupos = item.titulo?.toLowerCase().includes("cupo") || item.descripcion?.toLowerCase().includes("cupo");
+                  return (
+                    <div 
+                      key={index}
+                      className={`p-5 rounded-2xl border transition flex items-start gap-4 ${
+                        esUltimoImpar || esCupos
+                          ? "md:col-span-2 bg-gradient-to-r from-amber-500/10 via-slate-50 to-rose-500/10 border-amber-300/80 shadow-xs"
+                          : "p-5 rounded-2xl border border-gray-100 bg-slate-50/70 hover:bg-white hover:border-main-blue/30 hover:shadow-md"
+                      }`}
+                    >
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-xl shadow-xs ${
+                        esCupos || esUltimoImpar ? "bg-amber-500/20 text-amber-900" : "bg-main-blue/10 text-main-blue"
+                      }`}>
+                        {item.icono === "candado" || esCupos ? "⏳" : index === 0 ? "🎓" : index === 1 ? "📁" : index === 2 ? "🤝" : "📜"}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <h4 className="text-base font-bold text-main-blue">
+                            {item.titulo}
+                          </h4>
+                          {esCupos && (
+                            <span className="text-[10px] uppercase font-black tracking-wider bg-red-600 text-white px-2 py-0.5 rounded-full shadow-xs">
+                              Exclusividad
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-600 font-light leading-relaxed">
+                          {item.descripcion}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-base font-bold text-main-blue mb-1">
-                        {item.titulo}
-                      </h4>
-                      <p className="text-xs text-gray-600 font-light leading-relaxed">
-                        {item.descripcion}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <div className="pt-4 flex justify-between items-center">
@@ -906,7 +945,7 @@ export default function CursoLanding() {
              ========================================== */}
           {seccionActiva === "inscripcion" && (
             <div className="space-y-6 animate-fade-in">
-              <div className="text-center max-w-2xl mx-auto mb-6">
+              <div className="text-center max-w-2xl mx-auto mb-4">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
                   Reserva Oficial
                 </span>
@@ -914,9 +953,26 @@ export default function CursoLanding() {
                   Opciones de Inscripción y Pago
                 </h2>
                 <div className="w-12 h-1 bg-main-red mx-auto my-2 rounded-full" />
-                <p className="text-xs text-gray-500 font-light">
-                  Cupo limitado a 35 participantes. Admisión mediante acreditación profesional o institucional.
-                </p>
+              </div>
+
+              {/* CARD DESTACADA DE ESCASEZ Y CUPOS LIMITADOS */}
+              <div className="max-w-2xl mx-auto mb-6 bg-gradient-to-r from-amber-500/10 via-rose-500/5 to-amber-500/10 border border-amber-300/80 rounded-2xl p-4 sm:p-5 shadow-xs text-left flex items-start sm:items-center gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-900 flex items-center justify-center shrink-0 text-xl font-bold shadow-xs">
+                  ⏳
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-amber-950">
+                      Cupos Estrictamente Limitados
+                    </span>
+                    <span className="bg-red-600 text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-xs">
+                      Convocatoria Reducida
+                    </span>
+                  </div>
+                  <p className="text-[11px] sm:text-xs text-gray-700 font-light mt-1 leading-relaxed">
+                    Por requerimientos de seguridad institucional y protocolos de acreditación para el ingreso exclusivo al <strong>Palacio de Justicia y Aula Búnker de Palermo</strong>, el cupo de admisión es estrictamente restringido. Las plazas se confirman por riguroso orden de recepción de pagos en línea o solicitudes de transferencia.
+                  </p>
+                </div>
               </div>
 
               {/* SELECTOR DE MÉTODO DE INSCRIPCIÓN Y PAGO */}
@@ -969,14 +1025,30 @@ export default function CursoLanding() {
                       </span>
                     </div>
 
+                    {/* BADGE DE DISPONIBILIDAD DE CUPOS */}
+                    <div className="bg-rose-50 border border-rose-200/80 rounded-xl px-3.5 py-2.5 flex items-center justify-between text-xs">
+                      <span className="flex items-center gap-2 font-bold text-rose-800 text-[11px]">
+                        <span className="w-2 h-2 rounded-full bg-rose-600 animate-pulse" />
+                        Disponibilidad: Cupos Limitados
+                      </span>
+                      <span className="text-[10px] font-bold text-rose-700 bg-rose-100/90 px-2 py-0.5 rounded-md border border-rose-200/60">
+                        Plazas reducidas
+                      </span>
+                    </div>
+
                     {/* FINANCIACIÓN EN CUOTAS */}
                     <div className="bg-sky-50/70 border border-sky-200 rounded-2xl p-4 text-xs space-y-1.5">
-                      <div className="flex items-center gap-2 text-sky-950 font-bold">
-                        <span>💳</span>
-                        <span>Financiación en 2, 3 o 4 Cuotas Sin Intereses</span>
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-2 text-sky-950 font-bold">
+                          <span>💳</span>
+                          <span>Financiación en Cuotas Sin Intereses</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full border border-sky-200">
+                          0% Recargo
+                        </span>
                       </div>
-                      <p className="text-sky-800 font-light text-[11px] leading-relaxed">
-                        Puedes diferir tu pago en hasta 4 mensualidades directas sin ningún tipo de recargo financiero institucional.
+                      <p className="text-sky-900 font-light text-[11px] leading-relaxed">
+                        Difiere tu matrícula sin recargo financiero. Por estricto control institucional, <strong>todas las cuotas deben quedar concluidas a más tardar el último día del mes anterior al evento ({landing.fechaLimiteTexto || "30 de abril de 2027"})</strong>. Los planes disponibles se calculan y limitan automáticamente en el formulario según tu fecha de registro.
                       </p>
                     </div>
 
@@ -1052,10 +1124,10 @@ export default function CursoLanding() {
                           Vía Bancaria Oficial
                         </span>
                         <h4 className="text-xl font-black text-main-blue tracking-tight">
-                          Solicitud de Datos de Transferencia y Reserva
+                          Solicitud de Datos de Transferencia y Reserva de Cupo
                         </h4>
                         <p className="text-xs text-gray-500 font-light mt-0.5">
-                          Recibe en tu correo la orden bancaria SWIFT/IBAN y el expediente académico completo.
+                          Recibe en tu correo la orden bancaria SWIFT/IBAN para tramitar y asegurar tu lugar dentro del cupo limitado.
                         </p>
                       </div>
 

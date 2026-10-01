@@ -1,10 +1,53 @@
 // src/components/cursos/FormularioPagoCurso.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { functions } from "../../firebase/config";
 import { httpsCallable } from "firebase/functions";
 import { CircularProgress, Alert } from "@mui/material";
+
+// ============================================================================
+// HELPER: CÁLCULO DE FECHA LÍMITE DE PAGO (ÚLTIMO DÍA DEL MES ANTERIOR AL EVENTO)
+// ============================================================================
+export function calcularFechaLimitePago(curso, landing) {
+  // 1. Configuración explícita en landingPage o curso (ej: "2027-04-30")
+  const fechaCfg = landing?.fechaLimitePago || curso?.fechaLimitePago;
+  if (fechaCfg) {
+    const d = new Date(fechaCfg + "T23:59:59");
+    if (!isNaN(d.getTime())) return d;
+  }
+
+  // 2. Extraer el mes y año del evento a partir de texto (ej: "Palermo, Sicilia, Italia | Del 17 al 23 de mayo de 2027")
+  const texto = (landing?.ubicacionFechas || curso?.fecha || curso?.titulo || "").toLowerCase();
+  const meses = [
+    { nombre: "enero", idx: 0 },
+    { nombre: "febrero", idx: 1 },
+    { nombre: "marzo", idx: 2 },
+    { nombre: "abril", idx: 3 },
+    { nombre: "mayo", idx: 4 },
+    { nombre: "junio", idx: 5 },
+    { nombre: "julio", idx: 6 },
+    { nombre: "agosto", idx: 7 },
+    { nombre: "septiembre", idx: 8 },
+    { nombre: "octubre", idx: 9 },
+    { nombre: "noviembre", idx: 10 },
+    { nombre: "diciembre", idx: 11 }
+  ];
+
+  const matchAño = texto.match(/202[0-9]/);
+  const año = matchAño ? parseInt(matchAño[0], 10) : 2027;
+
+  for (const m of meses) {
+    if (texto.includes(m.nombre)) {
+      // Último día del mes previo al evento:
+      // En JS new Date(año, m.idx, 0, 23, 59, 59) retorna el último día del mes anterior a m.idx
+      return new Date(año, m.idx, 0, 23, 59, 59);
+    }
+  }
+
+  // Fallback para Palermo (mayo de 2027 -> 30 de abril de 2027)
+  return new Date(2027, 3, 30, 23, 59, 59);
+}
 
 // Carga la clave pública de Stripe para cursos (por defecto usa la key de prueba provista)
 const STRIPE_CURSOS_KEY = import.meta.env.VITE_STRIPE_CURSOS_PUBLIC_KEY || "pk_test_51R0ovD2c2u6cty9mPu0lrl7lQrjpLsrfH5buxYVayH58IZjHjVfXqKLhdPObJN1rY2vD92jSlPHU9DNZr1NYbiT500sNDUpxbR";
@@ -70,10 +113,10 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
   const [exito, setExito] = useState(false);
   const [reciboPago, setReciboPago] = useState(null);
 
-  // Cálculo del monto total y moneda
-  const precioTexto = landing?.precioInversion || "3,350 USD";
-  const monedaDetectada = precioTexto.includes("€") || precioTexto.toUpperCase().includes("EUR") ? "EUR" : "USD";
-  const simboloMoneda = monedaDetectada === "EUR" ? "€" : "$";
+  // Cálculo del monto total y moneda (Transacciones oficiales en USD)
+  const precioTexto = landing?.precioInversion || "3,350.00 USD";
+  const monedaDetectada = "USD";
+  const simboloMoneda = "$";
   
   // Limpieza de caracteres no numéricos
   const digitos = String(precioTexto).replace(/[^0-9]/g, "");
@@ -96,6 +139,34 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
 
   const montoCuotaActual = calcularMontoCuota(planCuotas);
 
+  // ==========================================================================
+  // CONTROL INSTITUCIONAL DE FECHA LÍMITE:
+  // Todos los plazos deben quedar liquidados a más tardar el último día del mes
+  // anterior al evento (ej. para Palermo: 30 de abril de 2027).
+  // ==========================================================================
+  const fechaLimiteObj = calcularFechaLimitePago(curso, landing);
+  const fechaLimiteTexto = fechaLimiteObj.toLocaleDateString("es-ES", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+
+  const hoy = new Date();
+
+  // Calcula la fecha de vencimiento de la cuota i (0 = hoy, 1 = dentro de 1 mes, etc.)
+  const calcularFechaCuota = (fechaInicio, mesesAdelante) => {
+    const d = new Date(fechaInicio);
+    d.setMonth(d.getMonth() + mesesAdelante);
+    return d;
+  };
+
+  // Verifica si un plan de cuotas concluye dentro del plazo límite permitido
+  const verificarDisponibilidadPlan = (cuotas) => {
+    if (cuotas <= 1) return true;
+    const fechaFinPlan = calcularFechaCuota(hoy, cuotas - 1);
+    return fechaFinPlan <= fechaLimiteObj;
+  };
+
   const opcionesPlanes = [
     {
       cuotas: 1,
@@ -104,7 +175,9 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
       badgeColor: "bg-sky-50 text-sky-700 border-sky-200 font-medium",
       montoPorCuota: montoTotal,
       descripcion: "1 solo pago para liquidar la totalidad de la matrícula.",
-      destacado: false
+      destacado: false,
+      disponible: true,
+      fechaFin: hoy
     },
     {
       cuotas: 2,
@@ -112,8 +185,10 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
       badge: "0% Interés",
       badgeColor: "bg-sky-50 text-sky-700 border-sky-200 font-medium",
       montoPorCuota: calcularMontoCuota(2),
-      descripcion: `1ª cuota hoy (${simboloMoneda}${formatMonto(calcularMontoCuota(2))}) y 2ª cuota en 30 días.`,
-      destacado: false
+      descripcion: `1ª cuota hoy (${simboloMoneda}${formatMonto(calcularMontoCuota(2))}) y 2ª cuota el ${calcularFechaCuota(hoy, 1).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}.`,
+      destacado: false,
+      disponible: verificarDisponibilidadPlan(2),
+      fechaFin: calcularFechaCuota(hoy, 1)
     },
     {
       cuotas: 3,
@@ -121,8 +196,10 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
       badge: "0% Interés • Recomendado",
       badgeColor: "bg-sky-100 text-sky-800 border-sky-300 font-bold",
       montoPorCuota: calcularMontoCuota(3),
-      descripcion: `1ª cuota hoy (${simboloMoneda}${formatMonto(calcularMontoCuota(3))}) y 2 cuotas mensuales restantes.`,
-      destacado: true
+      descripcion: `1ª cuota hoy y 2 cuotas mensuales. Liquidación: ${calcularFechaCuota(hoy, 2).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}.`,
+      destacado: true,
+      disponible: verificarDisponibilidadPlan(3),
+      fechaFin: calcularFechaCuota(hoy, 2)
     },
     {
       cuotas: 4,
@@ -130,10 +207,25 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
       badge: "0% Interés • Flexible",
       badgeColor: "bg-sky-50 text-sky-700 border-sky-200 font-medium",
       montoPorCuota: calcularMontoCuota(4),
-      descripcion: `1ª cuota hoy (${simboloMoneda}${formatMonto(calcularMontoCuota(4))}) y 3 cuotas mensuales restantes.`,
-      destacado: false
+      descripcion: `1ª cuota hoy y 3 cuotas mensuales. Liquidación: ${calcularFechaCuota(hoy, 3).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}.`,
+      destacado: false,
+      disponible: verificarDisponibilidadPlan(4),
+      fechaFin: calcularFechaCuota(hoy, 3)
     }
   ];
+
+  // Si el plan actualmente seleccionado no está disponible, seleccionar el plan válido con más cuotas
+  useEffect(() => {
+    const planActual = opcionesPlanes.find((p) => p.cuotas === planCuotas);
+    if (planActual && !planActual.disponible) {
+      const disponibles = opcionesPlanes.filter((p) => p.disponible);
+      if (disponibles.length > 0) {
+        setPlanCuotas(disponibles[disponibles.length - 1].cuotas);
+      } else {
+        setPlanCuotas(1);
+      }
+    }
+  }, [planCuotas]);
 
   const handleToggleTema = (tema) => {
     setFormData((prev) => {
@@ -166,6 +258,11 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
 
     if (!aceptarTerminos) {
       setErrorPago("Debes aceptar la Política de Privacidad y autorizar el tratamiento de datos para proceder con la inscripción.");
+      return;
+    }
+
+    if (planCuotas > 1 && !verificarDisponibilidadPlan(planCuotas)) {
+      setErrorPago(`El plan de ${planCuotas} cuotas no está disponible porque la última cuota superaría la fecha límite institucional del ${fechaLimiteTexto} (último día del mes anterior al evento). Por favor selecciona un plan con menos cuotas o pago único.`);
       return;
     }
 
@@ -343,14 +440,22 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {opcionesPlanes.map((opcion) => {
             const isSelected = planCuotas === opcion.cuotas;
+            const isDisponible = opcion.disponible;
+
             return (
               <div
                 key={opcion.cuotas}
-                onClick={() => setPlanCuotas(opcion.cuotas)}
-                className={`relative p-3.5 sm:p-4 rounded-2xl border-2 transition-all cursor-pointer text-left ${
-                  isSelected
-                    ? "border-sky-600 bg-sky-50/40 shadow-xs"
-                    : "border-gray-200 bg-white hover:border-sky-200"
+                onClick={() => {
+                  if (isDisponible) {
+                    setPlanCuotas(opcion.cuotas);
+                  }
+                }}
+                className={`relative p-3.5 sm:p-4 rounded-2xl border-2 transition-all text-left ${
+                  !isDisponible
+                    ? "border-gray-200 bg-gray-50/70 opacity-60 cursor-not-allowed"
+                    : isSelected
+                    ? "border-sky-600 bg-sky-50/40 shadow-xs cursor-pointer"
+                    : "border-gray-200 bg-white hover:border-sky-200 cursor-pointer"
                 }`}
               >
                 {/* Radio y Badge */}
@@ -358,39 +463,103 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
                   <div className="flex items-center gap-2">
                     <div
                       className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
-                        isSelected ? "border-sky-600 bg-sky-600" : "border-gray-300 bg-white"
+                        !isDisponible
+                          ? "border-gray-300 bg-gray-200"
+                          : isSelected
+                          ? "border-sky-600 bg-sky-600"
+                          : "border-gray-300 bg-white"
                       }`}
                     >
-                      {isSelected && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                      {isSelected && isDisponible && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
                     </div>
-                    <span className="text-xs font-bold text-gray-900 leading-tight">
+                    <span className={`text-xs font-bold leading-tight ${isDisponible ? "text-gray-900" : "text-gray-400 line-through"}`}>
                       {opcion.titulo}
                     </span>
                   </div>
-                  <span className={`text-[9px] px-2 py-0.5 rounded-full border font-bold uppercase tracking-wider ${opcion.badgeColor}`}>
-                    {opcion.badge}
-                  </span>
+                  {isDisponible ? (
+                    <span className={`text-[9px] px-2 py-0.5 rounded-full border font-bold uppercase tracking-wider ${opcion.badgeColor}`}>
+                      {opcion.badge}
+                    </span>
+                  ) : (
+                    <span className="text-[9px] px-2 py-0.5 rounded-full border border-red-200 bg-red-50 text-red-700 font-bold uppercase tracking-wider">
+                      Límite Superado
+                    </span>
+                  )}
                 </div>
 
                 {/* Importe */}
                 <div className="pl-6">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-lg sm:text-xl font-black text-main-blue">
+                    <span className={`text-lg sm:text-xl font-black ${isDisponible ? "text-main-blue" : "text-gray-400"}`}>
                       {simboloMoneda}{formatMonto(opcion.montoPorCuota)}
                     </span>
-                    <span className="text-[11px] font-bold text-gray-600">USD</span>
+                    <span className="text-[11px] font-bold text-gray-500">USD</span>
                     {opcion.cuotas > 1 && (
-                      <span className="text-[10px] text-gray-500 font-medium">/ cuota mensual</span>
+                      <span className="text-[10px] text-gray-400 font-medium">/ cuota</span>
                     )}
                   </div>
                   <p className="text-[11px] text-gray-500 font-light mt-0.5 leading-snug">
-                    {opcion.descripcion}
+                    {isDisponible ? (
+                      opcion.descripcion
+                    ) : (
+                      <span className="text-red-600 font-normal">
+                        No disponible: la última cuota superaría la fecha límite del {fechaLimiteTexto}.
+                      </span>
+                    )}
                   </p>
                 </div>
               </div>
             );
           })}
         </div>
+
+        {/* CRONOGRAMA DETALLADO DE CUOTAS CUANDO PLAN > 1 */}
+        {planCuotas > 1 && (
+          <div className="bg-gradient-to-br from-sky-50/80 via-white to-sky-50/50 border border-sky-200/90 rounded-2xl p-4 text-xs space-y-3 shadow-2xs">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <span className="font-extrabold text-sky-950 uppercase tracking-wide text-[11px] flex items-center gap-1.5">
+                <span>📅</span> Cronograma de Cuotas Programadas
+              </span>
+              <span className="text-[10px] font-bold text-sky-800 bg-sky-100/90 px-2 py-0.5 rounded-md border border-sky-200/60">
+                Liquidación antes del evento
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {Array.from({ length: planCuotas }).map((_, i) => {
+                const fechaCuota = calcularFechaCuota(hoy, i);
+                const esHoy = i === 0;
+                return (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between bg-white px-3 py-2 rounded-xl border border-sky-100 shadow-2xs text-[11px]"
+                  >
+                    <div>
+                      <p className="font-bold text-gray-800">
+                        {esHoy ? "1ª Cuota (Inmediata)" : `${i + 1}ª Cuota Mensual`}
+                      </p>
+                      <p className="text-[10px] text-gray-500 font-light">
+                        {esHoy
+                          ? "Cobro hoy al inscribirte"
+                          : fechaCuota.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}
+                      </p>
+                    </div>
+                    <span className="font-black text-main-blue text-xs">
+                      {simboloMoneda}{formatMonto(montoCuotaActual)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex items-start gap-2 pt-2 border-t border-sky-200/70 text-[11px] text-sky-900 leading-snug">
+              <span className="text-base shrink-0">🛡️</span>
+              <span>
+                <strong>Control Institucional de Plazos:</strong> De conformidad con la normativa académica de IIRESODH, todos los pagos concluyen a más tardar el <strong>{fechaLimiteTexto}</strong> (último día del mes anterior al inicio del curso).
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 2. DATOS PERSONALES Y PROFESIONALES */}
@@ -752,6 +921,13 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
 
       {/* BOTÓN DE ACCIÓN */}
       <div className="space-y-3">
+        <div className="bg-amber-50/90 border border-amber-200/80 rounded-xl px-3.5 py-2 text-center text-amber-950 flex items-center justify-center gap-2 shadow-2xs">
+          <span className="text-sm">⚡</span>
+          <span className="text-[11px] font-medium leading-tight">
+            <strong className="font-extrabold text-amber-950">Cupos Limitados:</strong> Tu plaza oficial queda asegurada en tiempo real al procesar tu pago.
+          </span>
+        </div>
+
         <button
           type="submit"
           disabled={loadingPago || !stripe}

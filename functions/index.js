@@ -1,4 +1,5 @@
 const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { defineSecret } = require("firebase-functions/params");
 const { GoogleGenAI } = require("@google/genai");
 const admin = require("firebase-admin");
@@ -1010,6 +1011,56 @@ exports.crearIntentoPagoCurso = onCall({
     const totalInversion = Number(montoTotal) || cuotaMonto;
     const amountInCents = Math.round(cuotaMonto * 100);
 
+    // ========================================================================
+    // CONTROL INSTITUCIONAL DE FECHA LÍMITE DE CUOTAS
+    // Todos los pagos deben quedar liquidados a más tardar el último día del mes
+    // anterior al evento (ej. para Palermo 2027: 30 de abril de 2027).
+    // ========================================================================
+    let fechaLimitePagoDate = new Date("2027-04-30T23:59:59Z"); // Default para Palermo 2027
+
+    try {
+      if (cursoId) {
+        const cursoSnap = await admin.firestore().collection("cursos").doc(cursoId).get();
+        if (cursoSnap.exists) {
+          const cData = cursoSnap.data();
+          const lp = cData.landingPage || {};
+          if (lp.fechaLimitePago) {
+            fechaLimitePagoDate = new Date(lp.fechaLimitePago + "T23:59:59Z");
+          } else if (lp.ubicacionFechas || cData.fecha) {
+            const txt = (lp.ubicacionFechas || cData.fecha || "").toLowerCase();
+            const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+            const matchAño = txt.match(/202[0-9]/);
+            const año = matchAño ? parseInt(matchAño[0], 10) : 2027;
+            const idxMes = meses.findIndex(m => txt.includes(m));
+            if (idxMes !== -1) {
+              fechaLimitePagoDate = new Date(Date.UTC(año, idxMes, 0, 23, 59, 59));
+            }
+          }
+        }
+      }
+    } catch (errDb) {
+      console.warn("Advertencia consultando fecha límite de curso en Firestore:", errDb.message);
+    }
+
+    if (numPlan > 1) {
+      const hoy = new Date();
+      const fechaUltimaCuota = new Date(hoy);
+      fechaUltimaCuota.setMonth(fechaUltimaCuota.getMonth() + (numPlan - 1));
+
+      if (fechaUltimaCuota > fechaLimitePagoDate) {
+        const fechaLimiteStr = fechaLimitePagoDate.toLocaleDateString("es-ES", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+          timeZone: "UTC"
+        });
+        throw new HttpsError(
+          "failed-precondition",
+          `El plan de ${numPlan} cuotas no está disponible porque la última cuota superaría la fecha límite institucional del ${fechaLimiteStr} (último día del mes anterior al evento). Por favor selecciona un plan con menos cuotas o pago único.`
+        );
+      }
+    }
+
     // Buscar o crear cliente en Stripe para asociar su método de pago a futuro
     let customerId = undefined;
     try {
@@ -1062,6 +1113,8 @@ exports.crearIntentoPagoCurso = onCall({
         montoCuota: String(cuotaMonto),
         montoTotal: String(totalInversion),
         saldoPendiente: String(Math.max(0, totalInversion - cuotaMonto)),
+        fechaLimitePago: fechaLimitePagoDate.toISOString().split("T")[0],
+        politicaLiquidacion: "Totalmente pagado antes del último día del mes previo al evento",
         aceptaPoliticaPrivacidad: "si",
         versionPoliticaPrivacidad: "2026-09-12",
         constanciaPrivacidad: "Consentimiento informado otorgado conforme a la Ley N 8968"
@@ -1092,7 +1145,347 @@ exports.crearIntentoPagoCurso = onCall({
 
 
 // ============================================================================
-// HELPER: ENVÍO DE CORREO DE CONFIRMACIÓN DE INSCRIPCIÓN A CURSO
+// CONFIGURACIÓN DE NOTIFICACIONES Y CORREOS PARA CURSOS INTERNACIONALES
+// ============================================================================
+const EMAILS_ADMIN_CURSOS = ["cursos@iiresodh.org", "contacto@iiresodh.org"];
+
+function formatMontoEmail(num) {
+  const n = Number(num) || 0;
+  return n.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+function getMailTransporter() {
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      type: 'OAuth2',
+      user: 'contacto@iiresodh.org',
+      clientId: GMAIL_CLIENT_ID.value(),
+      clientSecret: GMAIL_CLIENT_SECRET.value(),
+      refreshToken: GMAIL_REFRESH_TOKEN.value()
+    }
+  });
+}
+
+function getLogoAttachment() {
+  const logoPath = path.join(__dirname, 'assets', 'logo.png');
+  if (fs.existsSync(logoPath)) {
+    return [{
+      filename: 'logo.png',
+      path: logoPath,
+      cid: 'logo_iiresodh'
+    }];
+  }
+  return [];
+}
+
+// ============================================================================
+// HELPER: ALERTA ADMINISTRATIVA A cursos@ Y contacto@ POR CADA TRANSACCIÓN
+// ============================================================================
+async function enviarAlertaAdminTransaccion({ tipo, datos }) {
+  try {
+    const transporter = getMailTransporter();
+    const esExitosa = tipo === 'exitosa';
+    const esCuotas = Number(datos.planCuotas) > 1;
+
+    const asunto = esExitosa
+      ? `[IIRESODH - Pago Confirmado] ${datos.nombre || 'Participante'} - ${datos.cursoTitulo || 'Curso'} (${datos.moneda || 'USD'} ${formatMontoEmail(datos.monto)})`
+      : `[IIRESODH - ALERTA: Transacción No Realizada] ${datos.nombre || 'Participante'} - ${datos.cursoTitulo || 'Curso'}`;
+
+    const encabezadoColor = esExitosa ? '#065f46' : '#991b1b';
+    const bannerBg = esExitosa ? '#ecfdf5' : '#fef2f2';
+    const bannerBorder = esExitosa ? '#a7f3d0' : '#fecaca';
+    const bannerTexto = esExitosa
+      ? (Number(datos.saldoPendiente) <= 0 && esCuotas
+          ? '✓ ¡TRANSACCIÓN EXITOSA - MATRÍCULA 100% LIQUIDADA!'
+          : '✓ TRANSACCIÓN EXITOSA PROCESADA')
+      : '⚠️ ALERTA: TRANSACCIÓN NO COMPLETADA / FALLIDA';
+
+    const detallePlan = esCuotas
+      ? `Plan ${datos.planCuotas} cuotas (Cuota ${datos.numCuotaActual || 1} de ${datos.planCuotas})`
+      : 'Pago único completo';
+
+    const htmlContent = `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden;">
+        <div style="background-color: #1D3557; padding: 20px; text-align: center;">
+          <img src="cid:logo_iiresodh" alt="IIRESODH" style="max-height: 48px; width: auto; max-width: 240px; margin: 0 auto; display: block; border: 0;" />
+        </div>
+
+        <div style="padding: 26px 22px;">
+          <div style="background-color: ${bannerBg}; border: 1px solid ${bannerBorder}; border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; text-align: center;">
+            <p style="color: ${encabezadoColor}; font-size: 14px; font-weight: 800; margin: 0; letter-spacing: 0.3px;">
+              ${bannerTexto}
+            </p>
+          </div>
+
+          <h3 style="color: #1D3557; font-size: 14px; font-weight: 700; margin: 0 0 12px 0; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">
+            Información de la Transacción
+          </h3>
+
+          <table style="width: 100%; font-size: 13px; color: #334155; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 7px 0; color: #64748b; width: 38%;">Programa Académico:</td>
+              <td style="padding: 7px 0; font-weight: 600; text-align: right;">${datos.cursoTitulo || 'Curso Internacional'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 7px 0; color: #64748b;">Participante:</td>
+              <td style="padding: 7px 0; font-weight: 600; text-align: right;">${datos.nombre || 'No registrado'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 7px 0; color: #64748b;">Correo electrónico:</td>
+              <td style="padding: 7px 0; font-weight: 600; text-align: right;"><a href="mailto:${datos.email}" style="color: #1D3557;">${datos.email || 'N/A'}</a></td>
+            </tr>
+            ${datos.telefono ? `<tr><td style="padding: 7px 0; color: #64748b;">Teléfono / WhatsApp:</td><td style="padding: 7px 0; text-align: right;">${datos.telefono}</td></tr>` : ''}
+            ${datos.pais ? `<tr><td style="padding: 7px 0; color: #64748b;">País:</td><td style="padding: 7px 0; text-align: right;">${datos.pais}</td></tr>` : ''}
+            <tr>
+              <td style="padding: 7px 0; color: #64748b;">Modalidad de Pago:</td>
+              <td style="padding: 7px 0; font-weight: 600; text-align: right; color: #1D3557;">${detallePlan}</td>
+            </tr>
+            <tr>
+              <td style="padding: 7px 0; color: #64748b;">Monto de la Transacción:</td>
+              <td style="padding: 7px 0; font-weight: 800; font-size: 15px; color: ${esExitosa ? '#047857' : '#b91c1c'}; text-align: right;">
+                ${datos.moneda || 'USD'} ${formatMontoEmail(datos.monto)}
+              </td>
+            </tr>
+            ${esExitosa ? `
+              <tr>
+                <td style="padding: 7px 0; color: #64748b;">Saldo Pendiente:</td>
+                <td style="padding: 7px 0; font-weight: 700; text-align: right; color: ${Number(datos.saldoPendiente) <= 0 ? '#047857' : '#b45309'};">
+                  ${Number(datos.saldoPendiente) <= 0 ? '✓ 0.00 (Liquidado al 100%)' : `${datos.moneda || 'USD'} ${formatMontoEmail(datos.saldoPendiente)}`}
+                </td>
+              </tr>
+            ` : `
+              <tr>
+                <td style="padding: 7px 0; color: #b91c1c; font-weight: 700;">Motivo del Rechazo / Error:</td>
+                <td style="padding: 7px 0; font-weight: 700; color: #b91c1c; text-align: right;">
+                  ${datos.errorMensaje || 'Tarjeta rechazada o declinada'} (${datos.errorCode || 'error'})
+                </td>
+              </tr>
+            `}
+            <tr>
+              <td style="padding: 7px 0; color: #64748b;">Tipo de Cobro:</td>
+              <td style="padding: 7px 0; text-align: right;">${datos.esCobroAutomatico ? 'Automático programado (Off-session)' : 'Inscripción directa'}</td>
+            </tr>
+            ${datos.paymentIntentId ? `
+              <tr>
+                <td style="padding: 7px 0; color: #64748b;">ID Stripe PaymentIntent:</td>
+                <td style="padding: 7px 0; text-align: right; font-family: monospace; font-size: 11px;">${datos.paymentIntentId}</td>
+              </tr>
+            ` : ''}
+            ${datos.customerId ? `
+              <tr>
+                <td style="padding: 7px 0; color: #64748b;">ID Stripe Customer:</td>
+                <td style="padding: 7px 0; text-align: right; font-family: monospace; font-size: 11px;">${datos.customerId}</td>
+              </tr>
+            ` : ''}
+          </table>
+
+          ${!esExitosa ? `
+            <div style="margin-top: 20px; background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 14px; font-size: 12px; color: #92400e;">
+              <strong>Acción sugerida para coordinación:</strong> Comunicarse con el/la participante al correo <a href="mailto:${datos.email}" style="color: #92400e; font-weight: bold;">${datos.email}</a> ${datos.telefono ? `o al teléfono ${datos.telefono}` : ''} para solicitar la actualización de su tarjeta o emitir un enlace directo de pago y preservar su cupo académico.
+            </div>
+          ` : ''}
+        </div>
+
+        <div style="background-color: #f8fafc; padding: 12px 20px; text-align: center; font-size: 11px; color: #64748b; border-top: 1px solid #e2e8f0;">
+          Notificación automática del Sistema de Cursos IIRESODH enviada a ${EMAILS_ADMIN_CURSOS.join(' y ')}.
+        </div>
+      </div>
+    `;
+
+    await transporter.sendMail({
+      from: `"Sistema IIRESODH Cursos" <contacto@iiresodh.org>`,
+      to: EMAILS_ADMIN_CURSOS.join(', '),
+      subject: asunto,
+      html: htmlContent,
+      attachments: getLogoAttachment()
+    });
+    console.log(`Alerta admin enviada (${tipo}) a ${EMAILS_ADMIN_CURSOS.join(', ')}.`);
+  } catch (error) {
+    console.error("Error enviando alerta administrativa de transacción:", error);
+  }
+}
+
+// ============================================================================
+// HELPER: RECORDATORIO 1 SEMANA (7 DÍAS) ANTES DEL COBRO DE LA CUOTA
+// ============================================================================
+async function enviarCorreoRecordatorioCuota({
+  email,
+  nombre,
+  cursoTitulo,
+  numCuotaSiguiente,
+  planCuotas,
+  montoCuota,
+  moneda,
+  fechaCobroStr,
+  saldoPendienteDespues
+}) {
+  try {
+    const transporter = getMailTransporter();
+
+    const htmlContent = `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden;">
+        <div style="background-color: #1D3557; padding: 24px; text-align: center;">
+          <img src="cid:logo_iiresodh" alt="IIRESODH" style="max-height: 52px; width: auto; max-width: 250px; margin: 0 auto; display: block; border: 0;" />
+        </div>
+
+        <div style="padding: 32px 24px;">
+          <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 14px 18px; margin-bottom: 24px;">
+            <p style="color: #1e40af; font-size: 14px; font-weight: bold; margin: 0;">
+              ℹ️ Recordatorio de pago: Próxima cuota en 7 días
+            </p>
+          </div>
+
+          <p style="font-size: 15px; color: #1e293b; line-height: 1.6; margin-top: 0;">
+            Estimado/a <strong>${nombre}</strong>,
+          </p>
+          <p style="font-size: 14px; color: #475569; line-height: 1.6;">
+            Te escribimos del Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH) para recordarte que en exactamente <strong>7 días (el próximo ${fechaCobroStr})</strong> se procesará automáticamente la <strong>cuota ${numCuotaSiguiente} de ${planCuotas}</strong> de tu matrícula para el programa <strong>${cursoTitulo}</strong>.
+          </p>
+
+          <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; margin: 24px 0;">
+            <h3 style="color: #1D3557; font-size: 14px; font-weight: 700; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px;">
+              Detalles del Cargo Programado
+            </h3>
+            <table style="width: 100%; font-size: 13px; color: #334155; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 6px 0; color: #64748b;">Programa:</td>
+                <td style="padding: 6px 0; font-weight: 600; text-align: right;">${cursoTitulo}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b;">Cuota por cobrar:</td>
+                <td style="padding: 6px 0; font-weight: 600; text-align: right; color: #1D3557;">Cuota ${numCuotaSiguiente} de ${planCuotas}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b;">Fecha programada de cargo:</td>
+                <td style="padding: 6px 0; font-weight: 700; text-align: right; color: #1e293b;">${fechaCobroStr}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b;">Monto de la cuota:</td>
+                <td style="padding: 6px 0; font-weight: 800; font-size: 16px; color: #B92F32; text-align: right;">${moneda} ${formatMontoEmail(montoCuota)}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b;">Saldo restante tras este pago:</td>
+                <td style="padding: 6px 0; font-weight: 600; text-align: right; color: ${Number(saldoPendienteDespues) <= 0 ? '#047857' : '#b45309'};">
+                  ${Number(saldoPendienteDespues) <= 0 ? '✓ Inversión quedará 100% liquidada' : `${moneda} ${formatMontoEmail(saldoPendienteDespues)}`}
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <p style="font-size: 13px; color: #475569; line-height: 1.6;">
+            <strong>¿Debo hacer algo?</strong><br>
+            No requieres realizar ninguna acción manual. El cargo se efectuará con la misma tarjeta que registraste al inscribirte. Solo te sugerimos verificar que tu tarjeta cuente con saldo disponible y permisos activos para transacciones internacionales.
+          </p>
+
+          <p style="font-size: 13px; color: #475569; line-height: 1.6;">
+            Si necesitas actualizar tu tarjeta bancaria, solicitar factura institucional anticipada o consultar cualquier aspecto logístico del curso, puedes responder directamente a este correo o escribir a <a href="mailto:cursos@iiresodh.org" style="color: #1D3557; font-weight: bold;">cursos@iiresodh.org</a>.
+          </p>
+
+          <p style="font-size: 13px; color: #1e293b; margin-top: 28px;">
+            Cordialmente,<br>
+            <strong>Coordinación Académica y Financiera</strong><br>
+            Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH)<br>
+            <a href="https://iiresodh.org" style="color: #B92F32; text-decoration: none; font-size: 12px;">www.iiresodh.org</a>
+          </p>
+        </div>
+
+        <div style="background-color: #f1f5f9; padding: 14px 24px; text-align: center; font-size: 11px; color: #64748b;">
+          Recordatorio de gestión de cobro generado automáticamente por IIRESODH.
+        </div>
+      </div>
+    `;
+
+    await transporter.sendMail({
+      from: `"IIRESODH - Cursos Internacionales" <contacto@iiresodh.org>`,
+      to: email,
+      bcc: EMAILS_ADMIN_CURSOS,
+      subject: `Recordatorio de Próxima Cuota (${numCuotaSiguiente}/${planCuotas}): ${cursoTitulo}`,
+      html: htmlContent,
+      attachments: getLogoAttachment()
+    });
+    console.log(`Recordatorio de cuota ${numCuotaSiguiente} enviado a ${email} (BCC: ${EMAILS_ADMIN_CURSOS.join(', ')})`);
+  } catch (error) {
+    console.error(`Error enviando recordatorio de cuota a ${email}:`, error);
+  }
+}
+
+// ============================================================================
+// HELPER: AVISO AL CLIENTE EN CASO DE COBRO FALLIDO
+// ============================================================================
+async function enviarCorreoFalloCobroCliente({
+  email,
+  nombre,
+  cursoTitulo,
+  numCuota,
+  planCuotas,
+  montoCuota,
+  moneda,
+  motivoError
+}) {
+  try {
+    const transporter = getMailTransporter();
+
+    const htmlContent = `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden;">
+        <div style="background-color: #1D3557; padding: 24px; text-align: center;">
+          <img src="cid:logo_iiresodh" alt="IIRESODH" style="max-height: 52px; width: auto; max-width: 250px; margin: 0 auto; display: block; border: 0;" />
+        </div>
+
+        <div style="padding: 32px 24px;">
+          <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 14px 18px; margin-bottom: 24px;">
+            <p style="color: #991b1b; font-size: 14px; font-weight: bold; margin: 0;">
+              ⚠️ Aviso: No se pudo procesar el cobro de tu cuota
+            </p>
+          </div>
+
+          <p style="font-size: 15px; color: #1e293b; line-height: 1.6; margin-top: 0;">
+            Estimado/a <strong>${nombre}</strong>,
+          </p>
+          <p style="font-size: 14px; color: #475569; line-height: 1.6;">
+            Te informamos que al intentar procesar la <strong>cuota ${numCuota} de ${planCuotas}</strong> (${moneda} ${formatMontoEmail(montoCuota)}) para el programa académico internacional <strong>${cursoTitulo}</strong>, la pasarela de pagos recibió una notificación de rechazo por parte de tu entidad bancaria.
+          </p>
+
+          <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; margin: 24px 0;">
+            <p style="margin: 0 0 6px 0; font-size: 13px; color: #64748b;">Detalle informado:</p>
+            <p style="margin: 0; font-size: 14px; font-weight: bold; color: #b91c1c;">${motivoError || 'Tarjeta declinada por la entidad emisora'}</p>
+          </div>
+
+          <h3 style="color: #1D3557; font-size: 14px; font-weight: 700; margin: 20px 0 8px 0;">
+            ¿Cómo asegurar que tu cupo permanezca activo?
+          </h3>
+          <p style="font-size: 13px; color: #475569; line-height: 1.6;">
+            Te solicitamos comunicarte con nosotros respondiendo directamente a este correo o escribiendo a <a href="mailto:cursos@iiresodh.org" style="color: #1D3557; font-weight: bold;">cursos@iiresodh.org</a> y <a href="mailto:contacto@iiresodh.org" style="color: #1D3557; font-weight: bold;">contacto@iiresodh.org</a>. Nuestro equipo te asistirá para renovar el registro de tu tarjeta o proporcionarte una vía de pago alternativa sin ningún recargo.
+          </p>
+
+          <p style="font-size: 13px; color: #1e293b; margin-top: 28px;">
+            Atentamente,<br>
+            <strong>Coordinación Administrativa</strong><br>
+            Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH)
+          </p>
+        </div>
+      </div>
+    `;
+
+    await transporter.sendMail({
+      from: `"IIRESODH - Cursos Internacionales" <contacto@iiresodh.org>`,
+      to: email,
+      bcc: EMAILS_ADMIN_CURSOS,
+      subject: `Aviso Importante: No se pudo procesar tu cuota (${numCuota}/${planCuotas}) - ${cursoTitulo}`,
+      html: htmlContent,
+      attachments: getLogoAttachment()
+    });
+    console.log(`Aviso de cobro fallido enviado a ${email} (BCC: ${EMAILS_ADMIN_CURSOS.join(', ')})`);
+  } catch (error) {
+    console.error(`Error enviando aviso de cobro fallido a ${email}:`, error);
+  }
+}
+
+// ============================================================================
+// HELPER: ENVÍO DE CORREO DE CONFIRMACIÓN DE INSCRIPCIÓN / CUOTA A CURSO
 // ============================================================================
 async function enviarCorreoConfirmacionCurso({
   email,
@@ -1109,33 +1502,34 @@ async function enviarCorreoConfirmacionCurso({
   pais
 }) {
   try {
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        type: 'OAuth2',
-        user: 'contacto@iiresodh.org',
-        clientId: GMAIL_CLIENT_ID.value(),
-        clientSecret: GMAIL_CLIENT_SECRET.value(),
-        refreshToken: GMAIL_REFRESH_TOKEN.value()
-      }
-    });
-
-    const formatMontoEmail = (num) => {
-      const n = Number(num) || 0;
-      return n.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      });
-    };
-
+    const transporter = getMailTransporter();
     const esCuotas = Number(planCuotas) > 1;
+    const estaLiquidadoTotal = Number(saldoPendiente) <= 0;
+
     const cuotaTexto = esCuotas
       ? `Plan en ${planCuotas} cuotas (Pago de cuota ${numCuotaActual} de ${planCuotas})`
       : 'Pago único de inversión completa';
 
-    const saldoTexto = (esCuotas && Number(saldoPendiente) > 0)
+    const saldoTexto = (esCuotas && !estaLiquidadoTotal)
       ? `<p style="margin: 8px 0 0 0; color: #b45309; font-weight: bold; font-size: 13px;">Saldo restante por liquidar: ${moneda} ${formatMontoEmail(saldoPendiente)} (${planCuotas - numCuotaActual} cuotas mensuales sin interés restantes)</p>`
       : '<p style="margin: 8px 0 0 0; color: #047857; font-weight: bold; font-size: 13px;">✓ Inversión del curso liquidada al 100%</p>';
+
+    const celebrationHtml = (esCuotas && estaLiquidadoTotal) ? `
+      <div style="background-color: #ecfdf5; border: 2px solid #10b981; border-radius: 12px; padding: 18px 20px; margin-bottom: 24px; text-align: center;">
+        <h2 style="color: #047857; font-size: 17px; font-weight: 800; margin: 0 0 6px 0;">
+          🎉 ¡FELICITACIONES! MATRÍCULA 100% LIQUIDADA
+        </h2>
+        <p style="color: #065f46; font-size: 13px; margin: 0; line-height: 1.5;">
+          Has completado exitosamente la totalidad de tus cuotas académicas para <strong>${cursoTitulo}</strong>. No tienes ningún saldo pendiente y tu plaza se encuentra formal y definitivamente asegurada.
+        </p>
+      </div>
+    ` : `
+      <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; padding: 14px 18px; margin-bottom: 24px;">
+        <p style="color: #065f46; font-size: 14px; font-weight: bold; margin: 0;">
+          ✓ ¡Pago de cuota confirmado exitosamente!
+        </p>
+      </div>
+    `;
 
     const htmlContent = `
       <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden;">
@@ -1144,17 +1538,13 @@ async function enviarCorreoConfirmacionCurso({
         </div>
 
         <div style="padding: 32px 24px;">
-          <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; padding: 14px 18px; margin-bottom: 24px;">
-            <p style="color: #065f46; font-size: 14px; font-weight: bold; margin: 0;">
-              ✓ ¡Inscripción confirmada exitosamente!
-            </p>
-          </div>
+          ${celebrationHtml}
 
           <p style="font-size: 15px; color: #1e293b; line-height: 1.6; margin-top: 0;">
             Estimado/a <strong>${nombre}</strong>,
           </p>
           <p style="font-size: 14px; color: #475569; line-height: 1.6;">
-            Hemos recibido con éxito el pago de tu matrícula para el programa académico internacional <strong>${cursoTitulo}</strong>. Tu plaza se encuentra formalmente reservada en el expediente del curso.
+            Hemos recibido con éxito el pago para el programa académico internacional <strong>${cursoTitulo}</strong>. Tu plaza se encuentra formalmente registrada en el expediente oficial del curso.
           </p>
 
           <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; margin: 24px 0;">
@@ -1178,7 +1568,7 @@ async function enviarCorreoConfirmacionCurso({
                 <td style="padding: 6px 0; font-weight: 600; color: #1D3557; text-align: right;">${cuotaTexto}</td>
               </tr>
               <tr>
-                <td style="padding: 6px 0; color: #64748b;">Monto abonado hoy:</td>
+                <td style="padding: 6px 0; color: #64748b;">Monto abonado:</td>
                 <td style="padding: 6px 0; font-weight: 800; font-size: 15px; color: #B92F32; text-align: right;">${moneda} ${formatMontoEmail(montoTotal)}</td>
               </tr>
             </table>
@@ -1198,7 +1588,7 @@ async function enviarCorreoConfirmacionCurso({
           </p>
 
           <p style="font-size: 13px; color: #475569; line-height: 1.6;">
-            Si requieres factura institucional, orden de compra o certificado de admisión para trámites oficiales de tu despacho u organización, puedes responder directamente a este correo o contactarnos a <a href="mailto:contacto@iiresodh.org" style="color: #1D3557; font-weight: bold;">contacto@iiresodh.org</a>.
+            Si requieres factura institucional, orden de compra o certificado de admisión para trámites oficiales de tu despacho u organización, puedes responder directamente a este correo o contactarnos a <a href="mailto:cursos@iiresodh.org" style="color: #1D3557; font-weight: bold;">cursos@iiresodh.org</a> o <a href="mailto:contacto@iiresodh.org" style="color: #1D3557; font-weight: bold;">contacto@iiresodh.org</a>.
           </p>
 
           <p style="font-size: 13px; color: #1e293b; margin-top: 28px;">
@@ -1215,25 +1605,19 @@ async function enviarCorreoConfirmacionCurso({
       </div>
     `;
 
-    const logoPath = path.join(__dirname, 'assets', 'logo.png');
-    const attachments = [];
-    if (fs.existsSync(logoPath)) {
-      attachments.push({
-        filename: 'logo.png',
-        path: logoPath,
-        cid: 'logo_iiresodh'
-      });
-    }
+    const subject = (esCuotas && estaLiquidadoTotal)
+      ? `¡Matrícula 100% Liquidada! Confirmación Final: ${cursoTitulo}`
+      : `Confirmación de Pago: ${cursoTitulo}`;
 
     await transporter.sendMail({
       from: `"IIRESODH - Cursos Internacionales" <contacto@iiresodh.org>`,
       to: email,
-      bcc: 'contacto@iiresodh.org',
-      subject: `Confirmación de Inscripción: ${cursoTitulo}`,
+      bcc: EMAILS_ADMIN_CURSOS,
+      subject: subject,
       html: htmlContent,
-      attachments: attachments
+      attachments: getLogoAttachment()
     });
-    console.log(`Correo de confirmación enviado exitosamente a ${email} (bcc: contacto@iiresodh.org).`);
+    console.log(`Correo de confirmación enviado exitosamente a ${email} (BCC: ${EMAILS_ADMIN_CURSOS.join(', ')}).`);
   } catch (error) {
     console.error(`Error enviando correo de confirmación a ${email}:`, error);
   }
@@ -1294,7 +1678,7 @@ exports.stripeWebhookCursos = onRequest({
       const telefono = session.customer_details?.phone || "";
       const pais = session.customer_details?.address?.country || "No especificado";
       const montoTotal = (session.amount_total || 0) / 100;
-      const moneda = (session.currency || "eur").toUpperCase();
+      const moneda = (session.currency || "usd").toUpperCase();
       const metadata = session.metadata || {};
       const cursoId = metadata.cursoId || "palermo-2027";
       const cursoTitulo = metadata.cursoTitulo || metadata.cursoNombre || "Curso Internacional - Palermo";
@@ -1356,6 +1740,26 @@ exports.stripeWebhookCursos = onRequest({
         pais: pais
       });
 
+      // Notificar a administradores (cursos@ y contacto@)
+      await enviarAlertaAdminTransaccion({
+        tipo: 'exitosa',
+        datos: {
+          nombre,
+          email,
+          telefono,
+          pais,
+          cursoTitulo,
+          planCuotas: 1,
+          numCuotaActual: 1,
+          monto: montoTotal,
+          moneda,
+          saldoPendiente: 0,
+          paymentIntentId: session.payment_intent || session.id,
+          customerId: session.customer || null,
+          esCobroAutomatico: false
+        }
+      });
+
       return res.json({ received: true });
     }
 
@@ -1380,7 +1784,7 @@ exports.stripeWebhookCursos = onRequest({
       const email = paymentIntent.receipt_email || metadata.email || metadata.emailCliente || "cliente@anonimo.com";
       const nombre = metadata.nombre || "Participante Confirmado";
       const montoTotal = (paymentIntent.amount || 0) / 100;
-      const moneda = (paymentIntent.currency || "eur").toUpperCase();
+      const moneda = (paymentIntent.currency || "usd").toUpperCase();
       const cursoId = metadata.cursoId || "palermo-2027";
       const cursoTitulo = metadata.cursoTitulo || metadata.cursoNombre || "Curso Internacional - Palermo";
 
@@ -1403,6 +1807,15 @@ exports.stripeWebhookCursos = onRequest({
         const totalAbonado = (current.montoPagado || 0) + montoTotal;
         const saldoRestante = Math.max(0, (current.montoTotalInversion || totalInversion) - totalAbonado);
 
+        let proximaFechaCobro = null;
+        if (saldoRestante > 0 && nuevaCuota < planCuotas) {
+          const nextDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+          const fechaLimStr = metadata.fechaLimitePago || current.fechaLimitePago || "2027-04-30";
+          const fechaLim = new Date(fechaLimStr + "T23:59:59Z");
+          if (nextDate > fechaLim) nextDate.setTime(fechaLim.getTime());
+          proximaFechaCobro = admin.firestore.Timestamp.fromDate(nextDate);
+        }
+
         await db.collection("solicitudesCursos").doc(docId).update({
           estado: "confirmado",
           metodoPago: "stripe",
@@ -1414,6 +1827,9 @@ exports.stripeWebhookCursos = onRequest({
           stripePaymentIntentId: paymentIntent.id,
           stripeCustomerId: paymentIntent.customer || current.stripeCustomerId || null,
           fechaPago: admin.firestore.FieldValue.serverTimestamp(),
+          fechaProximoCobro: proximaFechaCobro,
+          fechaLimitePago: metadata.fechaLimitePago || current.fechaLimitePago || "2027-04-30",
+          ultimoRecordatorioCuota: null,
           profesion: metadata.profesion || current.profesion || "",
           experienciaTemas: metadata.experienciaTemas || current.experienciaTemas || "",
           motivoParticipacion: metadata.motivoParticipacion || current.motivoParticipacion || "",
@@ -1442,7 +1858,37 @@ exports.stripeWebhookCursos = onRequest({
           institucion: metadata.institucion || current.institucion || "",
           pais: metadata.pais || current.pais || ""
         });
+
+        // Notificar a administradores
+        await enviarAlertaAdminTransaccion({
+          tipo: 'exitosa',
+          datos: {
+            nombre,
+            email,
+            telefono: metadata.telefono || current.telefono || "",
+            pais: metadata.pais || current.pais || "",
+            cursoTitulo,
+            planCuotas,
+            numCuotaActual: nuevaCuota,
+            monto: montoTotal,
+            montoTotal: totalInversion,
+            moneda,
+            saldoPendiente: saldoRestante,
+            paymentIntentId: paymentIntent.id,
+            customerId: paymentIntent.customer || current.stripeCustomerId || null,
+            esCobroAutomatico: metadata.esCobroAutomatico === "true"
+          }
+        });
       } else {
+        let proximaFechaCobro = null;
+        if (saldoPendiente > 0 && numCuotaActual < planCuotas) {
+          const nextDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+          const fechaLimStr = metadata.fechaLimitePago || "2027-04-30";
+          const fechaLim = new Date(fechaLimStr + "T23:59:59Z");
+          if (nextDate > fechaLim) nextDate.setTime(fechaLim.getTime());
+          proximaFechaCobro = admin.firestore.Timestamp.fromDate(nextDate);
+        }
+
         await db.collection("solicitudesCursos").add({
           cursoId: cursoId,
           cursoTitulo: cursoTitulo,
@@ -1473,7 +1919,10 @@ exports.stripeWebhookCursos = onRequest({
           stripePaymentIntentId: paymentIntent.id,
           stripeCustomerId: paymentIntent.customer || null,
           fechaSolicitud: admin.firestore.FieldValue.serverTimestamp(),
-          fechaPago: admin.firestore.FieldValue.serverTimestamp()
+          fechaPago: admin.firestore.FieldValue.serverTimestamp(),
+          fechaProximoCobro: proximaFechaCobro,
+          fechaLimitePago: metadata.fechaLimitePago || "2027-04-30",
+          ultimoRecordatorioCuota: null
         });
         console.log(`Inscripción registrada por payment_intent.succeeded para ${email}. Plan: ${planCuotas} pagos.`);
 
@@ -1492,13 +1941,87 @@ exports.stripeWebhookCursos = onRequest({
           institucion: metadata.institucion || "",
           pais: metadata.pais || ""
         });
+
+        // Notificar a administradores
+        await enviarAlertaAdminTransaccion({
+          tipo: 'exitosa',
+          datos: {
+            nombre,
+            email,
+            telefono: metadata.telefono || "",
+            pais: metadata.pais || "",
+            cursoTitulo,
+            planCuotas,
+            numCuotaActual,
+            monto: montoTotal,
+            montoTotal: totalInversion,
+            moneda,
+            saldoPendiente: saldoPendiente,
+            paymentIntentId: paymentIntent.id,
+            customerId: paymentIntent.customer || null,
+            esCobroAutomatico: metadata.esCobroAutomatico === "true"
+          }
+        });
       }
 
       return res.json({ received: true });
     }
 
     // -------------------------------------------------------------
-    // EVENTO 3: charge.refunded (Reembolsos)
+    // EVENTO 3: payment_intent.payment_failed (Cobros fallidos o rechazados)
+    // -------------------------------------------------------------
+    if (event.type === 'payment_intent.payment_failed') {
+      const paymentIntent = event.data.object;
+      const metadata = paymentIntent.metadata || {};
+      const email = paymentIntent.receipt_email || metadata.email || metadata.emailCliente || "";
+      const nombre = metadata.nombre || "Participante";
+      const montoTotal = (paymentIntent.amount || 0) / 100;
+      const moneda = (paymentIntent.currency || "usd").toUpperCase();
+      const cursoTitulo = metadata.cursoTitulo || metadata.cursoNombre || "Curso Internacional";
+      const lastError = paymentIntent.last_payment_error;
+      const errorMensaje = lastError?.message || "Tarjeta rechazada por la entidad bancaria emisora.";
+      const errorCode = lastError?.code || "payment_failed";
+
+      console.warn(`Cobro fallido detectado en Stripe: ${paymentIntent.id} para ${email}. Motivo: ${errorMensaje}`);
+
+      await enviarAlertaAdminTransaccion({
+        tipo: 'fallida',
+        datos: {
+          nombre,
+          email,
+          telefono: metadata.telefono || "",
+          pais: metadata.pais || "",
+          cursoTitulo,
+          planCuotas: Number(metadata.planCuotas) || 1,
+          numCuotaActual: Number(metadata.numCuotaActual) || 1,
+          monto: montoTotal,
+          moneda,
+          errorMensaje,
+          errorCode,
+          paymentIntentId: paymentIntent.id,
+          customerId: paymentIntent.customer || null,
+          esCobroAutomatico: metadata.esCobroAutomatico === "true"
+        }
+      });
+
+      if (email) {
+        await enviarCorreoFalloCobroCliente({
+          email,
+          nombre,
+          cursoTitulo,
+          numCuota: Number(metadata.numCuotaActual) || 1,
+          planCuotas: Number(metadata.planCuotas) || 1,
+          montoCuota: montoTotal,
+          moneda,
+          motivoError: errorMensaje
+        });
+      }
+
+      return res.json({ received: true });
+    }
+
+    // -------------------------------------------------------------
+    // EVENTO 4: charge.refunded (Reembolsos)
     // -------------------------------------------------------------
     if (event.type === 'charge.refunded') {
       const charge = event.data.object;
@@ -1528,6 +2051,283 @@ exports.stripeWebhookCursos = onRequest({
   } catch (error) {
     console.error("Error en procesamiento de stripeWebhookCursos:", error);
     return res.status(500).json({ error: "Error interno procesando evento de cursos." });
+  }
+});
+
+// ============================================================================
+// 14. TAREA PROGRAMADA: COBROS AUTOMÁTICOS OFF-SESSION Y RECORDATORIOS (7 DÍAS)
+// ============================================================================
+exports.procesarCobrosYRecordatoriosCuotasCursos = onSchedule({
+  schedule: "every day 08:00",
+  timeZone: "America/Costa_Rica",
+  secrets: [
+    STRIPE_CURSOS_SECRET_KEY,
+    GMAIL_CLIENT_ID,
+    GMAIL_CLIENT_SECRET,
+    GMAIL_REFRESH_TOKEN
+  ],
+  region: "us-central1",
+  memory: "512MiB",
+  timeoutSeconds: 300
+}, async (event) => {
+  console.log("Iniciando tarea programada: Cobros automáticos y recordatorios de cuotas...");
+  const db = admin.firestore();
+  const stripeKey = getStripeCursosKey();
+  if (!stripeKey) {
+    console.error("No se encontró STRIPE_CURSOS_SECRET_KEY. Omitiendo proceso.");
+    return;
+  }
+  const stripe = new Stripe(stripeKey);
+  const ahora = new Date();
+
+  try {
+    const snapshot = await db.collection("solicitudesCursos")
+      .where("estado", "==", "confirmado")
+      .where("planCuotas", ">", 1)
+      .get();
+
+    if (snapshot.empty) {
+      console.log("No hay inscripciones en cuotas activas para evaluar.");
+      return;
+    }
+
+    for (const docSnap of snapshot.docs) {
+      const data = docSnap.data();
+      const cuotasPagadas = Number(data.cuotasPagadas) || 1;
+      const planCuotas = Number(data.planCuotas) || 1;
+      const saldoPendiente = Number(data.saldoPendiente) || 0;
+
+      if (cuotasPagadas >= planCuotas || saldoPendiente <= 0) {
+        continue;
+      }
+
+      if (!data.fechaProximoCobro) {
+        continue;
+      }
+
+      const fechaProx = data.fechaProximoCobro.toDate();
+      const msDiferencia = fechaProx.getTime() - ahora.getTime();
+      const diasFaltantes = Math.ceil(msDiferencia / (1000 * 60 * 60 * 24));
+      const siguienteCuota = cuotasPagadas + 1;
+      const cuotasRestantes = Math.max(1, planCuotas - cuotasPagadas);
+      const montoCuota = Number((saldoPendiente / cuotasRestantes).toFixed(2));
+      const moneda = (data.moneda || "USD").toUpperCase();
+      const cursoTitulo = data.cursoTitulo || "Curso Internacional - Palermo";
+      const nombre = data.nombre || "Participante";
+      const email = data.email;
+
+      // 1. RECORDATORIO: Si faltan entre 0 y 7 días para el cobro programado
+      if (diasFaltantes <= 7 && diasFaltantes >= 0) {
+        if (data.ultimoRecordatorioCuota !== siguienteCuota) {
+          console.log(`Enviando recordatorio de cuota ${siguienteCuota}/${planCuotas} a ${email} (Faltan ${diasFaltantes} días)`);
+          const fechaCobroStr = fechaProx.toLocaleDateString("es-ES", {
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+          });
+          const saldoDespues = Math.max(0, Number((saldoPendiente - montoCuota).toFixed(2)));
+
+          await enviarCorreoRecordatorioCuota({
+            email,
+            nombre,
+            cursoTitulo,
+            numCuotaSiguiente: siguienteCuota,
+            planCuotas,
+            montoCuota,
+            moneda,
+            fechaCobroStr,
+            saldoPendienteDespues: saldoDespues
+          });
+
+          await docSnap.ref.update({
+            ultimoRecordatorioCuota: siguienteCuota,
+            fechaUltimoRecordatorio: admin.firestore.FieldValue.serverTimestamp()
+          });
+        }
+      }
+
+      // 2. EJECUCIÓN DE COBRO AUTOMÁTICO: Si hoy es igual o posterior a la fecha programada
+      if (ahora >= fechaProx) {
+        console.log(`Procesando cobro automático de cuota ${siguienteCuota}/${planCuotas} para ${email} (${moneda} ${montoCuota})`);
+
+        // Regla institucional estricta: todos los plazos deben terminar antes del último día del mes anterior al evento (2027-04-30 para Palermo)
+        const fechaLimiteStr = data.fechaLimitePago || "2027-04-30";
+        const fechaLimite = new Date(fechaLimiteStr + "T23:59:59Z");
+
+        if (ahora > fechaLimite) {
+          console.warn(`Cobro detenido: La fecha actual supera la fecha límite del curso (${fechaLimiteStr}) para ${email}.`);
+          await enviarAlertaAdminTransaccion({
+            tipo: 'fallida',
+            datos: {
+              nombre,
+              email,
+              telefono: data.telefono,
+              pais: data.pais,
+              cursoTitulo,
+              planCuotas,
+              numCuotaActual: siguienteCuota,
+              monto: montoCuota,
+              moneda,
+              errorMensaje: `Cobro automático detenido: Se superó la fecha límite institucional (${fechaLimiteStr}). Requiere contacto manual con el participante.`
+            }
+          });
+          continue;
+        }
+
+        if (!data.stripeCustomerId) {
+          console.warn(`Inscripción ${docSnap.id} (${email}) no tiene stripeCustomerId registrado.`);
+          continue;
+        }
+
+        try {
+          const paymentMethods = await stripe.paymentMethods.list({
+            customer: data.stripeCustomerId,
+            type: 'card',
+            limit: 1
+          });
+
+          if (!paymentMethods.data || paymentMethods.data.length === 0) {
+            throw new Error("No se encontró tarjeta guardada en Stripe para este cliente.");
+          }
+
+          const paymentMethodId = paymentMethods.data[0].id;
+          const amountInCents = Math.round(montoCuota * 100);
+          const nuevoSaldo = Math.max(0, Number((saldoPendiente - montoCuota).toFixed(2)));
+
+          const paymentIntent = await stripe.paymentIntents.create({
+            amount: amountInCents,
+            currency: moneda.toLowerCase(),
+            customer: data.stripeCustomerId,
+            payment_method: paymentMethodId,
+            off_session: true,
+            confirm: true,
+            receipt_email: email,
+            metadata: {
+              cursoId: data.cursoId || "palermo-2027",
+              cursoTitulo: cursoTitulo,
+              email: email,
+              nombre: nombre,
+              telefono: data.telefono || "",
+              institucion: data.institucion || "",
+              pais: data.pais || "",
+              planCuotas: String(planCuotas),
+              numCuotaActual: String(siguienteCuota),
+              montoCuota: String(montoCuota),
+              montoTotal: String(data.montoTotalInversion || (data.montoPagado + saldoPendiente)),
+              saldoPendiente: String(nuevoSaldo),
+              fechaLimitePago: fechaLimiteStr,
+              esCobroAutomatico: "true"
+            }
+          });
+
+          if (paymentIntent.status === "succeeded") {
+            console.log(`Cobro automático de cuota ${siguienteCuota} exitoso para ${email}: ${paymentIntent.id}`);
+
+            let proximaFechaCobro = null;
+            if (nuevoSaldo > 0 && siguienteCuota < planCuotas) {
+              const nextDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+              if (nextDate > fechaLimite) nextDate.setTime(fechaLimite.getTime());
+              proximaFechaCobro = admin.firestore.Timestamp.fromDate(nextDate);
+            }
+
+            const nuevoTotalPagado = (data.montoPagado || 0) + montoCuota;
+
+            await docSnap.ref.update({
+              cuotasPagadas: siguienteCuota,
+              montoPagado: nuevoTotalPagado,
+              saldoPendiente: nuevoSaldo,
+              stripePaymentIntentId: paymentIntent.id,
+              fechaPago: admin.firestore.FieldValue.serverTimestamp(),
+              fechaUltimoCobro: admin.firestore.FieldValue.serverTimestamp(),
+              fechaProximoCobro: proximaFechaCobro,
+              intentosCobroFallidos: 0,
+              ultimoErrorCobro: null,
+              comentarios: `Cuota ${siguienteCuota}/${planCuotas} cobrada automáticamente con éxito. Saldo restante: ${moneda} ${nuevoSaldo}.`
+            });
+
+            // Enviar confirmación al participante (incluirá felicitación de 100% liquidado si nuevoSaldo <= 0)
+            await enviarCorreoConfirmacionCurso({
+              email,
+              nombre,
+              cursoTitulo,
+              montoTotal: montoCuota,
+              moneda,
+              planCuotas,
+              numCuotaActual: siguienteCuota,
+              saldoPendiente: nuevoSaldo,
+              paymentIntentId: paymentIntent.id,
+              profesion: data.profesion || "",
+              institucion: data.institucion || "",
+              pais: data.pais || ""
+            });
+
+            // Notificar a administradores (cursos@ y contacto@)
+            await enviarAlertaAdminTransaccion({
+              tipo: 'exitosa',
+              datos: {
+                nombre,
+                email,
+                telefono: data.telefono,
+                pais: data.pais,
+                cursoTitulo,
+                planCuotas,
+                numCuotaActual: siguienteCuota,
+                monto: montoCuota,
+                moneda,
+                saldoPendiente: nuevoSaldo,
+                paymentIntentId: paymentIntent.id,
+                customerId: data.stripeCustomerId,
+                esCobroAutomatico: true
+              }
+            });
+          }
+        } catch (errCobro) {
+          const errorMensaje = errCobro.raw?.message || errCobro.message || "Error procesando el cobro en Stripe.";
+          const errorCode = errCobro.code || errCobro.raw?.code || "payment_failed";
+          console.error(`Error en cobro automático de ${email}:`, errorMensaje);
+
+          await docSnap.ref.update({
+            ultimoErrorCobro: errorMensaje,
+            intentosCobroFallidos: admin.firestore.FieldValue.increment(1),
+            fechaUltimoIntentoCobro: admin.firestore.FieldValue.serverTimestamp()
+          });
+
+          // Notificar a los administradores
+          await enviarAlertaAdminTransaccion({
+            tipo: 'fallida',
+            datos: {
+              nombre,
+              email,
+              telefono: data.telefono,
+              pais: data.pais,
+              cursoTitulo,
+              planCuotas,
+              numCuotaActual: siguienteCuota,
+              monto: montoCuota,
+              moneda,
+              errorMensaje,
+              errorCode,
+              customerId: data.stripeCustomerId,
+              esCobroAutomatico: true
+            }
+          });
+
+          // Notificar al cliente
+          await enviarCorreoFalloCobroCliente({
+            email,
+            nombre,
+            cursoTitulo,
+            numCuota: siguienteCuota,
+            planCuotas,
+            montoCuota,
+            moneda,
+            motivoError: errorMensaje
+          });
+        }
+      }
+    }
+  } catch (errJob) {
+    console.error("Error en ejecución de procesarCobrosYRecordatoriosCuotasCursos:", errJob);
   }
 });
 
