@@ -7,9 +7,14 @@ import { onAuthStateChanged } from "firebase/auth";
 import { CircularProgress, Alert, Snackbar } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
-// Assets locales predeterminados
+// // Assets locales predeterminados
 import falconeDefaultImg from "../assets/cursos/falcone_borsellino.jpg";
 import palermoDefaultImg from "../assets/cursos/palermo_catedral.jpg";
+import palermoJusticiaBw from "../assets/cursos/palermo_justicia_bw.jpg";
+import palermoAulaBunkerBw from "../assets/cursos/palermo_aula_bunker_bw.jpg";
+import logoUnlp from "../assets/cursos/logo_unlp_ddhh.png";
+import brochureP1 from "../assets/cursos/brochure_palermo_p1.jpg";
+import brochureP2 from "../assets/cursos/brochure_palermo_p2.jpg";
 import logoIiresodh from "../assets/logo.webp";
 import FormularioPagoCurso from "../components/cursos/FormularioPagoCurso";
 
@@ -24,11 +29,13 @@ export const normalizarPrecio = (precioStr) => {
   return s;
 };
 
-// Datos por defecto para el Curso Internacional 2027 en Palermo (Fallback y Semilla visual)
+// Datos por defecto para el Curso Internacional 2027 en Palermo (Brochure Oficial & Co-organización UNLP)
 export const DATOS_PALERMO_2027 = {
   id: "palermo-2027",
   slug: "curso-internacional-palermo-2027",
-  titulo: "Curso Internacional 2027 - Palermo, Sicilia, Italia. Del 17 al 23 de mayo de 2027",
+  titulo: "Curso Internacional: Aplicación de las Convenciones de Palermo contra el Crimen Organizado",
+  subtitulo: "Investigación Criminal, Cooperación Internacional y Derechos Humanos en la Lucha contra la Criminalidad Organizada y la Trata de Personas",
+  coorganizacion: "Curso Internacional organizado conjuntamente por el Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH) y el Instituto de Derechos Humanos de la Universidad Nacional de La Plata (Argentina).",
   resumen: "Programa de alta especialización judicial sobre la aplicación de las Convenciones de Palermo contra el Crimen Organizado Transnacional.",
   estadoInscripcion: "proximamente",
   imagenPrincipalUrl: falconeDefaultImg,
@@ -36,103 +43,267 @@ export const DATOS_PALERMO_2027 = {
     habilitada: true,
     publicada: false, // Por defecto no pública como solicitó el usuario
     lema: "APLICACIÓN DE LAS CONVENCIONES DE PALERMO CONTRA EL CRIMEN ORGANIZADO",
-    ubicacionFechas: "Palermo, Sicilia, Italia | Del 17 al 23 de mayo de 2027",
+    subtitulo: "Investigación Criminal, Cooperación Internacional y Derechos Humanos en la Lucha contra la Criminalidad Organizada y la Trata de Personas",
+    ubicacionFechas: "Palermo, Sicilia, Italia | 17 – 23 de mayo de 2027",
     precioInversion: "3.350 USD",
-    inversionDetalle: "Por persona. Incluye sesiones magistrales, visitas de campo, materiales exclusivos y certificación internacional.",
+    inversionDetalle: "Por participante. Incluye clases magistrales, simulación de caso transnacional, visitas guiadas a lugares emblemáticos, compendio digital, certificado oficial, alojamiento en hotel 4 estrellas, traslados internos y coffee breaks.",
     cuposTexto: "Cupos Estrictamente Limitados",
     fechaLimitePago: "2027-04-30",
     fechaLimiteTexto: "30 de abril de 2027",
     enlaceStripe: "",
     heroImagenUrl: falconeDefaultImg,
-    heroCita: "«La mafia è un fenomeno umano e come tutti i fenomeni umani ha un principio, una sua evoluzione e avrà quindi anche una fine.»",
+    heroCita: "«La mafia è un fenomeno umano e como tutti i fenomeni umani ha un principio, una sua evoluzione e avrà quindi anche una fine.»",
     heroCitaAutor: "Giovanni Falcone (1939 – 1992)",
     
+    // Co-organización institucional
+    coorganizadores: [
+      {
+        nombre: "IIRESODH",
+        detalle: "Instituto Internacional de Responsabilidad Social y Derechos Humanos",
+        pais: "Costa Rica / Internacional",
+        logo: logoIiresodh
+      },
+      {
+        nombre: "Instituto de Derechos Humanos - UNLP",
+        detalle: "Facultad de Ciencias Jurídicas y Sociales • Universidad Nacional de La Plata",
+        pais: "Argentina",
+        logo: logoUnlp
+      }
+    ],
+
+    // Contacto Directo
+    contacto: {
+      whatsapp: "+506 4081 6188",
+      whatsappUrl: "https://wa.me/50640816188?text=Hola,%20solicito%20informaci%C3%B3n%20sobre%20el%20Curso%20Internacional%20Palermo%202027",
+      email: "cursos@iiresodh.org",
+      emailAlternativo: "contacto@iiresodh.org"
+    },
+
+    // Docentes Destacados
+    docentesDestacados: [
+      {
+        nombre: "Víctor Rodríguez Rescia",
+        cargo: "Presidente de IIRESODH",
+        rol: "Director Académico",
+        descripcion: "Experto Independiente de varios Comités, Subcomité y Mecanismos de Derechos Humanos de la Organización de las Naciones Unidas (ONU).",
+        origen: "Costa Rica / Internacional"
+      },
+      {
+        nombre: "Fabián Salvioli",
+        cargo: "Director del Instituto de Derechos Humanos - UNLP",
+        rol: "Director Académico Coorganizador",
+        descripcion: "Expresidente del Comité de Derechos Humanos de la ONU y Ex Relator Especial de Naciones Unidas. Catedrático de la Universidad Nacional de La Plata.",
+        origen: "Argentina / ONU"
+      },
+      {
+        nombre: "Ottavio Sferlazza",
+        cargo: "Ex Procurador Antimafia de Italia",
+        rol: "Docente Principal",
+        descripcion: "Magistrado histórico italiano de la lucha judicial antimafia en Sicilia. Coordinador de investigaciones de máxima complejidad sobre Cosa Nostra.",
+        origen: "Italia"
+      },
+      {
+        nombre: "+ Más de 20 Expertos Italianos e Internacionales",
+        cargo: "Cuerpo Docente de Élite",
+        rol: "Magistrados, Fiscales y Catedráticos",
+        descripcion: "Fiscales jefe, catedráticos universitarios especializados en derecho antimafia, e investigadores de la UNODC (Oficina contra la Droga y el Delito) y la OIM.",
+        origen: "Italia / Europa / ONU"
+      }
+    ],
+
+    // ¿A quién está dirigido?
+    aQuienDirigido: [
+      {
+        perfil: "Jueces, juezas, fiscales y operadores de justicia.",
+        icono: "⚖️"
+      },
+      {
+        perfil: "Abogados, abogadas y defensores de derechos humanos.",
+        icono: "🛡️"
+      },
+      {
+        perfil: "Integrantes de las fuerzas de seguridad, unidades de inteligencia financiera y otras áreas de la gestión pública.",
+        icono: "🔍"
+      },
+      {
+        perfil: "Personas de la academia e investigadoras especializadas en derecho penal y criminología.",
+        icono: "🎓"
+      },
+      {
+        perfil: "Diplomáticas, diplomáticos, funcionarias y funcionarios de organismos internacionales.",
+        icono: "🌐"
+      }
+    ],
+
+    // ¿Qué está incluido?
+    queEstaIncluido: [
+      {
+        titulo: "Clases magistrales con expertos internacionales",
+        descripcion: "Sesiones presenciales intensivas de análisis normativo y procesal con magistrados y fiscales en activo.",
+        icono: "👨‍🏫"
+      },
+      {
+        titulo: "Simulación de caso transnacional",
+        descripcion: "Talleres prácticos con expedientes reales, técnicas de litigio y audiencia simulada final.",
+        icono: "📁"
+      },
+      {
+        titulo: "Visitas guiadas a lugares emblemáticos",
+        descripcion: "Acceso con acreditación al Palacio de Justicia de Palermo, Aula Búnker, Palazzo Steri, Teatro Massimo y Bien Confiscado.",
+        icono: "🏛️"
+      },
+      {
+        titulo: "Compendio digital de material didáctico",
+        descripcion: "Biblioteca documental exhaustiva con jurisprudencia internacional, convenios y guías prácticas.",
+        icono: "📚"
+      },
+      {
+        titulo: "Certificado de participación internacional",
+        descripcion: "Acreditación académica de alta especialización emitida conjuntamente por IIRESODH y el Instituto de Derechos Humanos de la UNLP (Argentina).",
+        icono: "📜"
+      },
+      {
+        titulo: "Alojamiento en hotel 4 estrellas",
+        descripcion: "Estancia completa de calidad superior en Palermo durante los días del programa.",
+        icono: "🏨"
+      },
+      {
+        titulo: "Logística y traslados internos",
+        descripcion: "Transporte para las visitas oficiales del itinerario en Palermo (no incluye aéreos hasta y desde Palermo).",
+        icono: "🚌"
+      },
+      {
+        titulo: "Desayunos y coffee breaks",
+        descripcion: "Espacios diarios de refrigerio y networking para intercambio entre los participantes y docentes.",
+        icono: "☕"
+      }
+    ],
+
+    // ¿Qué aprenderás?
+    queAprenderas: [
+      "Aplicar los principios del debido proceso y las garantías procesales en la investigación de delitos complejos y criminalidad organizada.",
+      "Interpretar el marco normativo de la Convención de Palermo y su Protocolo para su correcta aplicación jurisdiccional.",
+      "Integrar los estándares internacionales del control de convencionalidad en la argumentación y resolución de casos penales.",
+      "Evaluar modelos comparados de protección de testigos y mecanismos estratégicos de recuperación de activos en la lucha contra la delincuencia transnacional."
+    ],
+
     // Sección Legado y Visión
     legadoTitulo: "Nuestro Legado y Visión",
-    legadoTexto: "El legado histórico de los magistrados Giovanni Falcone y Paolo Borsellino sentó las bases de la lucha contemporánea contra el crimen organizado y la macrocriminalidad financiera. En el año 2000, Palermo fue la sede donde la comunidad internacional aprobó la histórica Convención de las Naciones Unidas contra la Delincuencia Organizada Transnacional. Este curso internacional conecta ese precedente histórico con los desafíos judiciales de vanguardia, el decomiso de activos ilícitos y la cooperación penal transfronteriza.",
+    legadoTexto: "El legado histórico de los magistrados Giovanni Falcone y Paolo Borsellino sentó las bases de la lucha contemporánea contra el crimen organizado y la macrocriminalidad financiera. En el año 2000, Palermo fue la sede donde la comunidad internacional aprobó la histórica Convención de las Naciones Unidas contra la Delincuencia Organizada Transnacional. Este curso internacional conecta ese precedente histórico con los desafíos judiciales de vanguardia, el decomiso de activos ilícitos y la cooperación penal transfronteriza, organizado en conjunto por IIRESODH y el Instituto de Derechos Humanos de la Universidad Nacional de La Plata.",
     pilares: [
       {
-        titulo: "Instrumentos Internacionales y Jurisprudencia",
-        descripcion: "Análisis dogmático y procesal de la Convención de Palermo y protocolos complementarios.",
+        titulo: "Marco Jurídico Internacional y DDHH",
+        descripcion: "Análisis dogmático y procesal de la Convención de Palermo, sus protocolos y control de convencionalidad.",
         icono: "balanza"
       },
       {
-        titulo: "Investigaciones Financieras y Recuperación de Activos",
-        descripcion: "Técnicas probatorias de seguimiento patrimonial ('Follow the Money') y extinción de dominio.",
+        titulo: "'Follow the Money' y Recuperación de Activos",
+        descripcion: "Técnicas probatorias de seguimiento financiero, extinción de dominio y decomiso de bienes a las mafias.",
         icono: "dinero"
       },
       {
-        titulo: "Protección Integral a Testigos y Operadores",
-        descripcion: "Protocolos de seguridad, reserva de identidad y garantías procesales para fiscales y jueces.",
+        titulo: "Protección a Actores Judiciales y Testigos",
+        descripcion: "Protocolos de seguridad, reserva probatoria y garantías para jueces, fiscales y declarantes amenazados.",
         icono: "escudo"
       },
       {
-        titulo: "Cooperación Judicial y Extradición",
-        descripcion: "Mecanismos de asistencia mutua, equipos conjuntos de investigación y tratados multilaterales.",
+        titulo: "Cooperación Judicial y Casos Transnacionales",
+        descripcion: "Equipos conjuntos de investigación, trata de personas y modelos comparados Europa–Latinoamérica.",
         icono: "mundo"
       }
     ],
 
-    // Estructura del Programa
+    // Estructura del Programa (7 Días en Palermo - Mayo 2027)
     programa: [
       {
         dia: "DÍA 1",
-        fecha: "Lunes 17 de mayo",
-        titulo: "Instrumentos Internacionales y Evolución Dogmática",
-        horario: "09:00 - 13:00 / 15:00 - 18:00",
-        descripcion: "Apertura institucional y análisis exegético de la Convención de Palermo (UNTOC). Tipologías penales transnacionales, estándar probatorio internacional y armonización de legislaciones internas.",
+        fecha: "Lunes 17 de mayo de 2027",
+        titulo: "Marco jurídico internacional del crimen organizado",
+        horario: "09:00–13:00 y 15:00–18:00",
+        descripcion: "Apertura institucional del curso y análisis exegético de la Convención de Palermo. Apertura de actividades y visita a lugar emblemático (Ejemplo: Aula Búnker del Maxi-Proceso).",
+        lugarEmblematico: "Aula Búnker del Palacio de Justicia de Palermo",
         temas: [
-          "Génesis y alcance de la Convención de las Naciones Unidas de 2000",
-          "Delito de asociación ilícita y crimen corporativo",
-          "Obligaciones de tipificación penal en los Estados parte"
+          "Génesis y alcance de la Convención de las Naciones Unidas de 2000 (UNTOC)",
+          "Delito de asociación mafiosa y estándares penales internacionales",
+          "Apertura solemne en sede judicial y visita histórica guiada al Aula Búnker"
         ]
       },
       {
         dia: "DÍA 2",
-        fecha: "Martes 18 de mayo",
-        titulo: "Investigaciones Financieras y Lavado de Dinero",
-        horario: "09:00 - 13:00 / 15:00 - 18:00",
-        descripcion: "El método Falcone: 'Seguir el rastro del dinero'. Investigaciones patrimoniales complejas, rastreo de activos en paraísos fiscales, decomiso sin condena y extinción de dominio.",
+        fecha: "Martes 18 de mayo de 2027",
+        titulo: "Investigación y protección de actores judiciales",
+        horario: "09:00–13:00 y 15:00–18:00",
+        descripcion: "Seguridad y garantías procesales para magistrados, fiscales y defensores en investigaciones de alta peligrosidad. Taller práctico exhaustivo sobre un expediente real de mafia.",
+        lugarEmblematico: "Centro de Formación Judicial",
         temas: [
-          "El método Falcone: de la contabilidad forense a la imputación penal",
-          "Criptoactivos, lavado transfronterizo y estructuras corporativas fiduciarias",
-          "Taller práctico: Análisis de balances bancarios sospechosos"
+          "Sistemas y protocolos de seguridad integral para operadores de justicia",
+          "Metodología investigativa en estructuras criminales cerradas",
+          "Taller sobre expediente de mafia: análisis documental y valoración de riesgo procesal"
         ]
       },
       {
         dia: "DÍA 3",
-        fecha: "Miércoles 19 de mayo",
-        titulo: "Protección de Testigos y Técnicas Especiales de Investigación",
-        horario: "09:00 - 13:00 / 15:00 - 18:00",
-        descripcion: "Mecanismos de inmunidad y delación premiada ('collaboratori di giustizia'). Protección integral de testigos amenazados, agentes encubiertos e interceptaciones telemáticas conforme al estándar de DDHH.",
+        fecha: "Miércoles 19 de mayo de 2027",
+        titulo: "«Follow the money»: lavado de activos y recuperación de bienes",
+        horario: "09:00–13:00 y 15:00–18:00",
+        descripcion: "El principio fundamental de Giovanni Falcone: seguir la ruta del dinero ilícito. Técnicas forenses de decomiso y visita a un lugar emblemático (Ejemplo: Bien Confiscado a la mafia).",
+        lugarEmblematico: "Sede de Bien Confiscado gestionado para uso social",
         temas: [
-          "El estatuto de los colaboradores de justicia y valoración de credibilidad",
-          "Agentes encubiertos y entregas vigiladas internacionales",
-          "Límites éticos y de DDHH en la recolección de evidencia digital"
+          "Doctrina Falcone: de la contabilidad forense a la imputación patrimonial",
+          "Extinción de dominio, decomiso sin condena y reutilización social de bienes",
+          "Visita técnica a un Bien Confiscado administrado por el Estado italiano"
         ]
       },
       {
         dia: "DÍA 4",
-        fecha: "Jueves 20 de mayo",
-        titulo: "Cooperación Judicial Internacional y Extradición",
-        horario: "09:00 - 13:00 / 15:00 - 18:00",
-        descripcion: "Exhortos consulares, comisiones rogatorias, órdenes europeas de investigación y equipos conjuntos de investigación (ECI) entre Europa e Iberoamérica.",
+        fecha: "Jueves 20 de mayo de 2027",
+        titulo: "Protocolo de Palermo: trata de personas",
+        horario: "09:00–13:00 y 15:00–18:00",
+        descripcion: "Dogmática y aplicación judicial del Protocolo de Palermo contra la trata de personas. Inicio de la simulación de caso transnacional (Parte I).",
+        lugarEmblematico: "Sede Académica Internacional",
         temas: [
-          "Equipos Conjuntos de Investigación (ECI): marco operativo y buenas prácticas",
-          "Procedimientos de extradición y garantías del debido proceso",
-          "Simulación de un requerimiento urgente de cooperación transfronteriza"
+          "Diferenciación típica entre trata de personas y tráfico ilícito de personas migrantes",
+          "Enfoque de derechos humanos y protección judicial integral a víctimas",
+          "Simulación de caso transnacional (Parte I): apertura de expediente y medidas cautelares"
         ]
       },
       {
-        dia: "DÍA 5 Y CLAUSURA",
-        fecha: "Viernes 21 al 23 de mayo",
-        titulo: "Visita Institucional al Aula Búnker y Ceremonia de Graduación",
-        horario: "10:00 - 14:00",
-        descripcion: "Recorrido conmemorativo en el Palacio de Justicia de Palermo (Aula Búnker del Maxi-Proceso), conferencia magistral de cierre por magistrados de la Corte de Casación de Italia y entrega de diplomas.",
+        dia: "DÍA 5",
+        fecha: "Viernes 21 de mayo de 2027",
+        titulo: "Niñez y estrategias comparadas Latam–Italia",
+        horario: "09:00–13:00 y 15:00–18:00",
+        descripcion: "Protección reforzada de la niñez frente a la criminalidad organizada. Análisis procesal comparado entre América Latina e Italia. Audiencia simulada final y solemne acto de entrega de certificados.",
+        lugarEmblematico: "Aula Magna Universitaria",
         temas: [
-          "Visita al Aula Búnker de Palermo: lecciones históricas del Maxi-Proceso",
-          "Conferencia magistral de clausura: el futuro de la justicia global",
-          "Solemne entrega de diplomas y cóctel de clausura"
+          "Niñez y adolescencia: mecanismos de prevención y tutela judicial efectiva",
+          "Modelos comparados de persecución y garantías penales Latam–Italia",
+          "Audiencia simulada final con tribunal de expertos y entrega de certificados conjuntos"
+        ]
+      },
+      {
+        dia: "DÍA 6",
+        fecha: "Sábado 22 de mayo de 2027",
+        titulo: "Palazzo Steri y centro histórico de Palermo",
+        horario: "09:00–13:00 y 15:00–18:00",
+        descripcion: "Jornada cultural y académica en el emblemático Palazzo Steri y los sitios más trascendentes del centro histórico de Palermo (incluyendo el Teatro Massimo).",
+        lugarEmblematico: "Palazzo Steri & Teatro Massimo",
+        temas: [
+          "Palazzo Steri: memoria histórica, justicia y derechos humanos en Sicilia",
+          "Visita guiada al Teatro Massimo y centro neurálgico de Palermo",
+          "Espacio de networking y cofradía jurídica internacional"
+        ]
+      },
+      {
+        dia: "DÍA 7",
+        fecha: "Domingo 23 de mayo de 2027",
+        titulo: "Cierre simbólico: conmemoración del atentado de Capaci",
+        horario: "Jornada Conmemorativa Especial",
+        descripcion: "Cierre solemne conmemorando el aniversario del atentado de Capaci, en homenaje imperecedero a Giovanni Falcone, Francesca Morvillo y sus escoltas, reafirmando el compromiso por la justicia y el Estado de Derecho.",
+        lugarEmblematico: "Memorial de Capaci & Sede Falcone-Morvillo",
+        temas: [
+          "Acto de memoria y homenaje cívico en el lugar del atentado de Capaci",
+          "El valor ético de los jueces y fiscales frente a la criminalidad organizada",
+          "Clausura oficial del curso internacional y clausura del contingente"
         ]
       }
     ],
@@ -140,40 +311,41 @@ export const DATOS_PALERMO_2027 = {
     // Destacados del Curso
     destacados: [
       {
-        titulo: "Ponentes de Élite Mundial",
-        descripcion: "Magistrados del Tribunal Supremo de Italia, fiscales antimafia y relatores de organismos internacionales.",
-        icono: "juez"
-      },
-      {
-        titulo: "Acceso a Casos Prácticos Reales",
-        descripcion: "Estudio de expedientes desclasificados, pruebas periciales forenses y resolución de casos en talleres de simulación.",
-        icono: "carpeta"
-      },
-      {
-        titulo: "Networking Judicial Internacional",
-        descripcion: "Intercambio directo y estrecha vinculación con jueces, fiscales y defensores de más de 12 países.",
-        icono: "red"
-      },
-      {
-        titulo: "Acreditación Internacional Oficial",
-        descripcion: "Diploma oficial de alta especialización emitido por IIRESODH con validez curricular internacional.",
+        titulo: "Doble Respaldo Académico Internacional",
+        descripcion: "Co-organizado y certificado conjuntamente por IIRESODH y el Instituto de Derechos Humanos de la Universidad Nacional de La Plata (Argentina).",
         icono: "certificado"
       },
       {
+        titulo: "Ponentes de Élite Mundial",
+        descripcion: "Víctor Rodríguez Rescia, Fabián Salvioli, Ottavio Sferlazza y más de 20 fiscales jefe y catedráticos antimafia italianos.",
+        icono: "juez"
+      },
+      {
+        titulo: "Acceso a Lugares Emblemáticos Reales",
+        descripcion: "Visitas con credencial oficial al Palacio de Justicia, Aula Búnker del Maxi-Proceso, Palazzo Steri y Bien Confiscado.",
+        icono: "carpeta"
+      },
+      {
+        titulo: "Servicio Integral: Alojamiento 4★ y Traslados",
+        descripcion: "Incluye hospedaje en hotel 4 estrellas en Palermo, traslados internos de logística académica y coffee breaks.",
+        icono: "red"
+      },
+      {
         titulo: "Grupo Exclusivo con Cupos Limitados",
-        descripcion: "Aforo estrictamente restringido para garantizar el intercambio directo con magistrados y el acceso seguro a sedes judiciales históricas.",
+        descripcion: "Aforo estrictamente restringido por normativas de seguridad institucional en las sedes judiciales italianas.",
         icono: "candado"
       }
     ],
 
     // Sede Palermo
     sedeNombre: "Palermo, Sicilia (Italia)",
-    sedeLugar: "Catedral de Palermo & Sede Judicial Histórica",
+    sedeLugar: "Palacio de Justicia, Aula Búnker, Teatro Massimo & Palazzo Steri",
     sedeImagenUrl: palermoDefaultImg,
-    sedeTexto: "Palermo no es solo una joya arquitectónica del Mediterráneo donde confluyen las culturas normanda, árabe y barroca; es el epicentro mundial de la legislación contra el crimen organizado. En sus tribunales se forjó la doctrina más avanzada del derecho penal moderno y en su suelo se rubricó la Convención de la ONU en el año 2000. Los participantes disfrutarán de una experiencia académica inmersiva en un entorno de incalculable riqueza histórica y cultural.",
+    sedeTexto: "Palermo es la cuna histórica de la Convención de las Naciones Unidas contra el Crimen Organizado del año 2000 y el epicentro de la resistencia judicial encarnada por Giovanni Falcone y Paolo Borsellino. Durante 7 intensos días, los participantes recorrerán sus sedes judiciales más veneradas, el Aula Búnker del Maxi-Proceso, bienes decomisados a la mafia y monumentos icónicos como el Teatro Massimo y el Palazzo Steri.",
     sedeLogistica: [
-      "Traducción simultánea disponible en español e italiano en todas las sesiones.",
-      "Sede céntrica con acceso preferente a hoteles concertados con tarifa especial.",
+      "Traducción y facilitación en español e italiano durante todas las sesiones académicas.",
+      "Alojamiento incluido en hotel de 4 estrellas con ubicación estratégica en Palermo.",
+      "Traslados internos garantizados para todas las visitas institucionales del itinerario.",
       "Clima primaveral idóneo en mayo (22°C - 26°C) en la costa siciliana."
     ],
 
@@ -221,8 +393,9 @@ export default function CursoLanding() {
   const [alerta, setAlerta] = useState({ open: false, mensaje: "", tipo: "success" });
 
   // Tab activo principal del Hub Interactivo del Curso
-  const [seccionActiva, setSeccionActiva] = useState("legado"); // 'legado' | 'programa' | 'destacados' | 'sede' | 'inscripcion'
+  const [seccionActiva, setSeccionActiva] = useState("legado"); // 'legado' | 'programa' | 'docentes' | 'incluido' | 'brochure' | 'sede' | 'inscripcion'
   const [metodoInscripcion, setMetodoInscripcion] = useState("tarjeta"); // 'tarjeta' | 'transferencia'
+  const [modalBrochure, setModalBrochure] = useState(null); // null | 1 | 2
 
   // Tab activo en la estructura del programa (Días)
   const [diaActivo, setDiaActivo] = useState(0);
@@ -447,11 +620,18 @@ export default function CursoLanding() {
   const programa = landing.programa && landing.programa.length > 0 ? landing.programa : DATOS_PALERMO_2027.landingPage.programa;
   const pilares = landing.pilares && landing.pilares.length > 0 ? landing.pilares : DATOS_PALERMO_2027.landingPage.pilares;
   const destacados = landing.destacados && landing.destacados.length > 0 ? landing.destacados : DATOS_PALERMO_2027.landingPage.destacados;
+  const docentes = landing.docentesDestacados || DATOS_PALERMO_2027.landingPage.docentesDestacados;
+  const aQuienDirigido = landing.aQuienDirigido || DATOS_PALERMO_2027.landingPage.aQuienDirigido;
+  const queEstaIncluido = landing.queEstaIncluido || DATOS_PALERMO_2027.landingPage.queEstaIncluido;
+  const queAprenderas = landing.queAprenderas || DATOS_PALERMO_2027.landingPage.queAprenderas;
+  const contacto = landing.contacto || DATOS_PALERMO_2027.landingPage.contacto;
 
   const PESTANAS = [
     { id: "legado", label: "Sobre el Curso", icono: "🏛️" },
-    { id: "programa", label: "Programa (5 Días)", icono: "📅" },
-    { id: "destacados", label: "Ponentes & Valor", icono: "⭐" },
+    { id: "programa", label: `Programa (${programa.length} Días)`, icono: "📅" },
+    { id: "docentes", label: "Docentes Destacados", icono: "👨‍⚖️" },
+    { id: "incluido", label: "¿Qué Incluye?", icono: "✨" },
+    { id: "brochure", label: "Brochure Oficial", icono: "📄" },
     { id: "sede", label: "Sede Palermo", icono: "📍" },
     { id: "inscripcion", label: "Inscripción & Pago", icono: "💳" }
   ];
@@ -491,31 +671,109 @@ export default function CursoLanding() {
         </div>
       )}
 
-      {/* HERO INSTITUCIONAL COMPACTO */}
-      <section className="relative bg-[#0f1d30] text-white py-10 md:py-14 overflow-hidden border-b border-white/10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(69,123,157,0.2),transparent_50%)] pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(185,47,50,0.15),transparent_50%)] pointer-events-none" />
+      {/* HERO INSTITUCIONAL CON FONDO EN BLANCO Y NEGRO ALUSIVO AL CURSO (EN VEZ DE FONDO AZUL) */}
+      <section className="relative text-white py-10 md:py-16 overflow-hidden border-b border-neutral-800 bg-neutral-950">
+        
+        {/* COMPOSICIÓN FOTOGRÁFICA EN BLANCO Y NEGRO: PALACIO DE JUSTICIA & AULA BÚNKER */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <div className="absolute inset-0 flex">
+            <div
+              className="w-full md:w-1/2 h-full bg-cover bg-center filter grayscale contrast-125 brightness-40 opacity-45 transform scale-105"
+              style={{ backgroundImage: `url(${palermoJusticiaBw})` }}
+              title="Palacio de Justicia de Palermo"
+            />
+            <div
+              className="hidden md:block w-1/2 h-full bg-cover bg-center filter grayscale contrast-125 brightness-40 opacity-45 transform scale-105"
+              style={{ backgroundImage: `url(${palermoAulaBunkerBw})` }}
+              title="Aula Búnker del Maxi-Proceso de Palermo"
+            />
+          </div>
+          {/* DEGRADADOS NEGROS Y VIÑETA DE MÁXIMA ELEGANCIA Y CONTRASTE */}
+          <div className="absolute inset-0 bg-gradient-to-r from-neutral-950 via-neutral-950/85 to-neutral-950/90" />
+          <div className="absolute inset-0 bg-gradient-to-b from-neutral-950/90 via-transparent to-neutral-950" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.06),transparent_60%)]" />
+        </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12">
+          
+          {/* BANNER CO-ORGANIZADORES OFICIALES (IIRESODH + INSTITUTO DE DERECHOS HUMANOS UNLP) */}
+          <div className="mb-8 p-3.5 sm:p-4 rounded-2xl bg-white/95 backdrop-blur-md border border-white/20 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 sm:gap-6">
+              
+              {/* LOGO IIRESODH */}
+              <div className="flex items-center gap-3">
+                <img
+                  src={logoIiresodh}
+                  alt="IIRESODH - Instituto Internacional de Responsabilidad Social y Derechos Humanos"
+                  className="h-10 sm:h-12 w-auto object-contain"
+                />
+                <div className="text-left border-l border-gray-300 pl-3">
+                  <span className="text-[11px] font-black tracking-wider text-main-blue block uppercase leading-tight">
+                    IIRESODH
+                  </span>
+                  <span className="text-[9px] text-gray-600 font-medium leading-tight block">
+                    Instituto Internacional de Responsabilidad Social y DDHH
+                  </span>
+                </div>
+              </div>
+
+              {/* SEPARADOR CONJUNTO */}
+              <div className="hidden sm:flex items-center text-neutral-400 font-extrabold text-sm px-1">
+                +
+              </div>
+
+              {/* LOGO INSTITUTO DE DERECHOS HUMANOS - UNIVERSIDAD NACIONAL DE LA PLATA */}
+              <div className="flex items-center gap-3">
+                <img
+                  src={logoUnlp}
+                  alt="Instituto de Derechos Humanos - Universidad Nacional de La Plata (Argentina)"
+                  className="h-10 sm:h-12 w-auto object-contain"
+                />
+                <div className="text-left border-l border-gray-300 pl-3">
+                  <span className="text-[11px] font-black tracking-wider text-orange-600 block uppercase leading-tight">
+                    Instituto de Derechos Humanos
+                  </span>
+                  <span className="text-[9px] text-gray-600 font-medium leading-tight block">
+                    Facultad de Cs. Jurídicas y Sociales • Universidad Nacional de La Plata (Argentina)
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* BADGE DE ORGANIZACIÓN CONJUNTA */}
+            <div className="shrink-0 text-center md:text-right">
+              <span className="inline-flex items-center gap-1.5 bg-neutral-900 text-amber-300 text-[10px] sm:text-[11px] font-black uppercase tracking-wider px-3.5 py-1.5 rounded-full border border-amber-400/30 shadow-xs">
+                <span>🏛️</span>
+                <span>Organización Conjunta Internacional</span>
+              </span>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             
-            {/* RETRATO FALCONE & BORSELLINO */}
+            {/* RETRATO FALCONE & BORSELLINO EN BLANCO Y NEGRO */}
             <div className="lg:col-span-4 flex flex-col items-center">
               <div className="relative group w-full max-w-sm">
-                <div className="relative bg-[#162740] p-1.5 rounded-2xl border border-white/15 shadow-xl overflow-hidden">
+                <div className="relative bg-neutral-900 p-1.5 rounded-2xl border border-neutral-700 shadow-2xl overflow-hidden">
                   <img
                     src={landing.heroImagenUrl || falconeDefaultImg}
                     alt="Magistrados Giovanni Falcone y Paolo Borsellino"
-                    className="w-full h-56 sm:h-64 object-cover rounded-xl filter contrast-105"
+                    className="w-full h-56 sm:h-64 object-cover rounded-xl filter grayscale contrast-115"
                   />
-                  <div className="p-3 bg-gradient-to-t from-black/95 via-black/70 to-transparent rounded-b-xl -mt-12 relative z-10 text-center">
-                    <p className="text-[11px] italic text-gray-200 font-light leading-snug line-clamp-2">
+                  <div className="p-3 bg-gradient-to-t from-neutral-950 via-neutral-950/85 to-transparent rounded-b-xl -mt-12 relative z-10 text-center">
+                    <p className="text-[11px] italic text-neutral-200 font-light leading-snug line-clamp-2">
                       {landing.heroCita || "«La mafia è un fenomeno umano...»"}
                     </p>
                     <p className="text-[10px] font-bold text-amber-400 mt-0.5 uppercase tracking-wider">
-                      {landing.heroCitaAutor || "Giovanni Falcone"}
+                      {landing.heroCitaAutor || "Giovanni Falcone (1939 – 1992)"}
                     </p>
                   </div>
+                </div>
+                {/* ETIQUETA INFERIOR */}
+                <div className="mt-2 text-center">
+                  <span className="text-[10px] text-neutral-400 uppercase tracking-widest font-mono">
+                    Memoria Judicial • Palermo 2027
+                  </span>
                 </div>
               </div>
             </div>
@@ -523,7 +781,7 @@ export default function CursoLanding() {
             {/* CONTENIDO PRINCIPAL */}
             <div className="lg:col-span-8 space-y-4 text-center lg:text-left">
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
-                <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-amber-300 font-semibold backdrop-blur-xs">
+                <div className="inline-flex items-center gap-2 bg-neutral-900 border border-neutral-700 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-amber-300 font-semibold backdrop-blur-xs">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
                   Alta Especialización Internacional
                 </div>
@@ -531,43 +789,47 @@ export default function CursoLanding() {
                   <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
                   {landing.cuposTexto || "Cupos Estrictamente Limitados"}
                 </div>
+                <div className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-white font-medium">
+                  <span>📅</span>
+                  <span>17 – 23 de Mayo de 2027</span>
+                </div>
               </div>
 
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight leading-tight uppercase font-sans text-white">
-                {curso?.titulo || "CURSO INTERNACIONAL 2027"}
+                {curso?.titulo || "CURSO INTERNACIONAL: APLICACIÓN DE LAS CONVENCIONES DE PALERMO CONTRA EL CRIMEN ORGANIZADO"}
               </h1>
 
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs md:text-sm font-medium text-pale-blue">
-                <span className="flex items-center gap-1.5 bg-white/5 px-3 py-1 rounded-lg border border-white/10">
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs md:text-sm font-medium text-neutral-300">
+                <span className="flex items-center gap-1.5 bg-neutral-900 px-3 py-1.5 rounded-lg border border-neutral-700">
                   <svg className="w-4 h-4 text-main-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  {landing.ubicacionFechas || "Palermo, Sicilia, Italia | Del 17 al 23 de mayo de 2027"}
+                  {landing.ubicacionFechas || "Palermo, Sicilia, Italia | 17 – 23 de mayo de 2027"}
                 </span>
               </div>
 
-              <p className="text-sm md:text-base font-semibold text-gray-200 border-l-2 border-main-red pl-3">
-                {landing.lema || "APLICACIÓN DE LAS CONVENCIONES DE PALERMO CONTRA EL CRIMEN ORGANIZADO"}
+              <p className="text-sm md:text-base font-semibold text-neutral-200 border-l-2 border-main-red pl-3 leading-relaxed">
+                {landing.subtitulo || "Investigación Criminal, Cooperación Internacional y Derechos Humanos en la Lucha contra la Criminalidad Organizada y la Trata de Personas"}
               </p>
 
               {/* TARJETA COMPACTA DE INVERSIÓN Y ACCIÓN RÁPIDA */}
-              <div className="bg-white/10 border border-white/15 p-4 sm:p-5 rounded-2xl backdrop-blur-sm shadow-xl flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+              <div className="bg-neutral-900/90 border border-neutral-700 p-4 sm:p-5 rounded-2xl backdrop-blur-md shadow-2xl flex flex-col xl:flex-row xl:items-center justify-between gap-4">
                 <div className="space-y-1.5 flex-1 min-w-0 text-left">
                   <div className="flex items-baseline gap-2.5 flex-wrap">
                     <span className="text-2xl sm:text-3xl font-black text-amber-400 tracking-tight">
                       {normalizarPrecio(landing.precioInversion)}
                     </span>
                     <span className="text-[10px] sm:text-xs uppercase font-bold tracking-widest text-amber-200/90 bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-400/20">
-                      Inversión Académica
+                      Inversión Académica Total
                     </span>
                     <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs uppercase font-extrabold tracking-wider text-rose-300 bg-rose-500/20 px-2.5 py-0.5 rounded-full border border-rose-400/30">
                       <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
                       Cupos Limitados
                     </span>
                   </div>
-                  <p className="text-xs text-gray-200/90 font-light leading-relaxed">
-                    {landing.inversionDetalle || "Inversión por persona con certificación internacional."}
+                  <p className="text-xs text-neutral-300 font-light leading-relaxed">
+                    {landing.inversionDetalle || "Inversión por participante con hotel 4★, traslados internos y certificación conjunta internacional."}
                   </p>
                   <p className="text-[11px] text-amber-300/95 font-medium flex items-center gap-1.5 pt-0.5">
                     <span>⚡</span>
@@ -584,10 +846,24 @@ export default function CursoLanding() {
                   </button>
                   <button
                     onClick={() => irASeccion("programa")}
-                    className="flex-1 sm:flex-initial bg-white/15 hover:bg-white/25 text-white font-semibold text-xs uppercase tracking-wider py-3 px-4 rounded-xl border border-white/25 transition-all text-center cursor-pointer whitespace-nowrap"
+                    className="flex-1 sm:flex-initial bg-neutral-800 hover:bg-neutral-700 text-white font-semibold text-xs uppercase tracking-wider py-3 px-4 rounded-xl border border-neutral-600 transition-all text-center cursor-pointer whitespace-nowrap"
                   >
-                    Ver Programa
+                    Ver Programa ({programa.length} Días)
                   </button>
+                  <button
+                    onClick={() => irASeccion("brochure")}
+                    className="flex-1 sm:flex-initial bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs uppercase tracking-wider py-3 px-3.5 rounded-xl border border-amber-400/40 transition-all text-center cursor-pointer whitespace-nowrap"
+                  >
+                    Brochure 📄
+                  </button>
+                  <a
+                    href={contacto?.whatsappUrl || "https://wa.me/50640816188"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 sm:flex-initial bg-emerald-600/30 hover:bg-emerald-600/40 text-emerald-300 font-bold text-xs uppercase tracking-wider py-3 px-3.5 rounded-xl border border-emerald-500/40 transition-all text-center cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5"
+                  >
+                    <span>💬 WhatsApp</span>
+                  </a>
                 </div>
               </div>
 
@@ -596,7 +872,7 @@ export default function CursoLanding() {
         </div>
       </section>
 
-      {/* HUB INTERACTIVO DEL CURSO (REDUCCIÓN VERTICAL DRÁSTICA) */}
+      {/* HUB INTERACTIVO DEL CURSO */}
       <div id="hub-interactivo" className="max-w-7xl mx-auto px-4 md:px-8 py-8">
         
         {/* BARRA DE PESTAÑAS PRINCIPAL */}
@@ -607,7 +883,7 @@ export default function CursoLanding() {
               <button
                 key={tab.id}
                 onClick={() => setSeccionActiva(tab.id)}
-                className={`flex items-center gap-2 py-2.5 px-4 md:px-5 rounded-xl text-xs md:text-sm font-bold tracking-wide transition-all cursor-pointer ${
+                className={`flex items-center gap-2 py-2.5 px-3.5 md:px-4 rounded-xl text-xs md:text-sm font-bold tracking-wide transition-all cursor-pointer ${
                   esActivo
                     ? "bg-main-blue text-white shadow-md shadow-main-blue/25 scale-102"
                     : "text-gray-600 hover:text-main-blue hover:bg-gray-100/80"
@@ -624,11 +900,42 @@ export default function CursoLanding() {
         <div className="bg-white rounded-3xl border border-gray-200 shadow-md p-6 md:p-10 min-h-[500px]">
           
           {/* ==========================================
-              PESTAÑA 1: SOBRE EL CURSO / LEGADO
+              PESTAÑA 1: SOBRE EL CURSO / LEGADO / OBJETIVOS
              ========================================== */}
           {seccionActiva === "legado" && (
-            <div className="space-y-8 animate-fade-in">
-              <div className="max-w-3xl">
+            <div className="space-y-10 animate-fade-in">
+              
+              {/* BLOQUE INSTITUCIONAL CO-ORGANIZADORES */}
+              <div className="bg-gradient-to-r from-slate-50 via-amber-50/30 to-slate-50 border border-gray-200 p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-xs">
+                <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
+                  <div className="flex items-center gap-4 bg-white p-3 rounded-xl border border-gray-200 shadow-xs">
+                    <img src={logoIiresodh} alt="IIRESODH" className="h-10 w-auto object-contain" />
+                    <span className="text-gray-400 font-bold text-lg">+</span>
+                    <img src={logoUnlp} alt="Instituto DDHH UNLP" className="h-10 w-auto object-contain" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-main-red block">
+                      Organización Conjunta Oficial
+                    </span>
+                    <h3 className="text-sm sm:text-base font-bold text-main-blue">
+                      IIRESODH & Instituto de Derechos Humanos (UNLP - Argentina)
+                    </h3>
+                    <p className="text-xs text-gray-600 font-light mt-0.5">
+                      Programa académico diseñado y certificado conjuntamente por ambas instituciones de referencia internacional.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => irASeccion("brochure")}
+                  className="shrink-0 bg-white hover:bg-slate-50 text-main-blue border border-gray-300 font-bold text-xs uppercase tracking-wider py-2.5 px-4 rounded-xl shadow-xs transition"
+                >
+                  Consultar Brochure Oficial 📄
+                </button>
+              </div>
+
+              {/* PERSPECTIVA HISTÓRICA */}
+              <div className="max-w-4xl">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
                   Perspectiva Histórica y Jurídica
                 </span>
@@ -641,6 +948,57 @@ export default function CursoLanding() {
                 </p>
               </div>
 
+              {/* ¿A QUIÉN ESTÁ DIRIGIDO? (DEL BROCHURE) */}
+              <div className="pt-2">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
+                  Perfil de Convocatoria
+                </span>
+                <h3 className="text-xl md:text-2xl font-black text-main-blue tracking-tight mb-4">
+                  ¿A quién está dirigido?
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                  {aQuienDirigido.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-slate-50 p-4 rounded-xl border border-gray-100 flex items-start gap-3 hover:bg-white hover:border-main-blue/30 transition shadow-xs"
+                    >
+                      <span className="text-2xl shrink-0 mt-0.5">{item.icono || "⚖️"}</span>
+                      <p className="text-xs text-gray-700 font-medium leading-relaxed">
+                        {item.perfil}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ¿QUÉ APRENDERÁS? (DEL BROCHURE) */}
+              <div className="pt-2 bg-slate-900 text-white p-6 sm:p-8 rounded-3xl relative overflow-hidden">
+                <div className="relative z-10">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400 block mb-1">
+                    Resultados de Formación
+                  </span>
+                  <h3 className="text-xl md:text-2xl font-black text-white tracking-tight mb-4">
+                    ¿Qué aprenderás en este curso internacional?
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {queAprenderas.map((resultado, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-white/10 border border-white/15 p-4 rounded-xl flex items-start gap-3 backdrop-blur-xs"
+                      >
+                        <span className="w-6 h-6 rounded-full bg-amber-400 text-neutral-950 font-black text-xs flex items-center justify-center shrink-0 mt-0.5">
+                          {idx + 1}
+                        </span>
+                        <p className="text-xs text-neutral-200 font-light leading-relaxed">
+                          {resultado}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* CUATRO PILARES DOGMÁTICOS */}
               <div>
                 <h3 className="text-xs font-black uppercase tracking-wider text-gray-400 mb-4">
                   Cuatro Pilares Dogmáticos del Programa
@@ -668,12 +1026,20 @@ export default function CursoLanding() {
                 </div>
               </div>
 
-              <div className="pt-4 flex justify-end">
+              <div className="pt-4 flex justify-between items-center flex-wrap gap-3">
+                <a
+                  href={contacto?.whatsappUrl || "https://wa.me/50640816188"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-emerald-700 hover:text-emerald-800 text-xs font-bold flex items-center gap-1.5"
+                >
+                  <span>💬 Contactar Coordinación por WhatsApp</span>
+                </a>
                 <button
                   onClick={() => irASeccion("programa")}
                   className="bg-main-blue hover:bg-light-blue text-white text-xs font-bold uppercase tracking-wider py-2.5 px-5 rounded-xl transition flex items-center gap-2 cursor-pointer shadow-sm"
                 >
-                  <span>Explorar Programa Académico (5 Días)</span>
+                  <span>Explorar Programa Académico ({programa.length} Días)</span>
                   <span>→</span>
                 </button>
               </div>
@@ -681,29 +1047,31 @@ export default function CursoLanding() {
           )}
 
           {/* ==========================================
-              PESTAÑA 2: PROGRAMA ACADÉMICO (COMPACTO TIMELINE)
+              PESTAÑA 2: PROGRAMA ACADÉMICO (7 DÍAS EN PALERMO)
              ========================================== */}
           {seccionActiva === "programa" && (
             <div className="space-y-6 animate-fade-in">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-gray-100">
                 <div>
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block">
-                    Plan de Estudios
+                    7 Días en Palermo • Mayo 2027
                   </span>
                   <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
                     Estructura del Programa Día a Día
                   </h2>
                 </div>
-                <span className="text-xs text-gray-500 font-light">
-                  Selecciona una jornada para consultar su contenido detallado
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-lg font-bold border border-slate-200">
+                    ⏱️ Sesiones: 9:00–13:00 y 15:00–18:00
+                  </span>
+                </div>
               </div>
 
               {/* LAYOUT EN 2 COLUMNAS: SELECTOR VERTICAL DE DÍAS A LA IZQUIERDA + DETALLE A LA DERECHA */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
                 {/* SELECTOR VERTICAL DE DÍAS */}
-                <div className="lg:col-span-4 flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
+                <div className="lg:col-span-5 flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
                   {programa.map((item, index) => {
                     const activo = diaActivo === index;
                     return (
@@ -718,22 +1086,27 @@ export default function CursoLanding() {
                       >
                         <div className="flex items-center justify-between">
                           <span className={`text-[10px] font-black uppercase tracking-wider ${activo ? "text-amber-300" : "text-main-red"}`}>
-                            {item.dia}
+                            {item.dia} • {item.fecha?.split("de")[0] || ""}
                           </span>
                           <span className="text-[10px] opacity-75">
-                            {item.horario?.split('/')[0] || "Intensivo"}
+                            {index === 6 ? "Conmemoración" : "Intensivo"}
                           </span>
                         </div>
                         <h4 className="font-bold text-xs line-clamp-1 mt-1">
                           {item.titulo}
                         </h4>
+                        {item.lugarEmblematico && (
+                          <span className={`text-[10px] block mt-0.5 line-clamp-1 ${activo ? "text-blue-100" : "text-gray-500"}`}>
+                            📍 {item.lugarEmblematico}
+                          </span>
+                        )}
                       </button>
                     );
                   })}
                 </div>
 
                 {/* DETALLE DEL DÍA SELECCIONADO */}
-                <div className="lg:col-span-8 bg-slate-50/80 p-6 md:p-8 rounded-2xl border border-gray-200 shadow-inner">
+                <div className="lg:col-span-7 bg-slate-50/80 p-6 md:p-8 rounded-2xl border border-gray-200 shadow-inner">
                   {programa[diaActivo] && (
                     <div className="space-y-5 animate-fade-in">
                       <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-gray-200">
@@ -749,6 +1122,13 @@ export default function CursoLanding() {
                           ⏱️ {programa[diaActivo].horario}
                         </span>
                       </div>
+
+                      {programa[diaActivo].lugarEmblematico && (
+                        <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl flex items-center gap-2.5 text-xs text-amber-900 font-medium">
+                          <span className="text-base">🏛️</span>
+                          <span><strong>Lugar Emblemático:</strong> {programa[diaActivo].lugarEmblematico}</span>
+                        </div>
+                      )}
 
                       <div>
                         <h4 className="text-[11px] font-black uppercase tracking-wider text-gray-400 mb-1.5">
@@ -788,10 +1168,10 @@ export default function CursoLanding() {
                   ← Volver a Visión
                 </button>
                 <button
-                  onClick={() => irASeccion("destacados")}
+                  onClick={() => irASeccion("docentes")}
                   className="bg-main-blue hover:bg-light-blue text-white text-xs font-bold uppercase tracking-wider py-2.5 px-5 rounded-xl transition flex items-center gap-2 cursor-pointer shadow-sm"
                 >
-                  <span>Ver Ponentes y Destacados</span>
+                  <span>Ver Docentes Destacados</span>
                   <span>→</span>
                 </button>
               </div>
@@ -799,59 +1179,63 @@ export default function CursoLanding() {
           )}
 
           {/* ==========================================
-              PESTAÑA 3: DESTACADOS Y PONENTES
+              PESTAÑA 3: DOCENTES DESTACADOS
              ========================================== */}
-          {seccionActiva === "destacados" && (
+          {seccionActiva === "docentes" && (
             <div className="space-y-6 animate-fade-in">
               <div className="max-w-2xl">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
-                  Excelencia Académica
+                  Cuerpo Docente Internacional
                 </span>
                 <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
-                  Destacados del Curso
+                  Docentes Destacados
                 </h2>
                 <div className="w-12 h-1 bg-main-red my-3 rounded-full" />
                 <p className="text-gray-600 font-light text-sm">
-                  Metodología de vanguardia basada en casos desclasificados y vinculación con la judicatura europea.
+                  Magistrados antimafia, relatores internacionales de derechos humanos y catedráticos especializados de Europa e Iberoamérica.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {destacados.map((item, index) => {
-                  const esUltimoImpar = destacados.length % 2 !== 0 && index === destacados.length - 1;
-                  const esCupos = item.titulo?.toLowerCase().includes("cupo") || item.descripcion?.toLowerCase().includes("cupo");
-                  return (
-                    <div 
-                      key={index}
-                      className={`p-5 rounded-2xl border transition flex items-start gap-4 ${
-                        esUltimoImpar || esCupos
-                          ? "md:col-span-2 bg-gradient-to-r from-amber-500/10 via-slate-50 to-rose-500/10 border-amber-300/80 shadow-xs"
-                          : "p-5 rounded-2xl border border-gray-100 bg-slate-50/70 hover:bg-white hover:border-main-blue/30 hover:shadow-md"
-                      }`}
-                    >
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-xl shadow-xs ${
-                        esCupos || esUltimoImpar ? "bg-amber-500/20 text-amber-900" : "bg-main-blue/10 text-main-blue"
-                      }`}>
-                        {item.icono === "candado" || esCupos ? "⏳" : index === 0 ? "🎓" : index === 1 ? "📁" : index === 2 ? "🤝" : "📜"}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {docentes.map((docente, index) => (
+                  <div 
+                    key={index}
+                    className="p-6 rounded-2xl border border-gray-200 bg-slate-50/70 hover:bg-white hover:border-main-blue/30 hover:shadow-md transition flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-main-blue/10 text-main-blue px-2.5 py-0.5 rounded-full">
+                          {docente.origen || "Internacional"}
+                        </span>
+                        <span className="text-xs text-gray-500 font-medium">
+                          {docente.rol || "Docente"}
+                        </span>
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <h4 className="text-base font-bold text-main-blue">
-                            {item.titulo}
-                          </h4>
-                          {esCupos && (
-                            <span className="text-[10px] uppercase font-black tracking-wider bg-red-600 text-white px-2 py-0.5 rounded-full shadow-xs">
-                              Exclusividad
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-600 font-light leading-relaxed">
-                          {item.descripcion}
-                        </p>
-                      </div>
+                      <h4 className="text-lg font-black text-main-blue">
+                        {docente.nombre}
+                      </h4>
+                      <p className="text-xs font-bold text-main-red mt-0.5 mb-2">
+                        {docente.cargo}
+                      </p>
+                      <p className="text-xs text-gray-600 font-light leading-relaxed">
+                        {docente.descripcion}
+                      </p>
                     </div>
-                  );
-                })}
+
+                    <div className="mt-4 pt-3 border-t border-gray-200 flex items-center justify-between text-[11px] text-gray-500">
+                      <span>✓ Sesiones Magistrales & Talleres</span>
+                      <span className="font-bold text-main-blue">Palermo 2027</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* CO-ORGANIZACIÓN NOTA */}
+              <div className="bg-amber-50/70 border border-amber-200 p-4 rounded-xl text-xs text-amber-950 flex items-center gap-3">
+                <span className="text-xl">🤝</span>
+                <span>
+                  <strong>+ Más de 20 expertos italianos e internacionales:</strong> Fiscales jefe de tribunales de Italia, catedráticos antimafia, e investigadores especializados de la UNODC y la OIM participarán activamente en las mesas redondas y simulaciones.
+                </span>
               </div>
 
               <div className="pt-4 flex justify-between items-center">
@@ -860,6 +1244,206 @@ export default function CursoLanding() {
                   className="text-gray-500 hover:text-main-blue text-xs font-bold transition cursor-pointer"
                 >
                   ← Ver Programa
+                </button>
+                <button
+                  onClick={() => irASeccion("incluido")}
+                  className="bg-main-blue hover:bg-light-blue text-white text-xs font-bold uppercase tracking-wider py-2.5 px-5 rounded-xl transition flex items-center gap-2 cursor-pointer shadow-sm"
+                >
+                  <span>Ver Qué Incluye el Curso</span>
+                  <span>→</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================
+              PESTAÑA 4: ¿QUÉ ESTÁ INCLUIDO?
+             ========================================== */}
+          {seccionActiva === "incluido" && (
+            <div className="space-y-6 animate-fade-in">
+              <div className="max-w-2xl">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
+                  Servicios y Beneficios Académicos
+                </span>
+                <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
+                  ¿Qué está incluido?
+                </h2>
+                <div className="w-12 h-1 bg-main-red my-3 rounded-full" />
+                <p className="text-gray-600 font-light text-sm">
+                  Un programa integral de máxima categoría que cubre tanto la experiencia académica de inmersión como la logística de hospedaje y traslados internos.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {queEstaIncluido.map((item, index) => (
+                  <div
+                    key={index}
+                    className="p-5 rounded-2xl border border-gray-200 bg-slate-50/70 hover:bg-white hover:border-main-blue/30 hover:shadow-md transition flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="w-10 h-10 rounded-xl bg-main-blue/10 text-main-blue flex items-center justify-center text-xl mb-3 shadow-xs">
+                        {item.icono || "✓"}
+                      </div>
+                      <h4 className="text-sm font-bold text-main-blue mb-1.5 leading-snug">
+                        {item.titulo}
+                      </h4>
+                      <p className="text-xs text-gray-600 font-light leading-relaxed">
+                        {item.descripcion}
+                      </p>
+                    </div>
+                    <div className="w-6 h-0.5 bg-main-red/30 rounded-full mt-4" />
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-slate-100 p-4 rounded-2xl border border-gray-200 text-xs text-gray-600 flex items-center justify-between flex-wrap gap-2">
+                <span>
+                  📌 <strong>Nota Logística:</strong> El curso incluye alojamiento en hotel 4 estrellas y todos los traslados internos de la agenda en Palermo. No incluye boletos aéreos internacionales hasta/desde Palermo.
+                </span>
+                <span className="font-bold text-main-blue">
+                  Inversión Total: {normalizarPrecio(landing.precioInversion)}
+                </span>
+              </div>
+
+              <div className="pt-4 flex justify-between items-center">
+                <button
+                  onClick={() => irASeccion("docentes")}
+                  className="text-gray-500 hover:text-main-blue text-xs font-bold transition cursor-pointer"
+                >
+                  ← Ver Docentes
+                </button>
+                <button
+                  onClick={() => irASeccion("brochure")}
+                  className="bg-main-blue hover:bg-light-blue text-white text-xs font-bold uppercase tracking-wider py-2.5 px-5 rounded-xl transition flex items-center gap-2 cursor-pointer shadow-sm"
+                >
+                  <span>Ver Brochure Oficial</span>
+                  <span>→</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================
+              PESTAÑA 5: BROCHURE OFICIAL (VISUALIZADOR)
+             ========================================== */}
+          {seccionActiva === "brochure" && (
+            <div className="space-y-6 animate-fade-in">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block">
+                    Material Informativo
+                  </span>
+                  <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
+                    Brochure Oficial del Evento
+                  </h2>
+                </div>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={contacto?.whatsappUrl || "https://wa.me/50640816188"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase px-3.5 py-2 rounded-xl transition shadow-xs flex items-center gap-1.5"
+                  >
+                    <span>💬 WhatsApp</span>
+                    <span>+506 4081 6188</span>
+                  </a>
+                </div>
+              </div>
+
+              <p className="text-xs text-gray-600 font-light">
+                Haz clic en cualquiera de las páginas para ampliarla en alta definición o descárgala para compartirla con tu institución académica o judicial.
+              </p>
+
+              {/* GRID CON LAS 2 PÁGINAS DEL BROCHURE */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {/* PÁGINA 1 */}
+                <div className="bg-slate-50 border border-gray-200 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+                  <div 
+                    onClick={() => setModalBrochure(1)}
+                    className="cursor-pointer group relative overflow-hidden rounded-xl border border-gray-300 shadow-md bg-neutral-900"
+                  >
+                    <img 
+                      src={brochureP1} 
+                      alt="Brochure Oficial Palermo 2027 - Página 1" 
+                      className="w-full h-auto object-cover group-hover:scale-102 transition duration-500"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                      <span className="bg-white text-main-blue font-black text-xs uppercase tracking-wider py-2 px-4 rounded-xl shadow-lg">
+                        🔍 Clic para Ampliar
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between text-xs">
+                    <span className="font-bold text-gray-700">Página 1: Convocatoria & Ejes</span>
+                    <a 
+                      href={brochureP1} 
+                      download="Brochure_Palermo_2027_P1.jpg"
+                      className="text-main-blue hover:underline font-bold text-[11px]"
+                    >
+                      Descargar JPG ↓
+                    </a>
+                  </div>
+                </div>
+
+                {/* PÁGINA 2 */}
+                <div className="bg-slate-50 border border-gray-200 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+                  <div 
+                    onClick={() => setModalBrochure(2)}
+                    className="cursor-pointer group relative overflow-hidden rounded-xl border border-gray-300 shadow-md bg-neutral-900"
+                  >
+                    <img 
+                      src={brochureP2} 
+                      alt="Brochure Oficial Palermo 2027 - Página 2" 
+                      className="w-full h-auto object-cover group-hover:scale-102 transition duration-500"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                      <span className="bg-white text-main-blue font-black text-xs uppercase tracking-wider py-2 px-4 rounded-xl shadow-lg">
+                        🔍 Clic para Ampliar
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between text-xs">
+                    <span className="font-bold text-gray-700">Página 2: Itinerario 7 Días & Docentes</span>
+                    <a 
+                      href={brochureP2} 
+                      download="Brochure_Palermo_2027_P2.jpg"
+                      className="text-main-blue hover:underline font-bold text-[11px]"
+                    >
+                      Descargar JPG ↓
+                    </a>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* CARD DE CONTACTO OFICIAL */}
+              <div className="bg-slate-900 text-white p-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                  <span className="text-amber-400 font-bold text-xs uppercase tracking-wider">
+                    Atención Directa de Admisiones
+                  </span>
+                  <h4 className="text-base font-bold text-white mt-0.5">
+                    ¿Tienes dudas o necesitas orden de facturación institucional?
+                  </h4>
+                  <p className="text-xs text-neutral-300 font-light mt-0.5">
+                    Escríbenos a <a href="mailto:cursos@iiresodh.org" className="underline text-amber-300">cursos@iiresodh.org</a> o <a href="mailto:contacto@iiresodh.org" className="underline text-amber-300">contacto@iiresodh.org</a>
+                  </p>
+                </div>
+                <button
+                  onClick={() => irASeccion("inscripcion")}
+                  className="bg-main-red hover:bg-red-800 text-white font-bold text-xs uppercase tracking-wider py-3 px-6 rounded-xl shadow-md transition whitespace-nowrap"
+                >
+                  Reservar Cupo Ahora
+                </button>
+              </div>
+
+              <div className="pt-4 flex justify-between items-center">
+                <button
+                  onClick={() => irASeccion("incluido")}
+                  className="text-gray-500 hover:text-main-blue text-xs font-bold transition cursor-pointer"
+                >
+                  ← Ver Qué Incluye
                 </button>
                 <button
                   onClick={() => irASeccion("sede")}
@@ -873,7 +1457,7 @@ export default function CursoLanding() {
           )}
 
           {/* ==========================================
-              PESTAÑA 4: SEDE PALERMO
+              PESTAÑA 6: SEDE PALERMO
              ========================================== */}
           {seccionActiva === "sede" && (
             <div className="space-y-6 animate-fade-in">
@@ -902,21 +1486,44 @@ export default function CursoLanding() {
                   </div>
                 </div>
 
-                <div className="lg:col-span-6">
+                <div className="lg:col-span-6 space-y-4">
                   <div className="rounded-2xl overflow-hidden shadow-lg border border-gray-200 relative group">
                     <img
                       src={landing.sedeImagenUrl || palermoDefaultImg}
                       alt="Catedral de Palermo, Sicilia"
-                      className="w-full h-64 md:h-80 object-cover group-hover:scale-103 transition duration-700"
+                      className="w-full h-64 md:h-72 object-cover group-hover:scale-103 transition duration-700"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-4">
                       <div>
                         <span className="text-[9px] uppercase font-black tracking-widest text-amber-400 bg-black/50 px-2 py-0.5 rounded">
-                          Patrimonio Histórico
+                          Patrimonio Histórico y Cultural
                         </span>
                         <h4 className="text-sm font-bold text-white mt-1">
                           Catedral de Palermo & Palacio de Justicia
                         </h4>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-xl overflow-hidden border border-gray-200 relative group h-28 bg-neutral-900">
+                      <img 
+                        src={palermoJusticiaBw} 
+                        alt="Palacio de Justicia de Palermo" 
+                        className="w-full h-full object-cover filter grayscale contrast-110 group-hover:scale-105 transition"
+                      />
+                      <div className="absolute inset-0 bg-black/50 p-2 flex items-end">
+                        <span className="text-[10px] text-white font-bold">Palacio de Justicia</span>
+                      </div>
+                    </div>
+                    <div className="rounded-xl overflow-hidden border border-gray-200 relative group h-28 bg-neutral-900">
+                      <img 
+                        src={palermoAulaBunkerBw} 
+                        alt="Aula Búnker de Palermo" 
+                        className="w-full h-full object-cover filter grayscale contrast-110 group-hover:scale-105 transition"
+                      />
+                      <div className="absolute inset-0 bg-black/50 p-2 flex items-end">
+                        <span className="text-[10px] text-white font-bold">Aula Búnker del Maxi-Proceso</span>
                       </div>
                     </div>
                   </div>
@@ -926,10 +1533,10 @@ export default function CursoLanding() {
 
               <div className="pt-4 flex justify-between items-center">
                 <button
-                  onClick={() => irASeccion("destacados")}
+                  onClick={() => irASeccion("brochure")}
                   className="text-gray-500 hover:text-main-blue text-xs font-bold transition cursor-pointer"
                 >
-                  ← Ver Destacados
+                  ← Ver Brochure
                 </button>
                 <button
                   onClick={() => irASeccion("inscripcion")}
@@ -1475,6 +2082,89 @@ export default function CursoLanding() {
       </div>
 
 
+
+      {/* MODAL VISOR DE BROCHURE EN ALTA DEFINICIÓN */}
+      {modalBrochure !== null && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fade-in"
+          onClick={() => setModalBrochure(null)}
+        >
+          <div 
+            className="relative max-w-4xl w-full max-h-[95vh] bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-700 shadow-2xl flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* ENCABEZADO DEL MODAL */}
+            <div className="bg-neutral-950 px-4 py-3 border-b border-neutral-800 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
+                  Brochure Oficial Palermo 2027 • Página {modalBrochure} de 2
+                </span>
+                <div className="hidden sm:inline-flex items-center gap-1.5 bg-neutral-800 px-2 py-0.5 rounded text-[11px] text-neutral-300 font-medium">
+                  <span>IIRESODH & Instituto DDHH UNLP</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setModalBrochure(modalBrochure === 1 ? 2 : 1)}
+                  className="bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-neutral-700 transition"
+                >
+                  {modalBrochure === 1 ? "Ver Página 2 →" : "← Ver Página 1"}
+                </button>
+                <a
+                  href={modalBrochure === 1 ? brochureP1 : brochureP2}
+                  download={`Brochure_Palermo_2027_P${modalBrochure}.jpg`}
+                  className="bg-main-blue hover:bg-light-blue text-white text-xs font-bold px-3 py-1.5 rounded-lg transition hidden sm:inline-block"
+                >
+                  Descargar ↓
+                </a>
+                <button
+                  onClick={() => setModalBrochure(null)}
+                  className="w-8 h-8 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white flex items-center justify-center font-bold text-sm transition"
+                  title="Cerrar visor"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* CONTENEDOR DE IMAGEN CON SCROLL */}
+            <div className="overflow-auto max-h-[82vh] p-2 sm:p-4 bg-neutral-950 flex items-center justify-center">
+              <img
+                src={modalBrochure === 1 ? brochureP1 : brochureP2}
+                alt={`Brochure Oficial Página ${modalBrochure}`}
+                className="max-h-[80vh] w-auto object-contain rounded-lg shadow-lg border border-neutral-800"
+              />
+            </div>
+
+            {/* PIE DEL MODAL CON ACCIÓN RÁPIDA */}
+            <div className="bg-neutral-950 px-4 py-2.5 border-t border-neutral-800 flex items-center justify-between text-xs text-neutral-400">
+              <span className="hidden sm:inline">
+                Haz clic fuera o en el botón ✕ para cerrar
+              </span>
+              <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                <a
+                  href={contacto?.whatsappUrl || "https://wa.me/50640816188"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1.5"
+                >
+                  <span>💬 Consultar dudas por WhatsApp</span>
+                </a>
+                <button
+                  onClick={() => {
+                    setModalBrochure(null);
+                    irASeccion("inscripcion");
+                  }}
+                  className="bg-main-red hover:bg-red-800 text-white font-bold text-xs uppercase px-3.5 py-1.5 rounded-lg transition"
+                >
+                  Inscribirme
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* SNACKBAR DE NOTIFICACIONES */}
       <Snackbar
