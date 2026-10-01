@@ -114,7 +114,7 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
   const [reciboPago, setReciboPago] = useState(null);
 
   // Cálculo del monto total y moneda (Transacciones oficiales en USD)
-  const precioTexto = landing?.precioInversion || "3,350.00 USD";
+  const precioTexto = landing?.precioInversion || "3.350 USD";
   const monedaDetectada = "USD";
   const simboloMoneda = "$";
   

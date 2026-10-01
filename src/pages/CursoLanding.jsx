@@ -14,10 +14,12 @@ import logoIiresodh from "../assets/logo.webp";
 import FormularioPagoCurso from "../components/cursos/FormularioPagoCurso";
 
 export const normalizarPrecio = (precioStr) => {
-  if (!precioStr) return "3,350.00 USD";
-  let s = String(precioStr).replace("3.350", "3,350");
-  if (s.includes("3,350") && !s.includes("3,350.")) {
-    s = s.replace("3,350", "3,350.00");
+  if (!precioStr) return "3.350 USD";
+  let s = String(precioStr).trim();
+  s = s.replace(/\.00/g, "").replace(/,00/g, "");
+  s = s.replace(/3,350/g, "3.350");
+  if (!s.toUpperCase().includes("USD") && !s.includes("$")) {
+    s = `${s} USD`;
   }
   return s;
 };
@@ -35,7 +37,7 @@ export const DATOS_PALERMO_2027 = {
     publicada: false, // Por defecto no pública como solicitó el usuario
     lema: "APLICACIÓN DE LAS CONVENCIONES DE PALERMO CONTRA EL CRIMEN ORGANIZADO",
     ubicacionFechas: "Palermo, Sicilia, Italia | Del 17 al 23 de mayo de 2027",
-    precioInversion: "3,350.00 USD",
+    precioInversion: "3.350 USD",
     inversionDetalle: "Por persona. Incluye sesiones magistrales, visitas de campo, materiales exclusivos y certificación internacional.",
     cuposTexto: "Cupos Estrictamente Limitados",
     fechaLimitePago: "2027-04-30",
