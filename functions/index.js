@@ -1007,8 +1007,18 @@ exports.crearIntentoPagoCurso = onCall({
 
     const currencyLower = (moneda || "usd").toLowerCase();
     const numPlan = Number(planCuotas) || 1;
-    const cuotaMonto = Number(monto) || 3350;
-    const totalInversion = Number(montoTotal) || cuotaMonto;
+    let cuotaMonto = Number(monto) || 3350;
+    let totalInversion = Number(montoTotal) || cuotaMonto;
+
+    // Salvaguarda de integridad: si por error de cliente llegara un valor multiplicado por 100 (ej. 335000 en vez de 3350)
+    if (totalInversion > 50000 && totalInversion < 1000000) {
+      const candidato = totalInversion / 100;
+      if (candidato >= 1000 && candidato <= 10000) {
+        totalInversion = candidato;
+        cuotaMonto = cuotaMonto / 100;
+      }
+    }
+
     const amountInCents = Math.round(cuotaMonto * 100);
 
     // ========================================================================

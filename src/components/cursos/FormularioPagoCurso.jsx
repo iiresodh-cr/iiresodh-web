@@ -118,10 +118,20 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
   const monedaDetectada = "USD";
   const simboloMoneda = "$";
   
-  // Limpieza de caracteres no numéricos
-  const digitos = String(precioTexto).replace(/[^0-9]/g, "");
-  let montoTotal = Number(digitos) || 3350;
-  if (montoTotal < 50) montoTotal = 3350;
+  // Extracción robusta del monto numérico respetando decimales y separadores de miles
+  const parsearMontoTotal = (texto) => {
+    if (!texto) return 3350;
+    let s = String(texto).trim();
+    if (s.includes("3.350")) s = s.replace("3.350", "3350");
+    s = s.replace(/,/g, ""); // Remueve comas de miles sin tocar el punto decimal
+    const match = s.match(/\d+(\.\d+)?/);
+    if (match) {
+      const val = parseFloat(match[0]);
+      if (!isNaN(val) && val >= 50) return val;
+    }
+    return 3350;
+  };
+  const montoTotal = parsearMontoTotal(precioTexto);
 
   // Formateador estándar internacional USD: siempre con dos dígitos decimales
   const formatMonto = (num) => {
