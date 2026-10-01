@@ -12,6 +12,7 @@ import falconeDefaultImg from "../assets/cursos/falcone_borsellino.jpg";
 import palermoDefaultImg from "../assets/cursos/palermo_catedral.jpg";
 import palermoJusticiaBw from "../assets/cursos/palermo_justicia_bw.jpg";
 import palermoAulaBunkerBw from "../assets/cursos/palermo_aula_bunker_bw.jpg";
+import palermoCollageHeroBw from "../assets/cursos/palermo_collage_hero_bw.jpg";
 import logoUnlp from "../assets/cursos/logo_unlp_ddhh.png";
 import brochureP1 from "../assets/cursos/brochure_palermo_p1.jpg";
 import brochureP2 from "../assets/cursos/brochure_palermo_p2.jpg";
@@ -670,26 +671,25 @@ export default function CursoLanding() {
         </div>
       )}
 
-      {/* HERO INSTITUCIONAL CON FONDO EN BLANCO Y NEGRO ALUSIVO AL CURSO (NÍTIDO, ELEGANTE Y VISIBLE) */}
-      <section className="relative text-white py-8 md:py-12 overflow-hidden border-b border-slate-700 bg-[#0c1a2d]">
+      {/* HERO INSTITUCIONAL CON COLLAGE FOTOGRÁFICO EN BLANCO Y NEGRO (NÍTIDO, CINEMATOGRÁFICO Y SOLEMNE) */}
+      <section className="relative text-white pt-8 pb-12 md:pt-12 md:pb-16 overflow-hidden border-b border-slate-700 bg-[#0c1a2d]">
         
-        {/* FOTOGRAFÍA EN BLANCO Y NEGRO DEL PALACIO DE JUSTICIA DE PALERMO (CLARA, VISIBLE Y LUMINOSA, SIN MANCHÓN NEGRO) */}
+        {/* COLLAGE FOTOGRÁFICO DE FONDO EN BLANCO Y NEGRO (FALCONE & BORSELLINO, PALACIO DE JUSTICIA, AULA BÚNKER) */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           <img
-            src={palermoJusticiaBw}
-            alt="Palacio de Justicia de Palermo"
-            className="w-full h-full object-cover object-center filter grayscale contrast-125 brightness-100 opacity-60"
+            src={palermoCollageHeroBw}
+            alt="Collage Conmemorativo Palermo: Falcone, Borsellino, Palacio de Justicia y Aula Búnker"
+            className="w-full h-full object-cover object-center filter grayscale contrast-120 brightness-95 opacity-55"
           />
-          {/* Tinte azul oscuro institucional sutil para legibilidad de textos blancos, sin ahogar la imagen */}
-          <div className="absolute inset-0 bg-[#0c1a2d]/65 backdrop-contrast-115" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#07111e]/85 via-transparent to-[#07111e]/80" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#07111e] via-transparent to-[#07111e]/40" />
+          {/* Velo azul marino institucional y viñeta sutil para máxima legibilidad de textos dorados y blancos */}
+          <div className="absolute inset-0 bg-[#0c1a2d]/70 backdrop-contrast-115" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#07111e] via-transparent to-[#07111e]/50" />
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 md:px-8 space-y-6">
           
           {/* CONVOCATORIA OFICIAL CONJUNTA IIRESODH & INSTITUTO DE DDHH UNLP */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 mb-5 border-b border-white/15">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/15">
             <div className="flex flex-wrap items-center gap-3 sm:gap-4">
               {/* Logo IIRESODH */}
               <div className="flex items-center gap-2">
@@ -726,155 +726,133 @@ export default function CursoLanding() {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
+          {/* CONTENIDO PRINCIPAL: TÍTULOS Y DETALLES DEL CURSO */}
+          <div className="space-y-4 text-center lg:text-left">
             
-            {/* COLUMNA IZQUIERDA: RETRATO FALCONE & BORSELLINO */}
-            <div className="lg:col-span-4 flex flex-col items-center">
-              <div className="w-full max-w-sm bg-[#162740]/90 backdrop-blur-md rounded-2xl border border-white/20 p-2 shadow-2xl space-y-2">
-                <div className="relative overflow-hidden rounded-xl border border-slate-600 bg-neutral-900">
-                  <img
-                    src={landing.heroImagenUrl || falconeDefaultImg}
-                    alt="Magistrados Giovanni Falcone y Paolo Borsellino"
-                    className="w-full h-56 sm:h-64 object-cover filter grayscale contrast-110"
-                  />
-                  <div className="p-3 bg-gradient-to-t from-black/95 via-black/80 to-transparent -mt-16 relative z-10 text-center">
-                    <p className="text-[11px] italic text-slate-200 font-light leading-snug line-clamp-2">
-                      {landing.heroCita || "«La mafia è un fenomeno humano e come tutti i fenomeni umani ha un principio, una sua evoluzione e avrà quindi anche una fine.»"}
-                    </p>
-                    <p className="text-[10px] font-bold text-amber-400 mt-1 uppercase tracking-wider">
-                      {landing.heroCitaAutor || "Giovanni Falcone (1939 – 1992)"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-1.5 text-center text-[10px] font-bold text-slate-300">
-                  <div className="bg-white/5 py-1.5 px-2 rounded-lg border border-white/10">
-                    🏛️ Palacio de Justicia
-                  </div>
-                  <div className="bg-white/5 py-1.5 px-2 rounded-lg border border-white/10">
-                    ⚖️ Aula Búnker
-                  </div>
-                </div>
+            {/* BADGES SUPERIORES */}
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
+              <div className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-amber-300 font-semibold shadow-xs backdrop-blur-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                Alta Especialización Internacional
+              </div>
+              <div className="inline-flex items-center gap-1.5 bg-rose-500/20 border border-rose-400/30 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-rose-200 font-bold shadow-xs backdrop-blur-xs">
+                <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
+                {landing.cuposTexto || "Cupos Estrictamente Limitados"}
+              </div>
+              <div className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-white font-medium backdrop-blur-xs">
+                <span>📅</span>
+                <span>17 – 23 de Mayo de 2027</span>
               </div>
             </div>
 
-            {/* COLUMNA DERECHA: TÍTULO, SUBTÍTULO Y TARJETA DE INVERSIÓN BALANCEADA */}
-            <div className="lg:col-span-8 space-y-4 text-center lg:text-left">
-              
-              {/* BADGES SUPERIORES */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
-                <div className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-amber-300 font-semibold shadow-xs backdrop-blur-xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-                  Alta Especialización Internacional
-                </div>
-                <div className="inline-flex items-center gap-1.5 bg-rose-500/20 border border-rose-400/30 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-rose-200 font-bold shadow-xs backdrop-blur-xs">
-                  <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
-                  {landing.cuposTexto || "Cupos Estrictamente Limitados"}
-                </div>
-                <div className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-white font-medium backdrop-blur-xs">
-                  <span>📅</span>
-                  <span>17 – 23 de Mayo de 2027</span>
-                </div>
-              </div>
+            {/* TÍTULO PRINCIPAL OFICIAL */}
+            <div className="space-y-1">
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-main-red block">
+                Curso Internacional
+              </span>
+              <h1 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight leading-tight uppercase font-sans text-white">
+                Aplicación de las Convenciones de Palermo contra el Crimen Organizado
+              </h1>
+            </div>
 
-              {/* TÍTULO PRINCIPAL OFICIAL */}
-              <div className="space-y-1">
-                <span className="text-xs font-bold uppercase tracking-[0.2em] text-main-red block">
-                  Curso Internacional
+            {/* UBICACIÓN Y FECHAS */}
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs md:text-sm font-medium text-slate-300">
+              <span className="flex items-center gap-1.5 bg-white/10 px-3.5 py-1.5 rounded-lg border border-white/15 backdrop-blur-xs">
+                <svg className="w-4 h-4 text-main-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                {landing.ubicacionFechas || "Palermo, Sicilia, Italia | 17 – 23 de mayo de 2027"}
+              </span>
+            </div>
+
+            {/* SUBTÍTULO BROCHURE */}
+            <p className="text-sm md:text-base font-medium text-slate-200 border-l-2 border-main-red pl-3 leading-relaxed max-w-4xl">
+              {landing.subtitulo || "Investigación Criminal, Cooperación Internacional y Derechos Humanos en la Lucha contra la Criminalidad Organizada y la Trata de Personas"}
+            </p>
+
+            {/* CITA SOLEMNE DE FALCONE INTEGRADA CON ESTILO */}
+            <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl backdrop-blur-xs text-xs text-slate-300 italic">
+              <span>«La mafia è un fenomeno umano e come tutti i fenomeni umani ha un principio, una sua evoluzione e avrà quindi anche una fine.»</span>
+              <span className="not-italic text-amber-400 font-bold whitespace-nowrap">— Giovanni Falcone</span>
+            </div>
+
+          </div>
+
+          {/* TARJETA COMPACTA DE INVERSIÓN Y ACCIÓN RÁPIDA (AMPLIA, SIMÉTRICA Y COMPLETA) */}
+          <div className="bg-white/10 border border-white/20 p-5 sm:p-6 rounded-3xl backdrop-blur-md shadow-2xl flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+            
+            {/* PARTE IZQUIERDA: PRECIO, BADGES Y DETALLES */}
+            <div className="space-y-2.5 flex-1 min-w-0 text-left">
+              <div className="flex items-baseline gap-3 flex-wrap">
+                <span className="text-3xl sm:text-4xl font-black text-amber-400 tracking-tight">
+                  {normalizarPrecio(landing.precioInversion)}
                 </span>
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight leading-tight uppercase font-sans text-white">
-                  Aplicación de las Convenciones de Palermo contra el Crimen Organizado
-                </h1>
-              </div>
-
-              {/* UBICACIÓN Y FECHAS */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs md:text-sm font-medium text-slate-300">
-                <span className="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
-                  <svg className="w-4 h-4 text-main-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  {landing.ubicacionFechas || "Palermo, Sicilia, Italia | 17 – 23 de mayo de 2027"}
+                <span className="text-xs uppercase font-bold tracking-widest text-amber-200 bg-amber-400/20 px-3 py-1 rounded-full border border-amber-400/30">
+                  Inversión Académica Total
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-xs uppercase font-extrabold tracking-wider text-rose-300 bg-rose-500/20 px-3 py-1 rounded-full border border-rose-400/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
+                  Cupos Limitados
                 </span>
               </div>
 
-              {/* SUBTÍTULO BROCHURE */}
-              <p className="text-xs sm:text-sm font-medium text-slate-200 border-l-2 border-main-red pl-3 leading-relaxed">
-                {landing.subtitulo || "Investigación Criminal, Cooperación Internacional y Derechos Humanos en la Lucha contra la Criminalidad Organizada y la Trata de Personas"}
+              <p className="text-xs sm:text-sm text-gray-200 font-light leading-relaxed">
+                {landing.inversionDetalle || "Por participante. Incluye alojamiento en hotel 4★ en Palermo, traslados internos de logística académica, clases magistrales con expertos internacionales y doble certificación oficial."}
               </p>
 
-              {/* TARJETA COMPACTA DE INVERSIÓN Y ACCIÓN RÁPIDA (SIMÉTRICA Y SIN ESPACIOS VACÍOS) */}
-              <div className="bg-white/10 border border-white/20 p-4 sm:p-5 rounded-2xl backdrop-blur-md shadow-2xl flex flex-col xl:flex-row xl:items-center justify-between gap-5">
-                
-                {/* PARTE IZQUIERDA: PRECIO, BADGES Y DETALLES */}
-                <div className="space-y-2 flex-1 min-w-0 text-left">
-                  <div className="flex items-baseline gap-2.5 flex-wrap">
-                    <span className="text-2xl sm:text-3xl font-black text-amber-400 tracking-tight">
-                      {normalizarPrecio(landing.precioInversion)}
-                    </span>
-                    <span className="text-[10px] sm:text-xs uppercase font-bold tracking-widest text-amber-200 bg-amber-400/20 px-2.5 py-0.5 rounded-full border border-amber-400/30">
-                      Inversión Académica Total
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs uppercase font-extrabold tracking-wider text-rose-300 bg-rose-500/20 px-2.5 py-0.5 rounded-full border border-rose-400/30">
-                      <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
-                      Cupos Limitados
-                    </span>
-                  </div>
-
-                  <p className="text-xs text-gray-200 font-light leading-relaxed">
-                    {landing.inversionDetalle || "Por participante. Incluye hotel 4★ en Palermo, traslados internos de logística académica, clases magistrales con expertos y doble certificación oficial."}
-                  </p>
-
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-300 pt-0.5">
-                    <span className="flex items-center gap-1 text-amber-300 font-medium">
-                      <span>⚡</span>
-                      <span>Plazas por orden de registro</span>
-                    </span>
-                    <span className="flex items-center gap-1 text-slate-300">
-                      <span>🏨</span>
-                      <span>Hotel 4★ incluido</span>
-                    </span>
-                    <span className="flex items-center gap-1 text-slate-300">
-                      <span>🚐</span>
-                      <span>Traslados internos incluidos</span>
-                    </span>
-                  </div>
-                </div>
-
-                {/* PARTE DERECHA: BOTONES DE ACCIÓN PRINCIPALES ALINEADOS */}
-                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 w-full xl:w-auto shrink-0 pt-1 xl:pt-0">
-                  <button
-                    onClick={() => irASeccion("inscripcion")}
-                    className="flex-1 sm:flex-initial bg-main-red hover:bg-red-800 text-white font-bold text-xs uppercase tracking-widest py-3 px-5 rounded-xl shadow-md hover:shadow-red-900/30 transition-all active:scale-95 text-center cursor-pointer whitespace-nowrap"
-                  >
-                    Inscríbete Ahora
-                  </button>
-                  <button
-                    onClick={() => irASeccion("programa")}
-                    className="flex-1 sm:flex-initial bg-white/15 hover:bg-white/25 text-white font-semibold text-xs uppercase tracking-wider py-3 px-4 rounded-xl border border-white/25 transition-all text-center cursor-pointer whitespace-nowrap"
-                  >
-                    Ver Programa ({programa.length} Días)
-                  </button>
-                  <button
-                    onClick={() => setModalBrochure(1)}
-                    className="flex-1 sm:flex-initial bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs uppercase tracking-wider py-3 px-3.5 rounded-xl border border-amber-400/30 transition-all text-center cursor-pointer whitespace-nowrap"
-                  >
-                    Brochure 📄
-                  </button>
-                  <a
-                    href={contacto?.whatsappUrl || "https://wa.me/50640816188"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 sm:flex-initial bg-emerald-600/30 hover:bg-emerald-600/40 text-emerald-300 font-bold text-xs uppercase tracking-wider py-3 px-3.5 rounded-xl border border-emerald-500/40 transition-all text-center cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5"
-                  >
-                    <span>💬</span> WhatsApp
-                  </a>
-                </div>
-
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-300 pt-1">
+                <span className="flex items-center gap-1.5 text-amber-300 font-medium">
+                  <span>⚡</span>
+                  <span>Plazas por orden de registro</span>
+                </span>
+                <span className="flex items-center gap-1.5 text-slate-200">
+                  <span>🏨</span>
+                  <span>Hotel 4★ incluido</span>
+                </span>
+                <span className="flex items-center gap-1.5 text-slate-200">
+                  <span>🚐</span>
+                  <span>Traslados internos incluidos</span>
+                </span>
+                <span className="flex items-center gap-1.5 text-slate-200">
+                  <span>🎓</span>
+                  <span>Doble aval IIRESODH & UNLP</span>
+                </span>
               </div>
-
             </div>
+
+            {/* PARTE DERECHA: BOTONES DE ACCIÓN PRINCIPALES ALINEADOS */}
+            <div className="grid grid-cols-2 sm:flex sm:flex-nowrap items-center gap-2.5 w-full xl:w-auto shrink-0 pt-2 xl:pt-0">
+              <button
+                onClick={() => irASeccion("inscripcion")}
+                className="bg-main-red hover:bg-red-800 text-white font-bold text-xs uppercase tracking-widest py-3.5 px-5 rounded-xl shadow-md hover:shadow-red-900/30 transition-all active:scale-95 text-center cursor-pointer whitespace-nowrap"
+              >
+                Inscríbete Ahora
+              </button>
+              <button
+                onClick={() => irASeccion("programa")}
+                className="bg-white/15 hover:bg-white/25 text-white font-semibold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl border border-white/25 transition-all text-center cursor-pointer whitespace-nowrap"
+              >
+                Ver Programa ({programa.length} Días)
+              </button>
+              <button
+                onClick={() => setModalBrochure(1)}
+                className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs uppercase tracking-wider py-3.5 px-3.5 rounded-xl border border-amber-400/30 transition-all text-center cursor-pointer whitespace-nowrap"
+              >
+                Brochure 📄
+              </button>
+              <a
+                href={contacto?.whatsappUrl || "https://wa.me/50640816188"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-emerald-600/30 hover:bg-emerald-600/40 text-emerald-300 font-bold text-xs uppercase tracking-wider py-3.5 px-3.5 rounded-xl border border-emerald-500/40 transition-all text-center cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5"
+              >
+                <span>💬</span> WhatsApp
+              </a>
+            </div>
+
           </div>
+
         </div>
       </section>
 
