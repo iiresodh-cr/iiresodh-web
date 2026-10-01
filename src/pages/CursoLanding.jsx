@@ -674,22 +674,22 @@ export default function CursoLanding() {
 
       {/* HERO INSTITUCIONAL CON COLLAGE FOTOGRÁFICO EN BLANCO Y NEGRO (NÍTIDO, CINEMATOGRÁFICO Y SOLEMNE) */}
       <section className="relative text-white pt-8 pb-12 md:pt-12 md:pb-16 overflow-hidden border-b border-slate-800 bg-[#0a1526]">
-        
-        {/* COLLAGE FOTOGRÁFICO DE FONDO EN BLANCO Y NEGRO (FALCONE & BORSELLINO, PALACIO DE JUSTICIA, AULA BÚNKER) */}
+            {/* COLLAGE FOTOGRÁFICO DE FONDO EN BLANCO Y NEGRO (NÍTIDO, CLARO Y TOTALMENTE VISIBLE) */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           <img
             src={palermoCollageHeroBw}
             alt="Collage Conmemorativo Palermo: Falcone, Borsellino, Palacio de Justicia y Aula Búnker"
-            className="w-full h-full object-cover object-center filter grayscale contrast-125 brightness-75 opacity-35 mix-blend-luminosity"
+            className="w-full h-full object-cover object-center filter contrast-105 brightness-95 opacity-85 sm:opacity-90"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a1526] via-[#0a1526]/85 to-[#0a1526]/75" />
+          {/* Overlay mínimo: transparente en el centro para que las fotos se vean con total claridad */}
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/45 via-transparent to-slate-950/70" />
         </div>
 
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 md:px-8 space-y-7">
           
           {/* CONVOCATORIA OFICIAL CONJUNTA IIRESODH & INSTITUTO DE DDHH UNLP */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-5 border-b border-white/10">
-            <div className="inline-flex items-center gap-4 bg-white px-5 py-2.5 rounded-xl shadow-md border border-white/20">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-5 border-b border-white/15">
+            <div className="inline-flex items-center gap-4 bg-white px-5 py-2.5 rounded-xl shadow-xl border border-white/20">
               {/* Logo IIRESODH en Color Oficial */}
               <img
                 src={logoIiresodhColor}
@@ -713,7 +713,7 @@ export default function CursoLanding() {
               />
             </div>
 
-            <span className="text-xs uppercase tracking-widest text-slate-300 font-semibold">
+            <span className="text-xs uppercase tracking-widest text-slate-200 font-semibold bg-slate-950/50 px-3.5 py-1.5 rounded-lg border border-white/15 backdrop-blur-xs drop-shadow-sm">
               Convocatoria Académica Internacional
             </span>
           </div>
@@ -721,33 +721,33 @@ export default function CursoLanding() {
           {/* CONTENIDO PRINCIPAL: TÍTULOS Y DETALLES DEL CURSO */}
           <div className="space-y-4 text-center lg:text-left">
             
-            {/* BADGES SUPERIORES (SOBRIOS, UNIFICADOS Y ELEGANTES - SIN COLORES CHILLONES) */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs font-medium text-slate-300">
-              <span className="bg-white/10 border border-white/15 px-3 py-1 rounded-md text-slate-200 backdrop-blur-sm">
+            {/* BADGES SUPERIORES (SOBRIOS, UNIFICADOS Y ELEGANTES) */}
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs font-medium text-slate-200">
+              <span className="bg-slate-950/70 border border-white/20 px-3 py-1 rounded-md text-slate-100 backdrop-blur-md shadow-xs">
                 Alta Especialización Judicial
               </span>
-              <span className="bg-white/10 border border-white/15 px-3 py-1 rounded-md text-slate-200 backdrop-blur-sm">
+              <span className="bg-slate-950/70 border border-white/20 px-3 py-1 rounded-md text-slate-100 backdrop-blur-md shadow-xs">
                 Cupos Limitados
               </span>
-              <span className="bg-white/10 border border-white/15 px-3 py-1 rounded-md text-slate-200 backdrop-blur-sm">
+              <span className="bg-slate-950/70 border border-white/20 px-3 py-1 rounded-md text-slate-100 backdrop-blur-md shadow-xs">
                 17 – 23 de Mayo de 2027
               </span>
             </div>
 
-            {/* TÍTULO PRINCIPAL OFICIAL */}
+            {/* TÍTULO PRINCIPAL OFICIAL CON SOMBRA SUAVE PARA CONTRASTE PERFECTO */}
             <div className="space-y-1.5">
-              <span className="text-xs font-bold uppercase tracking-[0.25em] text-red-500 block">
+              <span className="text-xs font-bold uppercase tracking-[0.25em] text-red-500 block drop-shadow-sm">
                 Curso Internacional
               </span>
-              <h1 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight leading-tight uppercase font-sans text-white">
+              <h1 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight leading-tight uppercase font-sans text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
                 Aplicación de las Convenciones de Palermo contra el Crimen Organizado
               </h1>
             </div>
 
             {/* UBICACIÓN Y FECHAS */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs md:text-sm font-medium text-slate-300">
-              <span className="flex items-center gap-2 bg-white/10 px-3.5 py-1.5 rounded-lg border border-white/15 backdrop-blur-xs">
-                <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs md:text-sm font-medium text-slate-200">
+              <span className="flex items-center gap-2 bg-slate-950/70 px-3.5 py-1.5 rounded-lg border border-white/20 backdrop-blur-md drop-shadow-xs">
+                <svg className="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -756,14 +756,14 @@ export default function CursoLanding() {
             </div>
 
             {/* SUBTÍTULO BROCHURE */}
-            <p className="text-sm md:text-base font-normal text-slate-300 border-l-2 border-main-red pl-3.5 leading-relaxed max-w-4xl">
+            <p className="text-sm md:text-base font-normal text-slate-100 border-l-2 border-main-red pl-3.5 leading-relaxed max-w-4xl drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
               {landing.subtitulo || "Investigación Criminal, Cooperación Internacional y Derechos Humanos en la Lucha contra la Criminalidad Organizada y la Trata de Personas"}
             </p>
 
             {/* CITA SOLEMNE DE FALCONE INTEGRADA CON ESTILO */}
-            <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl backdrop-blur-sm text-xs text-slate-300 italic">
+            <div className="inline-flex items-center gap-2 bg-slate-950/70 border border-white/20 px-4 py-2 rounded-xl backdrop-blur-md text-xs text-slate-200 italic shadow-xs">
               <span>«La mafia è un fenomeno umano e come tutti i fenomeni umani ha un principio, una sua evoluzione e avrà quindi anche una fine.»</span>
-              <span className="not-italic text-slate-200 font-semibold whitespace-nowrap">— Giovanni Falcone</span>
+              <span className="not-italic text-white font-semibold whitespace-nowrap">— Giovanni Falcone</span>
             </div>
 
           </div>
