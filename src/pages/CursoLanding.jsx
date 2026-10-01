@@ -630,7 +630,6 @@ export default function CursoLanding() {
     { id: "legado", label: "Sobre el Curso", icono: "🏛️" },
     { id: "programa", label: `Programa (${programa.length} Días)`, icono: "📅" },
     { id: "docentes", label: "Docentes Destacados", icono: "👨‍⚖️" },
-    { id: "incluido", label: "¿Qué Incluye?", icono: "✨" },
     { id: "brochure", label: "Brochure Oficial", icono: "📄" },
     { id: "sede", label: "Sede Palermo", icono: "📍" },
     { id: "inscripcion", label: "Inscripción & Pago", icono: "💳" }
@@ -671,93 +670,76 @@ export default function CursoLanding() {
         </div>
       )}
 
-      {/* HERO INSTITUCIONAL CON FONDO EN BLANCO Y NEGRO ALUSIVO AL CURSO (LUMINOSO, ORDENADO Y ELEGANTE) */}
-      <section className="relative text-white py-8 md:py-12 overflow-hidden border-b border-slate-700 bg-slate-900">
+      {/* HERO INSTITUCIONAL CON FONDO EN BLANCO Y NEGRO ALUSIVO AL CURSO (NÍTIDO, ELEGANTE Y VISIBLE) */}
+      <section className="relative text-white py-8 md:py-12 overflow-hidden border-b border-slate-700 bg-[#0c1a2d]">
         
-        {/* COMPOSICIÓN FOTOGRÁFICA EN BLANCO Y NEGRO: PALACIO DE JUSTICIA (NÍTIDO Y VISIBLE, SIN MANCHÓN NEGRO) */}
+        {/* FOTOGRAFÍA EN BLANCO Y NEGRO DEL PALACIO DE JUSTICIA DE PALERMO (CLARA, VISIBLE Y LUMINOSA, SIN MANCHÓN NEGRO) */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           <img
             src={palermoJusticiaBw}
             alt="Palacio de Justicia de Palermo"
-            className="w-full h-full object-cover object-center filter grayscale contrast-125 brightness-95 opacity-25"
+            className="w-full h-full object-cover object-center filter grayscale contrast-125 brightness-100 opacity-60"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-900/80 to-slate-950/95" />
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-transparent to-slate-950/90" />
+          {/* Tinte azul oscuro institucional sutil para legibilidad de textos blancos, sin ahogar la imagen */}
+          <div className="absolute inset-0 bg-[#0c1a2d]/65 backdrop-contrast-115" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#07111e]/85 via-transparent to-[#07111e]/80" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#07111e] via-transparent to-[#07111e]/40" />
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
           
-          {/* BANNER CO-ORGANIZADORES OFICIALES (IIRESODH + INSTITUTO DE DERECHOS HUMANOS UNLP) */}
-          <div className="mb-6 p-3 sm:p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 sm:gap-6">
-              
-              {/* LOGO IIRESODH */}
-              <div className="flex items-center gap-2.5">
+          {/* CONVOCATORIA OFICIAL CONJUNTA IIRESODH & INSTITUTO DE DDHH UNLP */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 mb-5 border-b border-white/15">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+              {/* Logo IIRESODH */}
+              <div className="flex items-center gap-2">
                 <img
                   src={logoIiresodh}
                   alt="IIRESODH"
-                  className="h-9 sm:h-11 w-auto object-contain brightness-105"
+                  className="h-8 sm:h-9 w-auto brightness-110 drop-shadow-sm"
                 />
-                <div className="text-left">
-                  <span className="text-[11px] font-black tracking-wider text-white block uppercase leading-tight">
-                    IIRESODH
-                  </span>
-                  <span className="text-[9px] text-slate-300 font-medium leading-tight block">
-                    Instituto Internacional de DDHH
-                  </span>
-                </div>
+                <span className="text-white text-xs sm:text-sm font-bold tracking-wider">
+                  IIRESODH
+                </span>
               </div>
 
-              {/* SEPARADOR CONJUNTO */}
               <span className="text-amber-400 font-black text-xs uppercase tracking-widest px-1">
-                EN CONJUNTO CON
+                • EN CONJUNTO CON •
               </span>
 
-              {/* LOGO INSTITUTO DE DERECHOS HUMANOS - UNIVERSIDAD NACIONAL DE LA PLATA */}
-              <div className="flex items-center gap-2.5">
-                <div className="bg-white p-1 rounded-lg shadow-xs">
-                  <img
-                    src={logoUnlp}
-                    alt="Instituto de Derechos Humanos - Universidad Nacional de La Plata"
-                    className="h-8 sm:h-10 w-auto object-contain"
-                  />
-                </div>
-                <div className="text-left">
-                  <span className="text-[11px] font-black tracking-wider text-amber-300 block uppercase leading-tight">
-                    Instituto de Derechos Humanos
-                  </span>
-                  <span className="text-[9px] text-slate-300 font-medium leading-tight block">
-                    Universidad Nacional de La Plata (Argentina)
-                  </span>
-                </div>
+              {/* Logo Instituto de Derechos Humanos UNLP */}
+              <div className="flex items-center gap-2 bg-white px-2.5 py-1 rounded-lg shadow-sm">
+                <img
+                  src={logoUnlp}
+                  alt="Instituto de Derechos Humanos - Universidad Nacional de La Plata"
+                  className="h-6 sm:h-7 w-auto object-contain"
+                />
+                <span className="text-neutral-900 text-[11px] sm:text-xs font-bold leading-tight">
+                  Instituto de Derechos Humanos (UNLP - Argentina)
+                </span>
               </div>
             </div>
 
-            {/* BADGE DE ORGANIZACIÓN CONJUNTA */}
-            <div className="shrink-0 text-center md:text-right">
-              <span className="inline-flex items-center gap-1.5 bg-amber-500/20 text-amber-300 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border border-amber-400/40 shadow-xs">
-                <span>🏛️</span>
-                <span>Convocatoria Internacional Conjunta</span>
-              </span>
-            </div>
+            <span className="inline-flex items-center gap-1.5 bg-amber-500/20 text-amber-300 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border border-amber-400/40 shadow-xs">
+              <span>🏛️</span>
+              <span>Convocatoria Internacional Conjunta</span>
+            </span>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
             
-            {/* COLUMNA IZQUIERDA: RETRATO FALCONE & BORSELLINO Y FOTOS HISTÓRICAS EN B/N */}
+            {/* COLUMNA IZQUIERDA: RETRATO FALCONE & BORSELLINO */}
             <div className="lg:col-span-4 flex flex-col items-center">
-              <div className="w-full max-w-sm bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-700 p-2.5 shadow-xl space-y-2.5">
-                
-                {/* RETRATO PRINCIPAL FALCONE Y BORSELLINO */}
+              <div className="w-full max-w-sm bg-[#162740]/90 backdrop-blur-md rounded-2xl border border-white/20 p-2 shadow-2xl space-y-2">
                 <div className="relative overflow-hidden rounded-xl border border-slate-600 bg-neutral-900">
                   <img
                     src={landing.heroImagenUrl || falconeDefaultImg}
                     alt="Magistrados Giovanni Falcone y Paolo Borsellino"
-                    className="w-full h-52 sm:h-56 object-cover filter grayscale contrast-115"
+                    className="w-full h-56 sm:h-64 object-cover filter grayscale contrast-110"
                   />
-                  <div className="p-3 bg-gradient-to-t from-slate-950 via-slate-950/85 to-transparent -mt-14 relative z-10 text-center">
+                  <div className="p-3 bg-gradient-to-t from-black/95 via-black/80 to-transparent -mt-16 relative z-10 text-center">
                     <p className="text-[11px] italic text-slate-200 font-light leading-snug line-clamp-2">
-                      {landing.heroCita || "«La mafia è un fenomeno umano e come tutti i fenomeni umani ha un principio, una sua evoluzione e avrà quindi anche una fine.»"}
+                      {landing.heroCita || "«La mafia è un fenomeno humano e come tutti i fenomeni umani ha un principio, una sua evoluzione e avrà quindi anche una fine.»"}
                     </p>
                     <p className="text-[10px] font-bold text-amber-400 mt-1 uppercase tracking-wider">
                       {landing.heroCitaAutor || "Giovanni Falcone (1939 – 1992)"}
@@ -765,53 +747,31 @@ export default function CursoLanding() {
                   </div>
                 </div>
 
-                {/* MINI FOTOS EN BLANCO Y NEGRO DE LAS SEDES EMBLEMÁTICAS */}
-                <div className="grid grid-cols-2 gap-2 pt-0.5">
-                  <div className="relative h-16 rounded-lg overflow-hidden border border-slate-600 group bg-neutral-900">
-                    <img
-                      src={palermoJusticiaBw}
-                      alt="Palacio de Justicia"
-                      className="w-full h-full object-cover filter grayscale contrast-120 group-hover:scale-105 transition"
-                    />
-                    <div className="absolute inset-0 bg-slate-950/60 p-1 flex items-end">
-                      <span className="text-[9px] font-bold text-white leading-tight">Palacio de Justicia</span>
-                    </div>
+                <div className="grid grid-cols-2 gap-1.5 text-center text-[10px] font-bold text-slate-300">
+                  <div className="bg-white/5 py-1.5 px-2 rounded-lg border border-white/10">
+                    🏛️ Palacio de Justicia
                   </div>
-
-                  <div className="relative h-16 rounded-lg overflow-hidden border border-slate-600 group bg-neutral-900">
-                    <img
-                      src={palermoAulaBunkerBw}
-                      alt="Aula Búnker del Maxi-Proceso"
-                      className="w-full h-full object-cover filter grayscale contrast-120 group-hover:scale-105 transition"
-                    />
-                    <div className="absolute inset-0 bg-slate-950/60 p-1 flex items-end">
-                      <span className="text-[9px] font-bold text-white leading-tight">Aula Búnker</span>
-                    </div>
+                  <div className="bg-white/5 py-1.5 px-2 rounded-lg border border-white/10">
+                    ⚖️ Aula Búnker
                   </div>
-                </div>
-
-                <div className="text-center pt-0.5">
-                  <span className="text-[10px] text-slate-400 uppercase tracking-widest font-mono">
-                    Sedes Históricas de Formación • Palermo 2027
-                  </span>
                 </div>
               </div>
             </div>
 
-            {/* COLUMNA DERECHA: TÍTULO, SUBTÍTULO Y PANEL DE ADMISIÓN E INVERSIÓN */}
+            {/* COLUMNA DERECHA: TÍTULO, SUBTÍTULO Y TARJETA DE INVERSIÓN BALANCEADA */}
             <div className="lg:col-span-8 space-y-4 text-center lg:text-left">
               
               {/* BADGES SUPERIORES */}
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
-                <div className="inline-flex items-center gap-1.5 bg-slate-800 border border-slate-600 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-amber-300 font-semibold shadow-xs">
+                <div className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-amber-300 font-semibold shadow-xs backdrop-blur-xs">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
                   Alta Especialización Internacional
                 </div>
-                <div className="inline-flex items-center gap-1.5 bg-rose-500/20 border border-rose-400/30 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-rose-200 font-bold shadow-xs">
+                <div className="inline-flex items-center gap-1.5 bg-rose-500/20 border border-rose-400/30 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-rose-200 font-bold shadow-xs backdrop-blur-xs">
                   <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
                   {landing.cuposTexto || "Cupos Estrictamente Limitados"}
                 </div>
-                <div className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-white font-medium">
+                <div className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-white font-medium backdrop-blur-xs">
                   <span>📅</span>
                   <span>17 – 23 de Mayo de 2027</span>
                 </div>
@@ -829,7 +789,7 @@ export default function CursoLanding() {
 
               {/* UBICACIÓN Y FECHAS */}
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs md:text-sm font-medium text-slate-300">
-                <span className="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
+                <span className="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
                   <svg className="w-4 h-4 text-main-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -843,16 +803,16 @@ export default function CursoLanding() {
                 {landing.subtitulo || "Investigación Criminal, Cooperación Internacional y Derechos Humanos en la Lucha contra la Criminalidad Organizada y la Trata de Personas"}
               </p>
 
-              {/* PANEL DE ADMISIÓN E INVERSIÓN (ORGANIZADO, ELEGANTE Y SIN HUECOS VACÍOS) */}
-              <div className="bg-slate-800/90 backdrop-blur-md border border-slate-700 rounded-2xl p-4 sm:p-5 shadow-2xl space-y-4 text-left">
+              {/* TARJETA COMPACTA DE INVERSIÓN Y ACCIÓN RÁPIDA (SIMÉTRICA Y SIN ESPACIOS VACÍOS) */}
+              <div className="bg-white/10 border border-white/20 p-4 sm:p-5 rounded-2xl backdrop-blur-md shadow-2xl flex flex-col xl:flex-row xl:items-center justify-between gap-5">
                 
-                {/* FILA 1: PRECIO Y BADGES DE INVERSIÓN */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-700">
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="text-2xl sm:text-3xl font-black text-amber-400 tracking-tight whitespace-nowrap">
+                {/* PARTE IZQUIERDA: PRECIO, BADGES Y DETALLES */}
+                <div className="space-y-2 flex-1 min-w-0 text-left">
+                  <div className="flex items-baseline gap-2.5 flex-wrap">
+                    <span className="text-2xl sm:text-3xl font-black text-amber-400 tracking-tight">
                       {normalizarPrecio(landing.precioInversion)}
                     </span>
-                    <span className="text-[10px] sm:text-xs uppercase font-bold tracking-wider text-amber-200 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-400/30">
+                    <span className="text-[10px] sm:text-xs uppercase font-bold tracking-widest text-amber-200 bg-amber-400/20 px-2.5 py-0.5 rounded-full border border-amber-400/30">
                       Inversión Académica Total
                     </span>
                     <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs uppercase font-extrabold tracking-wider text-rose-300 bg-rose-500/20 px-2.5 py-0.5 rounded-full border border-rose-400/30">
@@ -861,58 +821,53 @@ export default function CursoLanding() {
                     </span>
                   </div>
 
-                  <span className="text-[11px] text-amber-300 font-medium">
-                    ⚡ Asignación por orden de registro
-                  </span>
-                </div>
+                  <p className="text-xs text-gray-200 font-light leading-relaxed">
+                    {landing.inversionDetalle || "Por participante. Incluye hotel 4★ en Palermo, traslados internos de logística académica, clases magistrales con expertos y doble certificación oficial."}
+                  </p>
 
-                {/* FILA 2: BENEFICIOS PRINCIPALES EN GRID DE 2x2 */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-200">
-                  <div className="flex items-center gap-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-700/60">
-                    <span className="text-amber-400 font-bold">✓</span>
-                    <span><strong>Alojamiento:</strong> Hotel 4★ en Palermo incluido</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-700/60">
-                    <span className="text-amber-400 font-bold">✓</span>
-                    <span><strong>Docencia:</strong> Clases con fiscales y jueces antimafia</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-700/60">
-                    <span className="text-amber-400 font-bold">✓</span>
-                    <span><strong>Sedes Históricas:</strong> Aula Búnker, Palacio de Justicia, Capaci</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-700/60">
-                    <span className="text-amber-400 font-bold">✓</span>
-                    <span><strong>Certificación:</strong> Doble aval oficial IIRESODH y UNLP</span>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-300 pt-0.5">
+                    <span className="flex items-center gap-1 text-amber-300 font-medium">
+                      <span>⚡</span>
+                      <span>Plazas por orden de registro</span>
+                    </span>
+                    <span className="flex items-center gap-1 text-slate-300">
+                      <span>🏨</span>
+                      <span>Hotel 4★ incluido</span>
+                    </span>
+                    <span className="flex items-center gap-1 text-slate-300">
+                      <span>🚐</span>
+                      <span>Traslados internos incluidos</span>
+                    </span>
                   </div>
                 </div>
 
-                {/* FILA 3: BOTONES DE ACCIÓN BALANCEADOS EN GRID */}
-                <div className="pt-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                {/* PARTE DERECHA: BOTONES DE ACCIÓN PRINCIPALES ALINEADOS */}
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 w-full xl:w-auto shrink-0 pt-1 xl:pt-0">
                   <button
                     onClick={() => irASeccion("inscripcion")}
-                    className="bg-main-red hover:bg-red-700 text-white font-bold text-xs uppercase tracking-wider py-3 px-3 rounded-xl shadow-md transition active:scale-95 text-center cursor-pointer whitespace-nowrap"
+                    className="flex-1 sm:flex-initial bg-main-red hover:bg-red-800 text-white font-bold text-xs uppercase tracking-widest py-3 px-5 rounded-xl shadow-md hover:shadow-red-900/30 transition-all active:scale-95 text-center cursor-pointer whitespace-nowrap"
                   >
                     Inscríbete Ahora
                   </button>
                   <button
                     onClick={() => irASeccion("programa")}
-                    className="bg-slate-700 hover:bg-slate-600 text-white font-semibold text-xs uppercase tracking-wider py-3 px-3 rounded-xl border border-slate-600 transition text-center cursor-pointer whitespace-nowrap"
+                    className="flex-1 sm:flex-initial bg-white/15 hover:bg-white/25 text-white font-semibold text-xs uppercase tracking-wider py-3 px-4 rounded-xl border border-white/25 transition-all text-center cursor-pointer whitespace-nowrap"
                   >
                     Ver Programa ({programa.length} Días)
                   </button>
                   <button
-                    onClick={() => irASeccion("brochure")}
-                    className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs uppercase tracking-wider py-3 px-3 rounded-xl border border-amber-400/40 transition text-center cursor-pointer whitespace-nowrap"
+                    onClick={() => setModalBrochure(1)}
+                    className="flex-1 sm:flex-initial bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs uppercase tracking-wider py-3 px-3.5 rounded-xl border border-amber-400/30 transition-all text-center cursor-pointer whitespace-nowrap"
                   >
-                    Brochure Oficial 📄
+                    Brochure 📄
                   </button>
                   <a
                     href={contacto?.whatsappUrl || "https://wa.me/50640816188"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-emerald-600/30 hover:bg-emerald-600/40 text-emerald-300 font-bold text-xs uppercase tracking-wider py-3 px-3 rounded-xl border border-emerald-500/40 transition text-center cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap"
+                    className="flex-1 sm:flex-initial bg-emerald-600/30 hover:bg-emerald-600/40 text-emerald-300 font-bold text-xs uppercase tracking-wider py-3 px-3.5 rounded-xl border border-emerald-500/40 transition-all text-center cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5"
                   >
-                    <span>💬 WhatsApp</span>
+                    <span>💬</span> WhatsApp
                   </a>
                 </div>
 
@@ -1017,6 +972,37 @@ export default function CursoLanding() {
                       <p className="text-xs text-gray-700 font-medium leading-relaxed">
                         {item.perfil}
                       </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ¿QUÉ ESTÁ INCLUIDO? (DEL BROCHURE) */}
+              <div className="pt-2">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
+                  Logística y Servicios Integrales
+                </span>
+                <h3 className="text-xl md:text-2xl font-black text-main-blue tracking-tight mb-4">
+                  ¿Qué está incluido en la matrícula?
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {queEstaIncluido.map((item, index) => (
+                    <div
+                      key={index}
+                      className="p-5 rounded-2xl border border-gray-200 bg-slate-50/70 hover:bg-white hover:border-main-blue/30 hover:shadow-md transition flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="w-10 h-10 rounded-xl bg-main-blue/10 text-main-blue flex items-center justify-center text-xl mb-3 shadow-xs">
+                          {item.icono || "✓"}
+                        </div>
+                        <h4 className="text-sm font-bold text-main-blue mb-1.5 leading-snug">
+                          {item.titulo}
+                        </h4>
+                        <p className="text-xs text-gray-600 font-light leading-relaxed">
+                          {item.descripcion}
+                        </p>
+                      </div>
+                      <div className="w-6 h-0.5 bg-main-red/30 rounded-full mt-4" />
                     </div>
                   ))}
                 </div>
@@ -1295,73 +1281,6 @@ export default function CursoLanding() {
                   className="text-gray-500 hover:text-main-blue text-xs font-bold transition cursor-pointer"
                 >
                   ← Ver Programa
-                </button>
-                <button
-                  onClick={() => irASeccion("incluido")}
-                  className="bg-main-blue hover:bg-light-blue text-white text-xs font-bold uppercase tracking-wider py-2.5 px-5 rounded-xl transition flex items-center gap-2 cursor-pointer shadow-sm"
-                >
-                  <span>Ver Qué Incluye el Curso</span>
-                  <span>→</span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ==========================================
-              PESTAÑA 4: ¿QUÉ ESTÁ INCLUIDO?
-             ========================================== */}
-          {seccionActiva === "incluido" && (
-            <div className="space-y-6 animate-fade-in">
-              <div className="max-w-2xl">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
-                  Servicios y Beneficios Académicos
-                </span>
-                <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
-                  ¿Qué está incluido?
-                </h2>
-                <div className="w-12 h-1 bg-main-red my-3 rounded-full" />
-                <p className="text-gray-600 font-light text-sm">
-                  Un programa integral de máxima categoría que cubre tanto la experiencia académica de inmersión como la logística de hospedaje y traslados internos.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {queEstaIncluido.map((item, index) => (
-                  <div
-                    key={index}
-                    className="p-5 rounded-2xl border border-gray-200 bg-slate-50/70 hover:bg-white hover:border-main-blue/30 hover:shadow-md transition flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="w-10 h-10 rounded-xl bg-main-blue/10 text-main-blue flex items-center justify-center text-xl mb-3 shadow-xs">
-                        {item.icono || "✓"}
-                      </div>
-                      <h4 className="text-sm font-bold text-main-blue mb-1.5 leading-snug">
-                        {item.titulo}
-                      </h4>
-                      <p className="text-xs text-gray-600 font-light leading-relaxed">
-                        {item.descripcion}
-                      </p>
-                    </div>
-                    <div className="w-6 h-0.5 bg-main-red/30 rounded-full mt-4" />
-                  </div>
-                ))}
-              </div>
-
-              <div className="bg-slate-100 p-4 rounded-2xl border border-gray-200 text-xs text-gray-600 flex items-center justify-between flex-wrap gap-2">
-                <span>
-                  📌 <strong>Nota Logística:</strong> El curso incluye alojamiento en hotel 4 estrellas y todos los traslados internos de la agenda en Palermo. No incluye boletos aéreos internacionales hasta/desde Palermo.
-                </span>
-                <span className="font-bold text-main-blue">
-                  Inversión Total: {normalizarPrecio(landing.precioInversion)}
-                </span>
-              </div>
-
-              <div className="pt-4 flex justify-between items-center">
-                <button
-                  onClick={() => irASeccion("docentes")}
-                  className="text-gray-500 hover:text-main-blue text-xs font-bold transition cursor-pointer"
-                >
-                  ← Ver Docentes
                 </button>
                 <button
                   onClick={() => irASeccion("brochure")}
