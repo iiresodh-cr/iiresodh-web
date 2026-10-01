@@ -17,6 +17,7 @@ import logoUnlp from "../assets/cursos/logo_unlp_ddhh.png";
 import brochureP1 from "../assets/cursos/brochure_palermo_p1.jpg";
 import brochureP2 from "../assets/cursos/brochure_palermo_p2.jpg";
 import logoIiresodh from "../assets/logo.webp";
+import logoIiresodhColor from "../assets/logo-color.png";
 import FormularioPagoCurso from "../components/cursos/FormularioPagoCurso";
 
 export const normalizarPrecio = (precioStr) => {
@@ -672,82 +673,70 @@ export default function CursoLanding() {
       )}
 
       {/* HERO INSTITUCIONAL CON COLLAGE FOTOGRÁFICO EN BLANCO Y NEGRO (NÍTIDO, CINEMATOGRÁFICO Y SOLEMNE) */}
-      <section className="relative text-white pt-8 pb-12 md:pt-12 md:pb-16 overflow-hidden border-b border-slate-700 bg-[#0c1a2d]">
+      <section className="relative text-white pt-8 pb-12 md:pt-12 md:pb-16 overflow-hidden border-b border-slate-800 bg-[#0a1526]">
         
         {/* COLLAGE FOTOGRÁFICO DE FONDO EN BLANCO Y NEGRO (FALCONE & BORSELLINO, PALACIO DE JUSTICIA, AULA BÚNKER) */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           <img
             src={palermoCollageHeroBw}
             alt="Collage Conmemorativo Palermo: Falcone, Borsellino, Palacio de Justicia y Aula Búnker"
-            className="w-full h-full object-cover object-center filter grayscale contrast-120 brightness-95 opacity-55"
+            className="w-full h-full object-cover object-center filter grayscale contrast-125 brightness-75 opacity-35 mix-blend-luminosity"
           />
-          {/* Velo azul marino institucional y viñeta sutil para máxima legibilidad de textos dorados y blancos */}
-          <div className="absolute inset-0 bg-[#0c1a2d]/70 backdrop-contrast-115" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#07111e] via-transparent to-[#07111e]/50" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a1526] via-[#0a1526]/85 to-[#0a1526]/75" />
         </div>
 
-        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 md:px-8 space-y-6">
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 md:px-8 space-y-7">
           
           {/* CONVOCATORIA OFICIAL CONJUNTA IIRESODH & INSTITUTO DE DDHH UNLP */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/15">
-            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-              {/* Logo IIRESODH */}
-              <div className="flex items-center gap-2">
-                <img
-                  src={logoIiresodh}
-                  alt="IIRESODH"
-                  className="h-8 sm:h-9 w-auto brightness-110 drop-shadow-sm"
-                />
-                <span className="text-white text-xs sm:text-sm font-bold tracking-wider">
-                  IIRESODH
-                </span>
-              </div>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-5 border-b border-white/10">
+            <div className="inline-flex items-center gap-4 bg-white px-5 py-2.5 rounded-xl shadow-md border border-white/20">
+              {/* Logo IIRESODH en Color Oficial */}
+              <img
+                src={logoIiresodhColor}
+                alt="IIRESODH - Instituto Internacional de Responsabilidad Social y Derechos Humanos"
+                className="h-8 sm:h-9 w-auto object-contain"
+              />
 
-              <span className="text-amber-400 font-black text-xs uppercase tracking-widest px-1">
-                • EN CONJUNTO CON •
+              <div className="h-6 w-px bg-slate-200" />
+
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-600 whitespace-nowrap">
+                En conjunto con
               </span>
 
-              {/* Logo Instituto de Derechos Humanos UNLP */}
-              <div className="flex items-center gap-2 bg-white px-2.5 py-1 rounded-lg shadow-sm">
-                <img
-                  src={logoUnlp}
-                  alt="Instituto de Derechos Humanos - Universidad Nacional de La Plata"
-                  className="h-6 sm:h-7 w-auto object-contain"
-                />
-                <span className="text-neutral-900 text-[11px] sm:text-xs font-bold leading-tight">
-                  Instituto de Derechos Humanos (UNLP - Argentina)
-                </span>
-              </div>
+              <div className="h-6 w-px bg-slate-200" />
+
+              {/* Logo Instituto de Derechos Humanos UNLP en Color */}
+              <img
+                src={logoUnlp}
+                alt="Instituto de Derechos Humanos - Universidad Nacional de La Plata"
+                className="h-8 sm:h-9 w-auto object-contain"
+              />
             </div>
 
-            <span className="inline-flex items-center gap-1.5 bg-amber-500/20 text-amber-300 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border border-amber-400/40 shadow-xs">
-              <span>🏛️</span>
-              <span>Convocatoria Internacional Conjunta</span>
+            <span className="text-xs uppercase tracking-widest text-slate-300 font-semibold">
+              Convocatoria Académica Internacional
             </span>
           </div>
 
           {/* CONTENIDO PRINCIPAL: TÍTULOS Y DETALLES DEL CURSO */}
           <div className="space-y-4 text-center lg:text-left">
             
-            {/* BADGES SUPERIORES */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
-              <div className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-amber-300 font-semibold shadow-xs backdrop-blur-xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-                Alta Especialización Internacional
-              </div>
-              <div className="inline-flex items-center gap-1.5 bg-rose-500/20 border border-rose-400/30 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-rose-200 font-bold shadow-xs backdrop-blur-xs">
-                <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
-                {landing.cuposTexto || "Cupos Estrictamente Limitados"}
-              </div>
-              <div className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-white font-medium backdrop-blur-xs">
-                <span>📅</span>
-                <span>17 – 23 de Mayo de 2027</span>
-              </div>
+            {/* BADGES SUPERIORES (SOBRIOS, UNIFICADOS Y ELEGANTES - SIN COLORES CHILLONES) */}
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs font-medium text-slate-300">
+              <span className="bg-white/10 border border-white/15 px-3 py-1 rounded-md text-slate-200 backdrop-blur-sm">
+                Alta Especialización Judicial
+              </span>
+              <span className="bg-white/10 border border-white/15 px-3 py-1 rounded-md text-slate-200 backdrop-blur-sm">
+                Cupos Limitados
+              </span>
+              <span className="bg-white/10 border border-white/15 px-3 py-1 rounded-md text-slate-200 backdrop-blur-sm">
+                17 – 23 de Mayo de 2027
+              </span>
             </div>
 
             {/* TÍTULO PRINCIPAL OFICIAL */}
-            <div className="space-y-1">
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-main-red block">
+            <div className="space-y-1.5">
+              <span className="text-xs font-bold uppercase tracking-[0.25em] text-red-500 block">
                 Curso Internacional
               </span>
               <h1 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight leading-tight uppercase font-sans text-white">
@@ -757,8 +746,8 @@ export default function CursoLanding() {
 
             {/* UBICACIÓN Y FECHAS */}
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs md:text-sm font-medium text-slate-300">
-              <span className="flex items-center gap-1.5 bg-white/10 px-3.5 py-1.5 rounded-lg border border-white/15 backdrop-blur-xs">
-                <svg className="w-4 h-4 text-main-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <span className="flex items-center gap-2 bg-white/10 px-3.5 py-1.5 rounded-lg border border-white/15 backdrop-blur-xs">
+                <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -767,77 +756,72 @@ export default function CursoLanding() {
             </div>
 
             {/* SUBTÍTULO BROCHURE */}
-            <p className="text-sm md:text-base font-medium text-slate-200 border-l-2 border-main-red pl-3 leading-relaxed max-w-4xl">
+            <p className="text-sm md:text-base font-normal text-slate-300 border-l-2 border-main-red pl-3.5 leading-relaxed max-w-4xl">
               {landing.subtitulo || "Investigación Criminal, Cooperación Internacional y Derechos Humanos en la Lucha contra la Criminalidad Organizada y la Trata de Personas"}
             </p>
 
             {/* CITA SOLEMNE DE FALCONE INTEGRADA CON ESTILO */}
-            <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl backdrop-blur-xs text-xs text-slate-300 italic">
+            <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl backdrop-blur-sm text-xs text-slate-300 italic">
               <span>«La mafia è un fenomeno umano e come tutti i fenomeni umani ha un principio, una sua evoluzione e avrà quindi anche una fine.»</span>
-              <span className="not-italic text-amber-400 font-bold whitespace-nowrap">— Giovanni Falcone</span>
+              <span className="not-italic text-slate-200 font-semibold whitespace-nowrap">— Giovanni Falcone</span>
             </div>
 
           </div>
 
-          {/* TARJETA COMPACTA DE INVERSIÓN Y ACCIÓN RÁPIDA (AMPLIA, SIMÉTRICA Y COMPLETA) */}
-          <div className="bg-white/10 border border-white/20 p-5 sm:p-6 rounded-3xl backdrop-blur-md shadow-2xl flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+          {/* TARJETA DE ADMISIÓN E INVERSIÓN ACADÉMICA (SOBRIA, ELEGANTE Y PROFESIONAL) */}
+          <div className="bg-slate-900/90 border border-white/15 p-6 md:p-8 rounded-2xl backdrop-blur-md shadow-2xl flex flex-col xl:flex-row xl:items-center justify-between gap-6">
             
-            {/* PARTE IZQUIERDA: PRECIO, BADGES Y DETALLES */}
-            <div className="space-y-2.5 flex-1 min-w-0 text-left">
+            {/* PARTE IZQUIERDA: PRECIO Y ESPECIFICACIONES */}
+            <div className="space-y-3 flex-1 min-w-0 text-left">
               <div className="flex items-baseline gap-3 flex-wrap">
-                <span className="text-3xl sm:text-4xl font-black text-amber-400 tracking-tight">
+                <span className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-sans">
                   {normalizarPrecio(landing.precioInversion)}
                 </span>
-                <span className="text-xs uppercase font-bold tracking-widest text-amber-200 bg-amber-400/20 px-3 py-1 rounded-full border border-amber-400/30">
+                <span className="text-xs uppercase font-bold tracking-wider text-slate-300 bg-white/10 px-3 py-1 rounded-md border border-white/15">
                   Inversión Académica Total
                 </span>
-                <span className="inline-flex items-center gap-1.5 text-xs uppercase font-extrabold tracking-wider text-rose-300 bg-rose-500/20 px-3 py-1 rounded-full border border-rose-400/30">
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
+                <span className="text-xs uppercase font-bold tracking-wider text-slate-300 bg-white/10 px-3 py-1 rounded-md border border-white/15">
                   Cupos Limitados
                 </span>
               </div>
 
-              <p className="text-xs sm:text-sm text-gray-200 font-light leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-300 font-light leading-relaxed max-w-2xl">
                 {landing.inversionDetalle || "Por participante. Incluye alojamiento en hotel 4★ en Palermo, traslados internos de logística académica, clases magistrales con expertos internacionales y doble certificación oficial."}
               </p>
 
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-300 pt-1">
-                <span className="flex items-center gap-1.5 text-amber-300 font-medium">
-                  <span>⚡</span>
-                  <span>Plazas por orden de registro</span>
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-slate-300 pt-1">
+                <span className="flex items-center gap-1.5">
+                  <span className="text-slate-400 font-bold">✓</span> Hotel 4★ en Palermo incluido
                 </span>
-                <span className="flex items-center gap-1.5 text-slate-200">
-                  <span>🏨</span>
-                  <span>Hotel 4★ incluido</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="text-slate-400 font-bold">✓</span> Traslados internos incluidos
                 </span>
-                <span className="flex items-center gap-1.5 text-slate-200">
-                  <span>🚐</span>
-                  <span>Traslados internos incluidos</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="text-slate-400 font-bold">✓</span> Clases con magistrados antimafia
                 </span>
-                <span className="flex items-center gap-1.5 text-slate-200">
-                  <span>🎓</span>
-                  <span>Doble aval IIRESODH & UNLP</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="text-slate-400 font-bold">✓</span> Doble aval oficial IIRESODH & UNLP
                 </span>
               </div>
             </div>
 
-            {/* PARTE DERECHA: BOTONES DE ACCIÓN PRINCIPALES ALINEADOS */}
-            <div className="grid grid-cols-2 sm:flex sm:flex-nowrap items-center gap-2.5 w-full xl:w-auto shrink-0 pt-2 xl:pt-0">
+            {/* PARTE DERECHA: BOTONES DE ACCIÓN UNIFICADOS Y COHERENTES (SIN ARBOL DE NAVIDAD) */}
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full xl:w-auto shrink-0 pt-2 xl:pt-0">
               <button
                 onClick={() => irASeccion("inscripcion")}
-                className="bg-main-red hover:bg-red-800 text-white font-bold text-xs uppercase tracking-widest py-3.5 px-5 rounded-xl shadow-md hover:shadow-red-900/30 transition-all active:scale-95 text-center cursor-pointer whitespace-nowrap"
+                className="flex-1 sm:flex-initial bg-main-red hover:bg-[#8b1515] text-white font-bold text-xs uppercase tracking-wider py-3.5 px-6 rounded-xl shadow-md transition-colors active:scale-95 text-center cursor-pointer whitespace-nowrap"
               >
                 Inscríbete Ahora
               </button>
               <button
                 onClick={() => irASeccion("programa")}
-                className="bg-white/15 hover:bg-white/25 text-white font-semibold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl border border-white/25 transition-all text-center cursor-pointer whitespace-nowrap"
+                className="flex-1 sm:flex-initial bg-white/10 hover:bg-white/20 text-white font-semibold text-xs uppercase tracking-wider py-3.5 px-5 rounded-xl border border-white/20 transition-colors text-center cursor-pointer whitespace-nowrap"
               >
                 Ver Programa ({programa.length} Días)
               </button>
               <button
                 onClick={() => setModalBrochure(1)}
-                className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs uppercase tracking-wider py-3.5 px-3.5 rounded-xl border border-amber-400/30 transition-all text-center cursor-pointer whitespace-nowrap"
+                className="flex-1 sm:flex-initial bg-white/10 hover:bg-white/20 text-white font-semibold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl border border-white/20 transition-colors text-center cursor-pointer whitespace-nowrap"
               >
                 Brochure 📄
               </button>
@@ -845,9 +829,9 @@ export default function CursoLanding() {
                 href={contacto?.whatsappUrl || "https://wa.me/50640816188"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-emerald-600/30 hover:bg-emerald-600/40 text-emerald-300 font-bold text-xs uppercase tracking-wider py-3.5 px-3.5 rounded-xl border border-emerald-500/40 transition-all text-center cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5"
+                className="flex-1 sm:flex-initial bg-white/10 hover:bg-white/20 text-white font-semibold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl border border-white/20 transition-colors text-center cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5"
               >
-                <span>💬</span> WhatsApp
+                WhatsApp
               </a>
             </div>
 
@@ -890,12 +874,12 @@ export default function CursoLanding() {
             <div className="space-y-10 animate-fade-in">
               
               {/* BLOQUE INSTITUCIONAL CO-ORGANIZADORES */}
-              <div className="bg-gradient-to-r from-slate-50 via-amber-50/30 to-slate-50 border border-gray-200 p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-xs">
+              <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl flex flex-col lg:flex-row items-center justify-between gap-6 shadow-xs">
                 <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
-                  <div className="flex items-center gap-4 bg-white p-3 rounded-xl border border-gray-200 shadow-xs">
-                    <img src={logoIiresodh} alt="IIRESODH" className="h-10 w-auto object-contain" />
-                    <span className="text-gray-400 font-bold text-lg">+</span>
-                    <img src={logoUnlp} alt="Instituto DDHH UNLP" className="h-10 w-auto object-contain" />
+                  <div className="flex items-center gap-4 bg-white px-5 py-3 rounded-xl border border-slate-200 shadow-xs shrink-0">
+                    <img src={logoIiresodhColor} alt="IIRESODH" className="h-9 w-auto object-contain" />
+                    <div className="h-6 w-px bg-slate-200" />
+                    <img src={logoUnlp} alt="Instituto de Derechos Humanos UNLP" className="h-9 w-auto object-contain" />
                   </div>
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest text-main-red block">
@@ -904,7 +888,7 @@ export default function CursoLanding() {
                     <h3 className="text-sm sm:text-base font-bold text-main-blue">
                       IIRESODH & Instituto de Derechos Humanos (UNLP - Argentina)
                     </h3>
-                    <p className="text-xs text-gray-600 font-light mt-0.5">
+                    <p className="text-xs text-slate-600 font-light mt-0.5 max-w-xl">
                       Programa académico diseñado y certificado conjuntamente por ambas instituciones de referencia internacional.
                     </p>
                   </div>
@@ -912,7 +896,7 @@ export default function CursoLanding() {
 
                 <button
                   onClick={() => irASeccion("brochure")}
-                  className="shrink-0 bg-white hover:bg-slate-50 text-main-blue border border-gray-300 font-bold text-xs uppercase tracking-wider py-2.5 px-4 rounded-xl shadow-xs transition"
+                  className="shrink-0 bg-white hover:bg-slate-100 text-main-blue border border-slate-300 font-bold text-xs uppercase tracking-wider py-3 px-5 rounded-xl shadow-xs transition"
                 >
                   Consultar Brochure Oficial 📄
                 </button>
