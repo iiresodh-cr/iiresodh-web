@@ -268,7 +268,7 @@ export default function Home2() {
                 <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full bg-white border border-slate-200/80 shadow-xs mb-4">
                   <span className="w-2 h-2 rounded-full bg-main-red"></span>
                   <span className="text-[11px] font-bold tracking-[0.18em] uppercase text-slate-700">
-                    Instituto Internacional de Derechos Humanos
+                    Instituto Internacional de Responsabilidad Social y Derechos Humanos
                   </span>
                 </div>
 
@@ -609,7 +609,7 @@ export default function Home2() {
                   </div>
 
                   <div className="inline-flex items-center gap-1.5 text-xs font-bold text-main-red uppercase tracking-wider group-hover:translate-x-1 transition-transform pt-3 border-t border-slate-100">
-                    <span>Conocer casos y precedentes</span>
+                    <span>Más Información</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
                 </article>
