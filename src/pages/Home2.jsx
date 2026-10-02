@@ -744,9 +744,11 @@ export default function Home2() {
                   </div>
                 </div>
 
-                {/* Columna Derecha: Formulario Limpio y Pulido con Fondo Azul */}
+                {/* Columna Derecha: Formulario Limpio y Pulido con Fondo Azul y Franja Roja */}
                 <div className="lg:col-span-7">
-                  <div className="bg-main-blue p-6 sm:p-8 rounded-2xl border border-slate-800/30 shadow-lg">
+                  <div className="bg-main-blue p-6 sm:p-8 pl-7 sm:pl-9 rounded-r-2xl rounded-l-none border border-slate-800/30 shadow-lg relative overflow-hidden">
+                    {/* Franja izquierda roja */}
+                    <div className="absolute left-0 inset-y-0 w-1.5 bg-main-red"></div>
                     
                     <ToastAlert 
                       open={estadoEnvio === "exito"} 
