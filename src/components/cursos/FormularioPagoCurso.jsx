@@ -114,7 +114,7 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
   const [reciboPago, setReciboPago] = useState(null);
 
   // Cálculo del monto total y moneda (Transacciones oficiales en USD)
-  const precioTexto = landing?.precioInversion || "3,350.00 USD";
+  const precioTexto = landing?.precioInversion || "3,350 USD";
   const monedaDetectada = "USD";
   const simboloMoneda = "$";
   
@@ -129,11 +129,12 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
   };
   const montoTotal = parsearMontoTotal(precioTexto);
 
-  // Formateador estándar institucional: coma (,) para miles y punto (.) para decimales con 2 dígitos
+  // Formateador institucional: coma (,) para miles y sin decimales en números enteros (ej. 3,350)
   const formatMonto = (num) => {
     const n = Number(num) || 0;
+    const tieneDecimales = !Number.isInteger(n) && (Math.abs(n % 1) > 0.001);
     return n.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
+      minimumFractionDigits: tieneDecimales ? 2 : 0,
       maximumFractionDigits: 2,
     });
   };
