@@ -134,9 +134,9 @@ export default function Home2() {
         let noticiasFijas = snapPersistentes.docs.map(doc => ({ id: doc.id, ...doc.data() })).slice(0, 3);
         
         let noticiasRecientes = [];
-        const faltantes = 6 - noticiasFijas.length;
+        const faltantes = 8 - noticiasFijas.length;
         if (faltantes > 0) {
-          const qRecientes = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), limit(10));
+          const qRecientes = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), limit(12));
           const snapRecientes = await getDocs(qRecientes);
           const idsFijas = noticiasFijas.map(n => n.id);
           noticiasRecientes = snapRecientes.docs
@@ -191,10 +191,18 @@ export default function Home2() {
     }
   };
 
+  // Noticia 0 se muestra como portada en el Hero principal
   const noticiaDestacada = noticias.length > 0 ? noticias[0] : null;
   const tituloDestacado = noticiaDestacada ? obtenerTextoTraducido(noticiaDestacada, 'titulo', i18n.language) : "";
-  const noticiasCarrusel = noticias.slice(0, 3);
-  const noticiasLista = noticias.length > 1 ? noticias.slice(1, 5) : noticias;
+
+  // Excluimos la noticia 0 del carrusel y de la lista lateral para no repetir contenido
+  const noticiasSinHero = noticias.slice(1);
+  const noticiasCarrusel = noticiasSinHero.length > 2 
+    ? noticiasSinHero.slice(0, 2) 
+    : (noticiasSinHero.length > 0 ? noticiasSinHero : (noticiaDestacada ? [noticiaDestacada] : []));
+  const noticiasLista = noticiasSinHero.length > 2 
+    ? noticiasSinHero.slice(2, 6) 
+    : (noticiasSinHero.length > 0 ? noticiasSinHero : []);
 
   return (
     <main className="bg-[#FAFBFD] flex flex-col min-h-screen font-sans overflow-x-hidden selection:bg-red-500 selection:text-white">
