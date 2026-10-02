@@ -17,8 +17,30 @@ import logoUnlp from "../assets/cursos/logo_unlp_ddhh.png";
 import brochureP1 from "../assets/cursos/brochure_palermo_p2.jpg";
 import brochureP2 from "../assets/cursos/brochure_palermo_p1.jpg";
 import logoIiresodh from "../assets/logo.webp";
-import logoIiresodhColor from "../assets/logo-color.png";
 import FormularioPagoCurso from "../components/cursos/FormularioPagoCurso";
+import { Scale, ShieldCheck, Search, GraduationCap, Globe } from "lucide-react";
+
+const obtenerIconoPerfil = (item, idx) => {
+  const ico = String(item?.icono || "");
+  const perfil = String(item?.perfil || "").toLowerCase();
+
+  if (ico === "Scale" || ico.includes("⚖") || perfil.includes("jueces") || perfil.includes("fiscales") || idx === 0) {
+    return Scale;
+  }
+  if (ico === "ShieldCheck" || ico.includes("🛡") || perfil.includes("abogados") || perfil.includes("defensores") || idx === 1) {
+    return ShieldCheck;
+  }
+  if (ico === "Search" || ico.includes("🔍") || perfil.includes("seguridad") || perfil.includes("inteligencia") || idx === 2) {
+    return Search;
+  }
+  if (ico === "GraduationCap" || ico.includes("🎓") || perfil.includes("academia") || perfil.includes("criminología") || idx === 3) {
+    return GraduationCap;
+  }
+  if (ico === "Globe" || ico.includes("🌐") || perfil.includes("diplomátic") || perfil.includes("organismos") || idx === 4) {
+    return Globe;
+  }
+  return Scale;
+};
 
 export const normalizarPrecio = (precioStr) => {
   if (!precioStr) return "3,350 USD";
@@ -119,23 +141,23 @@ export const DATOS_PALERMO_2027 = {
     aQuienDirigido: [
       {
         perfil: "Jueces, juezas, fiscales y operadores de justicia.",
-        icono: "⚖️"
+        icono: "Scale"
       },
       {
         perfil: "Abogados, abogadas y defensores de derechos humanos.",
-        icono: "🛡️"
+        icono: "ShieldCheck"
       },
       {
         perfil: "Integrantes de las fuerzas de seguridad, unidades de inteligencia financiera y otras áreas de la gestión pública.",
-        icono: "🔍"
+        icono: "Search"
       },
       {
         perfil: "Personas de la academia e investigadoras especializadas en derecho penal y criminología.",
-        icono: "🎓"
+        icono: "GraduationCap"
       },
       {
         perfil: "Diplomáticas, diplomáticos, funcionarias y funcionarios de organismos internacionales.",
-        icono: "🌐"
+        icono: "Globe"
       }
     ],
 
@@ -956,17 +978,22 @@ export default function CursoLanding() {
                   ¿A quién está dirigido?
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                  {aQuienDirigido.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-slate-50 p-4 rounded-xl border border-gray-100 flex items-start gap-3 hover:bg-white hover:border-main-blue/30 transition shadow-xs"
-                    >
-                      <span className="text-2xl shrink-0 mt-0.5">{item.icono || "⚖️"}</span>
-                      <p className="text-xs text-gray-700 font-medium leading-relaxed">
-                        {item.perfil}
-                      </p>
-                    </div>
-                  ))}
+                  {aQuienDirigido.map((item, idx) => {
+                    const Icono = obtenerIconoPerfil(item, idx);
+                    return (
+                      <div
+                        key={idx}
+                        className="bg-slate-50/80 p-3.5 rounded-xl border border-gray-200/80 flex items-start gap-3 hover:bg-white hover:border-main-blue/30 hover:shadow-xs transition group"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-white border border-slate-200/80 flex items-center justify-center shrink-0 mt-0.5 text-main-blue group-hover:border-main-blue/40 group-hover:text-main-red shadow-2xs transition-colors">
+                          <Icono className="w-4 h-4" strokeWidth={1.75} />
+                        </div>
+                        <p className="text-xs text-gray-700 font-medium leading-relaxed self-center">
+                          {item.perfil}
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
