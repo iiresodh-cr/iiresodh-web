@@ -21,10 +21,11 @@ import logoIiresodhColor from "../assets/logo-color.png";
 import FormularioPagoCurso from "../components/cursos/FormularioPagoCurso";
 
 export const normalizarPrecio = (precioStr) => {
-  if (!precioStr) return "3.350 USD";
-  let s = String(precioStr).trim();
-  s = s.replace(/\.00/g, "").replace(/,00/g, "");
-  s = s.replace(/3,350/g, "3.350");
+  if (!precioStr) return "3,350.00 USD";
+  let s = String(precioStr).trim().replace("3.350", "3,350");
+  if (s.includes("3,350") && !s.includes("3,350.")) {
+    s = s.replace("3,350", "3,350.00");
+  }
   if (!s.toUpperCase().includes("USD") && !s.includes("$")) {
     s = `${s} USD`;
   }
@@ -47,7 +48,7 @@ export const DATOS_PALERMO_2027 = {
     lema: "APLICACIÓN DE LAS CONVENCIONES DE PALERMO CONTRA EL CRIMEN ORGANIZADO",
     subtitulo: "Investigación Criminal, Cooperación Internacional y Derechos Humanos en la Lucha contra la Criminalidad Organizada y la Trata de Personas",
     ubicacionFechas: "Palermo, Sicilia, Italia | 17 – 23 de mayo de 2027",
-    precioInversion: "3.350 USD",
+    precioInversion: "3,350.00 USD",
     inversionDetalle: "Por participante. Incluye clases magistrales, simulación de caso transnacional, visitas guiadas a lugares emblemáticos, compendio digital, certificado oficial, alojamiento en hotel 4 estrellas, traslados internos y coffee breaks.",
     cuposTexto: "Cupos Estrictamente Limitados",
     fechaLimitePago: "2027-04-30",

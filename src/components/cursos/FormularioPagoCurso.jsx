@@ -114,26 +114,22 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
   const [reciboPago, setReciboPago] = useState(null);
 
   // Cálculo del monto total y moneda (Transacciones oficiales en USD)
-  const precioTexto = landing?.precioInversion || "3.350 USD";
+  const precioTexto = landing?.precioInversion || "3,350.00 USD";
   const monedaDetectada = "USD";
   const simboloMoneda = "$";
   
-  // Extracción robusta del monto numérico respetando decimales y separadores de miles
+  // Extracción robusta del monto numérico respetando separador de miles con coma y decimales con punto
   const parsearMontoTotal = (texto) => {
     if (!texto) return 3350;
-    let s = String(texto).trim();
+    let s = String(texto).replace(/USD|EUR|\$|€/gi, "").trim();
     if (s.includes("3.350")) s = s.replace("3.350", "3350");
-    s = s.replace(/,/g, ""); // Remueve comas de miles sin tocar el punto decimal
-    const match = s.match(/\d+(\.\d+)?/);
-    if (match) {
-      const val = parseFloat(match[0]);
-      if (!isNaN(val) && val >= 50) return val;
-    }
-    return 3350;
+    s = s.replace(/,/g, ""); // Remueve coma de miles
+    const val = parseFloat(s);
+    return (!isNaN(val) && val >= 50) ? val : 3350;
   };
   const montoTotal = parsearMontoTotal(precioTexto);
 
-  // Formateador estándar internacional USD: siempre con dos dígitos decimales
+  // Formateador estándar institucional: coma (,) para miles y punto (.) para decimales con 2 dígitos
   const formatMonto = (num) => {
     const n = Number(num) || 0;
     return n.toLocaleString("en-US", {
