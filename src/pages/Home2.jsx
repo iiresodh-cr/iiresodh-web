@@ -38,7 +38,7 @@ import ToastAlert from "../components/ui/ToastAlert";
 import AnuncioEmergenteModal from "../components/AnuncioEmergenteModal";
 
 // UI Externa
-import { Button, CircularProgress, FormControlLabel, Checkbox } from "@mui/material";
+import { Button, CircularProgress, FormControlLabel, Checkbox, TextField } from "@mui/material";
 
 // IMPORTACIONES PARA i18n Y TRADUCCIÓN DINÁMICA
 import { useTranslation } from 'react-i18next';
@@ -763,28 +763,67 @@ export default function Home2() {
                     
                     <form onSubmit={handleEnviarContacto} className="flex flex-col gap-5">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <AdminTextField 
+                        <TextField 
                           label={t('home.form_nombre', 'Nombre completo')} 
                           required 
+                          fullWidth
+                          variant="outlined"
                           value={contacto.nombre} 
                           onChange={(e) => setContacto({...contacto, nombre: e.target.value})} 
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              backgroundColor: '#FFFFFF',
+                              borderRadius: '12px',
+                              '& fieldset': { borderColor: '#E2E8F0' },
+                              '&:hover fieldset': { borderColor: '#CBD5E1' },
+                              '&.Mui-focused fieldset': { borderColor: '#B92F32' },
+                            },
+                            '& .MuiInputLabel-root': { color: '#64748B' },
+                            '& .MuiInputLabel-root.Mui-focused': { color: '#B92F32' },
+                          }}
                         />
-                        <AdminTextField 
+                        <TextField 
                           label={t('home.form_email', 'Correo institucional o personal')} 
                           type="email" 
                           required 
+                          fullWidth
+                          variant="outlined"
                           value={contacto.correo} 
                           onChange={(e) => setContacto({...contacto, correo: e.target.value})} 
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              backgroundColor: '#FFFFFF',
+                              borderRadius: '12px',
+                              '& fieldset': { borderColor: '#E2E8F0' },
+                              '&:hover fieldset': { borderColor: '#CBD5E1' },
+                              '&.Mui-focused fieldset': { borderColor: '#B92F32' },
+                            },
+                            '& .MuiInputLabel-root': { color: '#64748B' },
+                            '& .MuiInputLabel-root.Mui-focused': { color: '#B92F32' },
+                          }}
                         />
                       </div>
                       
-                      <AdminTextField 
+                      <TextField 
                         label={t('home.form_mensaje', 'Mensaje o consulta')} 
                         required 
                         multiline 
                         rows={4} 
+                        fullWidth
+                        variant="outlined"
                         value={contacto.mensaje} 
                         onChange={(e) => setContacto({...contacto, mensaje: e.target.value})} 
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            backgroundColor: '#FFFFFF',
+                            borderRadius: '12px',
+                            '& fieldset': { borderColor: '#E2E8F0' },
+                            '&:hover fieldset': { borderColor: '#CBD5E1' },
+                            '&.Mui-focused fieldset': { borderColor: '#B92F32' },
+                          },
+                          '& .MuiInputLabel-root': { color: '#64748B' },
+                          '& .MuiInputLabel-root.Mui-focused': { color: '#B92F32' },
+                        }}
                       />
                       
                       {/* Consentimiento Legal */}
