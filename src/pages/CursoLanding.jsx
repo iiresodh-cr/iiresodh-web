@@ -755,10 +755,12 @@ export default function CursoLanding() {
               </span>
             </div>
 
-            {/* SUBTÍTULO BROCHURE */}
-            <p className="text-sm md:text-base font-normal text-slate-100 border-l-2 border-main-red pl-3.5 leading-relaxed max-w-4xl drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
-              {landing.subtitulo || "Investigación Criminal, Cooperación Internacional y Derechos Humanos en la Lucha contra la Criminalidad Organizada y la Trata de Personas"}
-            </p>
+            {/* SUBTÍTULO BROCHURE CON GLASMORFISMO ELEGANTE PARA MÁXIMA LEGIBILIDAD */}
+            <div className="bg-slate-950/75 border border-white/15 border-l-4 border-l-main-red p-3.5 sm:p-4 rounded-xl backdrop-blur-md shadow-xl max-w-4xl text-left">
+              <p className="text-sm md:text-base font-normal text-slate-100 leading-relaxed drop-shadow-sm">
+                {landing.subtitulo || "Investigación Criminal, Cooperación Internacional y Derechos Humanos en la Lucha contra la Criminalidad Organizada y la Trata de Personas"}
+              </p>
+            </div>
 
             {/* CITA SOLEMNE DE FALCONE INTEGRADA CON ESTILO */}
             <div className="inline-flex items-center gap-2 bg-slate-950/70 border border-white/20 px-4 py-2 rounded-xl backdrop-blur-md text-xs text-slate-200 italic shadow-xs">
