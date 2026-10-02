@@ -746,14 +746,14 @@ export default function CursoLanding() {
               </h1>
             </div>
 
-            {/* UBICACIÓN Y FECHAS */}
+            {/* UBICACIÓN DE LA SEDE */}
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs md:text-sm font-medium text-slate-200">
               <span className="flex items-center gap-2 bg-slate-950/70 px-3.5 py-1.5 rounded-lg border border-white/20 backdrop-blur-md drop-shadow-xs">
                 <svg className="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                {landing.ubicacionFechas || "Palermo, Sicilia, Italia | 17 – 23 de mayo de 2027"}
+                {(landing.ubicacionFechas ? landing.ubicacionFechas.split('|')[0].trim() : "Palermo, Sicilia, Italia")}
               </span>
             </div>
 

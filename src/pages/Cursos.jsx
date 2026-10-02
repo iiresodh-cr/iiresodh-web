@@ -12,41 +12,86 @@ import { Calendar } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 import { obtenerTextoTraducido } from "../utils/traductorDinamico";
 
-const obtenerRangoFechasCurso = (fechaInicio, fechaFin, idioma = 'es', t) => {
+const obtenerRangoFechasCurso = (curso, idioma = 'es', t) => {
+  if (!curso) return null;
+  let fechaInicio = curso.fechaInicio;
+  let fechaFin = curso.fechaFin;
+
+  const esPalermo = curso.id === 'palermo-2027' || 
+                    curso.slug?.includes('palermo') || 
+                    curso.titulo?.toLowerCase().includes('palermo');
+  
+  if (!fechaInicio && !fechaFin && esPalermo) {
+    fechaInicio = "2027-05-17";
+    fechaFin = "2027-05-23";
+  }
+
+  if (!fechaInicio && !fechaFin && curso.landingPage?.ubicacionFechas?.includes('|')) {
+    const parteFechas = curso.landingPage.ubicacionFechas.split('|')[1].trim();
+    if (parteFechas) return parteFechas;
+  }
+
   if (!fechaInicio && !fechaFin) return null;
 
-  const formatearFecha = (str) => {
-    if (!str) return "";
-    try {
-      const partes = String(str).split('-');
-      const locale = idioma === 'en' ? 'en-US' : (idioma === 'fr' ? 'fr-FR' : 'es-ES');
-      if (partes.length === 3) {
-        const año = parseInt(partes[0], 10);
-        const mes = parseInt(partes[1], 10) - 1;
-        const dia = parseInt(partes[2], 10);
-        const d = new Date(año, mes, dia);
-        return d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
-      }
-      const d = new Date(str);
-      if (!isNaN(d.getTime())) {
-        return d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
-      }
-    } catch {
-      // fallback
+  const parsear = (str) => {
+    if (!str) return null;
+    const partes = String(str).split('-');
+    if (partes.length === 3) {
+      return new Date(parseInt(partes[0], 10), parseInt(partes[1], 10) - 1, parseInt(partes[2], 10));
     }
-    return str;
+    const d = new Date(str);
+    return isNaN(d.getTime()) ? null : d;
   };
 
-  const fInicio = formatearFecha(fechaInicio);
-  const fFin = formatearFecha(fechaFin);
+  const dInicio = parsear(fechaInicio);
+  const dFin = parsear(fechaFin);
 
-  if (fInicio && fFin) {
-    return `${fInicio} – ${fFin}`;
+  const lang = (idioma || 'es').substring(0, 2).toLowerCase();
+  const locale = lang === 'en' ? 'en-US' : (lang === 'fr' ? 'fr-FR' : 'es-ES');
+
+  if (dInicio && dFin) {
+    if (dInicio.getTime() === dFin.getTime()) {
+      return dInicio.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    if (dInicio.getMonth() === dFin.getMonth() && dInicio.getFullYear() === dFin.getFullYear()) {
+      const mesLargo = dInicio.toLocaleDateString(locale, { month: 'long' });
+      const año = dInicio.getFullYear();
+      if (lang === 'en') {
+        return `${mesLargo} ${dInicio.getDate()} – ${dFin.getDate()}, ${año}`;
+      }
+      if (lang === 'fr') {
+        return `${dInicio.getDate()} – ${dFin.getDate()} ${mesLargo} ${año}`;
+      }
+      return `${dInicio.getDate()} – ${dFin.getDate()} de ${mesLargo} de ${año}`;
+    }
+
+    if (dInicio.getFullYear() === dFin.getFullYear()) {
+      const mesInicio = dInicio.toLocaleDateString(locale, { month: 'short' });
+      const mesFin = dFin.toLocaleDateString(locale, { month: 'short' });
+      const año = dInicio.getFullYear();
+      if (lang === 'en') {
+        return `${mesInicio} ${dInicio.getDate()} – ${mesFin} ${dFin.getDate()}, ${año}`;
+      }
+      return `${dInicio.getDate()} ${mesInicio} – ${dFin.getDate()} ${mesFin} ${año}`;
+    }
+
+    const f1 = dInicio.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+    const f2 = dFin.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+    return `${f1} – ${f2}`;
   }
-  if (fInicio) {
-    return t ? t('cursos.fecha_inicio', { fecha: fInicio, defaultValue: `Inicio: ${fInicio}` }) : `Inicio: ${fInicio}`;
+
+  if (dInicio) {
+    const f1 = dInicio.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+    return t ? t('cursos.fecha_inicio', { fecha: f1, defaultValue: `Inicio: ${f1}` }) : `Inicio: ${f1}`;
   }
-  return t ? t('cursos.fecha_fin', { fecha: fFin, defaultValue: `Finalización: ${fFin}` }) : `Finalización: ${fFin}`;
+
+  if (dFin) {
+    const f2 = dFin.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+    return t ? t('cursos.fecha_fin', { fecha: f2, defaultValue: `Finalización: ${f2}` }) : `Finalización: ${f2}`;
+  }
+
+  return null;
 };
 
 export default function Cursos() {
@@ -162,7 +207,7 @@ export default function Cursos() {
                 // ==========================================
                 const tituloTraducido = obtenerTextoTraducido(curso, 'titulo', i18n.language);
                 const resumenTraducido = obtenerTextoTraducido(curso, 'resumen', i18n.language);
-                const rangoFechas = obtenerRangoFechasCurso(curso.fechaInicio, curso.fechaFin, i18n.language, t);
+                const rangoFechas = obtenerRangoFechasCurso(curso, i18n.language, t);
 
                 const estado = curso.estadoInscripcion || (curso.cursoActivo ? 'abierta' : 'cerrada');
                 
