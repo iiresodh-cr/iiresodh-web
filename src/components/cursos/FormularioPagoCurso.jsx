@@ -129,12 +129,11 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
   };
   const montoTotal = parsearMontoTotal(precioTexto);
 
-  // Formateador institucional: coma (,) para miles y sin decimales en números enteros (ej. 3,350)
+  // Formateador estándar financiero USD: coma (,) para miles y punto (.) para 2 decimales en todas las cuotas y pagos
   const formatMonto = (num) => {
     const n = Number(num) || 0;
-    const tieneDecimales = !Number.isInteger(n) && (Math.abs(n % 1) > 0.001);
     return n.toLocaleString("en-US", {
-      minimumFractionDigits: tieneDecimales ? 2 : 0,
+      minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
   };
