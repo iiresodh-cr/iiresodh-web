@@ -222,25 +222,25 @@ export default function Home2() {
           <div className="absolute top-20 right-10 w-[450px] h-[450px] bg-blue-100/40 rounded-full blur-[140px]"></div>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pt-8 md:pt-16 pb-24 flex flex-col gap-24 md:gap-32">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pt-4 md:pt-8 pb-14 flex flex-col gap-10 md:gap-12">
           
           {/* ==============================================================
               SECCIÓN 1: HERO INSTITUCIONAL ELEGANTE
           ============================================================== */}
-          <section className="relative pt-4 pb-8 lg:pt-8 lg:pb-12">
+          <section className="relative pt-2 pb-2">
             
             {/* Isotipo institucional sutil como sello de fondo */}
             <div className="absolute top-0 right-10 -mt-12 opacity-[0.035] pointer-events-none hidden lg:block select-none">
               <img src={isotipoFondo} alt="" fetchPriority="high" className="w-[520px] object-contain" />
             </div>
 
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
               
               {/* Columna Izquierda: Mensaje Central */}
               <div className="lg:col-span-7 flex flex-col items-start text-left">
                 
                 {/* Kicker institucional refinado */}
-                <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white border border-slate-200/80 shadow-xs mb-6">
+                <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full bg-white border border-slate-200/80 shadow-xs mb-4">
                   <span className="w-2 h-2 rounded-full bg-main-red"></span>
                   <span className="text-[11px] font-bold tracking-[0.18em] uppercase text-slate-700">
                     Instituto Internacional de Derechos Humanos
@@ -248,7 +248,7 @@ export default function Home2() {
                 </div>
 
                 {/* Titular Principal de Alto Impacto Editorial */}
-                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.25rem] font-black text-[#0B1E40] leading-[1.08] mb-6 tracking-tight">
+                <h1 className="text-4xl sm:text-5xl md:text-5xl lg:text-[3.75rem] font-black text-[#0B1E40] leading-[1.08] mb-4 tracking-tight">
                   {obtenerTextoTraducido(tituloHome, 'tituloPrincipal', i18n.language) || (
                     <>
                       <span>{t('home.hero_titulo_1', 'Defendiendo la')}</span>{' '}
@@ -262,7 +262,7 @@ export default function Home2() {
                 </h1>
                 
                 {/* Subtítulo con respiración y peso visual equilibrado */}
-                <p className="text-lg md:text-xl text-slate-600 font-normal mb-10 leading-relaxed max-w-2xl">
+                <p className="text-base md:text-lg text-slate-600 font-normal mb-6 leading-relaxed max-w-2xl">
                   {t('home.hero_subtitulo', 'Fomentamos el cumplimiento de estándares internacionales mediante la participación ciudadana y gubernamental.')}
                 </p>
                 
@@ -335,39 +335,36 @@ export default function Home2() {
             </div>
           </section>
 
-          {/* Separador Arquitectónico Refinado */}
-          <div className="w-full h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
-
           {/* ==============================================================
               SECCIÓN 2: ACTUALIDAD Y COMUNICADOS (CARRUSEL CINEMATOGRÁFICO)
           ============================================================== */}
-          <section id="noticias-recientes" className="scroll-mt-24 relative">
+          <section id="noticias-recientes" className="scroll-mt-20 relative pt-2 border-t border-slate-200/60">
             
             {/* Cabecera de la Sección */}
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5 pt-6">
               <div>
-                <span className="text-main-red font-bold text-xs tracking-[0.25em] uppercase mb-2 block">
+                <span className="text-main-red font-bold text-xs tracking-[0.25em] uppercase mb-1.5 block">
                   Comunicados Oficiales
                 </span>
-                <h2 className="text-3xl md:text-4xl font-black text-main-blue tracking-tight">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-main-blue tracking-tight">
                   {t('home.seccion_actualidad', 'Actualidad Institucional')}
                 </h2>
               </div>
               
               <Link 
                 to="/noticias" 
-                className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-main-red uppercase tracking-wider py-2 px-4 rounded-xl border border-slate-200 hover:border-main-red transition-all self-start sm:self-auto bg-white shadow-2xs"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-main-red uppercase tracking-wider py-1.5 px-3.5 rounded-lg border border-slate-200 hover:border-main-red transition-all self-start sm:self-auto bg-white shadow-2xs"
               >
                 <span>{t('home.archivo_noticias', 'Archivo de Noticias')}</span>
-                <ArrowUpRight className="w-4 h-4" />
+                <ArrowUpRight className="w-3.5 h-3.5" />
               </Link>
             </div>
             
             {loading ? (
-              <div className="w-full h-[460px] md:h-[520px] rounded-3xl bg-slate-100 animate-pulse flex flex-col justify-end p-8 md:p-14 shadow-inner border border-slate-200">
-                <div className="w-32 h-5 bg-slate-300 rounded mb-4"></div>
-                <div className="w-3/4 h-10 bg-slate-300 rounded mb-4"></div>
-                <div className="w-1/2 h-6 bg-slate-200 rounded"></div>
+              <div className="w-full h-[380px] md:h-[440px] rounded-2xl bg-slate-100 animate-pulse flex flex-col justify-end p-6 md:p-10 shadow-inner border border-slate-200">
+                <div className="w-32 h-5 bg-slate-300 rounded mb-3"></div>
+                <div className="w-3/4 h-8 bg-slate-300 rounded mb-3"></div>
+                <div className="w-1/2 h-5 bg-slate-200 rounded"></div>
               </div>
             ) : noticias.length > 0 ? (
               <div className="relative group w-full">
@@ -388,7 +385,7 @@ export default function Home2() {
                     bulletClass: 'swiper-custom-bullet',
                     bulletActiveClass: 'swiper-custom-bullet-active',
                   }}
-                  className="w-full rounded-3xl overflow-hidden shadow-2xl border border-slate-200/90"
+                  className="w-full rounded-2xl overflow-hidden shadow-xl border border-slate-200/90"
                 >
                   {noticias.map((noticia) => {
                     const tituloTraducido = obtenerTextoTraducido(noticia, 'titulo', i18n.language);
@@ -397,7 +394,7 @@ export default function Home2() {
                     return (
                       <SwiperSlide key={noticia.id}>
                         <article 
-                          className="group/slide relative w-full h-[480px] md:h-[540px] overflow-hidden bg-[#0B1E40] cursor-pointer"
+                          className="group/slide relative w-full h-[400px] md:h-[440px] overflow-hidden bg-[#0B1E40] cursor-pointer"
                           onClick={() => navigate(`/noticias/${noticia.slug || noticia.id}`, { state: { noticiaPreCargada: noticia } })}
                         >
                           {/* Fotografía de Fondo con Zoom Suave */}
@@ -413,14 +410,14 @@ export default function Home2() {
                           <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-[#0B1E40]/90 via-[#0B1E40]/60 to-transparent w-3/4"></div>
 
                           {/* Contenido Editorial con Tipografía Impecable */}
-                          <div className="absolute inset-0 p-8 md:p-14 lg:p-16 flex flex-col justify-end max-w-3xl z-10 text-white">
+                          <div className="absolute inset-0 p-6 md:p-10 lg:p-12 flex flex-col justify-end max-w-3xl z-10 text-white">
                             
                             {/* Tags de Categoría */}
-                            <div className="flex flex-wrap gap-2 mb-4">
+                            <div className="flex flex-wrap gap-2 mb-3">
                               {noticia.tags?.slice(0, 3).map(tag => (
                                 <span 
                                   key={tag} 
-                                  className="bg-white/15 backdrop-blur-md border border-white/20 text-white text-[10px] md:text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider"
+                                  className="bg-white/15 backdrop-blur-md border border-white/20 text-white text-[10px] md:text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider"
                                 >
                                   {tag}
                                 </span>
@@ -428,17 +425,17 @@ export default function Home2() {
                             </div>
 
                             {/* Título de la Noticia */}
-                            <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4 leading-tight tracking-tight group-hover/slide:text-red-200 transition-colors line-clamp-3">
+                            <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-white mb-2.5 leading-snug tracking-tight group-hover/slide:text-red-200 transition-colors line-clamp-3">
                               {tituloTraducido}
                             </h3>
 
                             {/* Resumen */}
-                            <p className="text-slate-200 line-clamp-2 md:line-clamp-3 mb-6 text-sm md:text-base font-light leading-relaxed max-w-2xl">
+                            <p className="text-slate-200 line-clamp-2 mb-4 text-xs sm:text-sm md:text-base font-light leading-relaxed max-w-2xl">
                               {resumenTraducido}
                             </p>
                             
                             {/* Botón de Lectura */}
-                            <div className="inline-flex items-center gap-2.5 self-start px-5 py-2.5 text-xs font-bold text-white bg-main-red hover:bg-[#9E2427] rounded-xl uppercase tracking-widest transition-all shadow-md group-hover/slide:translate-x-1">
+                            <div className="inline-flex items-center gap-2 self-start px-4 py-2 text-xs font-bold text-white bg-main-red hover:bg-[#9E2427] rounded-lg uppercase tracking-widest transition-all shadow-md group-hover/slide:translate-x-1">
                               <span>{t('home.leer_articulo', 'Leer comunicado')}</span>
                               <ArrowRight className="w-3.5 h-3.5" />
                             </div>
@@ -450,18 +447,18 @@ export default function Home2() {
                 </Swiper>
 
                 {/* Botones de Navegación del Carrusel */}
-                <div className="absolute top-6 right-6 z-20 hidden md:flex items-center gap-2">
+                <div className="absolute top-5 right-5 z-20 hidden md:flex items-center gap-2">
                   <button 
-                    className="swiper-btn-prev-home2 w-11 h-11 bg-white/90 hover:bg-white text-main-blue hover:text-main-red backdrop-blur-md rounded-full shadow-lg border border-slate-200/80 transition-all flex items-center justify-center cursor-pointer active:scale-95" 
+                    className="swiper-btn-prev-home2 w-9 h-9 bg-white/90 hover:bg-white text-main-blue hover:text-main-red backdrop-blur-md rounded-full shadow-md border border-slate-200/80 transition-all flex items-center justify-center cursor-pointer active:scale-95" 
                     aria-label="Ver noticia anterior"
                   >
-                    <ChevronLeft className="w-5 h-5" />
+                    <ChevronLeft className="w-4 h-4" />
                   </button>
                   <button 
-                    className="swiper-btn-next-home2 w-11 h-11 bg-white/90 hover:bg-white text-main-blue hover:text-main-red backdrop-blur-md rounded-full shadow-lg border border-slate-200/80 transition-all flex items-center justify-center cursor-pointer active:scale-95" 
+                    className="swiper-btn-next-home2 w-9 h-9 bg-white/90 hover:bg-white text-main-blue hover:text-main-red backdrop-blur-md rounded-full shadow-lg border border-slate-200/80 transition-all flex items-center justify-center cursor-pointer active:scale-95" 
                     aria-label="Ver siguiente noticia"
                   >
-                    <ChevronRight className="w-5 h-5" />
+                    <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
 
@@ -469,54 +466,51 @@ export default function Home2() {
             ) : null}
           </section>
 
-          {/* Separador Arquitectónico Refinado */}
-          <div className="w-full h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
-
           {/* ==============================================================
               SECCIÓN 3: NUESTRA LABOR (3 PILARES INSTITUCIONALES DEDICADOS)
           ============================================================== */}
-          <section id="nuestra-labor" className="relative">
+          <section id="nuestra-labor" className="relative pt-2 border-t border-slate-200/60">
             
             {/* Encabezado Centrado de Alto Nivel */}
-            <div className="text-center max-w-3xl mx-auto mb-14 md:mb-16">
-              <span className="text-main-red font-bold text-xs tracking-[0.28em] uppercase mb-3 block">
+            <div className="text-center max-w-3xl mx-auto mb-8 md:mb-10 pt-6">
+              <span className="text-main-red font-bold text-xs tracking-[0.28em] uppercase mb-2 block">
                 {t('home.nuestra_labor', 'Áreas de Acción')}
               </span>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-main-blue tracking-tight mb-5">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-main-blue tracking-tight mb-3">
                 {t('home.que_hacemos_titulo', '¿Qué hacemos en IIRESODH?')}
               </h2>
-              <p className="text-slate-600 text-base md:text-lg font-light leading-relaxed">
+              <p className="text-slate-600 text-sm md:text-base font-light leading-relaxed">
                 {t('home.que_hacemos_subtitulo', 'Combinamos acción jurídica, cooperación técnica y formación académica para generar un impacto real en la sociedad.')}
               </p>
             </div>
 
             {/* Grid Equilibrado de 3 Columnas */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
               
               {/* Tarjeta 1: Litigio Estratégico */}
               <Link to="/litigio-estrategico" className="group flex">
-                <article className="w-full bg-white p-8 md:p-10 rounded-3xl border border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between relative overflow-hidden">
+                <article className="w-full bg-white p-6 md:p-8 rounded-2xl border border-slate-200/80 hover:border-slate-300 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden">
                   <div className="absolute top-0 inset-x-0 h-1 bg-main-red transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
                   
                   <div>
-                    <div className="w-14 h-14 rounded-2xl bg-red-50 border border-red-100/80 text-main-red flex items-center justify-center mb-6 shadow-2xs group-hover:scale-105 transition-transform duration-300">
-                      <Scale className="w-7 h-7" strokeWidth={1.75} />
+                    <div className="w-12 h-12 rounded-xl bg-red-50 border border-red-100/80 text-main-red flex items-center justify-center mb-5 shadow-2xs group-hover:scale-105 transition-transform duration-300">
+                      <Scale className="w-6 h-6" strokeWidth={1.75} />
                     </div>
                     
-                    <span className="text-[11px] font-bold tracking-widest uppercase text-slate-600 block mb-2">
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-slate-500 block mb-1.5">
                       Acción Jurídica
                     </span>
                     
-                    <h3 className="text-2xl font-bold text-main-blue mb-4 group-hover:text-main-red transition-colors">
+                    <h3 className="text-xl font-bold text-main-blue mb-2.5 group-hover:text-main-red transition-colors">
                       {t('home.litigio_titulo', 'Litigio Estratégico')}
                     </h3>
                     
-                    <p className="text-slate-600 font-normal text-sm md:text-base leading-relaxed mb-8">
+                    <p className="text-slate-600 font-normal text-sm leading-relaxed mb-6">
                       {t('home.litigio_desc', 'Defensa jurídica ante tribunales internacionales para sentar precedentes en la protección de derechos.')}
                     </p>
                   </div>
 
-                  <div className="inline-flex items-center gap-2 text-xs font-bold text-main-red uppercase tracking-wider group-hover:translate-x-1 transition-transform pt-4 border-t border-slate-100">
+                  <div className="inline-flex items-center gap-1.5 text-xs font-bold text-main-red uppercase tracking-wider group-hover:translate-x-1 transition-transform pt-3 border-t border-slate-100">
                     <span>Conocer casos y precedentes</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
@@ -525,28 +519,28 @@ export default function Home2() {
 
               {/* Tarjeta 2: Incidencia Internacional */}
               <Link to="/incidencia-internacional" className="group flex">
-                <article className="w-full bg-white p-8 md:p-10 rounded-3xl border border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between relative overflow-hidden">
+                <article className="w-full bg-white p-6 md:p-8 rounded-2xl border border-slate-200/80 hover:border-slate-300 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden">
                   <div className="absolute top-0 inset-x-0 h-1 bg-main-blue transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
                   
                   <div>
-                    <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100/80 text-main-blue flex items-center justify-center mb-6 shadow-2xs group-hover:scale-105 transition-transform duration-300">
-                      <Earth className="w-7 h-7" strokeWidth={1.75} />
+                    <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100/80 text-main-blue flex items-center justify-center mb-5 shadow-2xs group-hover:scale-105 transition-transform duration-300">
+                      <Earth className="w-6 h-6" strokeWidth={1.75} />
                     </div>
                     
-                    <span className="text-[11px] font-bold tracking-widest uppercase text-slate-600 block mb-2">
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-slate-500 block mb-1.5">
                       Cooperación y Derechos
                     </span>
 
-                    <h3 className="text-2xl font-bold text-main-blue mb-4 group-hover:text-main-blue transition-colors">
+                    <h3 className="text-xl font-bold text-main-blue mb-2.5 group-hover:text-main-blue transition-colors">
                       {t('home.incidencia_titulo', 'Incidencia Internacional')}
                     </h3>
                     
-                    <p className="text-slate-600 font-normal text-sm md:text-base leading-relaxed mb-8">
+                    <p className="text-slate-600 font-normal text-sm leading-relaxed mb-6">
                       {t('home.incidencia_desc', 'Investigaciones, informes de impacto y documentos de litigio estratégico.')}
                     </p>
                   </div>
 
-                  <div className="inline-flex items-center gap-2 text-xs font-bold text-main-blue uppercase tracking-wider group-hover:translate-x-1 transition-transform pt-4 border-t border-slate-100">
+                  <div className="inline-flex items-center gap-1.5 text-xs font-bold text-main-blue uppercase tracking-wider group-hover:translate-x-1 transition-transform pt-3 border-t border-slate-100">
                     <span>Explorar trabajo por país</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
@@ -555,28 +549,28 @@ export default function Home2() {
 
               {/* Tarjeta 3: Formación Especializada */}
               <Link to="/cursos" className="group flex">
-                <article className="w-full bg-white p-8 md:p-10 rounded-3xl border border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between relative overflow-hidden">
+                <article className="w-full bg-white p-6 md:p-8 rounded-2xl border border-slate-200/80 hover:border-slate-300 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden">
                   <div className="absolute top-0 inset-x-0 h-1 bg-slate-700 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
                   
                   <div>
-                    <div className="w-14 h-14 rounded-2xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center mb-6 shadow-2xs group-hover:scale-105 transition-transform duration-300">
-                      <GraduationCap className="w-7 h-7" strokeWidth={1.75} />
+                    <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center mb-5 shadow-2xs group-hover:scale-105 transition-transform duration-300">
+                      <GraduationCap className="w-6 h-6" strokeWidth={1.75} />
                     </div>
                     
-                    <span className="text-[11px] font-bold tracking-widest uppercase text-slate-600 block mb-2">
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-slate-500 block mb-1.5">
                       Excelencia Académica
                     </span>
 
-                    <h3 className="text-2xl font-bold text-main-blue mb-4 group-hover:text-slate-800 transition-colors">
+                    <h3 className="text-xl font-bold text-main-blue mb-2.5 group-hover:text-slate-800 transition-colors">
                       {t('home.formacion_titulo', 'Formación Especializada')}
                     </h3>
                     
-                    <p className="text-slate-600 font-normal text-sm md:text-base leading-relaxed mb-8">
+                    <p className="text-slate-600 font-normal text-sm leading-relaxed mb-6">
                       {t('home.formacion_desc', 'Certificaciones y programas académicos diseñados para los líderes del cambio social.')}
                     </p>
                   </div>
 
-                  <div className="inline-flex items-center gap-2 text-xs font-bold text-slate-800 uppercase tracking-wider group-hover:translate-x-1 transition-transform pt-4 border-t border-slate-100">
+                  <div className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 uppercase tracking-wider group-hover:translate-x-1 transition-transform pt-3 border-t border-slate-100">
                     <span>Ver catálogo de formación</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
@@ -586,61 +580,58 @@ export default function Home2() {
             </div>
           </section>
 
-          {/* Separador Arquitectónico Refinado */}
-          <div className="w-full h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
-
           {/* ==============================================================
               SECCIÓN 4: CONTACTO INSTITUCIONAL Y CONSULTAS
           ============================================================== */}
-          <section id="contacto" className="relative">
-            <div className="bg-gradient-to-br from-white via-slate-50/70 to-slate-100/80 rounded-[2.5rem] border border-slate-200/80 p-8 sm:p-12 lg:p-16 shadow-lg">
+          <section id="contacto" className="relative pt-2 border-t border-slate-200/60">
+            <div className="bg-gradient-to-br from-white via-slate-50/70 to-slate-100/80 rounded-3xl border border-slate-200/80 p-6 sm:p-10 lg:p-12 shadow-md mt-6">
               
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
                 
                 {/* Columna Izquierda: Información de Contacto y Confidencialidad */}
                 <div className="lg:col-span-5 flex flex-col">
-                  <span className="text-main-red font-bold text-xs tracking-[0.25em] uppercase mb-3 block">
+                  <span className="text-main-red font-bold text-xs tracking-[0.25em] uppercase mb-2 block">
                     Canal Oficial de Enlace
                   </span>
                   
-                  <h2 className="text-3xl md:text-4xl font-black text-main-blue tracking-tight mb-4">
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-main-blue tracking-tight mb-3">
                     {t('home.contacto_titulo', '¿Hablamos?')}
                   </h2>
                   
-                  <p className="text-slate-600 font-light text-base md:text-lg leading-relaxed mb-10">
+                  <p className="text-slate-600 font-light text-sm md:text-base leading-relaxed mb-6">
                     {t('home.contacto_subtitulo', 'Estamos aquí para colaborar y responder tus dudas. Nuestro equipo atenderá su consulta a la brevedad posible.')}
                   </p>
 
                   {/* Datos Institucionales Directos */}
-                  <div className="flex flex-col gap-5 pt-6 border-t border-slate-200">
-                    <div className="flex items-start gap-3.5">
-                      <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 text-main-blue flex items-center justify-center shrink-0 shadow-2xs">
-                        <MapPin className="w-5 h-5 text-main-red" />
+                  <div className="flex flex-col gap-4 pt-5 border-t border-slate-200">
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 text-main-blue flex items-center justify-center shrink-0 shadow-2xs">
+                        <MapPin className="w-4 h-4 text-main-red" />
                       </div>
                       <div>
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-600 block">Sede Internacional</span>
-                        <span className="text-sm font-semibold text-main-blue">San José, Costa Rica</span>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Sede Internacional</span>
+                        <span className="text-xs sm:text-sm font-semibold text-main-blue">San José, Costa Rica</span>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3.5">
-                      <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 text-main-blue flex items-center justify-center shrink-0 shadow-2xs">
-                        <Mail className="w-5 h-5 text-main-blue" />
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 text-main-blue flex items-center justify-center shrink-0 shadow-2xs">
+                        <Mail className="w-4 h-4 text-main-blue" />
                       </div>
                       <div>
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-600 block">Correo Electrónico</span>
-                        <a href="mailto:contacto@iiresodh.org" className="text-sm font-semibold text-main-blue hover:text-main-red transition-colors">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Correo Electrónico</span>
+                        <a href="mailto:contacto@iiresodh.org" className="text-xs sm:text-sm font-semibold text-main-blue hover:text-main-red transition-colors">
                           contacto@iiresodh.org
                         </a>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3.5">
-                      <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 text-main-blue flex items-center justify-center shrink-0 shadow-2xs">
-                        <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 text-main-blue flex items-center justify-center shrink-0 shadow-2xs">
+                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
                       </div>
                       <div>
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-600 block">Protección de Datos</span>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Protección de Datos</span>
                         <span className="text-xs text-slate-500 leading-snug">
                           Tratamiento estrictamente confidencial bajo la Ley N° 8968.
                         </span>
@@ -651,7 +642,7 @@ export default function Home2() {
 
                 {/* Columna Derecha: Formulario Limpio y Pulido */}
                 <div className="lg:col-span-7">
-                  <div className="bg-white p-8 sm:p-10 rounded-3xl border border-slate-200/90 shadow-md">
+                  <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200/90 shadow-xs">
                     
                     <ToastAlert 
                       open={estadoEnvio === "exito"} 
