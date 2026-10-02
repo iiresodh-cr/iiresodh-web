@@ -975,27 +975,21 @@ export default function CursoLanding() {
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
                   Logística y Servicios Integrales
                 </span>
-                <h3 className="text-xl md:text-2xl font-black text-main-blue tracking-tight mb-4">
+                <h3 className="text-xl md:text-2xl font-black text-main-blue tracking-tight mb-3">
                   ¿Qué está incluido en la matrícula?
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {queEstaIncluido.map((item, index) => (
                     <div
                       key={index}
-                      className="p-5 rounded-2xl border border-gray-200 bg-slate-50/70 hover:bg-white hover:border-main-blue/30 hover:shadow-md transition flex flex-col justify-between"
+                      className="p-3.5 rounded-xl border border-gray-200/80 bg-slate-50/70 hover:bg-white hover:border-main-blue/30 hover:shadow-xs transition flex flex-col justify-start"
                     >
-                      <div>
-                        <div className="w-10 h-10 rounded-xl bg-main-blue/10 text-main-blue flex items-center justify-center text-xl mb-3 shadow-xs">
-                          {item.icono || "✓"}
-                        </div>
-                        <h4 className="text-sm font-bold text-main-blue mb-1.5 leading-snug">
-                          {item.titulo}
-                        </h4>
-                        <p className="text-xs text-gray-600 font-light leading-relaxed">
-                          {item.descripcion}
-                        </p>
-                      </div>
-                      <div className="w-6 h-0.5 bg-main-red/30 rounded-full mt-4" />
+                      <h4 className="text-xs md:text-[13px] font-bold text-main-blue mb-1 leading-snug">
+                        {item.titulo}
+                      </h4>
+                      <p className="text-[11px] text-gray-600 font-light leading-relaxed">
+                        {item.descripcion}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -1030,27 +1024,21 @@ export default function CursoLanding() {
 
               {/* CUATRO PILARES DOGMÁTICOS */}
               <div>
-                <h3 className="text-xs font-black uppercase tracking-wider text-gray-400 mb-4">
+                <h3 className="text-xs font-black uppercase tracking-wider text-gray-400 mb-3">
                   Cuatro Pilares Dogmáticos del Programa
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {pilares.map((pilar, idx) => (
                     <div 
                       key={idx}
-                      className="bg-slate-50 p-5 rounded-2xl border border-gray-100 hover:border-main-blue/30 hover:bg-white hover:shadow-md transition flex flex-col justify-between"
+                      className="bg-slate-50 p-3.5 rounded-xl border border-gray-100 hover:border-main-blue/30 hover:bg-white hover:shadow-xs transition flex flex-col justify-start"
                     >
-                      <div>
-                        <span className="text-xl mb-3 block">
-                          {idx === 0 ? "⚖️" : idx === 1 ? "🔍" : idx === 2 ? "🛡️" : "🌐"}
-                        </span>
-                        <h4 className="text-sm font-bold text-main-blue mb-2 leading-snug">
-                          {pilar.titulo}
-                        </h4>
-                        <p className="text-xs text-gray-600 font-light leading-relaxed">
-                          {pilar.descripcion}
-                        </p>
-                      </div>
-                      <div className="w-6 h-0.5 bg-main-red/40 rounded-full mt-4" />
+                      <h4 className="text-xs md:text-[13px] font-bold text-main-blue mb-1 leading-snug">
+                        {pilar.titulo}
+                      </h4>
+                      <p className="text-[11px] text-gray-600 font-light leading-relaxed">
+                        {pilar.descripcion}
+                      </p>
                     </div>
                   ))}
                 </div>
