@@ -19,6 +19,7 @@ import CookieConsentBanner, { COOKIE_CONSENT_KEY } from "./components/CookieCons
 // ==========================================
 const Login = lazy(() => import("./components/Login"));
 const Home = lazy(() => import("./pages/Home"));
+const Home2 = lazy(() => import("./pages/Home2"));
 const QuienesSomos = lazy(() => import("./pages/QuienesSomos"));
 const LitigioEstrategico = lazy(() => import("./pages/LitigioEstrategico"));
 const Noticias = lazy(() => import("./pages/Noticias"));
@@ -129,6 +130,17 @@ function App() {
         {/* RUTAS PÚBLICAS (Con Navbar, Footer y PidaChat) */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
+          
+          {/* EVALUACIÓN DE PROPUESTA HOME V2 (SOLO ACCESO ADMIN) */}
+          <Route 
+            path="/home2" 
+            element={
+              <ProtectedRoute>
+                <Home2 />
+              </ProtectedRoute>
+            } 
+          />
+          
           <Route path="/quienes-somos" element={<QuienesSomos />} />
           <Route path="/informes-anuales" element={<InformesAnuales />} />
           <Route path="/equipo" element={<Equipo />} />
