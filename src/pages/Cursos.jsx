@@ -6,9 +6,48 @@ import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db, auth } from "../firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
 
+import { Calendar } from "lucide-react";
+
 // IMPORTACIONES PARA i18n Y TRADUCCIÓN DINÁMICA
 import { useTranslation } from 'react-i18next';
 import { obtenerTextoTraducido } from "../utils/traductorDinamico";
+
+const obtenerRangoFechasCurso = (fechaInicio, fechaFin, idioma = 'es', t) => {
+  if (!fechaInicio && !fechaFin) return null;
+
+  const formatearFecha = (str) => {
+    if (!str) return "";
+    try {
+      const partes = String(str).split('-');
+      const locale = idioma === 'en' ? 'en-US' : (idioma === 'fr' ? 'fr-FR' : 'es-ES');
+      if (partes.length === 3) {
+        const año = parseInt(partes[0], 10);
+        const mes = parseInt(partes[1], 10) - 1;
+        const dia = parseInt(partes[2], 10);
+        const d = new Date(año, mes, dia);
+        return d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+      const d = new Date(str);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+    } catch {
+      // fallback
+    }
+    return str;
+  };
+
+  const fInicio = formatearFecha(fechaInicio);
+  const fFin = formatearFecha(fechaFin);
+
+  if (fInicio && fFin) {
+    return `${fInicio} – ${fFin}`;
+  }
+  if (fInicio) {
+    return t ? t('cursos.fecha_inicio', { fecha: fInicio, defaultValue: `Inicio: ${fInicio}` }) : `Inicio: ${fInicio}`;
+  }
+  return t ? t('cursos.fecha_fin', { fecha: fFin, defaultValue: `Finalización: ${fFin}` }) : `Finalización: ${fFin}`;
+};
 
 export default function Cursos() {
   const { t, i18n } = useTranslation(); 
@@ -123,6 +162,7 @@ export default function Cursos() {
                 // ==========================================
                 const tituloTraducido = obtenerTextoTraducido(curso, 'titulo', i18n.language);
                 const resumenTraducido = obtenerTextoTraducido(curso, 'resumen', i18n.language);
+                const rangoFechas = obtenerRangoFechasCurso(curso.fechaInicio, curso.fechaFin, i18n.language, t);
 
                 const estado = curso.estadoInscripcion || (curso.cursoActivo ? 'abierta' : 'cerrada');
                 
@@ -164,6 +204,14 @@ export default function Cursos() {
                       <h3 className={`text-xl md:text-2xl font-bold mb-3 tracking-tight transition-colors leading-snug ${isActiveStyle ? 'text-gray-800 group-hover:text-main-blue' : 'text-gray-500'}`}>
                         {tituloTraducido}
                       </h3>
+
+                      {rangoFechas && (
+                        <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 bg-slate-100/90 border border-slate-200/60 rounded-md px-2.5 py-1 mb-3.5 w-fit shadow-xs">
+                          <Calendar className="w-3.5 h-3.5 text-main-blue shrink-0" />
+                          <span>{rangoFechas}</span>
+                        </div>
+                      )}
+
                       <p className="text-gray-500 font-light leading-relaxed text-sm mb-8 grow line-clamp-3">
                         {resumenTraducido}
                       </p>

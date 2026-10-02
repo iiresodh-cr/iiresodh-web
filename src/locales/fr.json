@@ -193,7 +193,9 @@
     "btn_cerrado": "Période d'inscription fermée",
     "btn_galeria": "Voir la galerie de photos",
     "btn_proximamente": "Bientôt disponible",
-    "badge_proximamente": "Bientôt"
+    "badge_proximamente": "Bientôt",
+    "fecha_inicio": "Début : {{fecha}}",
+    "fecha_fin": "Fin : {{fecha}}"
   },
   "incidencia": {
     "cargando": "Chargement des documents...",

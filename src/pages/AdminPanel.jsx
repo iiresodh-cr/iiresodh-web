@@ -277,6 +277,8 @@ export default function AdminPanel() {
   const [enlaceInscripcion, setEnlaceInscripcion] = useState("");
   const [cursoActivo, setCursoActivo] = useState(true);
   const [estadoInscripcion, setEstadoInscripcion] = useState("abierta");
+  const [fechaInicio, setFechaInicio] = useState("");
+  const [fechaFin, setFechaFin] = useState("");
 
   // ESTADOS PARA LANDING PAGE DE CURSOS
   const [landingHabilitada, setLandingHabilitada] = useState(false);
@@ -348,6 +350,8 @@ export default function AdminPanel() {
     setResumen(DATOS_PALERMO_2027.resumen);
     setEstadoInscripcion("proximamente");
     setCursoActivo(false);
+    setFechaInicio("2027-05-17");
+    setFechaFin("2027-05-23");
     setLandingHabilitada(true);
     setLandingPublicada(false); // Por defecto NO público
     setLandingLema(DATOS_PALERMO_2027.landingPage.lema);
@@ -913,6 +917,8 @@ useEffect(() => {
         setEnlaceInscripcion(item.enlaceInscripcion || "");
         setCursoActivo(item.cursoActivo !== undefined ? item.cursoActivo : true);
         setEstadoInscripcion(item.estadoInscripcion || (item.cursoActivo ? "abierta" : "cerrada"));
+        setFechaInicio(item.fechaInicio || "");
+        setFechaFin(item.fechaFin || "");
         setCarruselExistente(item.imagenesCarruselUrls || []);
 
         const lp = item.landingPage || {};
@@ -997,6 +1003,8 @@ useEffect(() => {
     setEnlaceInscripcion("");
     setCursoActivo(true);
     setEstadoInscripcion("abierta");
+    setFechaInicio("");
+    setFechaFin("");
 
     setLandingHabilitada(false);
     setLandingPublicada(false);
@@ -1290,6 +1298,8 @@ useEffect(() => {
           datos.enlaceInscripcion = enlaceInscripcion || null;
           datos.cursoActivo = estadoInscripcion === "abierta";
           datos.estadoInscripcion = estadoInscripcion;
+          datos.fechaInicio = fechaInicio || null;
+          datos.fechaFin = fechaFin || null;
           datos.imagenesCarruselUrls = [...carruselExistente, ...nuevasUrls];
           
           if (landingHabilitada) {
@@ -1341,6 +1351,8 @@ useEffect(() => {
             if (itemOriginal.destacado !== datos.destacado && datos.destacado !== undefined) cambios.push(`destacado`);
             if (itemOriginal.persistente !== datos.persistente && datos.persistente !== undefined) cambios.push(`fijado`);
             if (itemOriginal.enlaceInscripcion !== datos.enlaceInscripcion && datos.enlaceInscripcion !== undefined) cambios.push(`enlace de inscripción`);
+            if (itemOriginal.fechaInicio !== datos.fechaInicio && datos.fechaInicio !== undefined) cambios.push('fecha de inicio');
+            if (itemOriginal.fechaFin !== datos.fechaFin && datos.fechaFin !== undefined) cambios.push('fecha de finalización');
             
             const tagsOriginales = itemOriginal.tags || [];
             const tagsNuevos = datos.tags || [];
@@ -1916,6 +1928,22 @@ useEffect(() => {
                             </Select>
                           </FormControl>
                         </div>
+
+                        <AdminTextField 
+                          label="Fecha de Inicio del Curso (Opcional)"
+                          type="date"
+                          value={fechaInicio}
+                          onChange={(e) => setFechaInicio(e.target.value)}
+                          InputLabelProps={{ shrink: true }}
+                        />
+
+                        <AdminTextField 
+                          label="Fecha de Finalización del Curso (Opcional)"
+                          type="date"
+                          value={fechaFin}
+                          onChange={(e) => setFechaFin(e.target.value)}
+                          InputLabelProps={{ shrink: true }}
+                        />
 
                         {/* BOTÓN RÁPIDO PARA CARGAR EJEMPLO PALERMO 2027 */}
                         <div className="md:col-span-2 bg-gradient-to-r from-blue-950 via-main-blue to-slate-900 p-5 rounded-2xl text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
@@ -2645,7 +2673,11 @@ useEffect(() => {
                                     <h3 className="font-semibold text-sm text-gray-800 line-clamp-2 leading-snug" title={n.titulo || n.nombre}>{n.titulo || n.nombre}</h3>
                                   </div>
                                   <p className="text-[10px] text-gray-400 truncate">
-                                    {vistaActiva === 'equipo' ? `Orden: ${n.orden} - ${n.cargo}` : `/${obtenerColeccionActiva()}/${n.slug || n.id}`}
+                                    {vistaActiva === 'equipo' 
+                                      ? `Orden: ${n.orden} - ${n.cargo}` 
+                                      : (vistaActiva === 'cursos' && (n.fechaInicio || n.fechaFin))
+                                        ? `Fechas: ${[n.fechaInicio, n.fechaFin].filter(Boolean).join(' a ')} | /${obtenerColeccionActiva()}/${n.slug || n.id}`
+                                        : `/${obtenerColeccionActiva()}/${n.slug || n.id}`}
                                   </p>
                                 </div>
                               </div>

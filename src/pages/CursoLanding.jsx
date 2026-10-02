@@ -40,6 +40,8 @@ export const DATOS_PALERMO_2027 = {
   coorganizacion: "Curso Internacional organizado conjuntamente por el Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH) y el Instituto de Derechos Humanos de la Universidad Nacional de La Plata (Argentina).",
   resumen: "Programa de alta especialización judicial sobre la aplicación de las Convenciones de Palermo contra el Crimen Organizado Transnacional.",
   estadoInscripcion: "proximamente",
+  fechaInicio: "2027-05-17",
+  fechaFin: "2027-05-23",
   imagenPrincipalUrl: falconeDefaultImg,
   landingPage: {
     habilitada: true,
