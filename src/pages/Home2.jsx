@@ -744,9 +744,9 @@ export default function Home2() {
                   </div>
                 </div>
 
-                {/* Columna Derecha: Formulario Limpio y Pulido */}
+                {/* Columna Derecha: Formulario Limpio y Pulido con Fondo Azul */}
                 <div className="lg:col-span-7">
-                  <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200/90 shadow-xs">
+                  <div className="bg-main-blue p-6 sm:p-8 rounded-2xl border border-slate-800/30 shadow-lg">
                     
                     <ToastAlert 
                       open={estadoEnvio === "exito"} 
@@ -761,8 +761,8 @@ export default function Home2() {
                       onClose={() => setEstadoEnvio("idle")} 
                     />
                     
-                    <form onSubmit={handleEnviarContacto} className="flex flex-col gap-6">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <form onSubmit={handleEnviarContacto} className="flex flex-col gap-5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <AdminTextField 
                           label={t('home.form_nombre', 'Nombre completo')} 
                           required 
@@ -788,14 +788,14 @@ export default function Home2() {
                       />
                       
                       {/* Consentimiento Legal */}
-                      <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                      <div className="bg-white p-4 rounded-xl border border-slate-200">
                         <FormControlLabel
                           control={
                             <Checkbox
                               checked={aceptaPrivacidad}
                               onChange={(e) => setAceptaPrivacidad(e.target.checked)}
                               sx={{
-                                color: '#CBD5E1',
+                                color: '#94A3B8',
                                 '&.Mui-checked': { color: '#1D3557' },
                               }}
                             />
@@ -821,7 +821,6 @@ export default function Home2() {
                       <Button 
                         type="submit" 
                         variant="contained" 
-                        color="secondary" 
                         disabled={estadoEnvio === "enviando" || !aceptaPrivacidad} 
                         sx={{ 
                           py: 1.75, 
@@ -831,9 +830,14 @@ export default function Home2() {
                           textTransform: 'uppercase', 
                           letterSpacing: '0.12em', 
                           fontSize: '0.8rem',
-                          backgroundColor: '#1D3557',
+                          backgroundColor: '#B92F32',
+                          color: '#FFFFFF',
                           '&:hover': {
-                            backgroundColor: '#0B1E40',
+                            backgroundColor: '#9E2427',
+                          },
+                          '&.Mui-disabled': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                            color: 'rgba(255, 255, 255, 0.4)',
                           },
                           display: 'flex',
                           alignItems: 'center',
