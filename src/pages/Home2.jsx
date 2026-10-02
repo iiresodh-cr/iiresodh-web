@@ -587,8 +587,10 @@ export default function Home2() {
               
               {/* Tarjeta 1: Litigio Estratégico */}
               <Link to="/litigio-estrategico" className="group flex">
-                <article className="w-full bg-white p-6 md:p-8 rounded-2xl border border-slate-200/80 hover:border-slate-300 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden">
-                  <div className="absolute top-0 inset-x-0 h-1 bg-main-red transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                <article className="w-full bg-white p-6 md:p-8 pl-7 md:pl-9 rounded-r-2xl rounded-l-none border border-slate-200/80 hover:border-slate-300 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden">
+                  {/* Borde izquierdo que se colorea */}
+                  <div className="absolute left-0 inset-y-0 w-1.5 bg-slate-200/70"></div>
+                  <div className="absolute left-0 inset-y-0 w-1.5 bg-main-red transform origin-top scale-y-0 group-hover:scale-y-100 transition-transform duration-300"></div>
                   
                   <div>
                     <div className="w-12 h-12 rounded-xl bg-red-50 border border-red-100/80 text-main-red flex items-center justify-center mb-5 shadow-2xs group-hover:scale-105 transition-transform duration-300">
@@ -617,8 +619,10 @@ export default function Home2() {
 
               {/* Tarjeta 2: Incidencia Internacional */}
               <Link to="/incidencia-internacional" className="group flex">
-                <article className="w-full bg-white p-6 md:p-8 rounded-2xl border border-slate-200/80 hover:border-slate-300 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden">
-                  <div className="absolute top-0 inset-x-0 h-1 bg-main-blue transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                <article className="w-full bg-white p-6 md:p-8 pl-7 md:pl-9 rounded-r-2xl rounded-l-none border border-slate-200/80 hover:border-slate-300 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden">
+                  {/* Borde izquierdo que se colorea */}
+                  <div className="absolute left-0 inset-y-0 w-1.5 bg-slate-200/70"></div>
+                  <div className="absolute left-0 inset-y-0 w-1.5 bg-main-blue transform origin-top scale-y-0 group-hover:scale-y-100 transition-transform duration-300"></div>
                   
                   <div>
                     <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100/80 text-main-blue flex items-center justify-center mb-5 shadow-2xs group-hover:scale-105 transition-transform duration-300">
@@ -647,8 +651,10 @@ export default function Home2() {
 
               {/* Tarjeta 3: Formación Especializada */}
               <Link to="/cursos" className="group flex">
-                <article className="w-full bg-white p-6 md:p-8 rounded-2xl border border-slate-200/80 hover:border-slate-300 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden">
-                  <div className="absolute top-0 inset-x-0 h-1 bg-slate-700 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                <article className="w-full bg-white p-6 md:p-8 pl-7 md:pl-9 rounded-r-2xl rounded-l-none border border-slate-200/80 hover:border-slate-300 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden">
+                  {/* Borde izquierdo que se colorea */}
+                  <div className="absolute left-0 inset-y-0 w-1.5 bg-slate-200/70"></div>
+                  <div className="absolute left-0 inset-y-0 w-1.5 bg-slate-700 transform origin-top scale-y-0 group-hover:scale-y-100 transition-transform duration-300"></div>
                   
                   <div>
                     <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center mb-5 shadow-2xs group-hover:scale-105 transition-transform duration-300">
