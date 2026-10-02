@@ -64,6 +64,21 @@ const setCachedData = (key, data) => {
   } catch (e) { console.error('Cache write error', e); }
 };
 
+const formatearFecha = (fecha, idioma = 'es') => {
+  if (!fecha) return "";
+  try {
+    const dateObj = fecha.toDate ? fecha.toDate() : new Date(fecha);
+    if (isNaN(dateObj.getTime())) return "";
+    return dateObj.toLocaleDateString(idioma || 'es-ES', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  } catch (e) {
+    return "";
+  }
+};
+
 export default function Home2() {
   const { t, i18n } = useTranslation(); 
   const navigate = useNavigate();
@@ -119,7 +134,7 @@ export default function Home2() {
         let noticiasFijas = snapPersistentes.docs.map(doc => ({ id: doc.id, ...doc.data() })).slice(0, 3);
         
         let noticiasRecientes = [];
-        const faltantes = 3 - noticiasFijas.length;
+        const faltantes = 6 - noticiasFijas.length;
         if (faltantes > 0) {
           const qRecientes = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), limit(10));
           const snapRecientes = await getDocs(qRecientes);
@@ -178,6 +193,8 @@ export default function Home2() {
 
   const noticiaDestacada = noticias.length > 0 ? noticias[0] : null;
   const tituloDestacado = noticiaDestacada ? obtenerTextoTraducido(noticiaDestacada, 'titulo', i18n.language) : "";
+  const noticiasCarrusel = noticias.slice(0, 3);
+  const noticiasLista = noticias.length > 1 ? noticias.slice(1, 5) : noticias;
 
   return (
     <main className="bg-[#FAFBFD] flex flex-col min-h-screen font-sans overflow-x-hidden selection:bg-red-500 selection:text-white">
@@ -361,105 +378,178 @@ export default function Home2() {
             </div>
             
             {loading ? (
-              <div className="w-full h-[380px] md:h-[440px] rounded-2xl bg-slate-100 animate-pulse flex flex-col justify-end p-6 md:p-10 shadow-inner border border-slate-200">
-                <div className="w-32 h-5 bg-slate-300 rounded mb-3"></div>
-                <div className="w-3/4 h-8 bg-slate-300 rounded mb-3"></div>
-                <div className="w-1/2 h-5 bg-slate-200 rounded"></div>
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                <div className="lg:col-span-7 h-[400px] rounded-2xl bg-slate-100 animate-pulse border border-slate-200"></div>
+                <div className="lg:col-span-5 h-[400px] rounded-2xl bg-slate-100 animate-pulse border border-slate-200"></div>
               </div>
             ) : noticias.length > 0 ? (
-              <div className="relative group w-full">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                 
-                <Swiper 
-                  modules={[Autoplay, EffectFade, Navigation, Pagination]} 
-                  effect="fade"
-                  fadeEffect={{ crossFade: true }}
-                  autoplay={{ delay: 7500, disableOnInteraction: false, pauseOnMouseEnter: true }} 
-                  loop={true}
-                  speed={1000}
-                  navigation={{
-                    prevEl: '.swiper-btn-prev-home2',
-                    nextEl: '.swiper-btn-next-home2',
-                  }}
-                  pagination={{
-                    clickable: true,
-                    bulletClass: 'swiper-custom-bullet',
-                    bulletActiveClass: 'swiper-custom-bullet-active',
-                  }}
-                  className="w-full rounded-2xl overflow-hidden shadow-xl border border-slate-200/90"
-                >
-                  {noticias.map((noticia) => {
-                    const tituloTraducido = obtenerTextoTraducido(noticia, 'titulo', i18n.language);
-                    const resumenTraducido = obtenerTextoTraducido(noticia, 'resumen', i18n.language);
+                {/* COLUMNA IZQUIERDA: CARRUSEL DESTACADO */}
+                <div className="lg:col-span-7 relative group flex flex-col">
+                  <Swiper 
+                    modules={[Autoplay, EffectFade, Navigation, Pagination]} 
+                    effect="fade"
+                    fadeEffect={{ crossFade: true }}
+                    autoplay={{ delay: 7500, disableOnInteraction: false, pauseOnMouseEnter: true }} 
+                    loop={noticiasCarrusel.length > 1}
+                    speed={1000}
+                    navigation={{
+                      prevEl: '.swiper-btn-prev-home2',
+                      nextEl: '.swiper-btn-next-home2',
+                    }}
+                    pagination={{
+                      clickable: true,
+                      bulletClass: 'swiper-custom-bullet',
+                      bulletActiveClass: 'swiper-custom-bullet-active',
+                    }}
+                    className="w-full h-full min-h-[380px] md:min-h-[420px] rounded-2xl overflow-hidden shadow-md border border-slate-200/90"
+                  >
+                    {noticiasCarrusel.map((noticia) => {
+                      const tituloTraducido = obtenerTextoTraducido(noticia, 'titulo', i18n.language);
+                      const resumenTraducido = obtenerTextoTraducido(noticia, 'resumen', i18n.language);
+                      const fechaStr = formatearFecha(noticia.fechaPublicacion, i18n.language);
 
-                    return (
-                      <SwiperSlide key={noticia.id}>
-                        <article 
-                          className="group/slide relative w-full h-[400px] md:h-[440px] overflow-hidden bg-[#0B1E40] cursor-pointer"
-                          onClick={() => navigate(`/noticias/${noticia.slug || noticia.id}`, { state: { noticiaPreCargada: noticia } })}
-                        >
-                          {/* Fotografía de Fondo con Zoom Suave */}
-                          <div 
-                            className="absolute inset-0 w-full h-full bg-cover bg-center transition-transform duration-3000 ease-out group-hover/slide:scale-105"
-                            style={{ backgroundImage: `url(${noticia.imagenPrincipalUrl})` }}
-                            role="img"
-                            aria-label={tituloTraducido || "Imagen de la noticia"}
-                          />
-                          
-                          {/* Doble Degradado Cinematográfico */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#0B1E40] via-[#0B1E40]/70 md:via-[#0B1E40]/50 to-black/20"></div>
-                          <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-[#0B1E40]/90 via-[#0B1E40]/60 to-transparent w-3/4"></div>
-
-                          {/* Contenido Editorial con Tipografía Impecable */}
-                          <div className="absolute inset-0 p-6 md:p-10 lg:p-12 flex flex-col justify-end max-w-3xl z-10 text-white">
+                      return (
+                        <SwiperSlide key={noticia.id}>
+                          <article 
+                            className="group/slide relative w-full h-full min-h-[380px] md:min-h-[420px] overflow-hidden bg-[#0B1E40] cursor-pointer flex flex-col justify-end"
+                            onClick={() => navigate(`/noticias/${noticia.slug || noticia.id}`, { state: { noticiaPreCargada: noticia } })}
+                          >
+                            {/* Fotografía de Fondo con Zoom Suave */}
+                            <div 
+                              className="absolute inset-0 w-full h-full bg-cover bg-center transition-transform duration-3000 ease-out group-hover/slide:scale-105"
+                              style={{ backgroundImage: `url(${noticia.imagenPrincipalUrl})` }}
+                              role="img"
+                              aria-label={tituloTraducido || "Imagen de la noticia"}
+                            />
                             
-                            {/* Tags de Categoría */}
-                            <div className="flex flex-wrap gap-2 mb-3">
-                              {noticia.tags?.slice(0, 3).map(tag => (
-                                <span 
-                                  key={tag} 
-                                  className="bg-white/15 backdrop-blur-md border border-white/20 text-white text-[10px] md:text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider"
-                                >
-                                  {tag}
-                                </span>
-                              ))}
+                            {/* Doble Degradado Cinematográfico */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#0B1E40] via-[#0B1E40]/75 to-transparent"></div>
+
+                            {/* Contenido Editorial con Tipografía Impecable */}
+                            <div className="relative p-6 md:p-8 z-10 text-white flex flex-col justify-end max-w-2xl">
+                              <div className="flex flex-wrap items-center gap-2 mb-2.5">
+                                {noticia.tags && noticia.tags[0] && (
+                                  <span className="bg-main-red/90 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                                    {noticia.tags[0]}
+                                  </span>
+                                )}
+                                {fechaStr && (
+                                  <span className="text-slate-300 text-xs font-medium">
+                                    {fechaStr}
+                                  </span>
+                                )}
+                              </div>
+
+                              <h3 className="text-lg sm:text-xl md:text-2xl font-black text-white mb-2 leading-snug tracking-tight group-hover/slide:text-red-200 transition-colors line-clamp-3">
+                                {tituloTraducido}
+                              </h3>
+
+                              <p className="text-slate-200 line-clamp-2 mb-3.5 text-xs sm:text-sm font-light leading-relaxed">
+                                {resumenTraducido}
+                              </p>
+                              
+                              <div className="inline-flex items-center gap-2 self-start px-3.5 py-1.5 text-xs font-bold text-white bg-main-red hover:bg-[#9E2427] rounded-lg uppercase tracking-widest transition-all shadow-md group-hover/slide:translate-x-1">
+                                <span>{t('home.leer_articulo', 'Leer comunicado')}</span>
+                                <ArrowRight className="w-3.5 h-3.5" />
+                              </div>
+                            </div>
+                          </article>
+                        </SwiperSlide>
+                      );
+                    })}
+                  </Swiper>
+
+                  {/* Botones de Navegación del Carrusel */}
+                  {noticiasCarrusel.length > 1 && (
+                    <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5">
+                      <button 
+                        className="swiper-btn-prev-home2 w-8 h-8 bg-white/90 hover:bg-white text-main-blue hover:text-main-red backdrop-blur-md rounded-full shadow-md border border-slate-200/80 transition-all flex items-center justify-center cursor-pointer active:scale-95" 
+                        aria-label="Ver noticia anterior"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      <button 
+                        className="swiper-btn-next-home2 w-8 h-8 bg-white/90 hover:bg-white text-main-blue hover:text-main-red backdrop-blur-md rounded-full shadow-lg border border-slate-200/80 transition-all flex items-center justify-center cursor-pointer active:scale-95" 
+                        aria-label="Ver siguiente noticia"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* COLUMNA DERECHA: LISTADO DE NOTICIAS RECIENTES */}
+                <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between pb-3 mb-2 border-b border-slate-100">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-main-red"></span>
+                        <h4 className="text-xs font-black tracking-widest uppercase text-slate-700">
+                          Otras Publicaciones Recientes
+                        </h4>
+                      </div>
+                      <span className="text-[11px] font-bold text-slate-400">
+                        {noticiasLista.length} notas
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col divide-y divide-slate-100">
+                      {noticiasLista.map((item) => {
+                        const tituloItem = obtenerTextoTraducido(item, 'titulo', i18n.language);
+                        const fechaItem = formatearFecha(item.fechaPublicacion, i18n.language);
+
+                        return (
+                          <Link 
+                            key={item.id}
+                            to={`/noticias/${item.slug || item.id}`}
+                            state={{ noticiaPreCargada: item }}
+                            className="group py-2.5 first:pt-1 last:pb-0 flex items-start gap-3 transition-colors"
+                          >
+                            <div className="grow min-w-0">
+                              <div className="flex items-center gap-1.5 mb-0.5">
+                                {item.tags && item.tags[0] && (
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-main-red">
+                                    {item.tags[0]}
+                                  </span>
+                                )}
+                                {fechaItem && (
+                                  <span className="text-[11px] text-slate-400">
+                                    • {fechaItem}
+                                  </span>
+                                )}
+                              </div>
+                              <h5 className="text-xs sm:text-sm font-bold text-main-blue group-hover:text-main-red leading-snug line-clamp-2 transition-colors">
+                                {tituloItem}
+                              </h5>
                             </div>
 
-                            {/* Título de la Noticia */}
-                            <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-white mb-2.5 leading-snug tracking-tight group-hover/slide:text-red-200 transition-colors line-clamp-3">
-                              {tituloTraducido}
-                            </h3>
+                            {item.imagenPrincipalUrl && (
+                              <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-100 mt-0.5">
+                                <img 
+                                  src={item.imagenPrincipalUrl} 
+                                  alt="" 
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                  loading="lazy"
+                                />
+                              </div>
+                            )}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
 
-                            {/* Resumen */}
-                            <p className="text-slate-200 line-clamp-2 mb-4 text-xs sm:text-sm md:text-base font-light leading-relaxed max-w-2xl">
-                              {resumenTraducido}
-                            </p>
-                            
-                            {/* Botón de Lectura */}
-                            <div className="inline-flex items-center gap-2 self-start px-4 py-2 text-xs font-bold text-white bg-main-red hover:bg-[#9E2427] rounded-lg uppercase tracking-widest transition-all shadow-md group-hover/slide:translate-x-1">
-                              <span>{t('home.leer_articulo', 'Leer comunicado')}</span>
-                              <ArrowRight className="w-3.5 h-3.5" />
-                            </div>
-                          </div>
-                        </article>
-                      </SwiperSlide>
-                    );
-                  })}
-                </Swiper>
-
-                {/* Botones de Navegación del Carrusel */}
-                <div className="absolute top-5 right-5 z-20 hidden md:flex items-center gap-2">
-                  <button 
-                    className="swiper-btn-prev-home2 w-9 h-9 bg-white/90 hover:bg-white text-main-blue hover:text-main-red backdrop-blur-md rounded-full shadow-md border border-slate-200/80 transition-all flex items-center justify-center cursor-pointer active:scale-95" 
-                    aria-label="Ver noticia anterior"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button 
-                    className="swiper-btn-next-home2 w-9 h-9 bg-white/90 hover:bg-white text-main-blue hover:text-main-red backdrop-blur-md rounded-full shadow-lg border border-slate-200/80 transition-all flex items-center justify-center cursor-pointer active:scale-95" 
-                    aria-label="Ver siguiente noticia"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
+                  <div className="pt-3 mt-3 border-t border-slate-100">
+                    <Link 
+                      to="/noticias" 
+                      className="w-full py-2 px-3 rounded-xl bg-slate-50 hover:bg-red-50 text-slate-700 hover:text-main-red border border-slate-200/80 hover:border-red-200 text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+                    >
+                      <span>Ver todas las publicaciones</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
                 </div>
 
               </div>
