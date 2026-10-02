@@ -688,7 +688,9 @@ export default function Home2() {
               SECCIÓN 4: CONTACTO INSTITUCIONAL Y CONSULTAS
           ============================================================== */}
           <section id="contacto" className="relative pt-2 border-t border-slate-200/60">
-            <div className="bg-gradient-to-br from-white via-slate-50/70 to-slate-100/80 rounded-3xl border border-slate-200/80 p-6 sm:p-10 lg:p-12 shadow-md mt-6">
+            <div className="bg-gradient-to-br from-white via-slate-50/70 to-slate-100/80 rounded-r-3xl rounded-l-none border border-slate-200/80 p-6 sm:p-10 lg:p-12 pl-8 sm:pl-12 lg:pl-14 shadow-md mt-6 relative overflow-hidden">
+              {/* Franja izquierda roja institucional */}
+              <div className="absolute left-0 inset-y-0 w-2 bg-main-red"></div>
               
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
                 
@@ -744,11 +746,9 @@ export default function Home2() {
                   </div>
                 </div>
 
-                {/* Columna Derecha: Formulario Limpio y Pulido con Fondo Azul y Franja Roja */}
+                {/* Columna Derecha: Formulario Limpio y Pulido con Fondo Azul */}
                 <div className="lg:col-span-7">
-                  <div className="bg-main-blue p-6 sm:p-8 pl-7 sm:pl-9 rounded-r-2xl rounded-l-none border border-slate-800/30 shadow-lg relative overflow-hidden">
-                    {/* Franja izquierda roja */}
-                    <div className="absolute left-0 inset-y-0 w-1.5 bg-main-red"></div>
+                  <div className="bg-main-blue p-6 sm:p-8 rounded-2xl border border-slate-800/30 shadow-lg">
                     
                     <ToastAlert 
                       open={estadoEnvio === "exito"} 
