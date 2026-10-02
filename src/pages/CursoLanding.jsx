@@ -768,71 +768,98 @@ export default function CursoLanding() {
 
           </div>
 
-          {/* TARJETA DE ADMISIÓN E INVERSIÓN ACADÉMICA (SOBRIA, ELEGANTE Y PROFESIONAL) */}
-          <div className="bg-slate-900/90 border border-white/15 p-6 md:p-8 rounded-2xl backdrop-blur-md shadow-2xl flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+          {/* TARJETA DE ADMISIÓN E INVERSIÓN ACADÉMICA (SOBRIA, ELEGANTE Y PROPORCIONADA) */}
+          <div className="bg-slate-900/90 border border-white/15 p-6 md:p-8 rounded-2xl backdrop-blur-md shadow-2xl space-y-6">
             
-            {/* PARTE IZQUIERDA: PRECIO Y ESPECIFICACIONES */}
-            <div className="space-y-3 flex-1 min-w-0 text-left">
-              <div className="flex items-baseline gap-3 flex-wrap">
-                <span className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-sans">
-                  {normalizarPrecio(landing.precioInversion)}
-                </span>
-                <span className="text-xs uppercase font-bold tracking-wider text-slate-300 bg-white/10 px-3 py-1 rounded-md border border-white/15">
-                  Inversión Académica Total
-                </span>
-                <span className="text-xs uppercase font-bold tracking-wider text-slate-300 bg-white/10 px-3 py-1 rounded-md border border-white/15">
-                  Cupos Limitados
-                </span>
+            {/* FILA SUPERIOR: PRECIO, DETALLE Y BENEFICIOS INCLUIDOS DISTRIBUIDOS */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+              
+              {/* COLUMNA IZQUIERDA: PRECIO Y ESPECIFICACIÓN GENERAL (lg:col-span-7) */}
+              <div className="lg:col-span-7 space-y-3 text-left">
+                <div className="flex items-baseline gap-3 flex-wrap">
+                  <span className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-sans">
+                    {normalizarPrecio(landing.precioInversion)}
+                  </span>
+                  <span className="text-xs uppercase font-bold tracking-wider text-slate-300 bg-white/10 px-3 py-1 rounded-md border border-white/15">
+                    Inversión Académica Total
+                  </span>
+                  <span className="text-xs uppercase font-bold tracking-wider text-slate-300 bg-white/10 px-3 py-1 rounded-md border border-white/15">
+                    Cupos Limitados
+                  </span>
+                </div>
+
+                <p className="text-xs sm:text-sm text-slate-300 font-light leading-relaxed">
+                  {landing.inversionDetalle || "Por participante. Incluye alojamiento en hotel 4★ en Palermo, traslados internos de logística académica, clases magistrales con expertos internacionales y doble certificación oficial."}
+                </p>
               </div>
 
-              <p className="text-xs sm:text-sm text-slate-300 font-light leading-relaxed max-w-2xl">
-                {landing.inversionDetalle || "Por participante. Incluye alojamiento en hotel 4★ en Palermo, traslados internos de logística académica, clases magistrales con expertos internacionales y doble certificación oficial."}
-              </p>
-
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-slate-300 pt-1">
-                <span className="flex items-center gap-1.5">
-                  <span className="text-slate-400 font-bold">✓</span> Hotel 4★ en Palermo incluido
+              {/* COLUMNA DERECHA: CAJA DE BENEFICIOS INCLUIDOS EN FORMATO TARJETA (lg:col-span-5) */}
+              <div className="lg:col-span-5 bg-white/5 border border-white/10 p-4 sm:p-5 rounded-xl space-y-2.5">
+                <span className="text-[11px] uppercase tracking-wider font-bold text-slate-300 block">
+                  El programa incluye:
                 </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="text-slate-400 font-bold">✓</span> Traslados internos incluidos
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="text-slate-400 font-bold">✓</span> Clases con magistrados antimafia
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="text-slate-400 font-bold">✓</span> Doble aval oficial IIRESODH & UNLP
-                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-200">
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-400 font-bold shrink-0">✓</span>
+                    <span>Hotel 4★ en Palermo</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-400 font-bold shrink-0">✓</span>
+                    <span>Traslados internos</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-400 font-bold shrink-0">✓</span>
+                    <span>Magistrados antimafia</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-400 font-bold shrink-0">✓</span>
+                    <span>Doble aval IIRESODH & UNLP</span>
+                  </div>
+                </div>
               </div>
+
             </div>
 
-            {/* PARTE DERECHA: BOTONES DE ACCIÓN UNIFICADOS Y COHERENTES (SIN ARBOL DE NAVIDAD) */}
-            <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full xl:w-auto shrink-0 pt-2 xl:pt-0">
-              <button
-                onClick={() => irASeccion("inscripcion")}
-                className="flex-1 sm:flex-initial bg-main-red hover:bg-[#8b1515] text-white font-bold text-xs uppercase tracking-wider py-3.5 px-6 rounded-xl shadow-md transition-colors active:scale-95 text-center cursor-pointer whitespace-nowrap"
-              >
-                Inscríbete Ahora
-              </button>
-              <button
-                onClick={() => irASeccion("programa")}
-                className="flex-1 sm:flex-initial bg-white/10 hover:bg-white/20 text-white font-semibold text-xs uppercase tracking-wider py-3.5 px-5 rounded-xl border border-white/20 transition-colors text-center cursor-pointer whitespace-nowrap"
-              >
-                Ver Programa ({programa.length} Días)
-              </button>
-              <button
-                onClick={() => setModalBrochure(1)}
-                className="flex-1 sm:flex-initial bg-white/10 hover:bg-white/20 text-white font-semibold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl border border-white/20 transition-colors text-center cursor-pointer whitespace-nowrap"
-              >
-                Brochure 📄
-              </button>
-              <a
-                href={contacto?.whatsappUrl || "https://wa.me/50640816188"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 sm:flex-initial bg-white/10 hover:bg-white/20 text-white font-semibold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl border border-white/20 transition-colors text-center cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5"
-              >
-                WhatsApp
-              </a>
+            {/* SEPARADOR HORIZONTAL SUTIL */}
+            <div className="border-t border-white/10" />
+
+            {/* FILA INFERIOR: BOTONES DE ACCIÓN Y FACILIDADES DE PAGO */}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-1">
+              <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                <button
+                  onClick={() => irASeccion("inscripcion")}
+                  className="flex-1 sm:flex-initial bg-main-red hover:bg-[#8b1515] text-white font-bold text-xs uppercase tracking-wider py-3.5 px-7 rounded-xl shadow-lg transition-all active:scale-95 text-center cursor-pointer whitespace-nowrap"
+                >
+                  Inscríbete Ahora
+                </button>
+                <button
+                  onClick={() => irASeccion("programa")}
+                  className="flex-1 sm:flex-initial bg-white/10 hover:bg-white/20 text-white font-semibold text-xs uppercase tracking-wider py-3.5 px-5 rounded-xl border border-white/20 transition-colors text-center cursor-pointer whitespace-nowrap"
+                >
+                  Ver Programa ({programa.length} Días)
+                </button>
+                <button
+                  onClick={() => setModalBrochure(1)}
+                  className="flex-1 sm:flex-initial bg-white/10 hover:bg-white/20 text-white font-semibold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl border border-white/20 transition-colors text-center cursor-pointer whitespace-nowrap"
+                >
+                  Brochure 📄
+                </button>
+                <a
+                  href={contacto?.whatsappUrl || "https://wa.me/50640816188"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 sm:flex-initial bg-white/10 hover:bg-white/20 text-white font-semibold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl border border-white/20 transition-colors text-center cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5"
+                >
+                  WhatsApp
+                </a>
+              </div>
+
+              <div className="text-[11px] text-slate-400 font-normal text-center md:text-right shrink-0">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  Facilidades de pago en cuotas disponibles
+                </span>
+              </div>
             </div>
 
           </div>
