@@ -17,6 +17,7 @@ import logoUnlp from "../assets/cursos/logo_unlp_ddhh.png";
 import brochureP1 from "../assets/cursos/brochure_palermo_p2.jpg";
 import brochureP2 from "../assets/cursos/brochure_palermo_p1.jpg";
 import logoIiresodh from "../assets/logo.webp";
+import logoIiresodhColor from "../assets/logo-color.png";
 import FormularioPagoCurso from "../components/cursos/FormularioPagoCurso";
 import { Scale, ShieldCheck, Search, GraduationCap, Globe } from "lucide-react";
 
