@@ -136,6 +136,55 @@ export const formatearTextoConLinksYHashtags = (texto, idiomaActual = 'es') => {
   return procesado;
 };
 
+// Extraer documentos adjuntos enlazados dentro del contenido HTML o Markdown
+export const extraerDocumentosDeContenido = (contenido) => {
+  if (!contenido) return [];
+  const docs = [];
+  const urlsVistas = new Set();
+
+  const regexA = /<a\s+[^>]*?href=["']([^"']+)["'][^>]*?>([\s\S]*?)<\/a>/gi;
+  let match;
+  while ((match = regexA.exec(contenido)) !== null) {
+    const href = match[1];
+    const texto = match[2].replace(/<[^>]+>/g, '').trim();
+    const esDoc = /\/documentos\//i.test(href) || 
+                  /\.(pdf|docx?|xlsx?)(?:\?|$)/i.test(href) ||
+                  /firebasestorage\.googleapis\.com\/.*?(?:documentos|noticias|anuncios|informes)/i.test(href);
+
+    if (esDoc && !urlsVistas.has(href)) {
+      urlsVistas.add(href);
+      let nombre = texto;
+      if (!nombre || nombre.toLowerCase() === 'aquí' || nombre.toLowerCase() === 'aqui' || nombre.toLowerCase() === 'clic aquí' || nombre.length > 80) {
+        const filenameMatch = href.match(/\/([^\/?#]+\.(?:pdf|docx?|xlsx?))/i);
+        nombre = filenameMatch ? decodeURIComponent(filenameMatch[1]) : (texto || "Documento Anexo");
+      }
+      docs.push({
+        nombre: nombre.replace(/^[📄\s]+/, ''),
+        url: href
+      });
+    }
+  }
+
+  const regexMd = /\[([^\]]+)\]\(((?:https?:\/\/|\/)[^\s)]+)\)/gi;
+  while ((match = regexMd.exec(contenido)) !== null) {
+    const texto = match[1].trim();
+    const href = match[2].trim();
+    const esDoc = /\/documentos\//i.test(href) || 
+                  /\.(pdf|docx?|xlsx?)(?:\?|$)/i.test(href) ||
+                  /firebasestorage\.googleapis\.com\/.*?(?:documentos|noticias|anuncios|informes)/i.test(href);
+
+    if (esDoc && !urlsVistas.has(href)) {
+      urlsVistas.add(href);
+      docs.push({
+        nombre: texto.replace(/^[📄\s]+/, '') || "Documento Anexo",
+        url: href
+      });
+    }
+  }
+
+  return docs;
+};
+
 export default function NoticiaDetalle() {
   const { t, i18n } = useTranslation(); 
   const { id } = useParams(); 
@@ -150,11 +199,6 @@ export default function NoticiaDetalle() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    
-    // Si ya viene precargada con sus traducciones completas, no volvemos a consultar
-    if (noticiaInicial && (noticiaInicial.titulo_en || noticiaInicial.contenido_en)) {
-      return; 
-    }
 
     const fetchNoticia = async () => {
       try {
@@ -181,7 +225,7 @@ export default function NoticiaDetalle() {
     };
     
     fetchNoticia();
-  }, [id, noticiaInicial]);
+  }, [id]);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(currentUrl)
@@ -196,11 +240,25 @@ export default function NoticiaDetalle() {
   const contenidoTraducido = obtenerTextoTraducido(noticia, 'contenido', i18n.language);
   const embedVideoUrl = noticia?.videoUrl ? convertirUrlAVideoEmbed(noticia.videoUrl) : null;
 
-  const documentosAnexos = (noticia?.archivosAdjuntos && Array.isArray(noticia.archivosAdjuntos) && noticia.archivosAdjuntos.length > 0)
-    ? noticia.archivosAdjuntos
-    : (noticia?.archivoPdfUrl ? [{ nombre: noticia.archivoPdfNombre || "Documento Anexo", url: noticia.archivoPdfUrl }] : []);
+  // Unificar archivos adjuntos: de Firestore, campo legado, o extraídos del contenido
+  const adjuntosFirestore = Array.isArray(noticia?.archivosAdjuntos) ? noticia.archivosAdjuntos : [];
+  const pdfLegado = noticia?.archivoPdfUrl ? [{ nombre: noticia.archivoPdfNombre || "Documento Anexo", url: noticia.archivoPdfUrl }] : [];
+  const docsContenido = extraerDocumentosDeContenido(noticia?.contenido);
+
+  const mapaUrls = new Set();
+  const documentosAnexos = [];
+  [...adjuntosFirestore, ...pdfLegado, ...docsContenido].forEach(docItem => {
+    if (docItem && docItem.url && !mapaUrls.has(docItem.url)) {
+      mapaUrls.add(docItem.url);
+      documentosAnexos.push(docItem);
+    }
+  });
 
   const obtenerUrlDocumentoNoticia = (archivo, index) => {
+    if (!archivo || !archivo.url) return "#";
+    if (archivo.url.startsWith("/documentos/") || archivo.url.includes("iiresodh.org/documentos/")) {
+      return archivo.url;
+    }
     const slugDoc = (archivo.nombre || `documento-${index + 1}`)
       .toLowerCase()
       .normalize("NFD")

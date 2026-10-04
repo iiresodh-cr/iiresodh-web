@@ -1065,8 +1065,22 @@ useEffect(() => {
       await uploadBytes(refDoc, file);
       const url = await getDownloadURL(refDoc);
 
-      setArchivosAdjuntos(prev => [...prev, { nombre: file.name, url }]);
-      setMensaje("¡Documento subido con éxito!");
+      const nuevoDoc = { nombre: file.name, url };
+      const nuevosAdjuntos = [...archivosAdjuntos, nuevoDoc];
+      setArchivosAdjuntos(nuevosAdjuntos);
+
+      if (editandoId && vistaActiva === "comunicaciones") {
+        try {
+          await updateDoc(doc(db, "noticias", editandoId), {
+            archivosAdjuntos: nuevosAdjuntos
+          });
+          localStorage.removeItem('home_noticias');
+        } catch (dbErr) {
+          console.warn("No se pudo autoguardar adjunto en Firestore:", dbErr);
+        }
+      }
+
+      setMensaje("¡Documento subido y guardado con éxito!");
     } catch (error) {
       console.error("Error al subir documento:", error);
       setMensaje("Error al subir el documento.");
@@ -1084,8 +1098,19 @@ useEffect(() => {
     setTimeout(() => setMensaje(""), 4000);
   };
 
-  const eliminarArchivoAdjunto = (index) => {
-    setArchivosAdjuntos(prev => prev.filter((_, i) => i !== index));
+  const eliminarArchivoAdjunto = async (index) => {
+    const nuevaLista = archivosAdjuntos.filter((_, i) => i !== index);
+    setArchivosAdjuntos(nuevaLista);
+    if (editandoId && vistaActiva === "comunicaciones") {
+      try {
+        await updateDoc(doc(db, "noticias", editandoId), {
+          archivosAdjuntos: nuevaLista
+        });
+        localStorage.removeItem('home_noticias');
+      } catch (dbErr) {
+        console.warn("Error al actualizar Firestore:", dbErr);
+      }
+    }
     setMensaje("Documento anexo removido de la lista.");
     setTimeout(() => setMensaje(""), 3000);
   };
@@ -1266,6 +1291,7 @@ useEffect(() => {
           datos.persistente = persistente;
           datos.videoUrl = videoUrl ? videoUrl.trim() : null;
           datos.archivosAdjuntos = archivosAdjuntos || [];
+          localStorage.removeItem('home_noticias');
         } else if (vistaActiva === "articulos") {
           const usuarioActual = auth.currentUser?.displayName || auth.currentUser?.email?.split('@')[0] || "IIRESODH";
           datos.subtitulo = subtitulo ? subtitulo.trim() : "";
