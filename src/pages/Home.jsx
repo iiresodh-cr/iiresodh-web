@@ -25,7 +25,6 @@ import {
   MapPin, 
   Mail, 
   ShieldCheck, 
-  Sparkles,
   ExternalLink
 } from "lucide-react";
 
@@ -301,38 +300,6 @@ export default function Home() {
   return (
     <main className="bg-[#FAFBFD] flex flex-col min-h-screen font-sans overflow-x-hidden selection:bg-red-500 selection:text-white">
       
-      {/* ==============================================================
-          BARRA DE ESTADO EXCLUSIVA PARA EL ADMINISTRADOR
-      ============================================================== */}
-      <aside 
-        aria-label="Aviso de vista preliminar de administración" 
-        className="bg-[#0B1E40] text-white border-b border-white/10 px-4 sm:px-8 py-2.5 text-xs flex flex-wrap items-center justify-between gap-3 sticky top-0 z-50 shadow-md backdrop-blur-md bg-opacity-95"
-      >
-        <div className="flex items-center gap-2.5">
-          <span className="inline-flex items-center gap-1.5 bg-red-600/90 text-white font-black px-2.5 py-0.5 rounded-full text-[10px] tracking-wider uppercase">
-            <Sparkles className="w-3 h-3" /> Propuesta v2
-          </span>
-          <span className="text-slate-300 font-medium hidden sm:inline">
-            Modo de evaluación exclusiva para administradores • No afecta la versión pública
-          </span>
-        </div>
-        <div className="flex items-center gap-4 text-xs font-semibold">
-          <Link 
-            to="/" 
-            className="text-slate-300 hover:text-white underline underline-offset-4 transition-colors"
-          >
-            Comparar con Home Actual
-          </Link>
-          <span className="text-white/20">|</span>
-          <Link 
-            to="/admin" 
-            className="text-red-300 hover:text-red-200 transition-colors"
-          >
-            Volver al Panel
-          </Link>
-        </div>
-      </aside>
-
       <div className="relative grow">
         
         {/* Iluminación ambiental y sutil de fondo (sin texturas recargadas) */}
@@ -362,7 +329,7 @@ export default function Home() {
                 <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full bg-white border border-slate-200/80 shadow-xs mb-4">
                   <span className="w-2 h-2 rounded-full bg-main-red"></span>
                   <span className="text-[11px] font-bold tracking-[0.18em] uppercase text-slate-700">
-                    Instituto Internacional de Responsabilidad Social y Derechos Humanos
+                    {t('home.hero_badge', 'Instituto Internacional de Responsabilidad Social y Derechos Humanos')}
                   </span>
                 </div>
 
@@ -425,7 +392,7 @@ export default function Home() {
                       {/* Badge Superior */}
                       <div className="absolute top-5 left-5 z-10 flex items-center gap-2">
                         <span className="bg-white/90 backdrop-blur-md text-[#0B1E40] text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-sm">
-                          Publicación Reciente
+                          {t('home.publicacion_reciente', 'Publicación Reciente')}
                         </span>
                       </div>
 
@@ -463,7 +430,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5 pt-6">
               <div>
                 <span className="text-main-red font-bold text-xs tracking-[0.25em] uppercase mb-1.5 block">
-                  Comunicados Oficiales
+                  {t('home.comunicados_oficiales', 'Comunicados Oficiales')}
                 </span>
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-main-blue tracking-tight">
                   {t('home.seccion_actualidad', 'Actualidad Institucional')}
@@ -648,7 +615,7 @@ export default function Home() {
                       to="/noticias" 
                       className="w-full py-2 px-3 rounded-xl bg-slate-50 hover:bg-red-50 text-slate-700 hover:text-main-red border border-slate-200/80 hover:border-red-200 text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2"
                     >
-                      <span>Ver todas las publicaciones</span>
+                      <span>{t('home.ver_todas_publicaciones', 'Ver todas las publicaciones')}</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
                   </div>
@@ -692,7 +659,7 @@ export default function Home() {
                     </div>
                     
                     <span className="text-[10px] font-bold tracking-widest uppercase text-slate-500 block mb-1.5">
-                      Acción Jurídica
+                      {t('home.accion_juridica', 'Acción Jurídica')}
                     </span>
                     
                     <h3 className="text-xl font-bold text-main-blue mb-2.5 group-hover:text-main-red transition-colors">
@@ -705,7 +672,7 @@ export default function Home() {
                   </div>
 
                   <div className="inline-flex items-center gap-1.5 text-xs font-bold text-main-red uppercase tracking-wider group-hover:translate-x-1 transition-transform pt-3 border-t border-slate-100">
-                    <span>Más Información</span>
+                    <span>{t('home.mas_informacion', 'Más Información')}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
                 </article>
@@ -724,7 +691,7 @@ export default function Home() {
                     </div>
                     
                     <span className="text-[10px] font-bold tracking-widest uppercase text-slate-500 block mb-1.5">
-                      Cooperación y Derechos
+                      {t('home.cooperacion_derechos', 'Cooperación y Derechos')}
                     </span>
 
                     <h3 className="text-xl font-bold text-main-blue mb-2.5 group-hover:text-main-blue transition-colors">
@@ -737,7 +704,7 @@ export default function Home() {
                   </div>
 
                   <div className="inline-flex items-center gap-1.5 text-xs font-bold text-main-blue uppercase tracking-wider group-hover:translate-x-1 transition-transform pt-3 border-t border-slate-100">
-                    <span>Explorar trabajo por país</span>
+                    <span>{t('home.explorar_pais', 'Explorar trabajo por país')}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
                 </article>
@@ -756,7 +723,7 @@ export default function Home() {
                     </div>
                     
                     <span className="text-[10px] font-bold tracking-widest uppercase text-slate-500 block mb-1.5">
-                      Excelencia Académica
+                      {t('home.excelencia_academica', 'Excelencia Académica')}
                     </span>
 
                     <h3 className="text-xl font-bold text-main-blue mb-2.5 group-hover:text-slate-800 transition-colors">
@@ -769,7 +736,7 @@ export default function Home() {
                   </div>
 
                   <div className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 uppercase tracking-wider group-hover:translate-x-1 transition-transform pt-3 border-t border-slate-100">
-                    <span>Ver catálogo de formación</span>
+                    <span>{t('home.ver_catalogo', 'Ver catálogo de formación')}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
                 </article>
@@ -791,7 +758,7 @@ export default function Home() {
                 {/* Columna Izquierda: Información de Contacto y Confidencialidad */}
                 <div className="lg:col-span-5 flex flex-col">
                   <span className="text-main-red font-bold text-xs tracking-[0.25em] uppercase mb-2 block">
-                    Canal Oficial de Enlace
+                    {t('home.canal_oficial', 'Canal Oficial de Enlace')}
                   </span>
                   
                   <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-main-blue tracking-tight mb-3">
@@ -809,8 +776,12 @@ export default function Home() {
                         <MapPin className="w-4 h-4 text-main-red" />
                       </div>
                       <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Sede Internacional</span>
-                        <span className="text-xs sm:text-sm font-semibold text-main-blue">San José, Costa Rica</span>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
+                          {t('home.sede_label', 'Sede Internacional')}
+                        </span>
+                        <span className="text-xs sm:text-sm font-semibold text-main-blue">
+                          {t('home.sede_valor', 'San José, Costa Rica')}
+                        </span>
                       </div>
                     </div>
 
@@ -819,7 +790,9 @@ export default function Home() {
                         <Mail className="w-4 h-4 text-main-blue" />
                       </div>
                       <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Correo Electrónico</span>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
+                          {t('home.correo_label', 'Correo Electrónico')}
+                        </span>
                         <a href="mailto:contacto@iiresodh.org" className="text-xs sm:text-sm font-semibold text-main-blue hover:text-main-red transition-colors">
                           contacto@iiresodh.org
                         </a>
@@ -831,9 +804,11 @@ export default function Home() {
                         <ShieldCheck className="w-4 h-4 text-emerald-600" />
                       </div>
                       <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Protección de Datos</span>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
+                          {t('home.proteccion_datos_label', 'Protección de Datos')}
+                        </span>
                         <span className="text-xs text-slate-500 leading-snug">
-                          Tratamiento estrictamente confidencial bajo la Ley N° 8968.
+                          {t('home.proteccion_datos_desc', 'Tratamiento estrictamente confidencial bajo la Ley N° 8968.')}
                         </span>
                       </div>
                     </div>
