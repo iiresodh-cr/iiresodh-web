@@ -12,7 +12,7 @@ import {
   serverTimestamp 
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { db, storage } from "../../firebase/config";
+import { auth, db, storage } from "../../firebase/config";
 import { 
   CircularProgress, 
   Dialog, 
@@ -42,14 +42,14 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
   const [busqueda, setBusqueda] = useState("");
   const [actualizandoId, setActualizandoId] = useState(null);
 
-  // Subida de pasaporte
+  // Subida y visor de pasaporte
   const [subiendoPasaporteId, setSubiendoPasaporteId] = useState(null);
   const [modalPasaporte, setModalPasaporte] = useState({ open: false, url: "", nombre: "", tipo: "" });
 
   // Alertas
   const [alerta, setAlerta] = useState({ open: false, mensaje: "", esError: false });
   // Modal de confirmación para eliminar
-  const [modalBorrar, setModalBorrar] = useState({ open: false, id: null, nombre: "" });
+  const [modalBorrar, setModalBorrar] = useState({ open: false, id: null, nombre: "", cursoTitulo: "" });
 
   // Modal para Registro Manual de Participante
   const [modalManual, setModalManual] = useState(false);
@@ -69,7 +69,10 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
     montoTotalInversion: 3350,
     montoPagado: 0,
     estado: "contactado",
-    comentarios: ""
+    comentarios: "",
+    otorgoConsentimiento: true,
+    medioConsentimiento: "WhatsApp",
+    detalleConsentimiento: ""
   });
 
   const mostrarToast = (mensaje, esError = false) => {
@@ -241,7 +244,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
     });
   }, [solicitudesDelCurso, filtroEstado, filtroMetodo, busqueda]);
 
-  // Subir copia de pasaporte a Firebase Storage
+  // Subir copia de pasaporte a Firebase Storage con auditoría
   const handleSubirPasaporte = async (solicitud, file) => {
     if (!file) return;
     if (file.size > 25 * 1024 * 1024) {
@@ -264,7 +267,8 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         pasaporteNombre: file.name,
         pasaporteTipo: file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image'),
         pasaporteRutaStorage: rutaStorage,
-        fechaSubidaPasaporte: serverTimestamp()
+        fechaSubidaPasaporte: serverTimestamp(),
+        pasaporteSubidoPor: auth.currentUser?.email || "Administrador"
       };
 
       await updateDoc(doc(db, "solicitudesCursos", solicitud.id), updateData);
@@ -273,10 +277,18 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
 
       mostrarToast(`Copia de pasaporte de ${solicitud.nombre || 'participante'} subida con éxito.`);
 
+      // Registro en log de auditoría
       if (logActividad) {
-        logActividad(
-          `Subió copia de pasaporte para ${solicitud.nombre || solicitud.id} (${file.name})`,
-          { id: solicitud.id, archivo: file.name }
+        await logActividad(
+          `Subió copia de pasaporte para ${solicitud.nombre || solicitud.id} (${file.name}) en curso "${solicitud.cursoTitulo || solicitud.cursoId || ''}"`,
+          {
+            solicitudId: solicitud.id,
+            nombreParticipante: solicitud.nombre || `${solicitud.nombres || ''} ${solicitud.apellidos || ''}`.trim(),
+            archivo: file.name,
+            tamanoBytes: file.size,
+            tipo: file.type,
+            curso: solicitud.cursoTitulo || solicitud.cursoId
+          }
         );
       }
     } catch (error) {
@@ -287,11 +299,17 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
     }
   };
 
+  // Cambio de estado con log de auditoría
   const handleCambiarEstado = async (id, nuevoEstado, solicitudActual) => {
     setActualizandoId(id);
+    const estadoAnterior = solicitudActual.estado || "pendiente";
     try {
       const docRef = doc(db, "solicitudesCursos", id);
-      await updateDoc(docRef, { estado: nuevoEstado });
+      await updateDoc(docRef, { 
+        estado: nuevoEstado,
+        fechaModificacionEstado: serverTimestamp(),
+        modificadoPor: auth.currentUser?.email || "Administrador"
+      });
 
       setSolicitudes(prev =>
         prev.map(s => (s.id === id ? { ...s, estado: nuevoEstado } : s))
@@ -299,10 +317,17 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
 
       mostrarToast(`Estado actualizado a: ${nuevoEstado}`);
 
+      // Registro en log de auditoría
       if (logActividad) {
-        logActividad(
-          `Actualizó estado de solicitud de curso (${solicitudActual.nombre || id}) a "${nuevoEstado}"`,
-          { id, estadoAnterior: solicitudActual.estado, nuevoEstado }
+        await logActividad(
+          `Actualizó estado de participante "${solicitudActual.nombre || id}" a "${nuevoEstado}"`,
+          {
+            solicitudId: id,
+            nombreParticipante: solicitudActual.nombre || `${solicitudActual.nombres || ''} ${solicitudActual.apellidos || ''}`.trim(),
+            estadoAnterior: estadoAnterior,
+            nuevoEstado: nuevoEstado,
+            curso: solicitudActual.cursoTitulo || solicitudActual.cursoId
+          }
         );
       }
     } catch (error) {
@@ -313,6 +338,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
     }
   };
 
+  // Eliminación con log de auditoría
   const confirmarBorrado = async () => {
     if (!modalBorrar.id) return;
     try {
@@ -320,17 +346,22 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       setSolicitudes(prev => prev.filter(s => s.id !== modalBorrar.id));
       mostrarToast("Solicitud eliminada con éxito.");
 
+      // Registro en log de auditoría
       if (logActividad) {
-        logActividad(
-          `Eliminó solicitud de curso de "${modalBorrar.nombre || modalBorrar.id}"`,
-          { id: modalBorrar.id, nombre: modalBorrar.nombre }
+        await logActividad(
+          `Eliminó participante de curso: "${modalBorrar.nombre || modalBorrar.id}" (ID: ${modalBorrar.id})`,
+          {
+            solicitudId: modalBorrar.id,
+            nombreParticipante: modalBorrar.nombre,
+            curso: modalBorrar.cursoTitulo
+          }
         );
       }
     } catch (error) {
       console.error("Error al eliminar solicitud:", error);
       mostrarToast("Error al eliminar la solicitud.", true);
     } finally {
-      setModalBorrar({ open: false, id: null, nombre: "" });
+      setModalBorrar({ open: false, id: null, nombre: "", cursoTitulo: "" });
     }
   };
 
@@ -351,11 +382,15 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       montoTotalInversion: 3350,
       montoPagado: 0,
       estado: "contactado",
-      comentarios: ""
+      comentarios: "",
+      otorgoConsentimiento: true,
+      medioConsentimiento: "WhatsApp",
+      detalleConsentimiento: "El participante manifestó expresamente su consentimiento informado para el registro de sus datos conforme a la Ley N° 8968."
     });
     setModalManual(true);
   };
 
+  // Guardar participante manual con constancia de consentimiento y log de auditoría
   const handleGuardarManual = async (e) => {
     e.preventDefault();
     if (!formManual.nombres.trim() || !formManual.apellidos.trim() || !formManual.email.trim()) {
@@ -375,6 +410,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       const totalInv = Number(formManual.montoTotalInversion) || 3350;
       const pagado = Number(formManual.montoPagado) || 0;
       const cuotas = Number(formManual.planCuotas) || 1;
+      const adminActual = auth.currentUser?.email || "Administrador";
 
       let pasaporteSubidoData = {};
       if (archivoPasaporteManual) {
@@ -390,12 +426,17 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
             pasaporteNombre: archivoPasaporteManual.name,
             pasaporteTipo: archivoPasaporteManual.type || (archivoPasaporteManual.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image'),
             pasaporteRutaStorage: rutaStorage,
-            fechaSubidaPasaporte: serverTimestamp()
+            fechaSubidaPasaporte: serverTimestamp(),
+            pasaporteSubidoPor: adminActual
           };
         } catch (errPasaporte) {
           console.error("Error al subir pasaporte en registro manual:", errPasaporte);
         }
       }
+
+      const constanciaTexto = formManual.detalleConsentimiento.trim()
+        ? formManual.detalleConsentimiento.trim()
+        : `Consentimiento informado otorgado vía ${formManual.medioConsentimiento} conforme a la Ley N° 8968 de Costa Rica.`;
 
       const nuevaData = {
         cursoId: cursoElegido.id || cursoElegido.key,
@@ -416,10 +457,14 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         saldoPendiente: Math.max(0, totalInv - pagado),
         estado: formManual.estado || "contactado",
         origen: "manual_admin",
+        registradoPorAdmin: adminActual,
         comentarios: formManual.comentarios.trim(),
-        aceptaPoliticaPrivacidad: true,
+        // Consentimiento explícito Ley 8968
+        aceptaPoliticaPrivacidad: !!formManual.otorgoConsentimiento,
+        medioConsentimiento: formManual.medioConsentimiento,
         versionPoliticaPrivacidad: "2026-09-12",
-        constanciaPrivacidad: "Registro administrativo directo en panel.",
+        constanciaPrivacidad: constanciaTexto,
+        fechaAceptacionPrivacidad: serverTimestamp(),
         fechaSolicitud: serverTimestamp(),
         ...pasaporteSubidoData
       };
@@ -434,12 +479,32 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
 
       setSolicitudes(prev => [nuevoItemLocal, ...prev]);
 
-      mostrarToast(`Participante "${nombreCompleto}" registrado exitosamente como ${formManual.estado}.`);
+      mostrarToast(`Participante "${nombreCompleto}" registrado exitosamente con constancia de consentimiento.`);
 
+      // Registro exhaustivo en log de auditoría
       if (logActividad) {
-        logActividad(
+        await logActividad(
           `Registró manualmente a "${nombreCompleto}" en el curso "${cursoElegido.titulo}" con estado "${formManual.estado}"`,
-          { id: docRef.id, nombre: nombreCompleto, curso: cursoElegido.titulo }
+          {
+            solicitudId: docRef.id,
+            nombreParticipante: nombreCompleto,
+            email: formManual.email.trim(),
+            telefono: formManual.telefono.trim(),
+            pais: formManual.pais,
+            profesion: formManual.profesion.trim(),
+            institucion: formManual.institucion.trim(),
+            curso: cursoElegido.titulo,
+            estado: formManual.estado,
+            metodoPago: formManual.metodoPago,
+            planCuotas: cuotas,
+            montoTotalInversion: totalInv,
+            montoPagado: pagado,
+            consentimientoLey8968: !!formManual.otorgoConsentimiento,
+            medioConsentimiento: formManual.medioConsentimiento,
+            constanciaConsentimiento: constanciaTexto,
+            pasaporteAdjunto: !!pasaporteSubidoData.pasaporteUrl,
+            registradoPor: adminActual
+          }
         );
       }
 
@@ -452,7 +517,8 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
     }
   };
 
-  const exportarCSV = () => {
+  // Exportar CSV con constancia y log de auditoría
+  const exportarCSV = async () => {
     if (solicitudesDelCurso.length === 0) {
       mostrarToast("No hay solicitudes para exportar en este curso.", true);
       return;
@@ -470,6 +536,12 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       "Institución",
       "País",
       "Copia Pasaporte (URL)",
+      "Consentimiento Ley 8968",
+      "Canal de Consentimiento",
+      "Constancia Legal Privacidad",
+      "Fecha Aceptación Privacidad",
+      "Registrado Por",
+      "Origen Registro",
       "Ex-alumno IIRESODH",
       "Experiencia en Temas",
       "Cursos Previos Internacionales",
@@ -481,9 +553,6 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       "Monto Total Inversión USD",
       "Saldo Pendiente USD",
       "ID Stripe PaymentIntent",
-      "Consentimiento Ley 8968",
-      "Fecha Aceptación Privacidad",
-      "Versión Política",
       "Curso",
       "Comentarios"
     ];
@@ -517,6 +586,12 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         `"${(s.institucion || '').replace(/"/g, '""')}"`,
         `"${(s.pais || '').replace(/"/g, '""')}"`,
         `"${(s.pasaporteUrl || '').replace(/"/g, '""')}"`,
+        `"${s.aceptaPoliticaPrivacidad ? 'SÍ (Otorgado)' : 'No registrado'}"`,
+        `"${(s.medioConsentimiento || (s.origen === 'manual_admin' ? 'Registro Manual' : 'Formulario Web')).replace(/"/g, '""')}"`,
+        `"${(s.constanciaPrivacidad || '').replace(/"/g, '""')}"`,
+        `"${fechaPrivacidad}"`,
+        `"${(s.registradoPorAdmin || 'Usuario Web').replace(/"/g, '""')}"`,
+        `"${s.origen === 'manual_admin' ? 'Manual Admin' : 'Web Oficial'}"`,
         `"${s.alumnoIiresodh === 'si' ? 'SÍ' : 'NO'}"`,
         `"${temas.replace(/"/g, '""')}"`,
         `"${(s.cursosPrevios || 'No').replace(/"/g, '""')}"`,
@@ -528,9 +603,6 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         `"${s.montoTotalInversion || 3350}"`,
         `"${s.saldoPendiente !== undefined ? s.saldoPendiente : (s.metodoPago === 'stripe' ? 0 : 3350)}"`,
         `"${(s.stripePaymentIntentId || s.stripeSessionId || '').replace(/"/g, '""')}"`,
-        `"${s.aceptaPoliticaPrivacidad ? 'SÍ (Otorgado)' : 'No registrado'}"`,
-        `"${fechaPrivacidad}"`,
-        `"${s.versionPoliticaPrivacidad || '2026-09-12'}"`,
         `"${(s.cursoTitulo || s.cursoId || '').replace(/"/g, '""')}"`,
         `"${(s.comentarios || '').replace(/"/g, '""')}"`
       ];
@@ -550,6 +622,19 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
     link.click();
     document.body.removeChild(link);
     mostrarToast(`Reporte CSV de "${cursoActivoObj?.titulo || 'Curso'}" descargado con éxito.`);
+
+    // Registro en log de auditoría
+    if (logActividad) {
+      await logActividad(
+        `Exportó reporte CSV de inscripciones del curso "${cursoActivoObj?.titulo || 'Todos'}"`,
+        {
+          curso: cursoActivoObj?.titulo,
+          cantidadRegistros: solicitudesDelCurso.length,
+          filtroEstado,
+          filtroMetodo
+        }
+      );
+    }
   };
 
   const formatearFecha = (timestamp) => {
@@ -764,7 +849,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-gray-600 mt-1 max-w-2xl">
-                Planes de financiamiento (1 a 4 cuotas), postulaciones bancarias, pagos en línea por Stripe, pasaportes y registros directos de participantes contactados.
+                Planes de financiamiento (1 a 4 cuotas), postulaciones bancarias, pagos en línea por Stripe, pasaportes, consentimientos y registros directos de participantes contactados.
               </p>
             </div>
 
@@ -1014,7 +1099,12 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
 
                       <button
                         type="button"
-                        onClick={() => setModalBorrar({ open: true, id: solicitud.id, nombre: solicitud.nombre })}
+                        onClick={() => setModalBorrar({ 
+                          open: true, 
+                          id: solicitud.id, 
+                          nombre: solicitud.nombre, 
+                          cursoTitulo: solicitud.cursoTitulo || solicitud.cursoId 
+                        })}
                         title="Eliminar solicitud"
                         className="p-2 text-gray-400 hover:text-main-red hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
                       >
@@ -1027,7 +1117,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
 
                   {/* CUERPO CON DETALLES DE PAGO Y PERFIL */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* COLUMNA 1: DATOS PERSONALES, PROFESIÓN Y PASAPORTE */}
+                    {/* COLUMNA 1: DATOS PERSONALES, PROFESIÓN, PASAPORTE Y CONSENTIMIENTO */}
                     <div className="space-y-2">
                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
                         Participante y Perfil
@@ -1181,27 +1271,35 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                       </div>
 
                       {/* CONSTANCIA LEGAL DE PROTECCIÓN DE DATOS (LEY 8968) */}
-                      <div className="pt-2 border-t border-gray-100 space-y-0.5">
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
-                          Consentimiento Ley N° 8968 (Privacidad)
+                      <div className="pt-2.5 border-t border-gray-100 space-y-1">
+                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">
+                          Consentimiento Informado (Ley N° 8968)
                         </span>
-                        <div className="flex items-center gap-1.5 text-xs">
+                        <div className="flex items-center gap-1.5 text-xs flex-wrap">
                           {solicitud.aceptaPoliticaPrivacidad ? (
-                            <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 inline-flex items-center gap-1 text-[11px]">
-                              ✓ Consentimiento Otorgado
-                              <span className="text-[10px] font-normal text-emerald-800">
-                                (Ver. {solicitud.versionPoliticaPrivacidad || "2026-09-12"})
-                              </span>
+                            <span className="font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 inline-flex items-center gap-1 text-[11px]">
+                              <span>✓ Consentimiento Otorgado</span>
+                              {solicitud.medioConsentimiento && (
+                                <span className="text-[10px] font-extrabold text-emerald-900 bg-emerald-200/80 px-1.5 py-0.2 rounded-full">
+                                  Vía {solicitud.medioConsentimiento}
+                                </span>
+                              )}
                             </span>
                           ) : (
                             <span className="font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded text-[11px]">
-                              Aceptado previo al envío
+                              No registrado
                             </span>
                           )}
                         </div>
+                        {solicitud.constanciaPrivacidad && (
+                          <span className="text-[10px] text-gray-600 italic block leading-tight pt-0.5">
+                            "{solicitud.constanciaPrivacidad}"
+                          </span>
+                        )}
                         {solicitud.fechaAceptacionPrivacidad && (
-                          <span className="text-[10px] text-gray-400 block">
-                            Constancia: {formatearFecha(solicitud.fechaAceptacionPrivacidad)}
+                          <span className="text-[9px] text-gray-400 block pt-0.5">
+                            Fecha: {formatearFecha(solicitud.fechaAceptacionPrivacidad)}
+                            {solicitud.registradoPorAdmin && ` | Autorizado por: ${solicitud.registradoPorAdmin}`}
                           </span>
                         )}
                       </div>
@@ -1395,7 +1493,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         <form onSubmit={handleGuardarManual}>
           <DialogContent sx={{ py: 3 }} className="space-y-4">
             <p className="text-xs text-gray-500 -mt-1">
-              Ingresa los datos del interesado que se haya comunicado directamente. Quedará guardado en el expediente oficial del curso con su estado de gestión correspondiente y copia de pasaporte.
+              Ingresa los datos del interesado que se haya comunicado directamente. Quedará guardado en el expediente oficial del curso con su estado de gestión, copia de pasaporte y constancia de consentimiento informado.
             </p>
 
             {/* CURSO DESTINO */}
@@ -1522,7 +1620,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
             </div>
 
             {/* SUBIR COPIA DE PASAPORTE EN REGISTRO MANUAL */}
-            <div className="bg-blue-50/40 p-3 rounded-xl border border-blue-200 space-y-1">
+            <div className="bg-blue-50/40 p-3.5 rounded-xl border border-blue-200 space-y-1.5">
               <label className="block text-xs font-bold text-main-blue uppercase">
                 📎 Copia del Pasaporte (PDF o Imagen) - Opcional
               </label>
@@ -1536,6 +1634,58 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                 <span className="text-[11px] text-emerald-700 font-bold block pt-1">
                   ✓ Seleccionado: {archivoPasaporteManual.name} ({(archivoPasaporteManual.size / 1024).toFixed(0)} KB)
                 </span>
+              )}
+            </div>
+
+            {/* SECCIÓN CONSENTIMIENTO INFORMADO (LEY 8968) */}
+            <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3.5 space-y-2.5">
+              <span className="text-[11px] font-black uppercase tracking-wider text-emerald-900 block flex items-center gap-1.5">
+                🛡️ Consentimiento de Privacidad y Tratamiento de Datos (Ley N° 8968)
+              </span>
+
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formManual.otorgoConsentimiento}
+                  onChange={(e) => setFormManual({ ...formManual, otorgoConsentimiento: e.target.checked })}
+                  className="mt-0.5 w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                />
+                <span className="text-xs text-emerald-950 font-medium leading-snug">
+                  <strong>Constancia de Consentimiento Expreso:</strong> El participante ha manifestado de forma informada su consentimiento para el tratamiento de sus datos personales y académicos.
+                </span>
+              </label>
+
+              {formManual.otorgoConsentimiento && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-emerald-200/60">
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-emerald-900 mb-1">
+                      Medio o Canal de Consentimiento *
+                    </label>
+                    <select
+                      value={formManual.medioConsentimiento}
+                      onChange={(e) => setFormManual({ ...formManual, medioConsentimiento: e.target.value })}
+                      className="w-full text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-300 bg-white text-emerald-950 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    >
+                      <option value="WhatsApp">💬 Mensaje de WhatsApp</option>
+                      <option value="Correo Electrónico">✉️ Correo Electrónico</option>
+                      <option value="Llamada Telefónica">📞 Llamada Telefónica</option>
+                      <option value="Formulario Físico / Escrito">📝 Formulario Físico / Escrito</option>
+                      <option value="Presencial / Verbal">🤝 Presencial / Verbal</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-emerald-900 mb-1">
+                      Constancia / Nota Expresa:
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ej: Aceptó términos por WhatsApp el 04/10/2026"
+                      value={formManual.detalleConsentimiento}
+                      onChange={(e) => setFormManual({ ...formManual, detalleConsentimiento: e.target.value })}
+                      className="w-full text-xs px-3 py-1.5 rounded-lg border border-emerald-300 bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
               )}
             </div>
 
@@ -1664,7 +1814,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       {/* DIALOG DE CONFIRMACIÓN DE BORRADO */}
       <Dialog
         open={modalBorrar.open}
-        onClose={() => setModalBorrar({ open: false, id: null, nombre: "" })}
+        onClose={() => setModalBorrar({ open: false, id: null, nombre: "", cursoTitulo: "" })}
         maxWidth="xs"
         fullWidth
       >
@@ -1674,12 +1824,12 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         <DialogContent>
           <p className="text-sm text-gray-600">
             ¿Estás seguro de que deseas eliminar permanentemente la solicitud de{" "}
-            <strong>{modalBorrar.nombre || "este usuario"}</strong>? Esta acción no se puede deshacer.
+            <strong>{modalBorrar.nombre || "este usuario"}</strong>? Esta acción no se puede deshacer y quedará registrada en el log de auditoría.
           </p>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button
-            onClick={() => setModalBorrar({ open: false, id: null, nombre: "" })}
+            onClick={() => setModalBorrar({ open: false, id: null, nombre: "", cursoTitulo: "" })}
             sx={{ textTransform: "none", color: "#6b7280" }}
           >
             Cancelar
