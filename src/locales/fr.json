@@ -324,9 +324,7 @@
     "volver_repositorio": "Retour au référentiel",
     "compartir_noticia": "Partager cette actualité",
     "copiar_enlace": "Copier le lien",
-    "enlace_copiado": "Lien copié dans le presse-papiers !",
-    "documentos_anexos": "Documents Annexes :",
-    "ver_o_descargar": "Voir ou Télécharger ici"
+    "enlace_copiado": "Lien copié dans le presse-papiers !"
   },
   "articulo_detalle": {
     "cargando": "Chargement de l'article...",

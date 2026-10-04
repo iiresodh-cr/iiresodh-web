@@ -4,7 +4,7 @@ const { defineSecret } = require("firebase-functions/params");
 const { GoogleGenAI } = require("@google/genai");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
-const Stripe = require("stripe"); 
+const Stripe = require("stripe");
 const { PDFDocument, rgb, StandardFonts } = require("pdf-lib"); // LIBRERÍA DE SOCIAL DRM
 const path = require("path");
 const fs = require("fs");
@@ -20,17 +20,17 @@ if (!admin.apps.length) {
 const GMAIL_CLIENT_ID = defineSecret("GMAIL_CLIENT_ID");
 const GMAIL_CLIENT_SECRET = defineSecret("GMAIL_CLIENT_SECRET");
 const GMAIL_REFRESH_TOKEN = defineSecret("GMAIL_REFRESH_TOKEN");
-const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY"); 
-const STRIPE_WEBHOOK_SECRET = defineSecret("STRIPE_WEBHOOK_SECRET"); 
+const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY");
+const STRIPE_WEBHOOK_SECRET = defineSecret("STRIPE_WEBHOOK_SECRET");
 const STRIPE_CURSOS_SECRET_KEY = defineSecret("STRIPE_CURSOS_SECRET_KEY");
 const STRIPE_CURSOS_WEBHOOK_SECRET = defineSecret("STRIPE_CURSOS_WEBHOOK_SECRET");
-const PIDA_SERVICE_ACCOUNT = defineSecret("PIDA_SERVICE_ACCOUNT"); 
+const PIDA_SERVICE_ACCOUNT = defineSecret("PIDA_SERVICE_ACCOUNT");
 
 function getStripeCursosKey() {
   try {
     const val = STRIPE_CURSOS_SECRET_KEY.value();
     if (val) return String(val).trim();
-  } catch (_) {}
+  } catch (_) { }
   return String(process.env.STRIPE_CURSOS_SECRET_KEY || "").trim();
 }
 
@@ -38,7 +38,7 @@ function getStripeCursosWebhookSecret() {
   try {
     const val = STRIPE_CURSOS_WEBHOOK_SECRET.value();
     if (val) return String(val).trim();
-  } catch (_) {}
+  } catch (_) { }
   return String(process.env.STRIPE_CURSOS_WEBHOOK_SECRET || "").trim();
 }
 
@@ -61,17 +61,17 @@ function getPidaFirestore() {
 // ============================================================================
 // 1. FUNCIÓN DE INTELIGENCIA ARTIFICIAL (GEMINI) - AHORA CON SOPORTE PDF
 // ============================================================================
-exports.generarResumenGemini = onCall({ 
+exports.generarResumenGemini = onCall({
   region: "us-central1",
   cors: true
 }, async (request) => {
-  
+
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "Usuario no autenticado.");
   }
 
   const { contenido, archivoBase64, mimeType, tipo } = request.data;
-  
+
   // Validamos que venga al menos un texto o un archivo
   if (!contenido && !archivoBase64) {
     throw new HttpsError("invalid-argument", "Contenido o archivo faltante.");
@@ -132,13 +132,13 @@ exports.generarResumenGemini = onCall({
         contents: prompt
       });
     }
-    
+
     let textoLimpio = result.text.trim();
     textoLimpio = textoLimpio.replace(/\s*\(\d+\s*palabras?\)$/i, '');
     textoLimpio = textoLimpio.replace(/^["'«»“”]+|["'«»“”]+$/g, '').trim();
 
     return { resumen: textoLimpio, titulo: textoLimpio };
-    
+
   } catch (error) {
     console.error("Detalle del error de IA:", error);
     throw new HttpsError("internal", "Error procesando con Gemini en Vertex AI.");
@@ -183,8 +183,8 @@ exports.noticiaMeta = onRequest({ region: "us-central1" }, async (req, res) => {
       descripcion = noticiaData.resumen.substring(0, 150) + "...";
     }
     descripcion = descripcion.replace(/"/g, '&quot;');
-    
-    const imagen = noticiaData.imagenPrincipalUrl || `${appUrl}/logo.png`; 
+
+    const imagen = noticiaData.imagenPrincipalUrl || `${appUrl}/logo.png`;
     const urlCompleta = `${appUrl}${req.originalUrl}`;
 
     const response = await fetch(`${appUrl}/index.html`);
@@ -223,11 +223,11 @@ exports.noticiaMeta = onRequest({ region: "us-central1" }, async (req, res) => {
 // ============================================================================
 // 3. FUNCIÓN PARA ENVIAR FORMULARIO DE CONTACTO (VÍA OAUTH2)
 // ============================================================================
-exports.enviarFormularioContacto = onCall({ 
-  secrets: [GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN], 
+exports.enviarFormularioContacto = onCall({
+  secrets: [GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN],
   region: "us-central1"
 }, async (request) => {
-  
+
   const { nombre, correo, mensaje } = request.data;
 
   if (!nombre || !correo || !mensaje) {
@@ -249,7 +249,7 @@ exports.enviarFormularioContacto = onCall({
     const mailOptions = {
       from: `"Web IIRESODH" <contacto@iiresodh.org>`,
       to: 'contacto@iiresodh.org',
-      replyTo: correo, 
+      replyTo: correo,
       subject: `Nuevo mensaje web de: ${nombre}`,
       text: `Nombre: ${nombre}\nCorreo: ${correo}\n\nMensaje:\n${mensaje}`,
       html: `
@@ -276,7 +276,7 @@ exports.enviarFormularioContacto = onCall({
 // 4. CHATBOT IRENE (GEMINI ENTERPRISE AGENT PLATFORM - VERTEX AI / IAM)
 // ============================================================================
 
-exports.chatPidaStream = onRequest({ 
+exports.chatPidaStream = onRequest({
   region: "us-central1",
   cors: true
 }, async (req, res) => {
@@ -324,16 +324,16 @@ exports.chatPidaStream = onRequest({
         9. TEMAS DESCONOCIDOS O MUY ESPECÍFICOS: Si te preguntan sobre un tema técnico, un país específico, conceptos complejos (como neurotecnología) o algo que no sabes, aclara amablemente que tu conocimiento se enfoca en la misión general del IIRESODH. Acto seguido, RECOMIENDA EXPLÍCITAMENTE al usuario que utilice el buscador del sitio web (la lupa en el menú principal) para encontrar noticias, artículos académicos o informes exactos sobre ese tema.`;
 
     // Instanciar Vertex AI usando el nuevo SDK de Gen AI
-    const ai = new GoogleGenAI({ 
-      vertexai: true, 
-      project: 'iiresodh-web', 
-      location: 'us-central1' 
+    const ai = new GoogleGenAI({
+      vertexai: true,
+      project: 'iiresodh-web',
+      location: 'us-central1'
     });
 
     const db = admin.firestore();
     const sessionRef = db.collection('chat_sessions').doc(sessionId);
     const sessionDoc = await sessionRef.get();
-    
+
     let history = [];
     if (sessionDoc.exists) {
       history = sessionDoc.data().history || [];
@@ -347,7 +347,7 @@ exports.chatPidaStream = onRequest({
 
     // Agregar el nuevo mensaje del usuario al historial
     history.push({ role: 'user', parts: [{ text: mensaje }] });
-    
+
     // Ejecutar Streaming con la nueva API nativa de Vertex, pasando el historial completo
     const streamingResp = await ai.models.generateContentStream({
       model: 'gemini-2.5-flash',
@@ -372,7 +372,7 @@ exports.chatPidaStream = onRequest({
 
     // Guardar el historial actualizado en Firestore antes de cerrar la conexión
     history.push({ role: 'model', parts: [{ text: fullResponse }] });
-    
+
     // Mantener un límite de memoria (ej. últimos 20 mensajes = 10 interacciones)
     if (history.length > 20) {
       history = history.slice(history.length - 20);
@@ -419,14 +419,14 @@ exports.validarCuponStripe = onCall({
       const pidaDb = getPidaFirestore();
       const pidaClientSnapshot = await pidaDb.collection('customers')
         .where('email', '==', emailUsuario.toLowerCase())
-        .where('status', 'in', ['active', 'trialing']) 
+        .where('status', 'in', ['active', 'trialing'])
         .limit(1)
         .get();
 
       if (pidaClientSnapshot.empty) {
-        return { 
-          valido: false, 
-          mensaje: "Este cupón es exclusivo para suscriptores activos de PIDA. Verifica tu correo o tu suscripción." 
+        return {
+          valido: false,
+          mensaje: "Este cupón es exclusivo para suscriptores activos de PIDA. Verifica tu correo o tu suscripción."
         };
       }
     }
@@ -455,9 +455,9 @@ exports.validarCuponStripe = onCall({
 
     return {
       valido: true,
-      porcentaje: coupon.percent_off || null, 
-      montoFijo: coupon.amount_off || null,   
-      moneda: coupon.currency || null         
+      porcentaje: coupon.percent_off || null,
+      montoFijo: coupon.amount_off || null,
+      moneda: coupon.currency || null
     };
 
   } catch (error) {
@@ -469,11 +469,11 @@ exports.validarCuponStripe = onCall({
 // ============================================================================
 // 6. FUNCIÓN PARA CREAR INTENTO DE PAGO (STRIPE ELEMENTS - DINÁMICO)
 // ============================================================================
-exports.crearIntentoPago = onCall({ 
-  secrets: [STRIPE_SECRET_KEY, PIDA_SERVICE_ACCOUNT], 
+exports.crearIntentoPago = onCall({
+  secrets: [STRIPE_SECRET_KEY, PIDA_SERVICE_ACCOUNT],
   region: "us-central1"
 }, async (request) => {
-  const { libroId, emailUsuario, moneda, codigoDescuento, terminosAceptados } = request.data; 
+  const { libroId, emailUsuario, moneda, codigoDescuento, terminosAceptados } = request.data;
 
   if (!terminosAceptados) {
     throw new HttpsError("failed-precondition", "Es obligatorio aceptar los términos de uso y política de privacidad.");
@@ -482,13 +482,13 @@ exports.crearIntentoPago = onCall({
   try {
     const db = admin.firestore();
     const libroDoc = await db.collection("libros").doc(libroId).get();
-    
+
     if (!libroDoc.exists) {
       throw new HttpsError("not-found", "El libro no existe.");
     }
 
     const libroData = libroDoc.data();
-    
+
     let montoFinal = 0;
     let currencyStripe = "usd";
     let precioBase = 0;
@@ -509,23 +509,23 @@ exports.crearIntentoPago = onCall({
       if (codigoLimpio.toUpperCase().startsWith("PIDA")) {
         const pidaDb = getPidaFirestore();
         const pidaClientSnapshot = await pidaDb.collection('customers')
-        .where('email', '==', emailUsuario.toLowerCase())
-        .where('status', 'in', ['active', 'trialing'])
-        .limit(1)
-        .get();
+          .where('email', '==', emailUsuario.toLowerCase())
+          .where('status', 'in', ['active', 'trialing'])
+          .limit(1)
+          .get();
 
         if (pidaClientSnapshot.empty) {
           throw new HttpsError("permission-denied", "Intento de pago rechazado. El correo no pertenece a un suscriptor activo de PIDA.");
         }
       }
 
-      const promoCodes = await stripe.promotionCodes.list({ 
-        code: codigoLimpio, 
-        active: true, 
+      const promoCodes = await stripe.promotionCodes.list({
+        code: codigoLimpio,
+        active: true,
         limit: 1,
         expand: ['data.coupon', 'data.promotion.coupon']
       });
-      
+
       if (promoCodes.data && promoCodes.data.length > 0) {
         const promotionCode = promoCodes.data[0];
         let coupon = promotionCode.coupon || (promotionCode.promotion && promotionCode.promotion.coupon);
@@ -538,7 +538,7 @@ exports.crearIntentoPago = onCall({
           if (coupon.percent_off) {
             precioBase = precioBase * (1 - coupon.percent_off / 100);
           } else if (coupon.amount_off && coupon.currency === currencyStripe) {
-            precioBase = precioBase - (coupon.amount_off / 100); 
+            precioBase = precioBase - (coupon.amount_off / 100);
           }
         }
       }
@@ -571,15 +571,15 @@ exports.crearIntentoPago = onCall({
 // ============================================================================
 // 7. WEBHOOK DE STRIPE: SOCIAL DRM ANTI-PIRATERÍA (OPTIMIZADO Y PROTEGIDO)
 // ============================================================================
-exports.stripeWebhook = onRequest({ 
-  secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN], 
+exports.stripeWebhook = onRequest({
+  secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN],
   region: "us-central1",
   memory: "2GiB",        // 🚀 Suficiente músculo para PDFs
   timeoutSeconds: 180    // 🚀 Tiempo extra para operaciones pesadas
 }, async (req, res) => {
-  
+
   const stripe = new Stripe(STRIPE_SECRET_KEY.value());
-  const endpointSecret = STRIPE_WEBHOOK_SECRET.value(); 
+  const endpointSecret = STRIPE_WEBHOOK_SECRET.value();
   const sig = req.headers['stripe-signature'];
   let event;
 
@@ -595,7 +595,7 @@ exports.stripeWebhook = onRequest({
     const paymentIntent = event.data.object;
     const libroId = paymentIntent.metadata.libroId;
     const emailCliente = paymentIntent.receipt_email || paymentIntent.metadata.emailCliente || "cliente@anonimo.com";
-    
+
     const terminosAceptados = paymentIntent.metadata.terminosAceptados === "true";
     const codigoDescuento = paymentIntent.metadata.codigoDescuento || "Ninguno";
 
@@ -604,13 +604,13 @@ exports.stripeWebhook = onRequest({
 
       const comprasRef = db.collection("compras");
       const compraExistente = await comprasRef.where("paymentIntentId", "==", paymentIntent.id).get();
-      
+
       if (!compraExistente.empty) {
         console.log(`El pago ${paymentIntent.id} ya fue procesado. Ignorando.`);
         res.json({ received: true });
-        return; 
+        return;
       }
-      
+
       const libroDoc = await db.collection("libros").doc(libroId).get();
       if (!libroDoc.exists) {
         console.error(`Error: Se pagó el libro ${libroId} pero no existe en BD.`);
@@ -643,26 +643,26 @@ exports.stripeWebhook = onRequest({
 
         const bucket = admin.storage().bucket();
         const file = bucket.file(libroData.rutaStorage);
-        
+
         let urlTemporal = "";
         let mensajeExitoHTML = "";
 
         // 🛡️ SEGURO DE VIDA: VERIFICAR TAMAÑO DEL ARCHIVO
         const [metadata] = await file.getMetadata();
         const fileSizeInMB = metadata.size / (1024 * 1024);
-        
+
         console.log(`El archivo ${libroData.rutaStorage} pesa ${fileSizeInMB.toFixed(2)} MB.`);
 
         // Límite fijado en 40MB
         if (fileSizeInMB > 40) {
-            console.log(`⚠️ ARCHIVO DEMASIADO PESADO (>40MB). Saltando Social DRM...`);
-            
-            [urlTemporal] = await file.getSignedUrl({
-                action: 'read',
-                expires: Date.now() + 1000 * 60 * 60 * 48, 
-            });
+          console.log(`⚠️ ARCHIVO DEMASIADO PESADO (>40MB). Saltando Social DRM...`);
 
-            mensajeExitoHTML = `
+          [urlTemporal] = await file.getSignedUrl({
+            action: 'read',
+            expires: Date.now() + 1000 * 60 * 60 * 48,
+          });
+
+          mensajeExitoHTML = `
               <h2 style="color: #1D3557;">¡Pago procesado con éxito!</h2>
               <p>Hola,</p>
               <p>Hemos recibido tu pago por la publicación académica: <strong>${libroData.titulo}</strong>.</p>
@@ -676,66 +676,66 @@ exports.stripeWebhook = onRequest({
             `;
 
         } else {
-            console.log(`✅ Tamaño óptimo. Iniciando estampado de marca de agua anti-piratería...`);
-            
-            const [fileBuffer] = await file.download();
-            // Permite inyectar metadatos
-            const pdfDoc = await PDFDocument.load(fileBuffer, { updateMetadata: true }); 
-            
-            // =================================================================
-            // 🕵️‍♂️ NUEVO: HUELLA DIGITAL INVISIBLE (METADATOS FORENSES)
-            // =================================================================
-            pdfDoc.setTitle(libroData.titulo);
-            pdfDoc.setAuthor(`Licencia rastreable: ${emailCliente}`);
-            pdfDoc.setSubject(`ID de Transacción Segura: ${paymentIntent.id}`);
-            pdfDoc.setKeywords(['IIRESODH', 'Propiedad Intelectual', emailCliente, paymentIntent.id]);
-            pdfDoc.setCreator('Sistema de Seguridad IIRESODH');
-            pdfDoc.setProducer('IIRESODH - Departamento Legal');
+          console.log(`✅ Tamaño óptimo. Iniciando estampado de marca de agua anti-piratería...`);
 
-            // =================================================================
-            // 🔴 MARCA DE AGUA VISUAL DISUASORIA
-            // =================================================================
-            const pages = pdfDoc.getPages();
-            const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-            
-            const linea1 = `LICENCIA PERSONAL DE: ${emailCliente.toUpperCase()}`;
-            const linea2 = `REF: ${paymentIntent.id} | IIRESODH`;
+          const [fileBuffer] = await file.download();
+          // Permite inyectar metadatos
+          const pdfDoc = await PDFDocument.load(fileBuffer, { updateMetadata: true });
 
-            pages.forEach((page) => {
-              page.drawText(linea1, {
-                x: 20, 
-                y: 32, 
-                size: 9,
-                font: font,
-                color: rgb(0.725, 0.184, 0.196), 
-                opacity: 0.65, 
-              });
-              page.drawText(linea2, {
-                x: 20, 
-                y: 20, 
-                size: 9,
-                font: font,
-                color: rgb(0.725, 0.184, 0.196), 
-                opacity: 0.65, 
-              });
+          // =================================================================
+          // 🕵️‍♂️ NUEVO: HUELLA DIGITAL INVISIBLE (METADATOS FORENSES)
+          // =================================================================
+          pdfDoc.setTitle(libroData.titulo);
+          pdfDoc.setAuthor(`Licencia rastreable: ${emailCliente}`);
+          pdfDoc.setSubject(`ID de Transacción Segura: ${paymentIntent.id}`);
+          pdfDoc.setKeywords(['IIRESODH', 'Propiedad Intelectual', emailCliente, paymentIntent.id]);
+          pdfDoc.setCreator('Sistema de Seguridad IIRESODH');
+          pdfDoc.setProducer('IIRESODH - Departamento Legal');
+
+          // =================================================================
+          // 🔴 MARCA DE AGUA VISUAL DISUASORIA
+          // =================================================================
+          const pages = pdfDoc.getPages();
+          const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+          const linea1 = `LICENCIA PERSONAL DE: ${emailCliente.toUpperCase()}`;
+          const linea2 = `REF: ${paymentIntent.id} | IIRESODH`;
+
+          pages.forEach((page) => {
+            page.drawText(linea1, {
+              x: 20,
+              y: 32,
+              size: 9,
+              font: font,
+              color: rgb(0.725, 0.184, 0.196),
+              opacity: 0.65,
             });
-
-            const pdfBytes = await pdfDoc.save({ useObjectStreams: false });
-            pdfDoc.catalog = null; 
-
-            const rutaEntrega = `entregas_seguras/${paymentIntent.id}.pdf`;
-            const archivoEntrega = bucket.file(rutaEntrega);
-            await archivoEntrega.save(pdfBytes, {
-              contentType: 'application/pdf',
-              metadata: { cacheControl: 'private, max-age=0' }
+            page.drawText(linea2, {
+              x: 20,
+              y: 20,
+              size: 9,
+              font: font,
+              color: rgb(0.725, 0.184, 0.196),
+              opacity: 0.65,
             });
+          });
 
-            [urlTemporal] = await archivoEntrega.getSignedUrl({
-              action: 'read',
-              expires: Date.now() + 1000 * 60 * 60 * 48,
-            });
+          const pdfBytes = await pdfDoc.save({ useObjectStreams: false });
+          pdfDoc.catalog = null;
 
-            mensajeExitoHTML = `
+          const rutaEntrega = `entregas_seguras/${paymentIntent.id}.pdf`;
+          const archivoEntrega = bucket.file(rutaEntrega);
+          await archivoEntrega.save(pdfBytes, {
+            contentType: 'application/pdf',
+            metadata: { cacheControl: 'private, max-age=0' }
+          });
+
+          [urlTemporal] = await archivoEntrega.getSignedUrl({
+            action: 'read',
+            expires: Date.now() + 1000 * 60 * 60 * 48,
+          });
+
+          mensajeExitoHTML = `
               <h2 style="color: #1D3557;">¡Pago procesado con éxito!</h2>
               <p>Hola,</p>
               <p>Hemos recibido tu pago por el libro: <strong>${libroData.titulo}</strong>.</p>
@@ -792,7 +792,7 @@ exports.traductorAutomatico = onDocumentWritten(
   {
     document: "{coleccion}/{documentoId}",
     region: "us-central1"
-  }, 
+  },
   async (event) => {
     const coleccionActual = event.params.coleccion;
 
@@ -860,7 +860,7 @@ exports.descargarDocumento = onRequest({ region: "us-central1" }, async (req, re
   }
 
   // Validamos colecciones permitidas
-  const coleccionesPermitidas = ["incidencia", "informes", "anuncios", "comunicados", "noticias"];
+  const coleccionesPermitidas = ["incidencia", "informes", "anuncios", "comunicados"];
   if (!coleccionesPermitidas.includes(coleccion)) {
     return res.status(404).send("Categoría de documento no válida.");
   }
@@ -891,52 +891,6 @@ exports.descargarDocumento = onRequest({ region: "us-central1" }, async (req, re
       data = docSnap.data();
       fileUrl = data.archivoPdfUrl;
       tituloDocumento = data.archivoPdfNombre || data.titulo || "Comunicado_IIRESODH";
-    } else if (coleccion === "noticias") {
-      if (!docId) {
-        return res.status(400).send("Parámetros de documento insuficientes.");
-      }
-
-      docSnap = await db.collection("noticias").doc(docId).get();
-      if (!docSnap.exists) {
-        const qSnap = await db.collection("noticias").where("slug", "==", docId).limit(1).get();
-        if (!qSnap.empty) {
-          docSnap = qSnap.docs[0];
-        }
-      }
-
-      if (!docSnap || !docSnap.exists) {
-        return res.status(404).send("Noticia no encontrada.");
-      }
-
-      data = docSnap.data();
-      const slugSegment = pathSegments[3] || "";
-
-      if (data.archivosAdjuntos && Array.isArray(data.archivosAdjuntos) && data.archivosAdjuntos.length > 0) {
-        const indexMatch = slugSegment.match(/^doc-(\d+)/);
-        if (indexMatch && data.archivosAdjuntos[parseInt(indexMatch[1], 10)]) {
-          const anexo = data.archivosAdjuntos[parseInt(indexMatch[1], 10)];
-          fileUrl = anexo.url;
-          tituloDocumento = anexo.nombre || data.titulo;
-        } else if (slugSegment) {
-          const matchClean = slugSegment.replace(/\.pdf$/i, '').toLowerCase();
-          const found = data.archivosAdjuntos.find(a => 
-            a.nombre && a.nombre.toLowerCase().replace(/[^a-z0-9]/g, '').includes(matchClean.replace(/[^a-z0-9]/g, ''))
-          );
-          if (found) {
-            fileUrl = found.url;
-            tituloDocumento = found.nombre || data.titulo;
-          } else {
-            fileUrl = data.archivosAdjuntos[0].url;
-            tituloDocumento = data.archivosAdjuntos[0].nombre || data.titulo;
-          }
-        } else {
-          fileUrl = data.archivosAdjuntos[0].url;
-          tituloDocumento = data.archivosAdjuntos[0].nombre || data.titulo;
-        }
-      } else {
-        fileUrl = data.archivoPdfUrl || data.archivoUrl || null;
-        tituloDocumento = data.archivoPdfNombre || data.titulo || "Documento_Noticia_IIRESODH";
-      }
     } else {
       if (!docId) {
         return res.status(400).send("Parámetros de documento insuficientes.");
@@ -1018,23 +972,23 @@ exports.descargarDocumento = onRequest({ region: "us-central1" }, async (req, re
 // ============================================================================
 // 12. CREAR INTENTO DE PAGO PARA CURSOS PRESENCIALES (STRIPE DEDICADO)
 // ============================================================================
-exports.crearIntentoPagoCurso = onCall({ 
+exports.crearIntentoPagoCurso = onCall({
   secrets: [STRIPE_CURSOS_SECRET_KEY],
   region: "us-central1",
   cors: true
 }, async (request) => {
-  const { 
-    cursoId, 
-    cursoTitulo, 
-    email, 
-    nombre, 
-    telefono, 
-    institucion, 
-    pais, 
-    monto, 
-    montoTotal, 
-    moneda, 
-    planCuotas, 
+  const {
+    cursoId,
+    cursoTitulo,
+    email,
+    nombre,
+    telefono,
+    institucion,
+    pais,
+    monto,
+    montoTotal,
+    moneda,
+    planCuotas,
     numCuota,
     profesion,
     experienciaTemas,
@@ -1120,9 +1074,9 @@ exports.crearIntentoPagoCurso = onCall({
     // Buscar o crear cliente en Stripe para asociar su método de pago a futuro
     let customerId = undefined;
     try {
-      const existingCustomers = await stripe.customers.list({ 
-        email: email.toLowerCase().trim(), 
-        limit: 1 
+      const existingCustomers = await stripe.customers.list({
+        email: email.toLowerCase().trim(),
+        limit: 1
       });
       if (existingCustomers.data && existingCustomers.data.length > 0) {
         customerId = existingCustomers.data[0].id;
@@ -1143,8 +1097,8 @@ exports.crearIntentoPagoCurso = onCall({
       console.warn("Advertencia gestionando Customer en Stripe:", errCust.message);
     }
 
-    const expTemasStr = Array.isArray(experienciaTemas) 
-      ? experienciaTemas.join(", ") 
+    const expTemasStr = Array.isArray(experienciaTemas)
+      ? experienciaTemas.join(", ")
       : String(experienciaTemas || "");
 
     const paymentIntentData = {
@@ -1188,7 +1142,7 @@ exports.crearIntentoPagoCurso = onCall({
 
     const paymentIntent = await stripe.paymentIntents.create(paymentIntentData);
 
-    return { 
+    return {
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
       customerId: customerId || null
@@ -1256,8 +1210,8 @@ async function enviarAlertaAdminTransaccion({ tipo, datos }) {
     const bannerBorder = esExitosa ? '#a7f3d0' : '#fecaca';
     const bannerTexto = esExitosa
       ? (Number(datos.saldoPendiente) <= 0 && esCuotas
-          ? '✓ ¡TRANSACCIÓN EXITOSA - MATRÍCULA 100% LIQUIDADA!'
-          : '✓ TRANSACCIÓN EXITOSA PROCESADA')
+        ? '✓ ¡TRANSACCIÓN EXITOSA - MATRÍCULA 100% LIQUIDADA!'
+        : '✓ TRANSACCIÓN EXITOSA PROCESADA')
       : '⚠️ ALERTA: TRANSACCIÓN NO COMPLETADA / FALLIDA';
 
     const detallePlan = esCuotas
@@ -1682,9 +1636,9 @@ async function enviarCorreoConfirmacionCurso({
 // ============================================================================
 // 13. WEBHOOK DE STRIPE PARA CURSOS PRESENCIALES (CUENTA DEDICADA)
 // ============================================================================
-exports.stripeWebhookCursos = onRequest({ 
+exports.stripeWebhookCursos = onRequest({
   secrets: [
-    STRIPE_CURSOS_SECRET_KEY, 
+    STRIPE_CURSOS_SECRET_KEY,
     STRIPE_CURSOS_WEBHOOK_SECRET,
     GMAIL_CLIENT_ID,
     GMAIL_CLIENT_SECRET,
@@ -2449,8 +2403,8 @@ exports.reenviarConfirmacionCurso = onRequest({
       pais: docData.pais || ""
     });
 
-    return res.json({ 
-      success: true, 
+    return res.json({
+      success: true,
       message: `Correo de confirmación enviado exitosamente a ${docData.email}`,
       destinatario: docData.email,
       nombre: docData.nombre,
@@ -2460,4 +2414,4 @@ exports.reenviarConfirmacionCurso = onRequest({
     console.error("Error reenviando confirmación de curso:", err);
     return res.status(500).json({ error: err.message });
   }
-});
+});

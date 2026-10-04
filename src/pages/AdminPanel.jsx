@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth, db, storage, functions } from "../firebase/config";
 import { collection, addDoc, updateDoc, serverTimestamp, doc, deleteDoc, getDocs, query, orderBy, Timestamp, limit, startAfter, endBefore, limitToLast, where, setDoc, getDoc } from "firebase/firestore";
@@ -22,19 +22,19 @@ import { DATOS_PALERMO_2027 } from "./CursoLanding";
 
 const generarSlug = (texto) => {
   if (!texto) return `item-${Math.random().toString(36).substring(2, 6)}`;
-  
+
   const baseSlug = texto
     .toString()
-    .normalize('NFD') 
-    .replace(/[\u0300-\u036f]/g, '') 
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s-]/g, '') 
-    .replace(/[\s_-]+/g, '-') 
-    .replace(/^-+|-+$/g, ''); 
-  
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
   const randomCode = Math.random().toString(36).substring(2, 6);
-  
+
   return baseSlug ? `${baseSlug}-${randomCode}` : `item-${randomCode}`;
 };
 
@@ -172,13 +172,13 @@ const convertirAWebp = (file, calidad = 0.8) => {
 // CONFIGURACIÓN DE TAGS
 // ==========================================
 const TAGS_DISPONIBLES = [
-  "IIRESODH", "Noticia", "Comunicado", "Anuncio", "Artículo", "Canadá", "Colombia", "Costa Rica", 
+  "IIRESODH", "Noticia", "Comunicado", "Anuncio", "Artículo", "Canadá", "Colombia", "Costa Rica",
   "Guatemala", "México", "Institucional", "Evento"
 ];
 
 export default function AdminPanel() {
-  const navigate = useNavigate(); 
-  
+  const navigate = useNavigate();
+
   const [vistaActiva, setVistaActiva] = useState("inicio");
 
   const [misPermisos, setMisPermisos] = useState({
@@ -215,7 +215,7 @@ export default function AdminPanel() {
   const [subtitulo, setSubtitulo] = useState("");
   const [resumen, setResumen] = useState("");
   const [contenido, setContenido] = useState("");
-  const [fechaPersonalizada, setFechaPersonalizada] = useState(""); 
+  const [fechaPersonalizada, setFechaPersonalizada] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [slugOriginal, setSlugOriginal] = useState("");
   const [slugsAnterioresOriginal, setSlugsAnterioresOriginal] = useState([]);
@@ -231,7 +231,7 @@ export default function AdminPanel() {
   // ESTADOS PARA LIBROS
   const [precio, setPrecio] = useState("");
   const [precioMXN, setPrecioMXN] = useState("");
-  const [autor, setAutor] = useState(""); 
+  const [autor, setAutor] = useState("");
   const [archivoLibro, setArchivoLibro] = useState(null);
   const [archivoLibroNombre, setArchivoLibroNombre] = useState("");
   const [archivoLibroAnterior, setArchivoLibroAnterior] = useState(null);
@@ -247,14 +247,14 @@ export default function AdminPanel() {
   const [archivoIncidencia, setArchivoIncidencia] = useState(null);
   const [archivoIncidenciaNombre, setArchivoIncidenciaNombre] = useState("");
   const [archivoIncidenciaAnterior, setArchivoIncidenciaAnterior] = useState(null);
-  
+
   const [imagenPrincipal, setImagenPrincipal] = useState(null);
   const [mainImagePreviewUrl, setMainImagePreviewUrl] = useState(null);
   const [imagenesCarrusel, setImagenesCarrusel] = useState([]);
-  
+
   const [editandoId, setEditandoId] = useState(null);
-  const [imagenPrincipalAnterior, setImagenPrincipalAnterior] = useState(null); 
-  const [carruselExistente, setCarruselExistente] = useState([]); 
+  const [imagenPrincipalAnterior, setImagenPrincipalAnterior] = useState(null);
+  const [carruselExistente, setCarruselExistente] = useState([]);
 
   const [archivosAdjuntos, setArchivosAdjuntos] = useState([]);
   const [subiendoArchivo, setSubiendoArchivo] = useState(false);
@@ -263,7 +263,7 @@ export default function AdminPanel() {
   const [generandoResumen, setGenerandoResumen] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [listaItems, setListaItems] = useState([]);
-  
+
   // ESTADOS PARA SCROLL INFINITO Y BÚSQUEDA
   const ITEMS_POR_PAGINA = 10;
   const [ultimoDoc, setUltimoDoc] = useState(null);
@@ -297,7 +297,7 @@ export default function AdminPanel() {
   const [landingSedeNombre, setLandingSedeNombre] = useState("");
   const [landingSedeTexto, setLandingSedeTexto] = useState("");
   const [landingPrograma, setLandingPrograma] = useState([]);
-  
+
   // ESTADOS PARA COMUNICACIONES
   const [tagsSeleccionados, setTagsSeleccionados] = useState([]);
   const [persistente, setPersistente] = useState(false);
@@ -373,7 +373,7 @@ export default function AdminPanel() {
   };
 
   const handleLogout = () => {
-    navigate("/"); 
+    navigate("/");
     setTimeout(() => {
       signOut(auth).catch((error) => console.error("Error al cerrar sesión:", error));
     }, 100);
@@ -395,59 +395,59 @@ export default function AdminPanel() {
     }
   };
 
-const cargarUsuariosUnicos = async () => {
-  if (usuariosUnicos.length > 0) return;
-  try {
-    const q = query(collection(db, "auditoria_actividad"));
-    const snapshot = await getDocs(q);
-    const emails = new Set(snapshot.docs.map(doc => doc.data().usuarioEmail));
-    setUsuariosUnicos(Array.from(emails).sort());
-  } catch (error) {
-    console.error("Error cargando lista de usuarios:", error);
-  }
-};
-
-const cargarActividades = async (isLoadMore = false) => {
-  if (!isLoadMore) {
-    setCargandoActividades(true);
-    setActividades([]); 
-  } else {
-    setCargandoMas(true);
-  }
-  setMensaje("Cargando registros de actividad...");
-
-  try {
-    const constraints = [orderBy("timestamp", ordenActividad)];
-    if (filtroUsuario !== "todos") {
-      constraints.push(where("usuarioEmail", "==", filtroUsuario));
+  const cargarUsuariosUnicos = async () => {
+    if (usuariosUnicos.length > 0) return;
+    try {
+      const q = query(collection(db, "auditoria_actividad"));
+      const snapshot = await getDocs(q);
+      const emails = new Set(snapshot.docs.map(doc => doc.data().usuarioEmail));
+      setUsuariosUnicos(Array.from(emails).sort());
+    } catch (error) {
+      console.error("Error cargando lista de usuarios:", error);
     }
-    if (isLoadMore && ultimoDocActividad) {
-      constraints.push(startAfter(ultimoDocActividad));
-    }
-    constraints.push(limit(ACTIVIDADES_POR_PAGINA));
+  };
 
-    const q = query(collection(db, "auditoria_actividad"), ...constraints);
-    const snapshot = await getDocs(q);
-
-    if (snapshot.empty) {
-      setHayMasActividades(false);
-      setMensaje(isLoadMore ? "No hay más registros." : "No se encontraron registros con los filtros aplicados.");
+  const cargarActividades = async (isLoadMore = false) => {
+    if (!isLoadMore) {
+      setCargandoActividades(true);
+      setActividades([]);
     } else {
-      const acts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setActividades(prev => isLoadMore ? [...prev, ...acts] : acts);
-      setUltimoDocActividad(snapshot.docs[snapshot.docs.length - 1]);
-      setHayMasActividades(snapshot.docs.length === ACTIVIDADES_POR_PAGINA);
-      setMensaje(`Se cargaron ${acts.length} registros.`);
+      setCargandoMas(true);
     }
-  } catch (error) {
-    console.error("Error cargando actividades:", error);
-    setMensaje("Error al cargar las actividades.");
-  } finally {
-    setCargandoActividades(false);
-    setCargandoMas(false);
-    setTimeout(() => setMensaje(""), 4000);
-  }
-};
+    setMensaje("Cargando registros de actividad...");
+
+    try {
+      const constraints = [orderBy("timestamp", ordenActividad)];
+      if (filtroUsuario !== "todos") {
+        constraints.push(where("usuarioEmail", "==", filtroUsuario));
+      }
+      if (isLoadMore && ultimoDocActividad) {
+        constraints.push(startAfter(ultimoDocActividad));
+      }
+      constraints.push(limit(ACTIVIDADES_POR_PAGINA));
+
+      const q = query(collection(db, "auditoria_actividad"), ...constraints);
+      const snapshot = await getDocs(q);
+
+      if (snapshot.empty) {
+        setHayMasActividades(false);
+        setMensaje(isLoadMore ? "No hay más registros." : "No se encontraron registros con los filtros aplicados.");
+      } else {
+        const acts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setActividades(prev => isLoadMore ? [...prev, ...acts] : acts);
+        setUltimoDocActividad(snapshot.docs[snapshot.docs.length - 1]);
+        setHayMasActividades(snapshot.docs.length === ACTIVIDADES_POR_PAGINA);
+        setMensaje(`Se cargaron ${acts.length} registros.`);
+      }
+    } catch (error) {
+      console.error("Error cargando actividades:", error);
+      setMensaje("Error al cargar las actividades.");
+    } finally {
+      setCargandoActividades(false);
+      setCargandoMas(false);
+      setTimeout(() => setMensaje(""), 4000);
+    }
+  };
 
   useEffect(() => {
     const fetchMisPermisos = async () => {
@@ -482,7 +482,7 @@ const cargarActividades = async (isLoadMore = false) => {
             incidencia: data.permisos?.incidencia ?? false,
             estadisticas: data.permisos?.estadisticas ?? false,
             adminWeb: data.permisos?.adminWeb ?? false,
-              auditoria: data.permisos?.auditoria ?? false,
+            auditoria: data.permisos?.auditoria ?? false,
           });
         }
       }
@@ -605,23 +605,23 @@ const cargarActividades = async (isLoadMore = false) => {
     }
   };
 
-useEffect(() => {
-  if (vistaActiva === "adminWeb") {
-    cargarUsuariosUnicos();
+  useEffect(() => {
+    if (vistaActiva === "adminWeb") {
+      cargarUsuariosUnicos();
       cargarUsuariosAdmins();
       if (misPermisos.auditoria) {
         cargarUsuariosUnicos();
       }
-  }
+    }
   }, [vistaActiva, misPermisos.auditoria]);
 
-useEffect(() => {
-  if (vistaActiva === 'adminWeb') {
-    setActividades([]);
-    setUltimoDocActividad(null);
-    setHayMasActividades(true);
-  }
-}, [filtroUsuario, ordenActividad]);
+  useEffect(() => {
+    if (vistaActiva === 'adminWeb') {
+      setActividades([]);
+      setUltimoDocActividad(null);
+      setHayMasActividades(true);
+    }
+  }, [filtroUsuario, ordenActividad]);
 
   const obtenerColeccionActiva = () => {
     if (vistaActiva === "articulos") return "articulos_academicos";
@@ -681,11 +681,11 @@ useEffect(() => {
   const cargarMasItems = async () => {
     // 1. Verificamos el candado síncrono (isFetching.current)
     if (!hayMas || isFetching.current || !ultimoDoc || busquedaTexto || busquedaFecha) return;
-    
+
     // 2. Cerramos el candado inmediatamente
     isFetching.current = true;
     setCargandoLista(true);
-    
+
     const coleccion = obtenerColeccionActiva();
     const orderByField = vistaActiva === 'equipo' ? 'orden' : (vistaActiva === 'informes' ? 'año' : 'fechaPublicacion');
     const orderByDirection = vistaActiva === 'equipo' ? 'asc' : 'desc';
@@ -697,7 +697,7 @@ useEffect(() => {
       if (!querySnapshot.empty) {
         setUltimoDoc(querySnapshot.docs[querySnapshot.docs.length - 1]);
         let data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
+
         setListaItems(prev => ordenarItemsLocales([...prev, ...data]));
         setHayMas(querySnapshot.docs.length === ITEMS_POR_PAGINA);
       } else {
@@ -726,7 +726,7 @@ useEffect(() => {
 
       if (busquedaTexto) {
         const txt = busquedaTexto.toLowerCase();
-        data = data.filter(item => 
+        data = data.filter(item =>
           (item.titulo && item.titulo.toLowerCase().includes(txt)) ||
           (item.nombre && item.nombre.toLowerCase().includes(txt)) ||
           (item.resumen && item.resumen.toLowerCase().includes(txt))
@@ -741,7 +741,7 @@ useEffect(() => {
       }
 
       setListaItems(ordenarItemsLocales(data));
-      setHayMas(false); 
+      setHayMas(false);
     } catch (error) {
       console.error("Error en búsqueda:", error);
     } finally {
@@ -772,7 +772,7 @@ useEffect(() => {
 
     if (!busquedaTexto && !busquedaFecha) {
       cargarItems();
-      return; 
+      return;
     }
 
     const timeoutId = setTimeout(() => {
@@ -796,34 +796,34 @@ useEffect(() => {
         return;
       }
     }
-  
+
     setGenerandoResumen(true);
     setMensaje("PIDA está leyendo el documento...");
-  
+
     try {
       const generarResumen = httpsCallable(functions, 'generarResumenGemini');
       let payload = {};
-  
+
       if (vistaActiva === "incidencia" && archivoIncidencia) {
         // Límite de seguridad por restricciones de tamaño de envío a Cloud Functions
-        if (archivoIncidencia.size > 5 * 1024 * 1024) { 
-           setMensaje("El archivo PDF es demasiado grande para ser leído automáticamente por la IA (límite 5MB).");
-           setGenerandoResumen(false);
-           setTimeout(() => setMensaje(""), 4000);
-           return;
+        if (archivoIncidencia.size > 5 * 1024 * 1024) {
+          setMensaje("El archivo PDF es demasiado grande para ser leído automáticamente por la IA (límite 5MB).");
+          setGenerandoResumen(false);
+          setTimeout(() => setMensaje(""), 4000);
+          return;
         }
-  
+
         // Convertimos el PDF a base64 para enviarlo al servidor
         const base64String = await new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.readAsDataURL(archivoIncidencia);
           reader.onload = () => {
-             const resultBase64 = reader.result.split(',')[1];
-             resolve(resultBase64);
+            const resultBase64 = reader.result.split(',')[1];
+            resolve(resultBase64);
           };
           reader.onerror = (error) => reject(error);
         });
-        
+
         payload = { archivoBase64: base64String, mimeType: archivoIncidencia.type || "application/pdf" };
       } else {
         payload = { contenido };
@@ -888,19 +888,6 @@ useEffect(() => {
         setPersistente(item.persistente || false);
         setCarruselExistente(item.imagenesCarruselUrls || []);
         setVideoUrl(item.videoUrl || "");
-        setArchivosAdjuntos(item.archivosAdjuntos || []);
-
-        if (item.id) {
-          getDoc(doc(db, "noticias", item.id)).then((freshSnap) => {
-            if (freshSnap.exists()) {
-              const freshData = freshSnap.data();
-              if (Array.isArray(freshData.archivosAdjuntos)) {
-                setArchivosAdjuntos(freshData.archivosAdjuntos);
-                setListaItems(prev => prev.map(it => it.id === item.id ? { ...it, archivosAdjuntos: freshData.archivosAdjuntos } : it));
-              }
-            }
-          }).catch(err => console.warn("Error leyendo versión fresca de noticia:", err));
-        }
       }
 
       if (item.fechaPublicacion) {
@@ -952,12 +939,13 @@ useEffect(() => {
         setLandingSedeTexto(lp.sedeTexto || "");
         setLandingPrograma(lp.programa || []);
       }
-      
+
       setImagenPrincipalAnterior(item.imagenPrincipalUrl || null);
       setMainImagePreviewUrl(item.imagenPrincipalUrl || null);
     }
 
-    setImagenesCarrusel([]); 
+    setImagenesCarrusel([]);
+    setArchivosAdjuntos([]);
     setImagenPrincipal(null);
     setArchivoLibro(null);
     setArchivoLibroNombre("");
@@ -995,14 +983,14 @@ useEffect(() => {
     setImagenesCarrusel([]);
     setArchivosAdjuntos([]);
     setPrecio("");
-    setPrecioMXN(""); 
-    setAutor(""); 
-    
+    setPrecioMXN("");
+    setAutor("");
+
     setArchivoLibro(null);
     setArchivoLibroNombre("");
     setArchivoLibroAnterior(null);
     setRutaStorageAnterior(null);
-    
+
     setAño("");
     setArchivoInforme(null);
     setArchivoInformeNombre("");
@@ -1034,7 +1022,7 @@ useEffect(() => {
     setLandingSedeNombre("");
     setLandingSedeTexto("");
     setLandingPrograma([]);
-    
+
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -1054,7 +1042,7 @@ useEffect(() => {
       const coleccion = obtenerColeccionActiva();
       await deleteDoc(doc(db, coleccion, modalBorrar.id));
       await logActividad(`Eliminó un item de "${vistaActiva}": ${modalBorrar.titulo} (ID: ${modalBorrar.id})`);
-      cargarItems(); 
+      cargarItems();
       setMensaje("¡Contenido eliminado con éxito!");
     } catch (error) {
       console.error("Error al borrar:", error);
@@ -1077,32 +1065,14 @@ useEffect(() => {
       await uploadBytes(refDoc, file);
       const url = await getDownloadURL(refDoc);
 
-      const nuevoDoc = { nombre: file.name, url };
-      const nuevosAdjuntos = [...archivosAdjuntos, nuevoDoc];
-      setArchivosAdjuntos(nuevosAdjuntos);
-
-      if (editandoId) {
-        setListaItems(prev => prev.map(item => item.id === editandoId ? { ...item, archivosAdjuntos: nuevosAdjuntos } : item));
-      }
-
-      if (editandoId && vistaActiva === "comunicaciones") {
-        try {
-          await updateDoc(doc(db, "noticias", editandoId), {
-            archivosAdjuntos: nuevosAdjuntos
-          });
-          localStorage.removeItem('home_noticias');
-        } catch (dbErr) {
-          console.warn("No se pudo autoguardar adjunto en Firestore:", dbErr);
-        }
-      }
-
-      setMensaje("¡Documento subido y guardado con éxito!");
+      setArchivosAdjuntos(prev => [...prev, { nombre: file.name, url }]);
+      setMensaje("¡Documento subido con éxito!");
     } catch (error) {
       console.error("Error al subir documento:", error);
       setMensaje("Error al subir el documento.");
     } finally {
       setSubiendoArchivo(false);
-      e.target.value = ""; 
+      e.target.value = "";
       setTimeout(() => setMensaje(""), 4000);
     }
   };
@@ -1114,37 +1084,17 @@ useEffect(() => {
     setTimeout(() => setMensaje(""), 4000);
   };
 
-  const eliminarArchivoAdjunto = async (index) => {
-    const nuevaLista = archivosAdjuntos.filter((_, i) => i !== index);
-    setArchivosAdjuntos(nuevaLista);
-    if (editandoId) {
-      setListaItems(prev => prev.map(item => item.id === editandoId ? { ...item, archivosAdjuntos: nuevaLista } : item));
-    }
-    if (editandoId && vistaActiva === "comunicaciones") {
-      try {
-        await updateDoc(doc(db, "noticias", editandoId), {
-          archivosAdjuntos: nuevaLista
-        });
-        localStorage.removeItem('home_noticias');
-      } catch (dbErr) {
-        console.warn("Error al actualizar Firestore:", dbErr);
-      }
-    }
-    setMensaje("Documento anexo removido de la lista.");
-    setTimeout(() => setMensaje(""), 3000);
-  };
-
   const handleSeleccionPrincipal = async (e) => {
     const file = e.target.files[0];
-    e.target.value = ""; 
-    
+    e.target.value = "";
+
     if (file) {
       try {
         setMensaje("Optimizando imagen a WebP...");
         const webpFile = await convertirAWebp(file);
         setImagenPrincipal(webpFile);
         setMainImagePreviewUrl(URL.createObjectURL(webpFile));
-        setMensaje(""); 
+        setMensaje("");
       } catch (error) {
         console.error("Error al procesar imagen:", error);
         setMensaje("Error al optimizar la imagen.");
@@ -1155,13 +1105,13 @@ useEffect(() => {
 
   const handleAgregarImagenes = async (e) => {
     const files = Array.from(e.target.files).sort((a, b) => a.name.localeCompare(b.name));
-    
+
     if (files.length > 0) {
       try {
         setMensaje("Optimizando imágenes para el carrusel...");
         const webpFiles = await Promise.all(files.map(file => convertirAWebp(file)));
         setImagenesCarrusel((prev) => [...prev, ...webpFiles]);
-        e.target.value = ""; 
+        e.target.value = "";
         setMensaje("");
       } catch (error) {
         console.error("Error al procesar imágenes:", error);
@@ -1207,11 +1157,11 @@ useEffect(() => {
       try {
         const qPersistentes = query(collection(db, "noticias"), where("persistente", "==", true));
         const snapPersistentes = await getDocs(qPersistentes);
-        
+
         let cantidadFijas = snapPersistentes.docs.length;
-        
+
         if (editandoId && snapPersistentes.docs.some(doc => doc.id === editandoId)) {
-          cantidadFijas -= 1; 
+          cantidadFijas -= 1;
         }
 
         if (cantidadFijas >= 3) {
@@ -1227,12 +1177,12 @@ useEffect(() => {
     setMensaje(editandoId ? "Actualizando información..." : "Publicando contenido...");
 
     try {
-      const carpeta = vistaActiva === "articulos" ? "articulos" : 
-                      (vistaActiva === "libros" ? "libros" : 
-                      (vistaActiva === 'equipo' ? 'equipo' : 
-                      (vistaActiva === 'informes' ? 'informes' : 
-                      (vistaActiva === 'incidencia' ? 'incidencia' : "noticias"))));
-      
+      const carpeta = vistaActiva === "articulos" ? "articulos" :
+        (vistaActiva === "libros" ? "libros" :
+          (vistaActiva === 'equipo' ? 'equipo' :
+            (vistaActiva === 'informes' ? 'informes' :
+              (vistaActiva === 'incidencia' ? 'incidencia' : "noticias"))));
+
       let finalPrincipalUrl = imagenPrincipalAnterior;
       if (imagenPrincipal) {
         const refImg = ref(storage, `${carpeta}/portadas/${Date.now()}_${imagenPrincipal.name}`);
@@ -1241,14 +1191,14 @@ useEffect(() => {
       }
 
       let finalArchivoLibroUrl = archivoLibroAnterior;
-      let rutaStorageLibro = null; 
+      let rutaStorageLibro = null;
 
       if (vistaActiva === "libros" && archivoLibro) {
-        const rutaCompleta = `${carpeta}/archivos/${Date.now()}_${archivoLibro.name}`; 
+        const rutaCompleta = `${carpeta}/archivos/${Date.now()}_${archivoLibro.name}`;
         const refLibro = ref(storage, rutaCompleta);
         await uploadBytes(refLibro, archivoLibro);
         finalArchivoLibroUrl = await getDownloadURL(refLibro);
-        rutaStorageLibro = rutaCompleta; 
+        rutaStorageLibro = rutaCompleta;
       }
 
       let finalArchivoInformeUrl = archivoInformeAnterior;
@@ -1274,7 +1224,7 @@ useEffect(() => {
           nuevasUrls.push(url);
         }
       }
-      
+
       const coleccion = obtenerColeccionActiva();
       let datos;
 
@@ -1291,10 +1241,10 @@ useEffect(() => {
       } else {
         const slugFinal = (editandoId && slugOriginal) ? slugOriginal : generarSlug(titulo);
         datos = {
-          titulo, 
-          resumen, 
+          titulo,
+          resumen,
           contenido,
-          slug: slugFinal, 
+          slug: slugFinal,
           imagenPrincipalUrl: finalPrincipalUrl || null,
           fechaPublicacion: fechaPersonalizada ? Timestamp.fromDate(new Date(fechaPersonalizada)) : serverTimestamp(),
           activa: true
@@ -1309,8 +1259,6 @@ useEffect(() => {
           datos.tags = tagsSeleccionados;
           datos.persistente = persistente;
           datos.videoUrl = videoUrl ? videoUrl.trim() : null;
-          datos.archivosAdjuntos = archivosAdjuntos || [];
-          localStorage.removeItem('home_noticias');
         } else if (vistaActiva === "articulos") {
           const usuarioActual = auth.currentUser?.displayName || auth.currentUser?.email?.split('@')[0] || "IIRESODH";
           datos.subtitulo = subtitulo ? subtitulo.trim() : "";
@@ -1326,9 +1274,9 @@ useEffect(() => {
         } else if (vistaActiva === "libros") {
           datos.precio = parseFloat(precio) || 0;
           datos.precioMXN = parseFloat(precioMXN) || 0;
-          datos.autor = autor; 
+          datos.autor = autor;
           datos.archivoLibroUrl = finalArchivoLibroUrl;
-          
+
           if (rutaStorageLibro) {
             datos.rutaStorage = rutaStorageLibro;
           } else if (rutaStorageAnterior) {
@@ -1339,7 +1287,7 @@ useEffect(() => {
           datos.titulo = `Informe Anual ${año}`;
           datos.archivoInformeUrl = finalArchivoInformeUrl || null;
           datos.tipo = "PDF";
-          delete datos.contenido; 
+          delete datos.contenido;
           delete datos.resumen;
           delete datos.fechaPublicacion;
         } else if (vistaActiva === "incidencia") {
@@ -1353,7 +1301,7 @@ useEffect(() => {
           datos.fechaInicio = fechaInicio || null;
           datos.fechaFin = fechaFin || null;
           datos.imagenesCarruselUrls = [...carruselExistente, ...nuevasUrls];
-          
+
           if (landingHabilitada) {
             datos.landingPage = {
               habilitada: true,
@@ -1389,73 +1337,61 @@ useEffect(() => {
         const cambios = [];
 
         if (itemOriginal) {
-            if (itemOriginal.titulo !== datos.titulo && datos.titulo !== undefined) cambios.push(`título`);
-            if (itemOriginal.resumen !== datos.resumen && datos.resumen !== undefined) cambios.push(`resumen`);
-            if (itemOriginal.contenido !== datos.contenido && datos.contenido !== undefined) cambios.push(`contenido`);
-            if (itemOriginal.nombre !== datos.nombre && datos.nombre !== undefined) cambios.push(`nombre`);
-            if (itemOriginal.cargo !== datos.cargo && datos.cargo !== undefined) cambios.push(`cargo`);
-            if (itemOriginal.bio !== datos.bio && datos.bio !== undefined) cambios.push(`biografía`);
-            if (itemOriginal.autor !== datos.autor && datos.autor !== undefined) cambios.push(`autor`);
-            if (Number(itemOriginal.orden) !== datos.orden && datos.orden !== undefined) cambios.push(`orden`);
-            if (Number(itemOriginal.año) !== datos.año && datos.año !== undefined) cambios.push(`año`);
-            if (Number(itemOriginal.precio) !== datos.precio && datos.precio !== undefined) cambios.push(`precio USD`);
-            if (Number(itemOriginal.precioMXN) !== datos.precioMXN && datos.precioMXN !== undefined) cambios.push(`precio MXN`);
-            if (itemOriginal.destacado !== datos.destacado && datos.destacado !== undefined) cambios.push(`destacado`);
-            if (itemOriginal.persistente !== datos.persistente && datos.persistente !== undefined) cambios.push(`fijado`);
-            if (itemOriginal.enlaceInscripcion !== datos.enlaceInscripcion && datos.enlaceInscripcion !== undefined) cambios.push(`enlace de inscripción`);
-            if (itemOriginal.fechaInicio !== datos.fechaInicio && datos.fechaInicio !== undefined) cambios.push('fecha de inicio');
-            if (itemOriginal.fechaFin !== datos.fechaFin && datos.fechaFin !== undefined) cambios.push('fecha de finalización');
-            
-            const tagsOriginales = [...(itemOriginal.tags || [])];
-            const tagsNuevos = [...(datos.tags || [])];
-            if (JSON.stringify(tagsOriginales.sort()) !== JSON.stringify(tagsNuevos.sort())) cambios.push('tags');
+          if (itemOriginal.titulo !== datos.titulo && datos.titulo !== undefined) cambios.push(`título`);
+          if (itemOriginal.resumen !== datos.resumen && datos.resumen !== undefined) cambios.push(`resumen`);
+          if (itemOriginal.contenido !== datos.contenido && datos.contenido !== undefined) cambios.push(`contenido`);
+          if (itemOriginal.nombre !== datos.nombre && datos.nombre !== undefined) cambios.push(`nombre`);
+          if (itemOriginal.cargo !== datos.cargo && datos.cargo !== undefined) cambios.push(`cargo`);
+          if (itemOriginal.bio !== datos.bio && datos.bio !== undefined) cambios.push(`biografía`);
+          if (itemOriginal.autor !== datos.autor && datos.autor !== undefined) cambios.push(`autor`);
+          if (Number(itemOriginal.orden) !== datos.orden && datos.orden !== undefined) cambios.push(`orden`);
+          if (Number(itemOriginal.año) !== datos.año && datos.año !== undefined) cambios.push(`año`);
+          if (Number(itemOriginal.precio) !== datos.precio && datos.precio !== undefined) cambios.push(`precio USD`);
+          if (Number(itemOriginal.precioMXN) !== datos.precioMXN && datos.precioMXN !== undefined) cambios.push(`precio MXN`);
+          if (itemOriginal.destacado !== datos.destacado && datos.destacado !== undefined) cambios.push(`destacado`);
+          if (itemOriginal.persistente !== datos.persistente && datos.persistente !== undefined) cambios.push(`fijado`);
+          if (itemOriginal.enlaceInscripcion !== datos.enlaceInscripcion && datos.enlaceInscripcion !== undefined) cambios.push(`enlace de inscripción`);
+          if (itemOriginal.fechaInicio !== datos.fechaInicio && datos.fechaInicio !== undefined) cambios.push('fecha de inicio');
+          if (itemOriginal.fechaFin !== datos.fechaFin && datos.fechaFin !== undefined) cambios.push('fecha de finalización');
 
-            if (finalPrincipalUrl !== imagenPrincipalAnterior) cambios.push('imagen principal');
-            if (finalArchivoLibroUrl !== archivoLibroAnterior) cambios.push('archivo PDF libro');
-            if (finalArchivoInformeUrl !== archivoInformeAnterior) cambios.push('archivo PDF informe');
-            if (finalArchivoIncidenciaUrl !== archivoIncidenciaAnterior) cambios.push('archivo PDF incidencia');
-            if (nuevasUrls.length > 0 || carruselExistente.length !== (itemOriginal.imagenesCarruselUrls || []).length) cambios.push('galería');
+          const tagsOriginales = itemOriginal.tags || [];
+          const tagsNuevos = datos.tags || [];
+          if (JSON.stringify(tagsOriginales.sort()) !== JSON.stringify(tagsNuevos.sort())) cambios.push('tags');
+
+          if (finalPrincipalUrl !== imagenPrincipalAnterior) cambios.push('imagen principal');
+          if (finalArchivoLibroUrl !== archivoLibroAnterior) cambios.push('archivo PDF libro');
+          if (finalArchivoInformeUrl !== archivoInformeAnterior) cambios.push('archivo PDF informe');
+          if (finalArchivoIncidenciaUrl !== archivoIncidenciaAnterior) cambios.push('archivo PDF incidencia');
+          if (nuevasUrls.length > 0 || carruselExistente.length !== (itemOriginal.imagenesCarruselUrls || []).length) cambios.push('galería');
         }
-
-        // Limpiar campos undefined que Firestore rechaza
-        Object.keys(datos).forEach(key => {
-          if (datos[key] === undefined) delete datos[key];
-        });
 
         const detallesUpdate = cambios.length > 0 ? `Campos modificados: ${cambios.join(', ')}.` : 'No se detectaron cambios en los campos principales.';
         await updateDoc(doc(db, coleccion, editandoId), datos);
-        setListaItems(prev => prev.map(item => item.id === editandoId ? { ...item, ...datos } : item));
         await logActividad(`Actualizó un item en "${vistaActiva}": ${datos.titulo || datos.nombre}`, detallesUpdate);
         const mensajeExito = vistaActiva === 'equipo' ? "¡Miembro del equipo actualizado!" : "¡Contenido actualizado con éxito!";
         setMensaje(mensajeExito);
       } else {
         let detallesCreacion = [];
         if (vistaActiva === 'comunicaciones' && datos.tags.length > 0) {
-            detallesCreacion.push(`Tags: [${datos.tags.join(', ')}]`);
+          detallesCreacion.push(`Tags: [${datos.tags.join(', ')}]`);
         }
         if (datos.persistente) {
-            detallesCreacion.push('Marcado como Fijo en Portada');
+          detallesCreacion.push('Marcado como Fijo en Portada');
         }
         if (vistaActiva === 'libros') {
-            detallesCreacion.push(`Precio USD: ${datos.precio}, MXN: ${datos.precioMXN}`);
+          detallesCreacion.push(`Precio USD: ${datos.precio}, MXN: ${datos.precioMXN}`);
         }
         if (vistaActiva === 'informes') {
-            detallesCreacion.push(`Año: ${datos.año}`);
+          detallesCreacion.push(`Año: ${datos.año}`);
         }
         if (vistaActiva === 'equipo') {
-            detallesCreacion.push(`Cargo: ${datos.cargo}, Orden: ${datos.orden}`);
-            if (datos.destacado) detallesCreacion.push('Marcado como Destacado');
+          detallesCreacion.push(`Cargo: ${datos.cargo}, Orden: ${datos.orden}`);
+          if (datos.destacado) detallesCreacion.push('Marcado como Destacado');
         }
         if (vistaActiva === 'cursos') {
-            if (datos.enlaceInscripcion) detallesCreacion.push(`Con enlace de inscripción activo`);
+          if (datos.enlaceInscripcion) detallesCreacion.push(`Con enlace de inscripción activo`);
         }
         const detallesString = detallesCreacion.length > 0 ? detallesCreacion.join('. ') + '.' : null;
-        
-        // Limpiar campos undefined que Firestore rechaza
-        Object.keys(datos).forEach(key => {
-          if (datos[key] === undefined) delete datos[key];
-        });
-
         await addDoc(collection(db, coleccion), datos);
         await logActividad(`Creó un item en "${vistaActiva}": ${datos.titulo || datos.nombre}`, detallesString);
         const mensajeExito = vistaActiva === 'equipo' ? "¡Miembro del equipo agregado!" : "¡Contenido publicado con éxito!";
@@ -1463,13 +1399,13 @@ useEffect(() => {
       }
 
       limpiarFormulario();
-      cargarItems(); 
+      cargarItems();
     } catch (err) {
-      console.error("Error al guardar:", err);
-      setMensaje(`Error en el proceso: ${err.message || 'Intenta de nuevo.'}`);
+      console.error(err);
+      setMensaje("Error en el proceso.");
     } finally {
       setLoading(false);
-      setTimeout(() => setMensaje(""), 4000);
+      setTimeout(() => setMensaje(""), 3000);
     }
   };
 
@@ -1511,8 +1447,8 @@ useEffect(() => {
 
   return (
     <main className="min-h-screen bg-gray-50/50 font-sans relative overflow-hidden">
-      
-      <ConfirmDialog 
+
+      <ConfirmDialog
         open={modalBorrar.isOpen}
         title="¿Eliminar publicación?"
         content={`Estás a punto de borrar permanentemente: "${modalBorrar.titulo}". Esta acción no se puede deshacer.`}
@@ -1537,11 +1473,11 @@ useEffect(() => {
       </header>
 
       <div className="p-6 md:p-10 max-w-7xl mx-auto relative z-10">
-        <ToastAlert 
-          open={!!mensaje} 
-          message={mensaje} 
-          isError={mensaje.includes("Error")} 
-          onClose={() => setMensaje("")} 
+        <ToastAlert
+          open={!!mensaje}
+          message={mensaje}
+          isError={mensaje.includes("Error")}
+          onClose={() => setMensaje("")}
         />
         {vistaActiva === "inicio" && (
           <section className="animate-fade-in-up" aria-labelledby="admin-title">
@@ -1550,12 +1486,11 @@ useEffect(() => {
               <p className="text-gray-500 text-lg">Selecciona el módulo que deseas administrar hoy.</p>
             </div>
             <nav className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8" aria-label="Departamentos administrativos">
-              <button 
-                onClick={() => setVistaActiva("comunicaciones")} 
+              <button
+                onClick={() => setVistaActiva("comunicaciones")}
                 disabled={!misPermisos.comunicaciones}
-                className={`bg-white border border-gray-100 p-10 rounded-3xl shadow-sm transition-all duration-300 flex flex-col items-center justify-center gap-5 group text-center ${
-                  !misPermisos.comunicaciones ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:shadow-xl hover:-translate-y-1 hover:border-main-blue/30 cursor-pointer"
-                }`}
+                className={`bg-white border border-gray-100 p-10 rounded-3xl shadow-sm transition-all duration-300 flex flex-col items-center justify-center gap-5 group text-center ${!misPermisos.comunicaciones ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:shadow-xl hover:-translate-y-1 hover:border-main-blue/30 cursor-pointer"
+                  }`}
               >
                 <div className="p-4 bg-blue-50 text-main-blue rounded-2xl group-hover:bg-main-blue group-hover:text-white transition-colors duration-300">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 8h8M8 12h8M8 16h4"></path></svg>
@@ -1566,12 +1501,11 @@ useEffect(() => {
                 </div>
               </button>
 
-              <button 
-                onClick={() => setVistaActiva("anunciosEmergentes")} 
+              <button
+                onClick={() => setVistaActiva("anunciosEmergentes")}
                 disabled={!misPermisos.comunicaciones}
-                className={`bg-white border border-gray-100 p-10 rounded-3xl shadow-sm transition-all duration-300 flex flex-col items-center justify-center gap-5 group text-center ${
-                  !misPermisos.comunicaciones ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:shadow-xl hover:-translate-y-1 hover:border-amber-500/30 cursor-pointer"
-                }`}
+                className={`bg-white border border-gray-100 p-10 rounded-3xl shadow-sm transition-all duration-300 flex flex-col items-center justify-center gap-5 group text-center ${!misPermisos.comunicaciones ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:shadow-xl hover:-translate-y-1 hover:border-amber-500/30 cursor-pointer"
+                  }`}
               >
                 <div className="p-4 bg-amber-50 text-amber-600 rounded-2xl group-hover:bg-amber-600 group-hover:text-white transition-colors duration-300">
                   <Megaphone className="w-10 h-10" />
@@ -1581,13 +1515,12 @@ useEffect(() => {
                   <p className="text-sm text-gray-500">Popups de anuncios y documentos PDF</p>
                 </div>
               </button>
-              
-              <button 
-                onClick={() => setVistaActiva("articulos")} 
+
+              <button
+                onClick={() => setVistaActiva("articulos")}
                 disabled={!misPermisos.articulos}
-                className={`bg-white border border-gray-100 p-10 rounded-3xl shadow-sm transition-all duration-300 flex flex-col items-center justify-center gap-5 group text-center ${
-                  !misPermisos.articulos ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:shadow-xl hover:-translate-y-1 hover:border-main-red/30 cursor-pointer"
-                }`}
+                className={`bg-white border border-gray-100 p-10 rounded-3xl shadow-sm transition-all duration-300 flex flex-col items-center justify-center gap-5 group text-center ${!misPermisos.articulos ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:shadow-xl hover:-translate-y-1 hover:border-main-red/30 cursor-pointer"
+                  }`}
               >
                 <div className="p-4 bg-red-50 text-main-red rounded-2xl group-hover:bg-main-red group-hover:text-white transition-colors duration-300">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
@@ -1598,12 +1531,11 @@ useEffect(() => {
                 </div>
               </button>
 
-              <button 
-                onClick={() => setVistaActiva("cursos")} 
+              <button
+                onClick={() => setVistaActiva("cursos")}
                 disabled={!misPermisos.cursos}
-                className={`bg-white border border-gray-100 p-10 rounded-3xl shadow-sm transition-all duration-300 flex flex-col items-center justify-center gap-5 group text-center ${
-                  !misPermisos.cursos ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:shadow-xl hover:-translate-y-1 hover:border-orange-500/30 transition-all duration-300 cursor-pointer"
-                }`}
+                className={`bg-white border border-gray-100 p-10 rounded-3xl shadow-sm transition-all duration-300 flex flex-col items-center justify-center gap-5 group text-center ${!misPermisos.cursos ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:shadow-xl hover:-translate-y-1 hover:border-orange-500/30 transition-all duration-300 cursor-pointer"
+                  }`}
               >
                 <div className="p-4 bg-orange-50 text-orange-600 rounded-2xl group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 14l9-5-9-5-9 5 9 5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
@@ -1614,12 +1546,11 @@ useEffect(() => {
                 </div>
               </button>
 
-              <button 
-                onClick={() => setVistaActiva("libros")} 
+              <button
+                onClick={() => setVistaActiva("libros")}
                 disabled={!misPermisos.libros}
-                className={`bg-white border border-gray-100 p-10 rounded-3xl shadow-sm transition-all duration-300 flex flex-col items-center justify-center gap-5 group text-center ${
-                  !misPermisos.libros ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:shadow-xl hover:-translate-y-1 hover:border-green-500/30 transition-all duration-300 cursor-pointer"
-                }`}
+                className={`bg-white border border-gray-100 p-10 rounded-3xl shadow-sm transition-all duration-300 flex flex-col items-center justify-center gap-5 group text-center ${!misPermisos.libros ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:shadow-xl hover:-translate-y-1 hover:border-green-500/30 transition-all duration-300 cursor-pointer"
+                  }`}
               >
                 <div className="p-4 bg-green-50 text-green-600 rounded-2xl group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
@@ -1649,13 +1580,12 @@ useEffect(() => {
                   <p className="text-sm text-gray-500">Gestión de memorias de gestión</p>
                 </div>
               </button>
-              
-              <button 
-                onClick={() => setVistaActiva("incidencia")} 
+
+              <button
+                onClick={() => setVistaActiva("incidencia")}
                 disabled={!misPermisos.incidencia}
-                className={`bg-white border border-gray-100 p-10 rounded-3xl shadow-sm transition-all duration-300 flex flex-col items-center justify-center gap-5 group text-center ${
-                  !misPermisos.incidencia ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:shadow-xl hover:-translate-y-1 hover:border-rose-500/30 transition-all duration-300 cursor-pointer"
-                }`}
+                className={`bg-white border border-gray-100 p-10 rounded-3xl shadow-sm transition-all duration-300 flex flex-col items-center justify-center gap-5 group text-center ${!misPermisos.incidencia ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:shadow-xl hover:-translate-y-1 hover:border-rose-500/30 transition-all duration-300 cursor-pointer"
+                  }`}
               >
                 <div className="p-4 bg-rose-50 text-rose-600 rounded-2xl group-hover:bg-rose-600 group-hover:text-white transition-colors duration-300">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 4v16m8-8H4"></path></svg>
@@ -1666,12 +1596,11 @@ useEffect(() => {
                 </div>
               </button>
 
-              <button 
-                onClick={() => setVistaActiva("estadisticas")} 
+              <button
+                onClick={() => setVistaActiva("estadisticas")}
                 disabled={!misPermisos.estadisticas}
-                className={`bg-white border border-gray-100 p-10 rounded-3xl shadow-sm transition-all duration-300 flex flex-col items-center justify-center gap-5 group text-center ${
-                  !misPermisos.estadisticas ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:shadow-xl hover:-translate-y-1 hover:border-indigo-500/30 transition-all duration-300 cursor-pointer"
-                }`}
+                className={`bg-white border border-gray-100 p-10 rounded-3xl shadow-sm transition-all duration-300 flex flex-col items-center justify-center gap-5 group text-center ${!misPermisos.estadisticas ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:shadow-xl hover:-translate-y-1 hover:border-indigo-500/30 transition-all duration-300 cursor-pointer"
+                  }`}
               >
                 <div className="p-4 bg-indigo-50 text-indigo-600 rounded-2xl group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1728,20 +1657,19 @@ useEffect(() => {
                   <header className="mb-8 flex items-center justify-between">
                     <div>
                       <h2 id="form-title" className={`text-2xl md:text-3xl font-bold tracking-tight ${editandoId ? 'text-main-red' : 'text-gray-800'}`}>
-                        {editandoId ? 
-                          (vistaActiva === 'equipo' ? "Editando Miembro" : (vistaActiva === 'informes' ? "Editando Informe" : (vistaActiva === 'incidencia' ? "Editando Documento" : (vistaActiva === 'articulos' ? "Editando Artículo" : (vistaActiva === 'comunicaciones' ? "Editando Noticia o Comunicado" : "Editando Publicación"))))) : 
+                        {editandoId ?
+                          (vistaActiva === 'equipo' ? "Editando Miembro" : (vistaActiva === 'informes' ? "Editando Informe" : (vistaActiva === 'incidencia' ? "Editando Documento" : (vistaActiva === 'articulos' ? "Editando Artículo" : (vistaActiva === 'comunicaciones' ? "Editando Noticia o Comunicado" : "Editando Publicación"))))) :
                           (vistaActiva === "articulos" ? "Redactar Nuevo Artículo" : (vistaActiva === "libros" ? "Registrar Nuevo Libro" : (vistaActiva === 'equipo' ? "Agregar Miembro" : (vistaActiva === 'informes' ? "Cargar Nuevo Informe" : (vistaActiva === 'incidencia' ? "Cargar Nuevo Documento" : (vistaActiva === 'comunicaciones' ? "Crear Noticia o Comunicado" : "Crear Nueva Publicación"))))))
                         }
                       </h2>
                       <p className="text-sm text-gray-500 mt-1">
-                        {vistaActiva === "articulos" ? 
+                        {vistaActiva === "articulos" ?
                           "Puede utilizar el editor para redactar su contenido, añadir negritas, títulos, citas y enlaces de forma visual." :
-                          `Módulo: ${
-                            vistaActiva === "comunicaciones" ? "Noticias y Comunicados" :
+                          `Módulo: ${vistaActiva === "comunicaciones" ? "Noticias y Comunicados" :
                             vistaActiva === "libros" ? "Tienda Editorial" :
-                            vistaActiva === "informes" ? "Informes Anuales" :
-                            vistaActiva === "incidencia" ? "Incidencia Internacional" :
-                            "Equipo de Trabajo"
+                              vistaActiva === "informes" ? "Informes Anuales" :
+                                vistaActiva === "incidencia" ? "Incidencia Internacional" :
+                                  "Equipo de Trabajo"
                           }`
                         }
                       </p>
@@ -1785,7 +1713,7 @@ useEffect(() => {
                     {vistaActiva === "articulos" && (
                       <div className="space-y-6">
                         <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200/90 shadow-xs space-y-6">
-                          <AdminTextField 
+                          <AdminTextField
                             label="Título del Artículo *"
                             value={titulo}
                             onChange={(e) => setTitulo(e.target.value)}
@@ -1793,7 +1721,7 @@ useEffect(() => {
                             placeholder="Ej: Análisis del Sistema Interamericano de Derechos Humanos..."
                           />
 
-                          <AdminTextField 
+                          <AdminTextField
                             label="Subtítulo del Artículo (Opcional)"
                             value={subtitulo}
                             onChange={(e) => setSubtitulo(e.target.value)}
@@ -1801,7 +1729,7 @@ useEffect(() => {
                           />
 
                           <div>
-                            <AdminTextField 
+                            <AdminTextField
                               label="Autor del Artículo (Opcional)"
                               value={autor}
                               onChange={(e) => setAutor(e.target.value)}
@@ -1816,7 +1744,7 @@ useEffect(() => {
                             <label className="block text-sm font-bold text-gray-800 mb-2">
                               Contenido del Artículo
                             </label>
-                            <RichTextEditor 
+                            <RichTextEditor
                               value={contenido}
                               onChange={setContenido}
                               placeholder="Redacte aquí el contenido del artículo, utilice la barra superior para dar formato..."
@@ -1831,16 +1759,16 @@ useEffect(() => {
                               <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                 Resumen corto para catálogo (Opcional)
                               </label>
-                              <button 
-                                type="button" 
-                                onClick={handleAutoResumen} 
-                                disabled={generandoResumen} 
+                              <button
+                                type="button"
+                                onClick={handleAutoResumen}
+                                disabled={generandoResumen}
                                 className="text-xs font-semibold text-main-blue hover:text-light-blue bg-blue-50 hover:bg-blue-100 py-1 px-2.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50"
                               >
                                 {generandoResumen ? "Generando..." : "✨ Auto-completar con PIDA"}
                               </button>
                             </div>
-                            <AdminTextField 
+                            <AdminTextField
                               label="Resumen corto"
                               multiline
                               rows={2}
@@ -1851,7 +1779,7 @@ useEffect(() => {
                             />
                           </div>
                           <div className="md:col-span-1">
-                            <AdminTextField 
+                            <AdminTextField
                               label="Fecha (Opcional)"
                               type="datetime-local"
                               value={fechaPersonalizada}
@@ -1865,700 +1793,697 @@ useEffect(() => {
 
                     {/* FORMULARIO PARA NOTICIAS, LIBROS, INFORMES, CURSOS E INCIDENCIA */}
                     {vistaActiva !== 'equipo' && vistaActiva !== 'articulos' && (<>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      
-                      {/* Ocultar el Título si es Informe, ya que se autogenera con el Año */}
-                      {vistaActiva !== "informes" && (
-                        <div className={(vistaActiva === "libros") ? "md:col-span-1" : "md:col-span-2"}>
-                          {vistaActiva === "comunicaciones" ? (
-                            <div>
-                              <div className="flex justify-between items-center mb-1">
-                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                  Título de la Noticia / Comunicado *
-                                </label>
-                                <button 
-                                  type="button" 
-                                  onClick={handleAutoResumen} 
-                                  disabled={generandoResumen} 
-                                  className="text-xs font-semibold text-main-blue hover:text-light-blue bg-blue-50 hover:bg-blue-100 py-1 px-2.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50"
-                                  title="Genera un titular conciso automáticamente con PIDA a partir del contenido redactado"
-                                >
-                                  {generandoResumen ? "Generando..." : "✨ Auto-título con PIDA"}
-                                </button>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                        {/* Ocultar el Título si es Informe, ya que se autogenera con el Año */}
+                        {vistaActiva !== "informes" && (
+                          <div className={(vistaActiva === "libros") ? "md:col-span-1" : "md:col-span-2"}>
+                            {vistaActiva === "comunicaciones" ? (
+                              <div>
+                                <div className="flex justify-between items-center mb-1">
+                                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Título de la Noticia / Comunicado *
+                                  </label>
+                                  <button
+                                    type="button"
+                                    onClick={handleAutoResumen}
+                                    disabled={generandoResumen}
+                                    className="text-xs font-semibold text-main-blue hover:text-light-blue bg-blue-50 hover:bg-blue-100 py-1 px-2.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50"
+                                    title="Genera un titular conciso automáticamente con PIDA a partir del contenido redactado"
+                                  >
+                                    {generandoResumen ? "Generando..." : "✨ Auto-título con PIDA"}
+                                  </button>
+                                </div>
+                                <AdminTextField
+                                  label="Título de la Noticia o Comunicado"
+                                  value={titulo}
+                                  onChange={(e) => setTitulo(e.target.value)}
+                                  required
+                                  multiline
+                                  rows={2}
+                                  placeholder="Ej: Nueva alianza internacional por los DDHH o comunicado oficial..."
+                                />
                               </div>
-                              <AdminTextField 
-                                label="Título de la Noticia o Comunicado"
+                            ) : (
+                              <AdminTextField
+                                label={vistaActiva === "cursos" ? "Título del Curso" : (vistaActiva === "articulos" ? "Título del Artículo" : (vistaActiva === "libros" ? "Título del Libro" : (vistaActiva === "incidencia" ? "Título del Documento" : "Título")))}
                                 value={titulo}
                                 onChange={(e) => setTitulo(e.target.value)}
                                 required
-                                multiline
-                                rows={2}
-                                placeholder="Ej: Nueva alianza internacional por los DDHH o comunicado oficial..."
+                                placeholder="Ej: Nueva alianza internacional..."
                               />
-                            </div>
-                          ) : (
-                            <AdminTextField 
-                              label={vistaActiva === "cursos" ? "Título del Curso" : (vistaActiva === "articulos" ? "Título del Artículo" : (vistaActiva === "libros" ? "Título del Libro" : (vistaActiva === "incidencia" ? "Título del Documento" : "Título")))}
-                              value={titulo}
-                              onChange={(e) => setTitulo(e.target.value)}
+                            )}
+                          </div>
+                        )}
+
+                        {/* Para Informes, el campo del Año toma más protagonismo */}
+                        {vistaActiva === "informes" && (
+                          <div className="md:col-span-3">
+                            <AdminTextField
+                              label="Año del Informe (P.ej. 2024)"
+                              type="number"
                               required
-                              placeholder="Ej: Nueva alianza internacional..."
+                              value={año}
+                              onChange={(e) => setAño(e.target.value)}
+                              placeholder="Ej: 2024"
                             />
-                          )}
+                          </div>
+                        )}
+
+                        {vistaActiva === "libros" && (
+                          <div className="md:col-span-1">
+                            <AdminTextField
+                              label="Precio (USD)"
+                              type="number"
+                              step="0.01"
+                              required
+                              value={precio}
+                              onChange={(e) => setPrecio(e.target.value)}
+                              placeholder="Ej: 25.00"
+                            />
+                          </div>
+                        )}
+
+                        {/* Ocultar la Fecha para los informes */}
+                        {vistaActiva !== "informes" && (
+                          <div className="md:col-span-1">
+                            <AdminTextField
+                              label="Fecha (Opcional)"
+                              type="datetime-local"
+                              value={fechaPersonalizada}
+                              onChange={(e) => setFechaPersonalizada(e.target.value)}
+                              InputLabelProps={{ shrink: true }}
+                            />
+                          </div>
+
+                        )}
+                      </div>
+
+                      {/* Campo de Video para Noticias */}
+                      {vistaActiva === "comunicaciones" && (
+                        <div className="bg-gray-50/70 p-4 rounded-xl border border-gray-200/80">
+                          <AdminTextField
+                            label="Enlace de Video (Opcional - YouTube o Vimeo)"
+                            value={videoUrl}
+                            onChange={(e) => setVideoUrl(e.target.value)}
+                            placeholder="Ej: https://www.youtube.com/watch?v=... o https://youtu.be/..."
+                          />
+                          <p className="text-xs text-gray-500 mt-1.5 ml-1">
+                            Si introduces un enlace de YouTube o Vimeo, se mostrará en el reproductor de la noticia. También puedes insertar videos en cualquier parte del texto usando el botón de video del editor.
+                          </p>
                         </div>
                       )}
-
-                      {/* Para Informes, el campo del Año toma más protagonismo */}
-                      {vistaActiva === "informes" && (
-                        <div className="md:col-span-3">
-                          <AdminTextField 
-                            label="Año del Informe (P.ej. 2024)"
-                            type="number"
-                            required
-                            value={año}
-                            onChange={(e) => setAño(e.target.value)}
-                            placeholder="Ej: 2024"
+                      {vistaActiva === "cursos" && (
+                        <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 bg-orange-50/50 p-6 rounded-2xl border border-orange-100">
+                          <AdminTextField
+                            label="Enlace de Inscripción (Opcional - Google Forms, Zoom, etc.)"
+                            type="url"
+                            value={enlaceInscripcion}
+                            onChange={(e) => setEnlaceInscripcion(e.target.value)}
+                            placeholder="https://forms.gle/..."
                           />
+                          <div className="flex items-center gap-2 bg-white p-4 rounded-xl shadow-sm border border-orange-100">
+                            <FormControl size="small" fullWidth>
+                              <InputLabel id="estado-inscripcion-label">Estado de Inscripción</InputLabel>
+                              <Select
+                                labelId="estado-inscripcion-label"
+                                value={estadoInscripcion}
+                                label="Estado de Inscripción"
+                                onChange={(e) => {
+                                  setEstadoInscripcion(e.target.value);
+                                  setCursoActivo(e.target.value === "abierta");
+                                }}
+                              >
+                                <MenuItem value="abierta">Inscripciones Abiertas</MenuItem>
+                                <MenuItem value="cerrada">Inscripciones Cerradas / Finalizado</MenuItem>
+                                <MenuItem value="proximamente">Próximamente</MenuItem>
+                              </Select>
+                            </FormControl>
+                          </div>
+
+                          <AdminTextField
+                            label="Fecha de Inicio del Curso (Opcional)"
+                            type="date"
+                            value={fechaInicio}
+                            onChange={(e) => setFechaInicio(e.target.value)}
+                            InputLabelProps={{ shrink: true }}
+                          />
+
+                          <AdminTextField
+                            label="Fecha de Finalización del Curso (Opcional)"
+                            type="date"
+                            value={fechaFin}
+                            onChange={(e) => setFechaFin(e.target.value)}
+                            InputLabelProps={{ shrink: true }}
+                          />
+
+                          {/* BOTÓN RÁPIDO PARA CARGAR EJEMPLO PALERMO 2027 */}
+                          <div className="md:col-span-2 bg-gradient-to-r from-blue-950 via-main-blue to-slate-900 p-5 rounded-2xl text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
+                            <div className="space-y-1 text-center sm:text-left">
+                              <span className="text-[10px] font-black uppercase tracking-widest text-amber-300 bg-black/40 px-2.5 py-0.5 rounded">
+                                Plantilla Rápida
+                              </span>
+                              <h4 className="font-bold text-sm md:text-base">
+                                Curso Internacional 2027 — Palermo, Sicilia
+                              </h4>
+                              <p className="text-xs text-pale-blue font-light">
+                                Carga automáticamente la estructura completa con Falcone & Borsellino, syllabus de 5 días e inversión.
+                              </p>
+                            </div>
+                            <Button
+                              variant="contained"
+                              onClick={cargarPlantillaPalermo}
+                              sx={{
+                                bgcolor: '#B92F32',
+                                '&:hover': { bgcolor: '#8b1d20' },
+                                fontWeight: 'bold',
+                                fontSize: '11px',
+                                textTransform: 'none',
+                                borderRadius: '12px',
+                                px: 3,
+                                py: 1.2,
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              ⚡ Cargar Plantilla Palermo 2027
+                            </Button>
+                          </div>
+
+                          {/* TARJETA DE CONFIGURACIÓN DE LANDING */}
+                          <div className="md:col-span-2 bg-white border-2 border-main-blue/20 rounded-2xl p-6 shadow-sm space-y-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-lg">🌐</span>
+                                  <h3 className="text-lg font-black text-main-blue">
+                                    Landing Page Dinámica del Curso
+                                  </h3>
+                                </div>
+                                <p className="text-xs text-gray-500 font-light mt-0.5">
+                                  Genera una página de presentación completa con hero histórico, syllabus, sede e inscripción directa.
+                                </p>
+                              </div>
+
+                              <div className="flex items-center gap-4">
+                                <FormControlLabel
+                                  control={
+                                    <Switch
+                                      checked={landingHabilitada}
+                                      onChange={(e) => setLandingHabilitada(e.target.checked)}
+                                      color="primary"
+                                    />
+                                  }
+                                  label={
+                                    <span className="text-xs font-bold text-gray-700">
+                                      {landingHabilitada ? "Habilitada" : "Deshabilitada"}
+                                    </span>
+                                  }
+                                />
+                              </div>
+                            </div>
+
+                            {landingHabilitada && (
+                              <div className="space-y-6">
+
+                                {/* INTERRUPTOR DE PUBLICACIÓN (PRIVACIDAD) */}
+                                <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                  <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs font-black uppercase tracking-wider text-amber-900">
+                                        Estado de Publicación:
+                                      </span>
+                                      <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full ${landingPublicada ? 'bg-green-600 text-white' : 'bg-amber-600 text-white'}`}>
+                                        {landingPublicada ? "Pública en la Web" : "Borrador (No Pública)"}
+                                      </span>
+                                    </div>
+                                    <p className="text-[11px] text-amber-800 font-light">
+                                      {landingPublicada
+                                        ? "La página es accesible por el público y el botón en /cursos dirigirá a los visitantes a ella."
+                                        : "La página NO es accesible al público general en /cursos. Solo administradores pueden verla con el botón de vista previa."}
+                                    </p>
+                                  </div>
+
+                                  <div className="flex items-center gap-3 shrink-0">
+                                    <FormControlLabel
+                                      control={
+                                        <Switch
+                                          checked={landingPublicada}
+                                          onChange={(e) => setLandingPublicada(e.target.checked)}
+                                          color="success"
+                                        />
+                                      }
+                                      label={
+                                        <span className="text-xs font-bold text-gray-700">
+                                          {landingPublicada ? "Pública" : "Oculta"}
+                                        </span>
+                                      }
+                                    />
+
+                                    <a
+                                      href={`/cursos/${slugOriginal || (titulo?.toLowerCase().includes('palermo') ? 'curso-internacional-palermo-2027' : 'palermo-2027')}?preview=admin`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="bg-main-blue hover:bg-light-blue text-white text-xs font-bold py-2 px-4 rounded-lg shadow-sm transition flex items-center gap-1.5"
+                                    >
+                                      <span>👁️ Vista Previa</span>
+                                    </a>
+                                  </div>
+                                </div>
+
+                                {/* CAMPOS ESPECÍFICOS DE LA LANDING */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                  <div className="md:col-span-2">
+                                    <AdminTextField
+                                      label="Lema / Enfoque Temático del Hero"
+                                      value={landingLema}
+                                      onChange={(e) => setLandingLema(e.target.value)}
+                                      placeholder="Ej: APLICACIÓN DE LAS CONVENCIONES DE PALERMO CONTRA EL CRIMEN ORGANIZADO"
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <AdminTextField
+                                      label="Ubicación y Fechas del Evento"
+                                      value={landingUbicacionFechas}
+                                      onChange={(e) => setLandingUbicacionFechas(e.target.value)}
+                                      placeholder="Ej: Palermo, Sicilia, Italia | Del 17 al 23 de mayo de 2027"
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <AdminTextField
+                                      label="Inversión / Costo Oficial"
+                                      value={landingPrecioInversion}
+                                      onChange={(e) => setLandingPrecioInversion(e.target.value)}
+                                      placeholder="Ej: 5.000 €"
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <AdminTextField
+                                      label="Aviso de Disponibilidad / Cupos Limitados"
+                                      value={landingCuposTexto}
+                                      onChange={(e) => setLandingCuposTexto(e.target.value)}
+                                      placeholder="Ej: Cupos Estrictamente Limitados"
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <AdminTextField
+                                      label="Fecha Límite Final de Pago de Cuotas"
+                                      type="date"
+                                      value={landingFechaLimitePago}
+                                      onChange={(e) => setLandingFechaLimitePago(e.target.value)}
+                                      helperText="Último día del mes anterior al evento (a esta fecha deben quedar saldadas todas las cuotas)"
+                                    />
+                                  </div>
+
+                                  <div className="md:col-span-2">
+                                    <AdminTextField
+                                      label="Detalle de lo que incluye la inversión"
+                                      value={landingInversionDetalle}
+                                      onChange={(e) => setLandingInversionDetalle(e.target.value)}
+                                      placeholder="Ej: Por persona. Incluye sesiones magistrales, visitas de campo, materiales exclusivos y certificación internacional."
+                                    />
+                                  </div>
+
+                                  <div className="md:col-span-2">
+                                    <AdminTextField
+                                      label="Enlace Directo de Pago Stripe (Opcional)"
+                                      type="url"
+                                      value={landingEnlaceStripe}
+                                      onChange={(e) => setLandingEnlaceStripe(e.target.value)}
+                                      placeholder="https://buy.stripe.com/..."
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <AdminTextField
+                                      label="Cita Emblemática del Hero (Opcional)"
+                                      value={landingHeroCita}
+                                      onChange={(e) => setLandingHeroCita(e.target.value)}
+                                      placeholder="«La mafia è un fenomeno umano...»"
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <AdminTextField
+                                      label="Autor de la Cita"
+                                      value={landingHeroCitaAutor}
+                                      onChange={(e) => setLandingHeroCitaAutor(e.target.value)}
+                                      placeholder="Ej: Giovanni Falcone (1939 – 1992)"
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <AdminTextField
+                                      label="Título Sección Legado y Visión"
+                                      value={landingLegadoTitulo}
+                                      onChange={(e) => setLandingLegadoTitulo(e.target.value)}
+                                      placeholder="Ej: Nuestro Legado y Visión"
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <AdminTextField
+                                      label="Nombre de la Sede"
+                                      value={landingSedeNombre}
+                                      onChange={(e) => setLandingSedeNombre(e.target.value)}
+                                      placeholder="Ej: Palermo, Sicilia (Italia)"
+                                    />
+                                  </div>
+
+                                  <div className="md:col-span-2">
+                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                                      Texto Descriptivo del Legado y Enfoque Histórico
+                                    </label>
+                                    <textarea
+                                      rows={4}
+                                      value={landingLegadoTexto}
+                                      onChange={(e) => setLandingLegadoTexto(e.target.value)}
+                                      placeholder="Describe la trascendencia del curso, el legado de los jueces y el marco de las Naciones Unidas..."
+                                      className="w-full text-sm p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue transition"
+                                    />
+                                  </div>
+
+                                  <div className="md:col-span-2">
+                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                                      Texto Descriptivo de la Sede (Palermo)
+                                    </label>
+                                    <textarea
+                                      rows={3}
+                                      value={landingSedeTexto}
+                                      onChange={(e) => setLandingSedeTexto(e.target.value)}
+                                      placeholder="Información sobre la ciudad sede, trascendencia jurídica, atractivos y logística..."
+                                      className="w-full text-sm p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue transition"
+                                    />
+                                  </div>
+                                </div>
+
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
 
                       {vistaActiva === "libros" && (
-                        <div className="md:col-span-1">
-                          <AdminTextField 
-                            label="Precio (USD)"
-                            type="number"
-                            step="0.01"
-                            required
-                            value={precio}
-                            onChange={(e) => setPrecio(e.target.value)}
-                            placeholder="Ej: 25.00"
-                          />
-                        </div>
-                      )}
-
-                      {/* Ocultar la Fecha para los informes */}
-                      {vistaActiva !== "informes" && (
-                        <div className="md:col-span-1">
-                          <AdminTextField 
-                            label="Fecha (Opcional)"
-                            type="datetime-local"
-                            value={fechaPersonalizada}
-                            onChange={(e) => setFechaPersonalizada(e.target.value)}
-                            InputLabelProps={{ shrink: true }}
-                          />
-                        </div>
-                        
-                      )}
-                    </div>
-
-                    {/* Campo de Video para Noticias */}
-                    {vistaActiva === "comunicaciones" && (
-                      <div className="bg-gray-50/70 p-4 rounded-xl border border-gray-200/80">
-                        <AdminTextField 
-                          label="Enlace de Video (Opcional - YouTube o Vimeo)"
-                          value={videoUrl}
-                          onChange={(e) => setVideoUrl(e.target.value)}
-                          placeholder="Ej: https://www.youtube.com/watch?v=... o https://youtu.be/..."
-                        />
-                        <p className="text-xs text-gray-500 mt-1.5 ml-1">
-                          Si introduces un enlace de YouTube o Vimeo, se mostrará en el reproductor de la noticia. También puedes insertar videos en cualquier parte del texto usando el botón de video del editor.
-                        </p>
-                      </div>
-                    )}
-                    {vistaActiva === "cursos" && (
-                      <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 bg-orange-50/50 p-6 rounded-2xl border border-orange-100">
-                        <AdminTextField 
-                          label="Enlace de Inscripción (Opcional - Google Forms, Zoom, etc.)"
-                          type="url"
-                          value={enlaceInscripcion}
-                          onChange={(e) => setEnlaceInscripcion(e.target.value)}
-                          placeholder="https://forms.gle/..."
-                        />
-                        <div className="flex items-center gap-2 bg-white p-4 rounded-xl shadow-sm border border-orange-100">
-                          <FormControl size="small" fullWidth>
-                            <InputLabel id="estado-inscripcion-label">Estado de Inscripción</InputLabel>
-                            <Select
-                              labelId="estado-inscripcion-label"
-                              value={estadoInscripcion}
-                              label="Estado de Inscripción"
-                              onChange={(e) => {
-                                setEstadoInscripcion(e.target.value);
-                                setCursoActivo(e.target.value === "abierta");
-                              }}
-                            >
-                              <MenuItem value="abierta">Inscripciones Abiertas</MenuItem>
-                              <MenuItem value="cerrada">Inscripciones Cerradas / Finalizado</MenuItem>
-                              <MenuItem value="proximamente">Próximamente</MenuItem>
-                            </Select>
-                          </FormControl>
-                        </div>
-
-                        <AdminTextField 
-                          label="Fecha de Inicio del Curso (Opcional)"
-                          type="date"
-                          value={fechaInicio}
-                          onChange={(e) => setFechaInicio(e.target.value)}
-                          InputLabelProps={{ shrink: true }}
-                        />
-
-                        <AdminTextField 
-                          label="Fecha de Finalización del Curso (Opcional)"
-                          type="date"
-                          value={fechaFin}
-                          onChange={(e) => setFechaFin(e.target.value)}
-                          InputLabelProps={{ shrink: true }}
-                        />
-
-                        {/* BOTÓN RÁPIDO PARA CARGAR EJEMPLO PALERMO 2027 */}
-                        <div className="md:col-span-2 bg-gradient-to-r from-blue-950 via-main-blue to-slate-900 p-5 rounded-2xl text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
-                          <div className="space-y-1 text-center sm:text-left">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-amber-300 bg-black/40 px-2.5 py-0.5 rounded">
-                              Plantilla Rápida
-                            </span>
-                            <h4 className="font-bold text-sm md:text-base">
-                              Curso Internacional 2027 — Palermo, Sicilia
-                            </h4>
-                            <p className="text-xs text-pale-blue font-light">
-                              Carga automáticamente la estructura completa con Falcone & Borsellino, syllabus de 5 días e inversión.
-                            </p>
-                          </div>
-                          <Button
-                            variant="contained"
-                            onClick={cargarPlantillaPalermo}
-                            sx={{
-                              bgcolor: '#B92F32',
-                              '&:hover': { bgcolor: '#8b1d20' },
-                              fontWeight: 'bold',
-                              fontSize: '11px',
-                              textTransform: 'none',
-                              borderRadius: '12px',
-                              px: 3,
-                              py: 1.2,
-                              whiteSpace: 'nowrap'
-                            }}
-                          >
-                            ⚡ Cargar Plantilla Palermo 2027
-                          </Button>
-                        </div>
-
-                        {/* TARJETA DE CONFIGURACIÓN DE LANDING */}
-                        <div className="md:col-span-2 bg-white border-2 border-main-blue/20 rounded-2xl p-6 shadow-sm space-y-6">
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100">
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-lg">🌐</span>
-                                <h3 className="text-lg font-black text-main-blue">
-                                  Landing Page Dinámica del Curso
-                                </h3>
-                              </div>
-                              <p className="text-xs text-gray-500 font-light mt-0.5">
-                                Genera una página de presentación completa con hero histórico, syllabus, sede e inscripción directa.
-                              </p>
-                            </div>
-
-                            <div className="flex items-center gap-4">
-                              <FormControlLabel
-                                control={
-                                  <Switch
-                                    checked={landingHabilitada}
-                                    onChange={(e) => setLandingHabilitada(e.target.checked)}
-                                    color="primary"
-                                  />
-                                }
-                                label={
-                                  <span className="text-xs font-bold text-gray-700">
-                                    {landingHabilitada ? "Habilitada" : "Deshabilitada"}
-                                  </span>
-                                }
-                              />
-                            </div>
-                          </div>
-
-                          {landingHabilitada && (
-                            <div className="space-y-6">
-                              
-                              {/* INTERRUPTOR DE PUBLICACIÓN (PRIVACIDAD) */}
-                              <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                                <div className="space-y-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-xs font-black uppercase tracking-wider text-amber-900">
-                                      Estado de Publicación:
-                                    </span>
-                                    <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full ${landingPublicada ? 'bg-green-600 text-white' : 'bg-amber-600 text-white'}`}>
-                                      {landingPublicada ? "Pública en la Web" : "Borrador (No Pública)"}
-                                    </span>
-                                  </div>
-                                  <p className="text-[11px] text-amber-800 font-light">
-                                    {landingPublicada 
-                                      ? "La página es accesible por el público y el botón en /cursos dirigirá a los visitantes a ella."
-                                      : "La página NO es accesible al público general en /cursos. Solo administradores pueden verla con el botón de vista previa."}
-                                  </p>
-                                </div>
-
-                                <div className="flex items-center gap-3 shrink-0">
-                                  <FormControlLabel
-                                    control={
-                                      <Switch
-                                        checked={landingPublicada}
-                                        onChange={(e) => setLandingPublicada(e.target.checked)}
-                                        color="success"
-                                      />
-                                    }
-                                    label={
-                                      <span className="text-xs font-bold text-gray-700">
-                                        {landingPublicada ? "Pública" : "Oculta"}
-                                      </span>
-                                    }
-                                  />
-
-                                  <a
-                                    href={`/cursos/${slugOriginal || (titulo?.toLowerCase().includes('palermo') ? 'curso-internacional-palermo-2027' : 'palermo-2027')}?preview=admin`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="bg-main-blue hover:bg-light-blue text-white text-xs font-bold py-2 px-4 rounded-lg shadow-sm transition flex items-center gap-1.5"
-                                  >
-                                    <span>👁️ Vista Previa</span>
-                                  </a>
-                                </div>
-                              </div>
-
-                              {/* CAMPOS ESPECÍFICOS DE LA LANDING */}
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="md:col-span-2">
-                                  <AdminTextField
-                                    label="Lema / Enfoque Temático del Hero"
-                                    value={landingLema}
-                                    onChange={(e) => setLandingLema(e.target.value)}
-                                    placeholder="Ej: APLICACIÓN DE LAS CONVENCIONES DE PALERMO CONTRA EL CRIMEN ORGANIZADO"
-                                  />
-                                </div>
-
-                                <div>
-                                  <AdminTextField
-                                    label="Ubicación y Fechas del Evento"
-                                    value={landingUbicacionFechas}
-                                    onChange={(e) => setLandingUbicacionFechas(e.target.value)}
-                                    placeholder="Ej: Palermo, Sicilia, Italia | Del 17 al 23 de mayo de 2027"
-                                  />
-                                </div>
-
-                                <div>
-                                  <AdminTextField
-                                    label="Inversión / Costo Oficial"
-                                    value={landingPrecioInversion}
-                                    onChange={(e) => setLandingPrecioInversion(e.target.value)}
-                                    placeholder="Ej: 5.000 €"
-                                  />
-                                </div>
-
-                                <div>
-                                  <AdminTextField
-                                    label="Aviso de Disponibilidad / Cupos Limitados"
-                                    value={landingCuposTexto}
-                                    onChange={(e) => setLandingCuposTexto(e.target.value)}
-                                    placeholder="Ej: Cupos Estrictamente Limitados"
-                                  />
-                                </div>
-
-                                <div>
-                                  <AdminTextField
-                                    label="Fecha Límite Final de Pago de Cuotas"
-                                    type="date"
-                                    value={landingFechaLimitePago}
-                                    onChange={(e) => setLandingFechaLimitePago(e.target.value)}
-                                    helperText="Último día del mes anterior al evento (a esta fecha deben quedar saldadas todas las cuotas)"
-                                  />
-                                </div>
-
-                                <div className="md:col-span-2">
-                                  <AdminTextField
-                                    label="Detalle de lo que incluye la inversión"
-                                    value={landingInversionDetalle}
-                                    onChange={(e) => setLandingInversionDetalle(e.target.value)}
-                                    placeholder="Ej: Por persona. Incluye sesiones magistrales, visitas de campo, materiales exclusivos y certificación internacional."
-                                  />
-                                </div>
-
-                                <div className="md:col-span-2">
-                                  <AdminTextField
-                                    label="Enlace Directo de Pago Stripe (Opcional)"
-                                    type="url"
-                                    value={landingEnlaceStripe}
-                                    onChange={(e) => setLandingEnlaceStripe(e.target.value)}
-                                    placeholder="https://buy.stripe.com/..."
-                                  />
-                                </div>
-
-                                <div>
-                                  <AdminTextField
-                                    label="Cita Emblemática del Hero (Opcional)"
-                                    value={landingHeroCita}
-                                    onChange={(e) => setLandingHeroCita(e.target.value)}
-                                    placeholder="«La mafia è un fenomeno umano...»"
-                                  />
-                                </div>
-
-                                <div>
-                                  <AdminTextField
-                                    label="Autor de la Cita"
-                                    value={landingHeroCitaAutor}
-                                    onChange={(e) => setLandingHeroCitaAutor(e.target.value)}
-                                    placeholder="Ej: Giovanni Falcone (1939 – 1992)"
-                                  />
-                                </div>
-
-                                <div>
-                                  <AdminTextField
-                                    label="Título Sección Legado y Visión"
-                                    value={landingLegadoTitulo}
-                                    onChange={(e) => setLandingLegadoTitulo(e.target.value)}
-                                    placeholder="Ej: Nuestro Legado y Visión"
-                                  />
-                                </div>
-
-                                <div>
-                                  <AdminTextField
-                                    label="Nombre de la Sede"
-                                    value={landingSedeNombre}
-                                    onChange={(e) => setLandingSedeNombre(e.target.value)}
-                                    placeholder="Ej: Palermo, Sicilia (Italia)"
-                                  />
-                                </div>
-
-                                <div className="md:col-span-2">
-                                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                                    Texto Descriptivo del Legado y Enfoque Histórico
-                                  </label>
-                                  <textarea
-                                    rows={4}
-                                    value={landingLegadoTexto}
-                                    onChange={(e) => setLandingLegadoTexto(e.target.value)}
-                                    placeholder="Describe la trascendencia del curso, el legado de los jueces y el marco de las Naciones Unidas..."
-                                    className="w-full text-sm p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue transition"
-                                  />
-                                </div>
-
-                                <div className="md:col-span-2">
-                                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                                    Texto Descriptivo de la Sede (Palermo)
-                                  </label>
-                                  <textarea
-                                    rows={3}
-                                    value={landingSedeTexto}
-                                    onChange={(e) => setLandingSedeTexto(e.target.value)}
-                                    placeholder="Información sobre la ciudad sede, trascendencia jurídica, atractivos y logística..."
-                                    className="w-full text-sm p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue transition"
-                                  />
-                                </div>
-                              </div>
-
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {vistaActiva === "libros" && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                          <AdminTextField 
-                            label="Autor del Libro"
-                            value={autor}
-                            onChange={(e) => setAutor(e.target.value)}
-                            required
-                            placeholder="Ej: Fabián Salvioli"
-                          />
-                        </div>
-                        <div>
-                          <AdminTextField 
-                            label="Precio (MXN para México)"
-                            type="number"
-                            step="0.01"
-                            required
-                            value={precioMXN}
-                            onChange={(e) => setPrecioMXN(e.target.value)}
-                            placeholder="Ej: 500.00"
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Ocultar el Resumen para Informes y Artículos (ya tiene el suyo propio). */}
-                    {vistaActiva !== "informes" && vistaActiva !== "articulos" && (
-                    <div>
-                      <div className="flex justify-between items-end mb-1.5">
-                        <div className="w-full flex justify-end">
-                          {vistaActiva !== "cursos" && (
-                            <button type="button" onClick={handleAutoResumen} disabled={generandoResumen} className="text-xs font-semibold text-main-blue hover:text-light-blue bg-blue-50 hover:bg-blue-100 py-1.5 px-3 rounded-lg transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50 mb-2">
-                              {generandoResumen ? "Generando..." : "✨ Auto-completar con PIDA"}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                      <AdminTextField 
-                        label={vistaActiva === "incidencia" ? "Resumen / Descripción" : "Resumen corto"}
-                        required
-                        multiline
-                        rows={2}
-                        value={resumen}
-                        onChange={(e) => setResumen(e.target.value)}
-                        placeholder="Un párrafo breve para atraer al lector..."
-                        inputProps={{ maxLength: 250 }}
-                      />
-                    </div>
-                    )}
-
-                    {vistaActiva === "comunicaciones" && (
-                      <div className="bg-gray-50/80 p-5 rounded-xl border border-dashed border-gray-300">
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div>
-                            <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                              <svg className="w-4 h-4 text-main-red" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg> Documentos Anexos
-                            </h3>
-                            <p className="text-xs text-gray-500">Sube archivos que se mostrarán al final de la noticia para descarga o visualización.</p>
+                            <AdminTextField
+                              label="Autor del Libro"
+                              value={autor}
+                              onChange={(e) => setAutor(e.target.value)}
+                              required
+                              placeholder="Ej: Fabián Salvioli"
+                            />
                           </div>
-                          <label htmlFor="input-doc-adjunto" className={`text-xs bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg font-semibold shadow-sm cursor-pointer transition-colors whitespace-nowrap ${subiendoArchivo ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                            {subiendoArchivo ? "Subiendo..." : "+ Adjuntar documento"}
-                          </label>
-                          <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" onChange={handleSubirDocumento} className="sr-only" id="input-doc-adjunto" />
+                          <div>
+                            <AdminTextField
+                              label="Precio (MXN para México)"
+                              type="number"
+                              step="0.01"
+                              required
+                              value={precioMXN}
+                              onChange={(e) => setPrecioMXN(e.target.value)}
+                              placeholder="Ej: 500.00"
+                            />
+                          </div>
                         </div>
+                      )}
 
-                        {archivosAdjuntos.length > 0 && (
-                          <ul className="space-y-2" aria-label="Documentos adjuntados">
-                            {archivosAdjuntos.map((archivo, index) => (
-                              <li key={index} className="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-100 shadow-sm">
-                                <span className="text-xs font-medium text-gray-600 truncate mr-3 flex items-center gap-2">
-                                  <svg className="w-3.5 h-3.5 text-main-red" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" /></svg> {archivo.nombre}
-                                </span>
-                                <div className="flex items-center gap-1.5 shrink-0">
-                                  <button type="button" onClick={() => copiarEnlaceDocumento(archivo.nombre, archivo.url)} className="text-[10px] uppercase tracking-wider bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-1 px-2.5 rounded transition-colors">Copiar Enlace</button>
-                                  <button type="button" onClick={() => eliminarArchivoAdjunto(index)} className="text-[10px] uppercase tracking-wider bg-red-50 hover:bg-red-100 text-red-600 font-bold py-1 px-2 rounded transition-colors" title="Eliminar documento anexo">✕</button>
-                                </div>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    )}
+                      {/* Ocultar el Resumen para Informes y Artículos (ya tiene el suyo propio). */}
+                      {vistaActiva !== "informes" && vistaActiva !== "articulos" && (
+                        <div>
+                          <div className="flex justify-between items-end mb-1.5">
+                            <div className="w-full flex justify-end">
+                              {vistaActiva !== "cursos" && (
+                                <button type="button" onClick={handleAutoResumen} disabled={generandoResumen} className="text-xs font-semibold text-main-blue hover:text-light-blue bg-blue-50 hover:bg-blue-100 py-1.5 px-3 rounded-lg transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50 mb-2">
+                                  {generandoResumen ? "Generando..." : "✨ Auto-completar con PIDA"}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          <AdminTextField
+                            label={vistaActiva === "incidencia" ? "Resumen / Descripción" : "Resumen corto"}
+                            required
+                            multiline
+                            rows={2}
+                            value={resumen}
+                            onChange={(e) => setResumen(e.target.value)}
+                            placeholder="Un párrafo breve para atraer al lector..."
+                            inputProps={{ maxLength: 250 }}
+                          />
+                        </div>
+                      )}
 
-                    {(vistaActiva === "libros" || vistaActiva === "informes" || vistaActiva === "incidencia") && (
-                      <div className="bg-blue-50/50 p-5 rounded-xl border border-dashed border-blue-200">
-                        <label className="block text-sm font-semibold text-main-blue mb-2">Archivo PDF *</label>
-                        <p className="text-xs text-gray-500 mb-4">Sube el documento final del {vistaActiva === "libros" ? "libro" : (vistaActiva === "informes" ? "informe" : "documento de incidencia")}.</p>
-                        
-                        <input 
-                          type="file" 
-                          accept=".pdf" 
-                          id="input-archivo-pdf"
-                          className="sr-only"
-                          onChange={(e) => {
-                            if(e.target.files[0]) {
-                              if(vistaActiva === "libros") {
-                                setArchivoLibro(e.target.files[0]);
-                                setArchivoLibroNombre(e.target.files[0].name);
-                              } else if (vistaActiva === "informes") {
-                                setArchivoInforme(e.target.files[0]);
-                                setArchivoInformeNombre(e.target.files[0].name);
-                              } else if (vistaActiva === "incidencia") {
-                                setArchivoIncidencia(e.target.files[0]);
-                                setArchivoIncidenciaNombre(e.target.files[0].name);
-                              }
-                              e.target.value = ""; 
-                            }
-                          }}
-                        />
-                        <div className="flex items-center gap-3">
-                          <label htmlFor="input-archivo-pdf" className="inline-block bg-white border border-gray-300 text-main-blue px-4 py-2 rounded-lg text-sm font-medium cursor-pointer hover:bg-gray-50 transition-colors shadow-sm">
-                            Seleccionar PDF...
-                          </label>
-                          {(archivoLibroNombre || archivoLibroAnterior || archivoInformeNombre || archivoInformeAnterior || archivoIncidenciaNombre || archivoIncidenciaAnterior) && (
-                            <span className="text-xs text-gray-600 font-medium truncate max-w-50 md:max-w-xs bg-white px-3 py-2 rounded-md border border-gray-200">
-                              {archivoLibroNombre || archivoInformeNombre || archivoIncidenciaNombre || "Archivo guardado (puedes reemplazarlo)"}
-                            </span>
+                      {vistaActiva === "comunicaciones" && (
+                        <div className="bg-gray-50/80 p-5 rounded-xl border border-dashed border-gray-300">
+                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-3">
+                            <div>
+                              <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg> Adjuntar Documentos (Para enlazar)
+                              </h3>
+                              <p className="text-xs text-gray-500">Sube un archivo para copiar su enlace público.</p>
+                            </div>
+                            <label htmlFor="input-doc-adjunto" className={`text-xs bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg font-semibold shadow-sm cursor-pointer transition-colors whitespace-nowrap ${subiendoArchivo ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                              {subiendoArchivo ? "Subiendo..." : "+ Subir archivo"}
+                            </label>
+                            <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" onChange={handleSubirDocumento} className="sr-only" id="input-doc-adjunto" />
+                          </div>
+
+                          {archivosAdjuntos.length > 0 && (
+                            <ul className="space-y-2" aria-label="Documentos adjuntados">
+                              {archivosAdjuntos.map((archivo, index) => (
+                                <li key={index} className="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-100 shadow-sm">
+                                  <span className="text-xs font-medium text-gray-600 truncate mr-3 flex items-center gap-2">
+                                    <svg className="w-3.5 h-3.5 text-main-red" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" /></svg> {archivo.nombre}
+                                  </span>
+                                  <button type="button" onClick={() => copiarEnlaceDocumento(archivo.nombre, archivo.url)} className="text-[10px] uppercase tracking-wider bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-1 px-2.5 rounded transition-colors shrink-0">Copiar Enlace</button>
+                                </li>
+                              ))}
+                            </ul>
                           )}
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {/* CUERPO PARA NOTICIAS CON RICHTEXTEDITOR */}
-                    {vistaActiva === "comunicaciones" && (
-                      <div>
-                        <label className="block text-sm font-bold text-gray-800 mb-2">
-                          Cuerpo de la Noticia *
-                        </label>
-                        <RichTextEditor 
-                          value={contenido}
-                          onChange={setContenido}
-                          placeholder="Redacte aquí el contenido de la noticia. Puede añadir negritas, subtítulos, citas, listas, enlaces y videos..."
-                        />
-                      </div>
-                    )}
+                      {(vistaActiva === "libros" || vistaActiva === "informes" || vistaActiva === "incidencia") && (
+                        <div className="bg-blue-50/50 p-5 rounded-xl border border-dashed border-blue-200">
+                          <label className="block text-sm font-semibold text-main-blue mb-2">Archivo PDF *</label>
+                          <p className="text-xs text-gray-500 mb-4">Sube el documento final del {vistaActiva === "libros" ? "libro" : (vistaActiva === "informes" ? "informe" : "documento de incidencia")}.</p>
 
-                    {vistaActiva !== "informes" && vistaActiva !== "cursos" && vistaActiva !== "incidencia" && vistaActiva !== "articulos" && vistaActiva !== "comunicaciones" && (
-                    <div>
-                      <AdminTextField 
-                        label={vistaActiva === "libros" ? "Descripción Larga" : "Cuerpo del texto"}
-                        required
-                        multiline
-                        rows={12}
-                        value={contenido}
-                        onChange={(e) => setContenido(e.target.value)}
-                        placeholder={vistaActiva === "libros" ? "Índice o descripción del libro..." : "Escribe o pega el desarrollo de la publicación aquí..."}
-                      />
-                    </div>
-                    )}
+                          <input
+                            type="file"
+                            accept=".pdf"
+                            id="input-archivo-pdf"
+                            className="sr-only"
+                            onChange={(e) => {
+                              if (e.target.files[0]) {
+                                if (vistaActiva === "libros") {
+                                  setArchivoLibro(e.target.files[0]);
+                                  setArchivoLibroNombre(e.target.files[0].name);
+                                } else if (vistaActiva === "informes") {
+                                  setArchivoInforme(e.target.files[0]);
+                                  setArchivoInformeNombre(e.target.files[0].name);
+                                } else if (vistaActiva === "incidencia") {
+                                  setArchivoIncidencia(e.target.files[0]);
+                                  setArchivoIncidenciaNombre(e.target.files[0].name);
+                                }
+                                e.target.value = "";
+                              }
+                            }}
+                          />
+                          <div className="flex items-center gap-3">
+                            <label htmlFor="input-archivo-pdf" className="inline-block bg-white border border-gray-300 text-main-blue px-4 py-2 rounded-lg text-sm font-medium cursor-pointer hover:bg-gray-50 transition-colors shadow-sm">
+                              Seleccionar PDF...
+                            </label>
+                            {(archivoLibroNombre || archivoLibroAnterior || archivoInformeNombre || archivoInformeAnterior || archivoIncidenciaNombre || archivoIncidenciaAnterior) && (
+                              <span className="text-xs text-gray-600 font-medium truncate max-w-50 md:max-w-xs bg-white px-3 py-2 rounded-md border border-gray-200">
+                                {archivoLibroNombre || archivoInformeNombre || archivoIncidenciaNombre || "Archivo guardado (puedes reemplazarlo)"}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* CUERPO PARA NOTICIAS CON RICHTEXTEDITOR */}
+                      {vistaActiva === "comunicaciones" && (
+                        <div>
+                          <label className="block text-sm font-bold text-gray-800 mb-2">
+                            Cuerpo de la Noticia *
+                          </label>
+                          <RichTextEditor
+                            value={contenido}
+                            onChange={setContenido}
+                            placeholder="Redacte aquí el contenido de la noticia. Puede añadir negritas, subtítulos, citas, listas, enlaces y videos..."
+                          />
+                        </div>
+                      )}
+
+                      {vistaActiva !== "informes" && vistaActiva !== "cursos" && vistaActiva !== "incidencia" && vistaActiva !== "articulos" && vistaActiva !== "comunicaciones" && (
+                        <div>
+                          <AdminTextField
+                            label={vistaActiva === "libros" ? "Descripción Larga" : "Cuerpo del texto"}
+                            required
+                            multiline
+                            rows={12}
+                            value={contenido}
+                            onChange={(e) => setContenido(e.target.value)}
+                            placeholder={vistaActiva === "libros" ? "Índice o descripción del libro..." : "Escribe o pega el desarrollo de la publicación aquí..."}
+                          />
+                        </div>
+                      )}
                     </>)}
 
                     {vistaActiva === 'comunicaciones' && (
                       <div className="mt-8">
                         <p className="flex text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 items-center gap-2">
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg> 
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                           Simulación en Portada (Carrusel Home)
                         </p>
                         <div className="w-full rounded-[2.5rem] overflow-hidden shadow-2xl">
-                            <article className="group relative w-full aspect-2/1 overflow-hidden bg-main-blue cursor-default">
-                                <div
-                                    className="absolute inset-0 w-full h-full bg-cover bg-top bg-no-repeat transition-transform duration-4000 group-hover:scale-105 bg-gray-200"
-                                    style={{ backgroundImage: `url(${mainImagePreviewUrl || 'https://via.placeholder.com/800x600.png?text=Sin+Portada'})` }}
-                                    role="img"
-                                    aria-label={titulo || "Vista previa de la noticia"}
-                                />
+                          <article className="group relative w-full aspect-2/1 overflow-hidden bg-main-blue cursor-default">
+                            <div
+                              className="absolute inset-0 w-full h-full bg-cover bg-top bg-no-repeat transition-transform duration-4000 group-hover:scale-105 bg-gray-200"
+                              style={{ backgroundImage: `url(${mainImagePreviewUrl || 'https://via.placeholder.com/800x600.png?text=Sin+Portada'})` }}
+                              role="img"
+                              aria-label={titulo || "Vista previa de la noticia"}
+                            />
 
-                                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-1000"></div>
-                                <div className="absolute bottom-6 left-6 right-auto w-[65%] h-[70%] p-6 bg-white/30 backdrop-blur-xl shadow-2xl rounded-3xl border border-white/30 z-10 flex flex-col justify-end transform transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-main-blue/20">
-                                    <div className="flex flex-wrap gap-2 mb-4">
-                                        {tagsSeleccionados.map(tag => (
-                                            <span key={tag} className="bg-white/40 border border-white/50 text-main-blue text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest">{tag}</span>
-                                        ))}
-                                    </div>
-                                    <h3 className="text-3xl font-black text-main-blue mb-3 leading-[1.15] tracking-tight line-clamp-3 group-hover:text-main-red transition-colors" style={{ whiteSpace: 'pre-wrap' }}>
-                                        {titulo || "Título de la noticia..."}
-                                    </h3>
-                                    <p className="text-gray-800 line-clamp-3 text-base font-medium leading-relaxed drop-shadow-sm mb-6">
-                                        {resumen || "Resumen corto de la noticia..."}
-                                    </p>
-                                    <div className="text-main-red font-black flex items-center gap-2 uppercase text-xs tracking-[0.2em] group-hover:gap-4 transition-all">Leer artículo <span aria-hidden="true" className="text-lg leading-none">&rarr;</span></div>
-                                </div>
-                            </article>
+                            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-1000"></div>
+                            <div className="absolute bottom-6 left-6 right-auto w-[65%] h-[70%] p-6 bg-white/30 backdrop-blur-xl shadow-2xl rounded-3xl border border-white/30 z-10 flex flex-col justify-end transform transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-main-blue/20">
+                              <div className="flex flex-wrap gap-2 mb-4">
+                                {tagsSeleccionados.map(tag => (
+                                  <span key={tag} className="bg-white/40 border border-white/50 text-main-blue text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest">{tag}</span>
+                                ))}
+                              </div>
+                              <h3 className="text-3xl font-black text-main-blue mb-3 leading-[1.15] tracking-tight line-clamp-3 group-hover:text-main-red transition-colors" style={{ whiteSpace: 'pre-wrap' }}>
+                                {titulo || "Título de la noticia..."}
+                              </h3>
+                              <p className="text-gray-800 line-clamp-3 text-base font-medium leading-relaxed drop-shadow-sm mb-6">
+                                {resumen || "Resumen corto de la noticia..."}
+                              </p>
+                              <div className="text-main-red font-black flex items-center gap-2 uppercase text-xs tracking-[0.2em] group-hover:gap-4 transition-all">Leer artículo <span aria-hidden="true" className="text-lg leading-none">&rarr;</span></div>
+                            </div>
+                          </article>
                         </div>
-                    </div>
+                      </div>
                     )}
 
                     {vistaActiva !== "incidencia" && (
-                    <div className="bg-white border border-gray-200 rounded-xl p-6">
-                      <h3 className="text-sm font-semibold text-gray-800 mb-4 border-b border-gray-100 pb-2">Archivos Multimedia</h3>
-                      
-                      <div className="mb-6">
-                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3" id="portada-label">
-                          {vistaActiva === "cursos" ? "Flyer o Portada del Curso" : (vistaActiva === "libros" ? "Portada del Libro" : (vistaActiva === "informes" ? "Portada del Informe" : "Portada principal"))}
-                        </label>
-                        <div className="flex flex-col sm:flex-row items-start gap-4">
-                          {mainImagePreviewUrl ? (
-                            <div className="flex flex-col items-center gap-2">
-                              <div className="relative group inline-block">
-                                <img src={mainImagePreviewUrl} alt="Vista previa" className="h-28 w-40 object-cover rounded-lg shadow-sm border border-gray-100 block mx-auto" />
-                                <button type="button" onClick={() => { setImagenPrincipal(null); setMainImagePreviewUrl(imagenPrincipalAnterior); }} className="absolute -top-2 -right-2 bg-white text-gray-700 rounded-full p-1 shadow hover:bg-red-50 hover:text-main-red opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                </button>
+                      <div className="bg-white border border-gray-200 rounded-xl p-6">
+                        <h3 className="text-sm font-semibold text-gray-800 mb-4 border-b border-gray-100 pb-2">Archivos Multimedia</h3>
+
+                        <div className="mb-6">
+                          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3" id="portada-label">
+                            {vistaActiva === "cursos" ? "Flyer o Portada del Curso" : (vistaActiva === "libros" ? "Portada del Libro" : (vistaActiva === "informes" ? "Portada del Informe" : "Portada principal"))}
+                          </label>
+                          <div className="flex flex-col sm:flex-row items-start gap-4">
+                            {mainImagePreviewUrl ? (
+                              <div className="flex flex-col items-center gap-2">
+                                <div className="relative group inline-block">
+                                  <img src={mainImagePreviewUrl} alt="Vista previa" className="h-28 w-40 object-cover rounded-lg shadow-sm border border-gray-100 block mx-auto" />
+                                  <button type="button" onClick={() => { setImagenPrincipal(null); setMainImagePreviewUrl(imagenPrincipalAnterior); }} className="absolute -top-2 -right-2 bg-white text-gray-700 rounded-full p-1 shadow hover:bg-red-50 hover:text-main-red opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                  </button>
+                                </div>
+                                <span className="text-xs text-gray-500 font-medium truncate max-w-40 text-center" title={imagenPrincipal ? imagenPrincipal.name : extraerNombreDesdeUrl(mainImagePreviewUrl)}>
+                                  {imagenPrincipal ? imagenPrincipal.name : extraerNombreDesdeUrl(mainImagePreviewUrl)}
+                                </span>
                               </div>
-                              <span className="text-xs text-gray-500 font-medium truncate max-w-40 text-center" title={imagenPrincipal ? imagenPrincipal.name : extraerNombreDesdeUrl(mainImagePreviewUrl)}>
-                                {imagenPrincipal ? imagenPrincipal.name : extraerNombreDesdeUrl(mainImagePreviewUrl)}
-                              </span>
+                            ) : (
+                              <div className="h-28 w-40 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center">
+                                <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleSeleccionPrincipal}
+                                className="sr-only"
+                                id="input-portada-principal"
+                                aria-labelledby="portada-label"
+                              />
+                              <label htmlFor="input-portada-principal" className="text-sm bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium cursor-pointer inline-block hover:bg-gray-50 transition-colors shadow-sm">Examinar archivos...</label>
+                              <p className="text-xs text-gray-400 mt-2">Formatos recomendados: JPG, PNG. Se optimizará a WebP.</p>
                             </div>
-                          ) : (
-                            <div className="h-28 w-40 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center">
-                              <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            </div>
-                          )}
-                          <div className="flex-1">
-                            <input 
-                              type="file" 
-                              accept="image/*" 
-                              onChange={handleSeleccionPrincipal} 
-                              className="sr-only" 
-                              id="input-portada-principal" 
-                              aria-labelledby="portada-label" 
-                            />
-                            <label htmlFor="input-portada-principal" className="text-sm bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium cursor-pointer inline-block hover:bg-gray-50 transition-colors shadow-sm">Examinar archivos...</label>
-                            <p className="text-xs text-gray-400 mt-2">Formatos recomendados: JPG, PNG. Se optimizará a WebP.</p>
                           </div>
                         </div>
+
+                        {(vistaActiva === "comunicaciones" || vistaActiva === "cursos") && (
+                          <div>
+                            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Galería / Carrusel</label>
+                            <input type="file" accept="image/*" multiple onChange={handleAgregarImagenes} className="sr-only" id="input-imagenes-carrusel" />
+                            <label htmlFor="input-imagenes-carrusel" className="text-sm bg-white border border-dashed border-gray-300 text-main-blue w-full text-center py-4 rounded-lg font-medium cursor-pointer block hover:bg-blue-50 transition-colors mb-4">+ Cargar múltiples imágenes</label>
+
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                              {carruselExistente.map((url, i) => (
+                                <div
+                                  key={`old-${i}`}
+                                  className="flex flex-col bg-white p-2 rounded-lg border border-gray-100 shadow-sm gap-2"
+                                  draggable
+                                  onDragStart={(e) => { e.dataTransfer.setData('type', 'old'); e.dataTransfer.setData('index', i); }}
+                                  onDragOver={(e) => e.preventDefault()}
+                                  onDrop={(e) => {
+                                    e.preventDefault();
+                                    if (e.dataTransfer.getData('type') !== 'old') return;
+                                    const from = parseInt(e.dataTransfer.getData('index'));
+                                    if (from === i || isNaN(from)) return;
+                                    const nuevas = [...carruselExistente];
+                                    const [movida] = nuevas.splice(from, 1);
+                                    nuevas.splice(i, 0, movida);
+                                    setCarruselExistente(nuevas);
+                                  }}
+                                >
+                                  <div className="relative group w-full h-24 rounded overflow-hidden cursor-move">
+                                    <img src={url} className="w-full h-full object-cover" alt="Carrusel" />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                      <button type="button" onClick={() => setCarruselExistente(prev => prev.filter((_, idx) => idx !== i))} className="text-white hover:text-main-red"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                                    </div>
+                                  </div>
+                                  <span className="text-[10px] font-medium text-gray-500 truncate text-center" title={extraerNombreDesdeUrl(url)}>{extraerNombreDesdeUrl(url)}</span>
+                                </div>
+                              ))}
+
+                              {imagenesCarrusel.map((f, i) => (
+                                <div
+                                  key={`new-${i}`}
+                                  className="flex flex-col bg-green-50 p-2 rounded-lg border border-green-200 shadow-sm gap-2"
+                                  draggable
+                                  onDragStart={(e) => { e.dataTransfer.setData('type', 'new'); e.dataTransfer.setData('index', i); }}
+                                  onDragOver={(e) => e.preventDefault()}
+                                  onDrop={(e) => {
+                                    e.preventDefault();
+                                    if (e.dataTransfer.getData('type') !== 'new') return;
+                                    const from = parseInt(e.dataTransfer.getData('index'));
+                                    if (from === i || isNaN(from)) return;
+                                    const nuevas = [...imagenesCarrusel];
+                                    const [movida] = nuevas.splice(from, 1);
+                                    nuevas.splice(i, 0, movida);
+                                    setImagenesCarrusel(nuevas);
+                                  }}
+                                >
+                                  <div className="relative group w-full h-24 rounded overflow-hidden cursor-move">
+                                    <img src={URL.createObjectURL(f)} className="w-full h-full object-cover" alt="Nueva carrusel" />
+                                    <span className="absolute top-1 left-1 bg-green-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded uppercase">Nueva</span>
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                      <button type="button" onClick={() => setImagenesCarrusel(prev => prev.filter((_, idx) => idx !== i))} className="text-white hover:text-main-red"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                                    </div>
+                                  </div>
+                                  <span className="text-[10px] font-medium text-green-700 truncate text-center" title={f.name}>{f.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
-
-                      {(vistaActiva === "comunicaciones" || vistaActiva === "cursos") && (
-                        <div>
-                          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Galería / Carrusel</label>
-                          <input type="file" accept="image/*" multiple onChange={handleAgregarImagenes} className="sr-only" id="input-imagenes-carrusel" />
-                          <label htmlFor="input-imagenes-carrusel" className="text-sm bg-white border border-dashed border-gray-300 text-main-blue w-full text-center py-4 rounded-lg font-medium cursor-pointer block hover:bg-blue-50 transition-colors mb-4">+ Cargar múltiples imágenes</label>
-                          
-                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                            {carruselExistente.map((url, i) => (
-                              <div 
-                                key={`old-${i}`} 
-                                className="flex flex-col bg-white p-2 rounded-lg border border-gray-100 shadow-sm gap-2"
-                                draggable
-                                onDragStart={(e) => { e.dataTransfer.setData('type', 'old'); e.dataTransfer.setData('index', i); }}
-                                onDragOver={(e) => e.preventDefault()}
-                                onDrop={(e) => {
-                                  e.preventDefault();
-                                  if (e.dataTransfer.getData('type') !== 'old') return;
-                                  const from = parseInt(e.dataTransfer.getData('index'));
-                                  if (from === i || isNaN(from)) return;
-                                  const nuevas = [...carruselExistente];
-                                  const [movida] = nuevas.splice(from, 1);
-                                  nuevas.splice(i, 0, movida);
-                                  setCarruselExistente(nuevas);
-                                }}
-                              >
-                                <div className="relative group w-full h-24 rounded overflow-hidden cursor-move">
-                                  <img src={url} className="w-full h-full object-cover" alt="Carrusel" />
-                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                    <button type="button" onClick={() => setCarruselExistente(prev => prev.filter((_, idx) => idx !== i))} className="text-white hover:text-main-red"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                                  </div>
-                                </div>
-                                <span className="text-[10px] font-medium text-gray-500 truncate text-center" title={extraerNombreDesdeUrl(url)}>{extraerNombreDesdeUrl(url)}</span>
-                              </div>
-                            ))}
-
-                            {imagenesCarrusel.map((f, i) => (
-                              <div 
-                                key={`new-${i}`} 
-                                className="flex flex-col bg-green-50 p-2 rounded-lg border border-green-200 shadow-sm gap-2"
-                                draggable
-                                onDragStart={(e) => { e.dataTransfer.setData('type', 'new'); e.dataTransfer.setData('index', i); }}
-                                onDragOver={(e) => e.preventDefault()}
-                                onDrop={(e) => {
-                                  e.preventDefault();
-                                  if (e.dataTransfer.getData('type') !== 'new') return;
-                                  const from = parseInt(e.dataTransfer.getData('index'));
-                                  if (from === i || isNaN(from)) return;
-                                  const nuevas = [...imagenesCarrusel];
-                                  const [movida] = nuevas.splice(from, 1);
-                                  nuevas.splice(i, 0, movida);
-                                  setImagenesCarrusel(nuevas);
-                                }}
-                              >
-                                <div className="relative group w-full h-24 rounded overflow-hidden cursor-move">
-                                  <img src={URL.createObjectURL(f)} className="w-full h-full object-cover" alt="Nueva carrusel" />
-                                  <span className="absolute top-1 left-1 bg-green-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded uppercase">Nueva</span>
-                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                    <button type="button" onClick={() => setImagenesCarrusel(prev => prev.filter((_, idx) => idx !== i))} className="text-white hover:text-main-red"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                                  </div>
-                                </div>
-                                <span className="text-[10px] font-medium text-green-700 truncate text-center" title={f.name}>{f.name}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
                     )}
 
                     {/* NUEVO BLOQUE: TAGS Y PERSISTENCIA */}
                     {vistaActiva === "comunicaciones" && (
                       <div className="bg-white border border-gray-200 rounded-xl p-6">
                         <h3 className="text-sm font-semibold text-gray-800 mb-4 border-b border-gray-100 pb-2">Clasificación y Visibilidad</h3>
-                        
+
                         {/* Selector de Tags con MUI Chips */}
                         <div className="mb-6">
                           <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Etiquetas (Tags)</label>
@@ -2570,17 +2495,17 @@ useEffect(() => {
                                   key={tag}
                                   label={tag}
                                   onClick={() => {
-                                    setTagsSeleccionados(prev => 
+                                    setTagsSeleccionados(prev =>
                                       isSelected ? prev.filter(t => t !== tag) : [...prev, tag]
                                     );
                                   }}
                                   color={isSelected ? "primary" : "default"}
                                   variant={isSelected ? "filled" : "outlined"}
-                                  sx={{ 
-                                    fontWeight: 'bold', 
-                                    borderRadius: '8px', 
+                                  sx={{
+                                    fontWeight: 'bold',
+                                    borderRadius: '8px',
                                     transition: 'all 0.2s ease',
-                                    '&:hover': { 
+                                    '&:hover': {
                                       transform: 'scale(1.03)',
                                       boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                                     }
@@ -2598,10 +2523,10 @@ useEffect(() => {
                               <Checkbox
                                 checked={persistente}
                                 onChange={(e) => setPersistente(e.target.checked)}
-                                color="secondary" 
+                                color="secondary"
                                 sx={{
                                   '&.Mui-checked': {
-                                    color: 'secondary.main', 
+                                    color: 'secondary.main',
                                   },
                                 }}
                               />
@@ -2616,10 +2541,10 @@ useEffect(() => {
                                 </span>
                               </Box>
                             }
-                            sx={{ 
-                              m: 0, 
+                            sx={{
+                              m: 0,
                               alignItems: 'flex-start',
-                              '& .MuiFormControlLabel-label': { mt: 0.5 } 
+                              '& .MuiFormControlLabel-label': { mt: 0.5 }
                             }}
                           />
                         </div>
@@ -2664,7 +2589,7 @@ useEffect(() => {
                   </div>
 
                   {/* CONTENEDOR CON SCROLL INFINITO */}
-                  <div 
+                  <div
                     className="space-y-3 max-h-[65vh] overflow-y-auto custom-scrollbar pr-1 relative"
                     onScroll={handleScrollLista}
                   >
@@ -2680,7 +2605,7 @@ useEffect(() => {
                             <article key={n.id} className={`group relative overflow-hidden rounded-xl border transition-all duration-300 h-32 flex flex-col justify-end p-4 ${editandoId === n.id ? 'border-main-red shadow-md ring-2 ring-red-100' : 'border-gray-200 hover:border-main-blue hover:shadow-lg'}`}>
                               <div className="absolute inset-0 bg-cover bg-top transition-transform duration-700 group-hover:scale-110" style={{ backgroundImage: `url(${n.imagenPrincipalUrl || 'https://via.placeholder.com/400x300?text=Sin+Portada'})` }}></div>
                               <div className="absolute inset-0 bg-linear-to-t from-main-blue via-main-blue/70 to-transparent opacity-90 group-hover:opacity-100 transition-opacity"></div>
-                              
+
                               <div className="relative z-10 w-full flex justify-between items-end">
                                 <div>
                                   <span className="text-[10px] font-black uppercase text-white/70 tracking-widest block mb-0.5">Gestión</span>
@@ -2723,14 +2648,14 @@ useEffect(() => {
                             <div className="flex gap-3 items-start mb-3">
                               <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-gray-100 border border-gray-200 flex items-center justify-center">
                                 {(n.imagenPrincipalUrl || n.fotoUrl) ? <img src={n.imagenPrincipalUrl || n.fotoUrl} className="w-full h-full object-cover" alt="Miniatura" /> : <span className="text-[10px] font-bold text-gray-400">TXT</span>}
-                                
+
                                 {n.persistente && (
                                   <div className="absolute inset-0 bg-main-blue/20 flex items-center justify-center">
                                     <svg className="w-5 h-5 text-main-blue drop-shadow-md" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v4l2 2v2h-7v5l-1 1-1-1v-5H4v-2l2-2V4z" /></svg>
                                   </div>
                                 )}
                               </div>
-                              
+
                               <div className="flex-1 min-w-0">
                                 <div className="flex flex-col gap-1">
                                   <div className="flex items-center gap-2">
@@ -2740,8 +2665,8 @@ useEffect(() => {
                                     <h3 className="font-semibold text-sm text-gray-800 line-clamp-2 leading-snug" title={n.titulo || n.nombre}>{n.titulo || n.nombre}</h3>
                                   </div>
                                   <p className="text-[10px] text-gray-400 truncate">
-                                    {vistaActiva === 'equipo' 
-                                      ? `Orden: ${n.orden} - ${n.cargo}` 
+                                    {vistaActiva === 'equipo'
+                                      ? `Orden: ${n.orden} - ${n.cargo}`
                                       : (vistaActiva === 'cursos' && (n.fechaInicio || n.fechaFin))
                                         ? `Fechas: ${[n.fechaInicio, n.fechaFin].filter(Boolean).join(' a ')} | /${obtenerColeccionActiva()}/${n.slug || n.id}`
                                         : `/${obtenerColeccionActiva()}/${n.slug || n.id}`}
@@ -2757,7 +2682,7 @@ useEffect(() => {
                         );
                       })
                     )}
-                    
+
                     {/* Indicador de carga para el Scroll Infinito */}
                     {cargandoLista && (
                       <div className="flex justify-center py-4">
@@ -2793,32 +2718,32 @@ useEffect(() => {
               ) : (
                 <form onSubmit={guardarConfiguracionVisual} className="space-y-6">
                   <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
-                    <AdminTextField 
-                      label="Título Principal de la Portada (Español)" 
-                      multiline 
-                      rows={2} 
-                      value={tituloHome.tituloPrincipal || ""} 
-                      onChange={e => setTituloHome({...tituloHome, tituloPrincipal: e.target.value})} 
-                      required 
-                      placeholder="Ej: Defendiendo la dignidad y los Derechos Humanos" 
+                    <AdminTextField
+                      label="Título Principal de la Portada (Español)"
+                      multiline
+                      rows={2}
+                      value={tituloHome.tituloPrincipal || ""}
+                      onChange={e => setTituloHome({ ...tituloHome, tituloPrincipal: e.target.value })}
+                      required
+                      placeholder="Ej: Defendiendo la dignidad y los Derechos Humanos"
                       sx={{ mb: 3 }}
                     />
-                    <AdminTextField 
-                      label="Título Principal de la Portada (Inglés)" 
-                      multiline 
-                      rows={2} 
-                      value={tituloHome.tituloPrincipal_en || ""} 
-                      onChange={e => setTituloHome({...tituloHome, tituloPrincipal_en: e.target.value})} 
-                      placeholder="Ej: Defending dignity and Human Rights" 
+                    <AdminTextField
+                      label="Título Principal de la Portada (Inglés)"
+                      multiline
+                      rows={2}
+                      value={tituloHome.tituloPrincipal_en || ""}
+                      onChange={e => setTituloHome({ ...tituloHome, tituloPrincipal_en: e.target.value })}
+                      placeholder="Ej: Defending dignity and Human Rights"
                       sx={{ mb: 3 }}
                     />
-                    <AdminTextField 
-                      label="Título Principal de la Portada (Francés)" 
-                      multiline 
-                      rows={2} 
-                      value={tituloHome.tituloPrincipal_fr || ""} 
-                      onChange={e => setTituloHome({...tituloHome, tituloPrincipal_fr: e.target.value})} 
-                      placeholder="Ej: Défendre la dignité et les droits de l'homme" 
+                    <AdminTextField
+                      label="Título Principal de la Portada (Francés)"
+                      multiline
+                      rows={2}
+                      value={tituloHome.tituloPrincipal_fr || ""}
+                      onChange={e => setTituloHome({ ...tituloHome, tituloPrincipal_fr: e.target.value })}
+                      placeholder="Ej: Défendre la dignité et les droits de l'homme"
                     />
                   </div>
                   <div className="flex justify-end">
@@ -2845,12 +2770,12 @@ useEffect(() => {
                   <h3 className="text-lg font-bold text-gray-700">Autorizar Nuevo Usuario</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
                     <div className="md:col-span-2">
-                      <AdminTextField 
-                        label="Correo Institucional (@iiresodh.org)" 
-                        type="email" 
-                        required 
-                        value={nuevoEmailAdmin} 
-                        onChange={e => setNuevoEmailAdmin(e.target.value)} 
+                      <AdminTextField
+                        label="Correo Institucional (@iiresodh.org)"
+                        type="email"
+                        required
+                        value={nuevoEmailAdmin}
+                        onChange={e => setNuevoEmailAdmin(e.target.value)}
                         placeholder="ejemplo@iiresodh.org"
                       />
                     </div>
@@ -2868,8 +2793,8 @@ useEffect(() => {
                         <FormControlLabel
                           key={key}
                           control={
-                            <Checkbox 
-                              checked={nuevoPermisos[key]} 
+                            <Checkbox
+                              checked={nuevoPermisos[key]}
                               onChange={e => setNuevoPermisos({ ...nuevoPermisos, [key]: e.target.checked })}
                             />
                           }
@@ -2907,7 +2832,7 @@ useEffect(() => {
                                 {Object.keys(nuevoPermisos).map(key => {
                                   const tienePermiso = u.permisos?.[key] ?? false;
                                   return (
-                                    <Chip 
+                                    <Chip
                                       key={key}
                                       label={key === "comunicaciones" ? "Noticias y Comunicados" : key === "adminWeb" ? "Admin Web" : key === "auditoria" ? "Auditoría" : key}
                                       onClick={() => handleTogglePermisoAdmin(u.email, key, tienePermiso)}
@@ -2921,7 +2846,7 @@ useEffect(() => {
                               </div>
                             </td>
                             <td className="p-4 text-center">
-                              <Button 
+                              <Button
                                 size="small"
                                 variant="outlined"
                                 color={u.activo || u.active ? "success" : "error"}
@@ -2932,12 +2857,12 @@ useEffect(() => {
                               </Button>
                             </td>
                             <td className="p-4 text-center">
-                              <Button 
-                                size="small" 
-                                color="error" 
+                              <Button
+                                size="small"
+                                color="error"
                                 variant="contained"
                                 onClick={() => {
-                                  if(window.confirm(`¿Estás seguro de que deseas revocar permanentemente el acceso para ${u.email}?`)) {
+                                  if (window.confirm(`¿Estás seguro de que deseas revocar permanentemente el acceso para ${u.email}?`)) {
                                     handleEliminarAdmin(u.email);
                                   }
                                 }}
@@ -2961,72 +2886,72 @@ useEffect(() => {
 
             {misPermisos.auditoria && (
               <section className="bg-white p-8 md:p-10 rounded-2xl shadow-sm border border-gray-100">
-              <header className="mb-8">
-                <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-800">
-                  Auditoría de Actividad de Usuarios
-                </h2>
-                <p className="text-sm text-gray-500 mt-1">
-                  Revisa las últimas 100 acciones realizadas en el panel de control.
-                </p>
-              </header>
+                <header className="mb-8">
+                  <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-800">
+                    Auditoría de Actividad de Usuarios
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Revisa las últimas 100 acciones realizadas en el panel de control.
+                  </p>
+                </header>
 
-              <div className="flex flex-col sm:flex-row gap-4 mb-8 p-4 bg-gray-50 rounded-xl border">
-                <FormControl size="small" fullWidth>
-                  <InputLabel id="filtro-usuario-label">Usuario</InputLabel>
-                  <Select
-                    labelId="filtro-usuario-label"
-                    value={filtroUsuario}
-                    label="Usuario"
-                    onChange={(e) => setFiltroUsuario(e.target.value)}
-                  >
-                    <MenuItem value="todos"><em>Todos los usuarios</em></MenuItem>
-                    {usuariosUnicos.map(email => (
-                      <MenuItem key={email} value={email}>{email}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <div className="flex flex-col sm:flex-row gap-4 mb-8 p-4 bg-gray-50 rounded-xl border">
+                  <FormControl size="small" fullWidth>
+                    <InputLabel id="filtro-usuario-label">Usuario</InputLabel>
+                    <Select
+                      labelId="filtro-usuario-label"
+                      value={filtroUsuario}
+                      label="Usuario"
+                      onChange={(e) => setFiltroUsuario(e.target.value)}
+                    >
+                      <MenuItem value="todos"><em>Todos los usuarios</em></MenuItem>
+                      {usuariosUnicos.map(email => (
+                        <MenuItem key={email} value={email}>{email}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
 
-                <FormControl size="small" fullWidth>
-                  <InputLabel id="orden-actividad-label">Orden</InputLabel>
-                  <Select
-                    labelId="orden-actividad-label"
-                    value={ordenActividad}
-                    label="Orden"
-                    onChange={(e) => setOrdenActividad(e.target.value)}
-                  >
-                    <MenuItem value="desc">Más recientes primero</MenuItem>
-                    <MenuItem value="asc">Más antiguos primero</MenuItem>
-                  </Select>
-                </FormControl>
+                  <FormControl size="small" fullWidth>
+                    <InputLabel id="orden-actividad-label">Orden</InputLabel>
+                    <Select
+                      labelId="orden-actividad-label"
+                      value={ordenActividad}
+                      label="Orden"
+                      onChange={(e) => setOrdenActividad(e.target.value)}
+                    >
+                      <MenuItem value="desc">Más recientes primero</MenuItem>
+                      <MenuItem value="asc">Más antiguos primero</MenuItem>
+                    </Select>
+                  </FormControl>
 
-                <Button onClick={() => cargarActividades(false)} variant="contained" disabled={cargandoActividades && !cargandoMas} sx={{ py: 1.5, px: 4, whiteSpace: 'nowrap' }}>
-                  {cargandoActividades && !cargandoMas ? 'Cargando...' : 'Cargar'}
-                </Button>
-              </div>
-
-              <div className="space-y-3 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
-                {cargandoActividades && !cargandoMas ? <div className="text-center py-10"><CircularProgress /></div> : actividades.length > 0 ? actividades.map(act => (
-                  <div key={act.id} className="p-4 rounded-lg bg-gray-50/70 border border-gray-100 flex justify-between items-start">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-main-blue wrap-break-word">{act.accion}</p>
-                      {act.detalles && (
-                        <p className="text-xs text-gray-500 mt-2 pl-3 border-l-2 border-gray-200 italic wrap-break-word">{act.detalles}</p>
-                      )}
-                      <p className="text-sm text-gray-600 mt-2">{act.usuarioEmail}</p>
-                    </div>
-                    <p className="text-xs text-gray-400 font-medium shrink-0 ml-4 text-right">{act.timestamp?.toDate().toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
-                  </div>
-                )) : <p className="text-center text-gray-500 py-10">No hay actividades para mostrar. Presiona "Cargar" para empezar.</p>}
-              </div>
-
-              {actividades.length > 0 && hayMasActividades && (
-                <div className="mt-8 text-center">
-                  <Button onClick={() => cargarActividades(true)} variant="outlined" disabled={cargandoMas}>
-                    {cargandoMas ? 'Cargando...' : 'Cargar más actividades'}
+                  <Button onClick={() => cargarActividades(false)} variant="contained" disabled={cargandoActividades && !cargandoMas} sx={{ py: 1.5, px: 4, whiteSpace: 'nowrap' }}>
+                    {cargandoActividades && !cargandoMas ? 'Cargando...' : 'Cargar'}
                   </Button>
                 </div>
-              )}
-            </section>
+
+                <div className="space-y-3 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
+                  {cargandoActividades && !cargandoMas ? <div className="text-center py-10"><CircularProgress /></div> : actividades.length > 0 ? actividades.map(act => (
+                    <div key={act.id} className="p-4 rounded-lg bg-gray-50/70 border border-gray-100 flex justify-between items-start">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-main-blue wrap-break-word">{act.accion}</p>
+                        {act.detalles && (
+                          <p className="text-xs text-gray-500 mt-2 pl-3 border-l-2 border-gray-200 italic wrap-break-word">{act.detalles}</p>
+                        )}
+                        <p className="text-sm text-gray-600 mt-2">{act.usuarioEmail}</p>
+                      </div>
+                      <p className="text-xs text-gray-400 font-medium shrink-0 ml-4 text-right">{act.timestamp?.toDate().toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                    </div>
+                  )) : <p className="text-center text-gray-500 py-10">No hay actividades para mostrar. Presiona "Cargar" para empezar.</p>}
+                </div>
+
+                {actividades.length > 0 && hayMasActividades && (
+                  <div className="mt-8 text-center">
+                    <Button onClick={() => cargarActividades(true)} variant="outlined" disabled={cargandoMas}>
+                      {cargandoMas ? 'Cargando...' : 'Cargar más actividades'}
+                    </Button>
+                  </div>
+                )}
+              </section>
             )}
           </div>
         )}
@@ -3049,10 +2974,10 @@ useEffect(() => {
                   Visualización de datos de Google Analytics.
                 </p>
               </header>
-              
+
               <div className="text-center py-20 bg-gray-50 rounded-xl border border-dashed border-gray-200">
                 <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                 </svg>
                 <h3 className="text-lg font-semibold text-gray-600">
                   Módulo de Estadísticas en Desarrollo
@@ -3066,16 +2991,16 @@ useEffect(() => {
         )}
 
         {vistaActiva === "anunciosEmergentes" && (
-          <AdminAnunciosEmergentes 
-            onVolver={() => setVistaActiva("inicio")} 
-            logActividad={logActividad} 
+          <AdminAnunciosEmergentes
+            onVolver={() => setVistaActiva("inicio")}
+            logActividad={logActividad}
           />
         )}
 
         {vistaActiva === "solicitudesCursos" && (
-          <AdminSolicitudesCursos 
-            onVolver={() => setVistaActiva("cursos")} 
-            logActividad={logActividad} 
+          <AdminSolicitudesCursos
+            onVolver={() => setVistaActiva("cursos")}
+            logActividad={logActividad}
           />
         )}
       </div>
