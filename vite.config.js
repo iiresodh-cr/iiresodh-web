@@ -14,7 +14,7 @@ export default defineConfig({
           // Solo separamos Firebase, que es masivo y seguro de aislar.
           // Dejamos que Vite maneje React y Material UI de forma nativa para evitar errores.
           if (id.includes('node_modules/firebase')) {
-            return 'firebase-vendor';
+            return 'vendor-core';
           }
         }
       }
