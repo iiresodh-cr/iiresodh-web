@@ -196,6 +196,21 @@ export default function NoticiaDetalle() {
   const contenidoTraducido = obtenerTextoTraducido(noticia, 'contenido', i18n.language);
   const embedVideoUrl = noticia?.videoUrl ? convertirUrlAVideoEmbed(noticia.videoUrl) : null;
 
+  const documentosAnexos = (noticia?.archivosAdjuntos && Array.isArray(noticia.archivosAdjuntos) && noticia.archivosAdjuntos.length > 0)
+    ? noticia.archivosAdjuntos
+    : (noticia?.archivoPdfUrl ? [{ nombre: noticia.archivoPdfNombre || "Documento Anexo", url: noticia.archivoPdfUrl }] : []);
+
+  const obtenerUrlDocumentoNoticia = (archivo, index) => {
+    const slugDoc = (archivo.nombre || `documento-${index + 1}`)
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .replace(/-pdf$/, "");
+    return `/documentos/noticias/${noticia?.id || id}/doc-${index}-${slugDoc}.pdf`;
+  };
+
   useEffect(() => {
     if (tituloTraducido) {
       document.title = `${tituloTraducido} | IIRESODH`;
@@ -326,6 +341,45 @@ export default function NoticiaDetalle() {
                   className="noticia-content z-10 text-left [&>p]:text-left"
                   dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(contenidoTraducido, i18n.language) }}
                 />
+
+                {/* DOCUMENTOS ANEXOS */}
+                {documentosAnexos.length > 0 && (
+                  <aside className="mt-8 p-5 sm:p-6 bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs clear-both" aria-label="Documentos anexos a la noticia">
+                    <h2 className="text-sm sm:text-base font-bold text-main-blue flex items-center gap-2 mb-3.5">
+                      <svg className="w-5 h-5 text-main-red shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      {t('noticia_detalle.documentos_anexos', 'Documentos Anexos:')}
+                    </h2>
+                    <ul className="space-y-2.5">
+                      {documentosAnexos.map((archivo, index) => {
+                        const urlProxy = obtenerUrlDocumentoNoticia(archivo, index);
+                        return (
+                          <li 
+                            key={index} 
+                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-white border border-slate-200/70 hover:border-slate-300 transition-colors shadow-xs"
+                          >
+                            <span className="text-xs sm:text-sm font-semibold text-gray-800 flex items-center gap-2.5 min-w-0">
+                              <span className="w-2 h-2 rounded-full bg-main-red shrink-0"></span>
+                              <span className="truncate">{archivo.nombre || `Documento ${index + 1}`}</span>
+                            </span>
+                            <a 
+                              href={urlProxy} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-main-blue/10 hover:bg-main-blue hover:text-white text-main-blue text-xs font-bold transition-all shrink-0 self-start sm:self-auto"
+                            >
+                              <span>{t('noticia_detalle.ver_o_descargar', 'Ver o Descargar aquí')}</span>
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                            </a>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </aside>
+                )}
                 
                 <footer className="mt-12 pt-8 border-t border-gray-100 clear-both">
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 text-center lg:text-left">

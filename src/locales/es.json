@@ -324,7 +324,9 @@
     "volver_repositorio": "Volver al repositorio",
     "compartir_noticia": "Compartir esta noticia",
     "copiar_enlace": "Copiar Enlace",
-    "enlace_copiado": "¡Enlace copiado al portapapeles!"
+    "enlace_copiado": "¡Enlace copiado al portapapeles!",
+    "documentos_anexos": "Documentos Anexos:",
+    "ver_o_descargar": "Ver o Descargar aquí"
   },
   "articulo_detalle": {
     "cargando": "Cargando artículo...",

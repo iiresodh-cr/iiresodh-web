@@ -1,12 +1,12 @@
 // src/pages/DocumentoProxy.jsx
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, query, where, getDocs, limit } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { CircularProgress } from "@mui/material";
 
 export default function DocumentoProxy() {
-  const { coleccion, id } = useParams();
+  const { coleccion, id, slug } = useParams();
   const navigate = useNavigate();
   const [error, setError] = useState(false);
 
@@ -28,6 +28,34 @@ export default function DocumentoProxy() {
             } else {
               const snapActivo = await getDoc(doc(db, "configuracion", "anuncio_emergente"));
               if (snapActivo.exists()) fileUrl = snapActivo.data().archivoPdfUrl;
+            }
+          }
+        } else if (coleccion === "noticias" && id) {
+          let snap = await getDoc(doc(db, "noticias", id));
+          if (!snap.exists()) {
+            const q = query(collection(db, "noticias"), where("slug", "==", id), limit(1));
+            const querySnap = await getDocs(q);
+            if (!querySnap.empty) {
+              snap = querySnap.docs[0];
+            }
+          }
+          if (snap && snap.exists()) {
+            const data = snap.data();
+            if (data.archivosAdjuntos && Array.isArray(data.archivosAdjuntos) && data.archivosAdjuntos.length > 0) {
+              const indexMatch = slug && slug.match(/^doc-(\d+)/);
+              if (indexMatch && data.archivosAdjuntos[parseInt(indexMatch[1], 10)]) {
+                fileUrl = data.archivosAdjuntos[parseInt(indexMatch[1], 10)].url;
+              } else if (slug) {
+                const matchClean = slug.replace(/\.pdf$/i, '').toLowerCase();
+                const found = data.archivosAdjuntos.find(a => 
+                  a.nombre && a.nombre.toLowerCase().replace(/[^a-z0-9]/g, '').includes(matchClean.replace(/[^a-z0-9]/g, ''))
+                );
+                fileUrl = found ? found.url : data.archivosAdjuntos[0].url;
+              } else {
+                fileUrl = data.archivosAdjuntos[0].url;
+              }
+            } else {
+              fileUrl = data.archivoPdfUrl || data.archivoUrl || null;
             }
           }
         } else if (coleccion === "incidencia" && id) {
@@ -55,7 +83,7 @@ export default function DocumentoProxy() {
     return () => {
       cancelado = true;
     };
-  }, [coleccion, id]);
+  }, [coleccion, id, slug]);
 
   if (error) {
     return (

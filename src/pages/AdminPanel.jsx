@@ -888,6 +888,7 @@ useEffect(() => {
         setPersistente(item.persistente || false);
         setCarruselExistente(item.imagenesCarruselUrls || []);
         setVideoUrl(item.videoUrl || "");
+        setArchivosAdjuntos(item.archivosAdjuntos || []);
       }
 
       if (item.fechaPublicacion) {
@@ -945,7 +946,6 @@ useEffect(() => {
     }
 
     setImagenesCarrusel([]); 
-    setArchivosAdjuntos([]);
     setImagenPrincipal(null);
     setArchivoLibro(null);
     setArchivoLibroNombre("");
@@ -1082,6 +1082,12 @@ useEffect(() => {
     navigator.clipboard.writeText(snippet);
     setMensaje("¡Enlace copiado! Pégalo en el contenido.");
     setTimeout(() => setMensaje(""), 4000);
+  };
+
+  const eliminarArchivoAdjunto = (index) => {
+    setArchivosAdjuntos(prev => prev.filter((_, i) => i !== index));
+    setMensaje("Documento anexo removido de la lista.");
+    setTimeout(() => setMensaje(""), 3000);
   };
 
   const handleSeleccionPrincipal = async (e) => {
@@ -1259,6 +1265,7 @@ useEffect(() => {
           datos.tags = tagsSeleccionados;
           datos.persistente = persistente;
           datos.videoUrl = videoUrl ? videoUrl.trim() : null;
+          datos.archivosAdjuntos = archivosAdjuntos || [];
         } else if (vistaActiva === "articulos") {
           const usuarioActual = auth.currentUser?.displayName || auth.currentUser?.email?.split('@')[0] || "IIRESODH";
           datos.subtitulo = subtitulo ? subtitulo.trim() : "";
@@ -2249,12 +2256,12 @@ useEffect(() => {
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-3">
                           <div>
                             <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg> Adjuntar Documentos (Para enlazar)
+                              <svg className="w-4 h-4 text-main-red" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg> Documentos Anexos
                             </h3>
-                            <p className="text-xs text-gray-500">Sube un archivo para copiar su enlace público.</p>
+                            <p className="text-xs text-gray-500">Sube archivos que se mostrarán al final de la noticia para descarga o visualización.</p>
                           </div>
                           <label htmlFor="input-doc-adjunto" className={`text-xs bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg font-semibold shadow-sm cursor-pointer transition-colors whitespace-nowrap ${subiendoArchivo ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                            {subiendoArchivo ? "Subiendo..." : "+ Subir archivo"}
+                            {subiendoArchivo ? "Subiendo..." : "+ Adjuntar documento"}
                           </label>
                           <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" onChange={handleSubirDocumento} className="sr-only" id="input-doc-adjunto" />
                         </div>
@@ -2266,7 +2273,10 @@ useEffect(() => {
                                 <span className="text-xs font-medium text-gray-600 truncate mr-3 flex items-center gap-2">
                                   <svg className="w-3.5 h-3.5 text-main-red" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" /></svg> {archivo.nombre}
                                 </span>
-                                <button type="button" onClick={() => copiarEnlaceDocumento(archivo.nombre, archivo.url)} className="text-[10px] uppercase tracking-wider bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-1 px-2.5 rounded transition-colors shrink-0">Copiar Enlace</button>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  <button type="button" onClick={() => copiarEnlaceDocumento(archivo.nombre, archivo.url)} className="text-[10px] uppercase tracking-wider bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-1 px-2.5 rounded transition-colors">Copiar Enlace</button>
+                                  <button type="button" onClick={() => eliminarArchivoAdjunto(index)} className="text-[10px] uppercase tracking-wider bg-red-50 hover:bg-red-100 text-red-600 font-bold py-1 px-2 rounded transition-colors" title="Eliminar documento anexo">✕</button>
+                                </div>
                               </li>
                             ))}
                           </ul>

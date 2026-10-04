@@ -324,7 +324,9 @@
     "volver_repositorio": "Back to repository",
     "compartir_noticia": "Share this news",
     "copiar_enlace": "Copy Link",
-    "enlace_copiado": "Link copied to clipboard!"
+    "enlace_copiado": "Link copied to clipboard!",
+    "documentos_anexos": "Attached Documents:",
+    "ver_o_descargar": "View or Download here"
   },
   "articulo_detalle": {
     "cargando": "Loading article...",

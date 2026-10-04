@@ -860,7 +860,7 @@ exports.descargarDocumento = onRequest({ region: "us-central1" }, async (req, re
   }
 
   // Validamos colecciones permitidas
-  const coleccionesPermitidas = ["incidencia", "informes", "anuncios", "comunicados"];
+  const coleccionesPermitidas = ["incidencia", "informes", "anuncios", "comunicados", "noticias"];
   if (!coleccionesPermitidas.includes(coleccion)) {
     return res.status(404).send("Categoría de documento no válida.");
   }
@@ -891,6 +891,52 @@ exports.descargarDocumento = onRequest({ region: "us-central1" }, async (req, re
       data = docSnap.data();
       fileUrl = data.archivoPdfUrl;
       tituloDocumento = data.archivoPdfNombre || data.titulo || "Comunicado_IIRESODH";
+    } else if (coleccion === "noticias") {
+      if (!docId) {
+        return res.status(400).send("Parámetros de documento insuficientes.");
+      }
+
+      docSnap = await db.collection("noticias").doc(docId).get();
+      if (!docSnap.exists) {
+        const qSnap = await db.collection("noticias").where("slug", "==", docId).limit(1).get();
+        if (!qSnap.empty) {
+          docSnap = qSnap.docs[0];
+        }
+      }
+
+      if (!docSnap || !docSnap.exists) {
+        return res.status(404).send("Noticia no encontrada.");
+      }
+
+      data = docSnap.data();
+      const slugSegment = pathSegments[3] || "";
+
+      if (data.archivosAdjuntos && Array.isArray(data.archivosAdjuntos) && data.archivosAdjuntos.length > 0) {
+        const indexMatch = slugSegment.match(/^doc-(\d+)/);
+        if (indexMatch && data.archivosAdjuntos[parseInt(indexMatch[1], 10)]) {
+          const anexo = data.archivosAdjuntos[parseInt(indexMatch[1], 10)];
+          fileUrl = anexo.url;
+          tituloDocumento = anexo.nombre || data.titulo;
+        } else if (slugSegment) {
+          const matchClean = slugSegment.replace(/\.pdf$/i, '').toLowerCase();
+          const found = data.archivosAdjuntos.find(a => 
+            a.nombre && a.nombre.toLowerCase().replace(/[^a-z0-9]/g, '').includes(matchClean.replace(/[^a-z0-9]/g, ''))
+          );
+          if (found) {
+            fileUrl = found.url;
+            tituloDocumento = found.nombre || data.titulo;
+          } else {
+            fileUrl = data.archivosAdjuntos[0].url;
+            tituloDocumento = data.archivosAdjuntos[0].nombre || data.titulo;
+          }
+        } else {
+          fileUrl = data.archivosAdjuntos[0].url;
+          tituloDocumento = data.archivosAdjuntos[0].nombre || data.titulo;
+        }
+      } else {
+        fileUrl = data.archivoPdfUrl || data.archivoUrl || null;
+        tituloDocumento = data.archivoPdfNombre || data.titulo || "Documento_Noticia_IIRESODH";
+      }
     } else {
       if (!docId) {
         return res.status(400).send("Parámetros de documento insuficientes.");
