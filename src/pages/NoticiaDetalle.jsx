@@ -376,9 +376,9 @@ export default function NoticiaDetalle() {
                     modules={[Pagination, Autoplay, EffectFade]} 
                     effect="fade"
                     fadeEffect={{ crossFade: true }}
-                    pagination={{ clickable: true }}
-                    autoplay={{ delay: 5000, disableOnInteraction: false }}
-                    loop={true}
+                    pagination={todasLasImagenes.length > 1 ? { clickable: true } : false}
+                    autoplay={todasLasImagenes.length > 1 ? { delay: 5000, disableOnInteraction: false } : false}
+                    loop={todasLasImagenes.length > 1}
                     speed={800}
                     className="w-full swiper-custom-pagination pb-8 md:pb-12"
                     aria-label="Galería de imágenes de la noticia"
