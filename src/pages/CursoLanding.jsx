@@ -19,6 +19,7 @@ import brochureP2 from "../assets/cursos/brochure_palermo_p1.jpg";
 import logoIiresodh from "../assets/logo.webp";
 import logoIiresodhColor from "../assets/logo-color.png";
 import FormularioPagoCurso from "../components/cursos/FormularioPagoCurso";
+import { PAISES_LATINOAMERICA } from "../data/paisesLatinoamerica";
 import { Scale, ShieldCheck, Search, GraduationCap, Globe } from "lucide-react";
 
 const obtenerIconoPerfil = (item, idx) => {
@@ -400,6 +401,8 @@ export default function CursoLanding() {
 
   // Estados del formulario interactivo de registro / solicitud bancaria
   const [formData, setFormData] = useState({
+    nombres: "",
+    apellidos: "",
     nombre: "",
     institucion: "",
     email: "",
@@ -493,8 +496,8 @@ export default function CursoLanding() {
 
   const handleSubmitSolicitud = async (e) => {
     e.preventDefault();
-    if (!formData.nombre.trim() || !formData.email.trim()) {
-      setAlerta({ open: true, mensaje: "Por favor completa tu nombre y correo electrónico.", tipo: "warning" });
+    if (!formData.nombres.trim() || !formData.apellidos.trim() || !formData.email.trim()) {
+      setAlerta({ open: true, mensaje: "Por favor completa tus nombres, apellidos (conforme al pasaporte) y correo electrónico.", tipo: "warning" });
       return;
     }
 
@@ -527,10 +530,14 @@ export default function CursoLanding() {
         ? (formData.detalleCursosPrevios.trim() ? `Sí (${formData.detalleCursosPrevios.trim()})` : "Sí")
         : "No";
 
+      const nombreCompleto = `${formData.nombres.trim()} ${formData.apellidos.trim()}`;
+
       await addDoc(collection(db, "solicitudesCursos"), {
         cursoId: curso?.id || "palermo-2027",
         cursoTitulo: curso?.titulo || "Curso Internacional 2027 - Palermo",
-        nombre: formData.nombre.trim(),
+        nombre: nombreCompleto,
+        nombres: formData.nombres.trim(),
+        apellidos: formData.apellidos.trim(),
         institucion: formData.institucion.trim(),
         email: formData.email.trim(),
         telefono: formData.telefono.trim(),
@@ -560,6 +567,8 @@ export default function CursoLanding() {
         tipo: "success"
       });
       setFormData({
+        nombres: "",
+        apellidos: "",
         nombre: "",
         institucion: "",
         email: "",
@@ -1648,22 +1657,6 @@ export default function CursoLanding() {
                         </li>
                       </ul>
                     </div>
-
-                    {/* SEGURIDAD */}
-                    <div className="border-t border-gray-200 pt-3 flex items-center justify-between text-[10px] font-bold text-gray-500">
-                      <span>🔒 Cifrado Bancario SSL 256-bit</span>
-                      <span>🛡️ Cumplimiento PCI-DSS</span>
-                    </div>
-                  </div>
-
-                  <div className="bg-slate-50 border border-slate-200 p-5 rounded-3xl text-xs space-y-2">
-                    <div className="flex items-center gap-2 text-slate-800 font-bold">
-                      <span>🏛️</span>
-                      <span>Facturación para Instituciones y Despachos</span>
-                    </div>
-                    <p className="text-slate-600 font-light text-[11px] leading-relaxed">
-                      Para tramitar pagos a través de Poder Judicial, Fiscalía, Ministerios o Universidades, emitimos factura proforma oficial y certificado bancario SWIFT/IBAN.
-                    </p>
                   </div>
                 </div>
 
@@ -1723,21 +1716,45 @@ export default function CursoLanding() {
                         </div>
                       ) : (
                         <form onSubmit={handleSubmitSolicitud} className="space-y-4 text-left">
+                          {/* AVISO PASAPORTE */}
+                          <div className="bg-sky-50/70 border border-sky-200/80 rounded-xl px-3.5 py-2.5 text-xs text-sky-900 flex items-center gap-2">
+                            <span className="text-base">🛂</span>
+                            <span className="text-[11px] font-medium leading-tight">
+                              Ingresa tus nombres y apellidos <strong>exactamente conforme aparecen en tu pasaporte</strong> para la emisión de certificaciones oficiales, reservas y acreditación internacional.
+                            </span>
+                          </div>
+
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
                               <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                Nombre Completo *
+                                Nombres * <span className="text-gray-400 font-normal lowercase">(según pasaporte)</span>
                               </label>
                               <input
                                 type="text"
                                 required
-                                value={formData.nombre}
-                                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                                placeholder="Lic. Carlos Mendoza"
+                                value={formData.nombres}
+                                onChange={(e) => setFormData({ ...formData, nombres: e.target.value })}
+                                placeholder="Ej: Carlos Alberto"
                                 className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
                               />
                             </div>
 
+                            <div>
+                              <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                                Apellidos * <span className="text-gray-400 font-normal lowercase">(según pasaporte)</span>
+                              </label>
+                              <input
+                                type="text"
+                                required
+                                value={formData.apellidos}
+                                onChange={(e) => setFormData({ ...formData, apellidos: e.target.value })}
+                                placeholder="Ej: Mendoza Alvarado"
+                                className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
                               <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
                                 Profesión / Cargo Actual *
@@ -1748,6 +1765,19 @@ export default function CursoLanding() {
                                 value={formData.profesion}
                                 onChange={(e) => setFormData({ ...formData, profesion: e.target.value })}
                                 placeholder="Ej: Juez Penal / Fiscal / Abogado Litigante"
+                                className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                                Institución / Despacho
+                              </label>
+                              <input
+                                type="text"
+                                value={formData.institucion}
+                                onChange={(e) => setFormData({ ...formData, institucion: e.target.value })}
+                                placeholder="Poder Judicial / Fiscalía / Bufete"
                                 className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
                               />
                             </div>
@@ -1783,45 +1813,19 @@ export default function CursoLanding() {
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                              <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                Institución / Despacho
-                              </label>
-                              <input
-                                type="text"
-                                value={formData.institucion}
-                                onChange={(e) => setFormData({ ...formData, institucion: e.target.value })}
-                                placeholder="Poder Judicial / Fiscalía / Bufete"
-                                className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                País de Residencia *
-                              </label>
-                              <select
-                                value={formData.pais}
-                                onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
-                                className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
-                              >
-                                <option value="Costa Rica">Costa Rica</option>
-                                <option value="Colombia">Colombia</option>
-                                <option value="México">México</option>
-                                <option value="Guatemala">Guatemala</option>
-                                <option value="Canadá">Canadá</option>
-                                <option value="España">España</option>
-                                <option value="Italia">Italia</option>
-                                <option value="Argentina">Argentina</option>
-                                <option value="Chile">Chile</option>
-                                <option value="Perú">Perú</option>
-                                <option value="Ecuador">Ecuador</option>
-                                <option value="Panamá">Panamá</option>
-                                <option value="Estados Unidos">Estados Unidos</option>
-                                <option value="Otro">Otro país</option>
-                              </select>
-                            </div>
+                          <div>
+                            <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                              País de Residencia *
+                            </label>
+                            <select
+                              value={formData.pais}
+                              onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
+                              className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+                            >
+                              {PAISES_LATINOAMERICA.map((p) => (
+                                <option key={p} value={p}>{p}</option>
+                              ))}
+                            </select>
                           </div>
 
                           {/* EXPERIENCIA EN TEMAS */}

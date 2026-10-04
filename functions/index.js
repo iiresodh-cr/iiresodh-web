@@ -982,6 +982,8 @@ exports.crearIntentoPagoCurso = onCall({
     cursoTitulo,
     email,
     nombre,
+    nombres,
+    apellidos,
     telefono,
     institucion,
     pais,
@@ -996,6 +998,8 @@ exports.crearIntentoPagoCurso = onCall({
     cursosPrevios,
     alumnoIiresodh
   } = request.data || {};
+
+  const nombreFinal = (nombre || `${nombres || ""} ${apellidos || ""}`).trim() || "Participante Curso";
 
   if (!email) {
     throw new HttpsError("invalid-argument", "El correo electrónico es obligatorio.");
@@ -1109,7 +1113,9 @@ exports.crearIntentoPagoCurso = onCall({
         cursoId: cursoId || "palermo-2027",
         cursoTitulo: cursoTitulo || "Curso Internacional - Palermo",
         email: email,
-        nombre: nombre || "",
+        nombre: nombreFinal,
+        nombres: String(nombres || "").slice(0, 100),
+        apellidos: String(apellidos || "").slice(0, 100),
         telefono: telefono || "",
         institucion: institucion || "",
         pais: pais || "",
@@ -1717,6 +1723,8 @@ exports.stripeWebhookCursos = onRequest({
           cursoId: cursoId,
           cursoTitulo: cursoTitulo,
           nombre: nombre,
+          nombres: metadata.nombres || "",
+          apellidos: metadata.apellidos || "",
           email: email.toLowerCase().trim(),
           telefono: telefono,
           institucion: metadata.institucion || "",
@@ -1829,6 +1837,8 @@ exports.stripeWebhookCursos = onRequest({
         await db.collection("solicitudesCursos").doc(docId).update({
           estado: "confirmado",
           metodoPago: "stripe",
+          nombres: metadata.nombres || current.nombres || "",
+          apellidos: metadata.apellidos || current.apellidos || "",
           planCuotas: planCuotas,
           cuotasPagadas: nuevaCuota,
           montoPagado: totalAbonado,
@@ -1903,6 +1913,8 @@ exports.stripeWebhookCursos = onRequest({
           cursoId: cursoId,
           cursoTitulo: cursoTitulo,
           nombre: nombre,
+          nombres: metadata.nombres || "",
+          apellidos: metadata.apellidos || "",
           email: email.toLowerCase().trim(),
           telefono: metadata.telefono || "",
           institucion: metadata.institucion || "",

@@ -5,6 +5,7 @@ import { Elements, CardElement, useStripe, useElements } from "@stripe/react-str
 import { functions } from "../../firebase/config";
 import { httpsCallable } from "firebase/functions";
 import { CircularProgress, Alert } from "@mui/material";
+import { PAISES_LATINOAMERICA } from "../../data/paisesLatinoamerica";
 
 // ============================================================================
 // HELPER: CÁLCULO DE FECHA LÍMITE DE PAGO (ÚLTIMO DÍA DEL MES ANTERIOR AL EVENTO)
@@ -89,6 +90,8 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
 
   // Estados de datos del participante y perfil académico
   const [formData, setFormData] = useState({
+    nombres: "",
+    apellidos: "",
     nombre: "",
     email: "",
     telefono: "",
@@ -252,8 +255,8 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
       return;
     }
 
-    if (!formData.nombre.trim() || !formData.email.trim() || !formData.telefono.trim()) {
-      setErrorPago("Por favor completa tu nombre completo, correo electrónico y teléfono de contacto.");
+    if (!formData.nombres.trim() || !formData.apellidos.trim() || !formData.email.trim() || !formData.telefono.trim()) {
+      setErrorPago("Por favor completa tus nombres, apellidos (conforme a tu pasaporte), correo electrónico y teléfono de contacto.");
       return;
     }
 
@@ -284,6 +287,8 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
       ? (formData.detalleCursosPrevios.trim() ? `Sí (${formData.detalleCursosPrevios.trim()})` : "Sí")
       : "No";
 
+    const nombreCompleto = `${formData.nombres.trim()} ${formData.apellidos.trim()}`;
+
     try {
       // 1. Invocar la Cloud Function para crear el PaymentIntent con la cuenta dedicada de cursos
       const crearIntento = httpsCallable(functions, "crearIntentoPagoCurso");
@@ -291,7 +296,9 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
         cursoId: curso?.id || "palermo-2027",
         cursoTitulo: curso?.titulo || "Curso Internacional - Palermo 2027",
         email: formData.email.trim(),
-        nombre: formData.nombre.trim(),
+        nombre: nombreCompleto,
+        nombres: formData.nombres.trim(),
+        apellidos: formData.apellidos.trim(),
         telefono: formData.telefono.trim(),
         institucion: formData.institucion.trim(),
         pais: formData.pais,
@@ -319,7 +326,7 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
         payment_method: {
           card: cardElement,
           billing_details: {
-            name: formData.nombre.trim(),
+            name: nombreCompleto,
             email: formData.email.trim(),
             phone: formData.telefono.trim()
           }
@@ -337,7 +344,9 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
           planCuotas: planCuotas,
           moneda: monedaDetectada,
           email: formData.email.trim(),
-          nombre: formData.nombre.trim(),
+          nombre: nombreCompleto,
+          nombres: formData.nombres.trim(),
+          apellidos: formData.apellidos.trim(),
           profesion: formData.profesion.trim(),
           saldoRestante: Math.max(0, montoTotal - montoCuotaActual)
         });
@@ -574,21 +583,45 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
           2. Datos Personales y Profesionales
         </label>
 
+        {/* AVISO PASAPORTE */}
+        <div className="bg-sky-50/70 border border-sky-200/80 rounded-xl px-3.5 py-2.5 text-xs text-sky-900 flex items-center gap-2">
+          <span className="text-base">🛂</span>
+          <span className="text-[11px] font-medium leading-tight">
+            Ingresa tus nombres y apellidos <strong>exactamente conforme aparecen en tu pasaporte</strong> para la emisión de certificaciones oficiales, reservas y acreditación internacional.
+          </span>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-              Nombre Completo *
+              Nombres * <span className="text-gray-400 font-normal lowercase">(según pasaporte)</span>
             </label>
             <input
               type="text"
               required
-              value={formData.nombre}
-              onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-              placeholder="Dr. / Lic. Carlos Mendoza"
+              value={formData.nombres}
+              onChange={(e) => setFormData({ ...formData, nombres: e.target.value })}
+              placeholder="Ej: Carlos Alberto"
               className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
             />
           </div>
 
+          <div>
+            <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+              Apellidos * <span className="text-gray-400 font-normal lowercase">(según pasaporte)</span>
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.apellidos}
+              onChange={(e) => setFormData({ ...formData, apellidos: e.target.value })}
+              placeholder="Ej: Mendoza Alvarado"
+              className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
               Profesión / Cargo Actual <span className="text-gray-400 font-normal lowercase">(opcional)</span>
@@ -598,6 +631,19 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
               value={formData.profesion}
               onChange={(e) => setFormData({ ...formData, profesion: e.target.value })}
               placeholder="Ej: Juez Penal / Fiscal / Abogado Litigante"
+              className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+              Institución / Despacho / Universidad
+            </label>
+            <input
+              type="text"
+              value={formData.institucion}
+              onChange={(e) => setFormData({ ...formData, institucion: e.target.value })}
+              placeholder="Poder Judicial / Fiscalía / Bufete"
               className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
             />
           </div>
@@ -633,45 +679,19 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-              Institución / Despacho / Universidad
-            </label>
-            <input
-              type="text"
-              value={formData.institucion}
-              onChange={(e) => setFormData({ ...formData, institucion: e.target.value })}
-              placeholder="Poder Judicial / Fiscalía / Bufete"
-              className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
-            />
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-              País de Residencia *
-            </label>
-            <select
-              value={formData.pais}
-              onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
-              className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
-            >
-              <option value="Costa Rica">Costa Rica</option>
-              <option value="México">México</option>
-              <option value="Colombia">Colombia</option>
-              <option value="Guatemala">Guatemala</option>
-              <option value="Panamá">Panamá</option>
-              <option value="Perú">Perú</option>
-              <option value="Chile">Chile</option>
-              <option value="Argentina">Argentina</option>
-              <option value="Ecuador">Ecuador</option>
-              <option value="España">España</option>
-              <option value="Italia">Italia</option>
-              <option value="Estados Unidos">Estados Unidos</option>
-              <option value="Canadá">Canadá</option>
-              <option value="Otro">Otro país</option>
-            </select>
-          </div>
+        <div>
+          <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+            País de Residencia *
+          </label>
+          <select
+            value={formData.pais}
+            onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
+            className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+          >
+            {PAISES_LATINOAMERICA.map((p) => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -826,28 +846,6 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
           </div>
         </div>
 
-        {/* SELLO Y GARANTÍA STRIPE */}
-        <div className="p-3 rounded-2xl bg-sky-50/60 border border-sky-100 flex items-start gap-3">
-          <div className="w-8 h-8 rounded-lg bg-sky-700 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
-          </div>
-          <div className="text-left space-y-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-bold text-slate-800 tracking-tight">
-                Pasarela Oficial Stripe Certificada
-              </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-800 border border-sky-200">
-                PCI-DSS Nivel 1
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-600 leading-snug font-normal">
-              Tus datos bancarios son procesados de forma encriptada y directa por Stripe bajo estándares de seguridad bancaria internacional. IIRESODH nunca almacena ni tiene acceso a tu número de tarjeta.
-            </p>
-          </div>
-        </div>
-
         {/* INPUT DE TARJETA CON LOGOS DE MARCAS */}
         <div className="space-y-1.5">
           <div className="p-3.5 sm:p-4 rounded-xl border border-gray-300 bg-white focus-within:ring-2 focus-within:ring-main-blue/30 focus-within:border-main-blue shadow-xs transition">
@@ -954,31 +952,6 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
             </>
           )}
         </button>
-
-        {/* SELLOS DE CONFIANZA INSTITUCIONAL */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-gray-100 text-left">
-          <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200">
-            <span className="text-lg">🔒</span>
-            <div>
-              <p className="text-[10px] font-bold text-gray-900 leading-tight">Cifrado Bancario</p>
-              <p className="text-[9px] text-gray-500">SSL 256-bit certificado</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200">
-            <span className="text-lg">🏛️</span>
-            <div>
-              <p className="text-[10px] font-bold text-gray-900 leading-tight">Garantía Académica</p>
-              <p className="text-[9px] text-gray-500">Comprobante y plaza formal</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200">
-            <span className="text-lg">🛡️</span>
-            <div>
-              <p className="text-[10px] font-bold text-gray-900 leading-tight">Protección Antifraude</p>
-              <p className="text-[9px] text-gray-500">Stripe Radar AI activo</p>
-            </div>
-          </div>
-        </div>
 
         <p className="text-[11px] text-gray-500 text-center leading-relaxed">
           Al confirmar tu pago recibirás inmediatamente el recibo oficial y la confirmación de matrícula en tu correo electrónico.

@@ -123,6 +123,8 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
       "Fecha",
       "Estado",
       "Nombre",
+      "Nombres",
+      "Apellidos",
       "Email",
       "Teléfono",
       "Profesión",
@@ -167,6 +169,8 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
         `"${fecha}"`,
         `"${s.estado || 'pendiente'}"`,
         `"${(s.nombre || '').replace(/"/g, '""')}"`,
+        `"${(s.nombres || '').replace(/"/g, '""')}"`,
+        `"${(s.apellidos || '').replace(/"/g, '""')}"`,
         `"${(s.email || '').replace(/"/g, '""')}"`,
         `"${(s.telefono || '').replace(/"/g, '""')}"`,
         `"${(s.profesion || '').replace(/"/g, '""')}"`,
@@ -565,8 +569,13 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
                         Participante y Perfil
                       </span>
                       <h4 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">
-                        {solicitud.nombre || "Sin nombre registrado"}
+                        {solicitud.nombre || (solicitud.nombres ? `${solicitud.nombres} ${solicitud.apellidos || ""}`.trim() : "Sin nombre registrado")}
                       </h4>
+                      {(solicitud.nombres || solicitud.apellidos) && (
+                        <p className="text-[11px] text-gray-500 font-medium">
+                          🛂 Pasaporte: <span className="text-gray-700 font-semibold">{solicitud.nombres || ""} {solicitud.apellidos || ""}</span>
+                        </p>
+                      )}
                       
                       {solicitud.profesion && (
                         <p className="text-xs font-semibold text-main-blue bg-blue-50/70 border border-blue-100 px-2.5 py-1 rounded-lg inline-block">
