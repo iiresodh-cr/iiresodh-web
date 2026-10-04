@@ -65,6 +65,11 @@ service firebase.storage {
       allow write: if esAdmin();
     }
 
+    // REGLAS PARA PASAPORTES DE PARTICIPANTES DE CURSOS (CONFIDENCIAL - SOLO ADMINS)
+    match /pasaportes_cursos/{allPaths=**} {
+      allow read, write: if esAdmin();
+    }
+
     // TIENDA DE LIBROS
     match /libros {
       match /portadas/{allPaths=**} {
