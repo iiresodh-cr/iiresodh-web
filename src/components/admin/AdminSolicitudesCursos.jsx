@@ -1,13 +1,15 @@
 // src/components/admin/AdminSolicitudesCursos.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { 
   collection, 
   getDocs, 
   doc, 
   updateDoc, 
   deleteDoc, 
+  addDoc,
   query, 
-  orderBy 
+  orderBy,
+  serverTimestamp 
 } from "firebase/firestore";
 import { db } from "../../firebase/config";
 import { 
@@ -21,12 +23,21 @@ import {
   Alert,
   Select,
   MenuItem,
-  FormControl
+  FormControl,
+  TextField,
+  InputLabel
 } from "@mui/material";
+import { PAISES_LATINOAMERICA } from "../../data/paisesLatinoamerica";
 
-export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
+export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoInicial }) {
   const [solicitudes, setSolicitudes] = useState([]);
+  const [cursos, setCursos] = useState([]);
   const [cargando, setCargando] = useState(true);
+
+  // Filtros
+  const [filtroCurso, setFiltroCurso] = useState(
+    cursoInicial?.slug || cursoInicial?.id || ""
+  );
   const [filtroEstado, setFiltroEstado] = useState("todos");
   const [filtroMetodo, setFiltroMetodo] = useState("todos");
   const [busqueda, setBusqueda] = useState("");
@@ -37,34 +48,194 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
   // Modal de confirmación para eliminar
   const [modalBorrar, setModalBorrar] = useState({ open: false, id: null, nombre: "" });
 
+  // Modal para Registro Manual de Participante (por WhatsApp, email o llamada)
+  const [modalManual, setModalManual] = useState(false);
+  const [guardandoManual, setGuardandoManual] = useState(false);
+  const [formManual, setFormManual] = useState({
+    cursoKey: "",
+    nombres: "",
+    apellidos: "",
+    email: "",
+    telefono: "",
+    pais: "Costa Rica",
+    profesion: "",
+    institucion: "",
+    metodoPago: "transferencia",
+    planCuotas: 1,
+    montoTotalInversion: 3350,
+    montoPagado: 0,
+    estado: "contactado",
+    comentarios: ""
+  });
+
   const mostrarToast = (mensaje, esError = false) => {
     setAlerta({ open: true, mensaje, esError });
   };
 
-  const cargarSolicitudes = async () => {
+  const cargarDatos = async () => {
     setCargando(true);
     try {
-      const q = query(
+      // 1. Cargar solicitudes
+      const qSolicitudes = query(
         collection(db, "solicitudesCursos"),
         orderBy("fechaSolicitud", "desc")
       );
-      const snapshot = await getDocs(q);
-      const items = snapshot.docs.map(doc => ({
+      const snapshotSolicitudes = await getDocs(qSolicitudes);
+      const itemsSolicitudes = snapshotSolicitudes.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
-      setSolicitudes(items);
+      setSolicitudes(itemsSolicitudes);
+
+      // 2. Cargar cursos oficiales
+      const snapshotCursos = await getDocs(collection(db, "cursos"));
+      const itemsCursos = snapshotCursos.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setCursos(itemsCursos);
     } catch (error) {
-      console.error("Error al cargar solicitudes:", error);
-      mostrarToast("Error al cargar las solicitudes de cursos.", true);
+      console.error("Error al cargar datos:", error);
+      mostrarToast("Error al cargar las solicitudes y cursos.", true);
     } finally {
       setCargando(false);
     }
   };
 
   useEffect(() => {
-    cargarSolicitudes();
+    cargarDatos();
   }, []);
+
+  // Construir catálogo de cursos disponibles combinando 'cursos' y 'solicitudesCursos'
+  const cursosDisponibles = useMemo(() => {
+    const map = new Map();
+
+    // Cursos desde la colección 'cursos'
+    cursos.forEach(c => {
+      const key = c.slug || c.id;
+      map.set(key, {
+        key,
+        id: c.id,
+        slug: c.slug || c.id,
+        titulo: c.titulo || c.slug || c.id,
+        alias: [c.id, c.slug, c.titulo].filter(Boolean).map(x => String(x).toLowerCase().trim())
+      });
+    });
+
+    // Detectar cursos adicionales presentes en solicitudes
+    solicitudes.forEach(s => {
+      const keyCandidate = s.cursoId || s.cursoTitulo || "palermo-2027";
+      const rawTitulo = s.cursoTitulo || s.cursoId || "Curso Internacional";
+
+      let matched = false;
+      for (const [, cursoItem] of map.entries()) {
+        if (
+          cursoItem.alias.includes(String(s.cursoId || "").toLowerCase().trim()) ||
+          cursoItem.alias.includes(String(s.cursoTitulo || "").toLowerCase().trim())
+        ) {
+          matched = true;
+          break;
+        }
+      }
+
+      if (!matched) {
+        map.set(keyCandidate, {
+          key: keyCandidate,
+          id: s.cursoId || keyCandidate,
+          slug: s.cursoId || keyCandidate,
+          titulo: rawTitulo,
+          alias: [s.cursoId, s.cursoTitulo].filter(Boolean).map(x => String(x).toLowerCase().trim())
+        });
+      }
+    });
+
+    // Si aún no hay ninguno, aseguramos Palermo 2027 por defecto
+    if (map.size === 0) {
+      map.set("palermo-2027", {
+        key: "palermo-2027",
+        id: "palermo-2027",
+        slug: "palermo-2027",
+        titulo: "Curso Internacional 2027 - Palermo",
+        alias: ["palermo-2027", "curso internacional 2027 - palermo"]
+      });
+    }
+
+    // Calcular conteo por curso
+    return Array.from(map.values()).map(c => {
+      const conteo = solicitudes.filter(s => {
+        const sid = String(s.cursoId || "").toLowerCase().trim();
+        const stit = String(s.cursoTitulo || "").toLowerCase().trim();
+        return c.alias.includes(sid) || c.alias.includes(stit);
+      }).length;
+      return { ...c, conteoTotal: conteo };
+    });
+  }, [cursos, solicitudes]);
+
+  // Selección automática del primer curso si filtroCurso está vacío
+  useEffect(() => {
+    if (!filtroCurso && cursosDisponibles.length > 0) {
+      if (cursoInicial?.slug || cursoInicial?.id) {
+        const matching = cursosDisponibles.find(
+          c => c.key === cursoInicial.slug || c.key === cursoInicial.id || c.id === cursoInicial.id
+        );
+        if (matching) {
+          setFiltroCurso(matching.key);
+          return;
+        }
+      }
+      setFiltroCurso(cursosDisponibles[0].key);
+    }
+  }, [cursosDisponibles, cursoInicial, filtroCurso]);
+
+  // Objeto del curso actualmente activo
+  const cursoActivoObj = useMemo(() => {
+    if (filtroCurso === "todos") {
+      return { key: "todos", titulo: "Todos los Cursos Académicos (Consolidado)" };
+    }
+    return cursosDisponibles.find(c => c.key === filtroCurso) || cursosDisponibles[0] || null;
+  }, [cursosDisponibles, filtroCurso]);
+
+  // Comprobar si una solicitud pertenece al curso seleccionado
+  const esDeCurso = (s, cursoKey) => {
+    if (!cursoKey || cursoKey === "todos") return true;
+    const target = cursosDisponibles.find(c => c.key === cursoKey);
+    if (!target) {
+      return s.cursoId === cursoKey || s.cursoTitulo === cursoKey;
+    }
+    const sid = String(s.cursoId || "").toLowerCase().trim();
+    const stit = String(s.cursoTitulo || "").toLowerCase().trim();
+    return target.alias.includes(sid) || target.alias.includes(stit);
+  };
+
+  // 1. Solicitudes aisladas del curso seleccionado (para estadísticas y conteos exactos)
+  const solicitudesDelCurso = useMemo(() => {
+    if (filtroCurso === "todos") return solicitudes;
+    return solicitudes.filter(s => esDeCurso(s, filtroCurso));
+  }, [solicitudes, filtroCurso, cursosDisponibles]);
+
+  // Métricas del curso seleccionado
+  const conteoPendientes = solicitudesDelCurso.filter(s => (s.estado || "pendiente") === "pendiente").length;
+  const conteoContactados = solicitudesDelCurso.filter(s => s.estado === "contactado").length;
+  const conteoConfirmados = solicitudesDelCurso.filter(s => s.estado === "confirmado").length;
+  const conteoStripe = solicitudesDelCurso.filter(s => s.metodoPago === "stripe").length;
+  const totalRecaudadoStripe = solicitudesDelCurso
+    .filter(s => s.metodoPago === "stripe")
+    .reduce((acc, s) => acc + (Number(s.montoPagado) || 0), 0);
+
+  // 2. Solicitudes filtradas por método de pago, estado secundario y buscador
+  const solicitudesFiltradas = useMemo(() => {
+    return solicitudesDelCurso.filter(s => {
+      const cumpleEstado = filtroEstado === "todos" || (s.estado || "pendiente") === filtroEstado;
+      const cumpleMetodo = filtroMetodo === "todos" || (s.metodoPago || "transferencia") === filtroMetodo;
+
+      const busq = busqueda.toLowerCase().trim();
+      if (!busq) return cumpleEstado && cumpleMetodo;
+
+      const temasStr = Array.isArray(s.experienciaTemas) ? s.experienciaTemas.join(" ") : (s.experienciaTemas || "");
+      const textoCompleto = `${s.nombre || ""} ${s.nombres || ""} ${s.apellidos || ""} ${s.email || ""} ${s.telefono || ""} ${s.profesion || ""} ${s.institucion || ""} ${s.pais || ""} ${s.cursoTitulo || ""} ${temasStr} ${s.stripePaymentIntentId || ""}`.toLowerCase();
+      return cumpleEstado && cumpleMetodo && textoCompleto.includes(busq);
+    });
+  }, [solicitudesDelCurso, filtroEstado, filtroMetodo, busqueda]);
 
   const handleCambiarEstado = async (id, nuevoEstado, solicitudActual) => {
     setActualizandoId(id);
@@ -113,9 +284,105 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
     }
   };
 
+  // Abrir modal de registro manual con el curso activo preseleccionado
+  const abrirRegistroManual = () => {
+    setFormManual({
+      cursoKey: filtroCurso !== "todos" ? filtroCurso : (cursosDisponibles[0]?.key || "palermo-2027"),
+      nombres: "",
+      apellidos: "",
+      email: "",
+      telefono: "",
+      pais: "Costa Rica",
+      profesion: "",
+      institucion: "",
+      metodoPago: "transferencia",
+      planCuotas: 1,
+      montoTotalInversion: 3350,
+      montoPagado: 0,
+      estado: "contactado",
+      comentarios: ""
+    });
+    setModalManual(true);
+  };
+
+  const handleGuardarManual = async (e) => {
+    e.preventDefault();
+    if (!formManual.nombres.trim() || !formManual.apellidos.trim() || !formManual.email.trim()) {
+      mostrarToast("Nombres, apellidos y correo electrónico son obligatorios.", true);
+      return;
+    }
+
+    setGuardandoManual(true);
+    try {
+      const cursoElegido = cursosDisponibles.find(c => c.key === formManual.cursoKey) || {
+        key: formManual.cursoKey,
+        id: formManual.cursoKey,
+        titulo: "Curso Internacional"
+      };
+
+      const nombreCompleto = `${formManual.nombres.trim()} ${formManual.apellidos.trim()}`;
+      const totalInv = Number(formManual.montoTotalInversion) || 3350;
+      const pagado = Number(formManual.montoPagado) || 0;
+      const cuotas = Number(formManual.planCuotas) || 1;
+
+      const nuevaData = {
+        cursoId: cursoElegido.id || cursoElegido.key,
+        cursoTitulo: cursoElegido.titulo,
+        nombre: nombreCompleto,
+        nombres: formManual.nombres.trim(),
+        apellidos: formManual.apellidos.trim(),
+        email: formManual.email.trim(),
+        telefono: formManual.telefono.trim(),
+        pais: formManual.pais,
+        profesion: formManual.profesion.trim(),
+        institucion: formManual.institucion.trim(),
+        metodoPago: formManual.metodoPago,
+        planCuotas: cuotas,
+        cuotasPagadas: pagado > 0 ? 1 : 0,
+        montoTotalInversion: totalInv,
+        montoPagado: pagado,
+        saldoPendiente: Math.max(0, totalInv - pagado),
+        estado: formManual.estado || "contactado",
+        origen: "manual_admin",
+        comentarios: formManual.comentarios.trim(),
+        aceptaPoliticaPrivacidad: true,
+        versionPoliticaPrivacidad: "2026-09-12",
+        constanciaPrivacidad: "Registro administrativo directo en panel.",
+        fechaSolicitud: serverTimestamp()
+      };
+
+      const docRef = await addDoc(collection(db, "solicitudesCursos"), nuevaData);
+
+      // Prepend a estado local
+      const nuevoItemLocal = {
+        id: docRef.id,
+        ...nuevaData,
+        fechaSolicitud: new Date()
+      };
+
+      setSolicitudes(prev => [nuevoItemLocal, ...prev]);
+
+      mostrarToast(`Participante "${nombreCompleto}" registrado exitosamente como ${formManual.estado}.`);
+
+      if (logActividad) {
+        logActividad(
+          `Registró manualmente a "${nombreCompleto}" en el curso "${cursoElegido.titulo}" con estado "${formManual.estado}"`,
+          { id: docRef.id, nombre: nombreCompleto, curso: cursoElegido.titulo }
+        );
+      }
+
+      setModalManual(false);
+    } catch (error) {
+      console.error("Error al registrar manualmente:", error);
+      mostrarToast("Error al guardar el participante en el curso.", true);
+    } finally {
+      setGuardandoManual(false);
+    }
+  };
+
   const exportarCSV = () => {
-    if (solicitudes.length === 0) {
-      mostrarToast("No hay solicitudes para exportar.", true);
+    if (solicitudesDelCurso.length === 0) {
+      mostrarToast("No hay solicitudes para exportar en este curso.", true);
       return;
     }
 
@@ -148,7 +415,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
       "Comentarios"
     ];
 
-    const rows = solicitudes.map(s => {
+    const rows = solicitudesDelCurso.map(s => {
       const fecha = s.fechaSolicitud?.toDate
         ? s.fechaSolicitud.toDate().toLocaleString("es-CR")
         : s.fechaSolicitud?.seconds
@@ -200,33 +467,16 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `solicitudes_cursos_iiresodh_${new Date().toISOString().slice(0, 10)}.csv`);
+
+    const safeSlug = (cursoActivoObj?.slug || cursoActivoObj?.key || "curso")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_");
+    link.setAttribute("download", `solicitudes_${safeSlug}_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    mostrarToast("Reporte CSV detallado descargado con éxito.");
+    mostrarToast(`Reporte CSV de "${cursoActivoObj?.titulo || 'Curso'}" descargado con éxito.`);
   };
-
-  // Filtrado
-  const solicitudesFiltradas = solicitudes.filter(s => {
-    const cumpleEstado = filtroEstado === "todos" || (s.estado || "pendiente") === filtroEstado;
-    const cumpleMetodo = filtroMetodo === "todos" || (s.metodoPago || "transferencia") === filtroMetodo;
-
-    const busq = busqueda.toLowerCase().trim();
-    if (!busq) return cumpleEstado && cumpleMetodo;
-
-    const temasStr = Array.isArray(s.experienciaTemas) ? s.experienciaTemas.join(" ") : (s.experienciaTemas || "");
-    const textoCompleto = `${s.nombre || ""} ${s.email || ""} ${s.telefono || ""} ${s.profesion || ""} ${s.institucion || ""} ${s.pais || ""} ${s.cursoTitulo || ""} ${temasStr} ${s.stripePaymentIntentId || ""}`.toLowerCase();
-    return cumpleEstado && cumpleMetodo && textoCompleto.includes(busq);
-  });
-
-  const conteoPendientes = solicitudes.filter(s => (s.estado || "pendiente") === "pendiente").length;
-  const conteoContactados = solicitudes.filter(s => s.estado === "contactado").length;
-  const conteoConfirmados = solicitudes.filter(s => s.estado === "confirmado").length;
-  const conteoStripe = solicitudes.filter(s => s.metodoPago === "stripe").length;
-  const totalRecaudadoStripe = solicitudes
-    .filter(s => s.metodoPago === "stripe")
-    .reduce((acc, s) => acc + (Number(s.montoPagado) || 0), 0);
 
   const formatearFecha = (timestamp) => {
     if (!timestamp) return "Sin fecha";
@@ -285,18 +535,36 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
           <span className="text-sm font-semibold">Regresar a Gestión de Cursos</span>
         </button>
 
-        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+          <Button
+            variant="contained"
+            onClick={abrirRegistroManual}
+            sx={{
+              bgcolor: "#B92F32",
+              textTransform: "none",
+              fontSize: "13px",
+              py: 1,
+              px: 2,
+              borderRadius: "12px",
+              fontWeight: 700,
+              boxShadow: "0 2px 4px rgba(185, 47, 50, 0.25)",
+              "&:hover": { bgcolor: "#8b1d20" }
+            }}
+          >
+            ➕ Registrar Participante Manual
+          </Button>
+
           <Button
             variant="outlined"
-            onClick={cargarSolicitudes}
+            onClick={cargarDatos}
             disabled={cargando}
-            fullWidth
             sx={{
               borderColor: "#d1d5db",
               color: "#374151",
               textTransform: "none",
               fontSize: "13px",
               py: 1,
+              px: 2,
               borderRadius: "12px",
               fontWeight: 600,
               bgcolor: "white",
@@ -309,41 +577,124 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
           <Button
             variant="contained"
             onClick={exportarCSV}
-            disabled={cargando || solicitudes.length === 0}
-            fullWidth
+            disabled={cargando || solicitudesDelCurso.length === 0}
             sx={{
               bgcolor: "#1D3557",
               textTransform: "none",
               fontSize: "13px",
               py: 1,
+              px: 2,
               borderRadius: "12px",
               fontWeight: 700,
               boxShadow: "0 2px 4px rgba(29, 53, 87, 0.15)",
               "&:hover": { bgcolor: "#14253d" }
             }}
           >
-            📥 Exportar CSV Completo
+            📥 Exportar CSV ({solicitudesDelCurso.length})
           </Button>
         </div>
       </div>
 
-      {/* TARJETA PRINCIPAL */}
+      {/* SELECTOR EXCLUSIVO DE CURSO PARA AISLAR COMPLETAMENTE LOS DATOS */}
+      <section className="bg-gradient-to-r from-slate-900 via-main-blue to-slate-900 rounded-3xl p-5 sm:p-6 text-white shadow-md space-y-4 border border-blue-900/40">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-2xl border border-white/20 shrink-0">
+              🎓
+            </div>
+            <div>
+              <span className="text-[10px] sm:text-[11px] uppercase tracking-widest text-amber-300 font-extrabold block">
+                Expedientes del Curso Seleccionado:
+              </span>
+              <h1 className="text-lg sm:text-xl md:text-2xl font-black text-white leading-tight">
+                {cursoActivoObj?.titulo || "Seleccione un Curso"}
+              </h1>
+            </div>
+          </div>
+
+          {/* Menú Selector de Cursos */}
+          <div className="w-full lg:w-auto min-w-[280px]">
+            <label className="text-[10px] uppercase font-bold text-blue-200 block mb-1">
+              Ver datos de otro curso:
+            </label>
+            <select
+              value={filtroCurso}
+              onChange={(e) => setFiltroCurso(e.target.value)}
+              className="w-full bg-white text-gray-900 font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl border-2 border-amber-300/80 focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-md cursor-pointer"
+            >
+              {cursosDisponibles.map(c => (
+                <option key={c.key} value={c.key}>
+                  📚 {c.titulo} ({c.conteoTotal} {c.conteoTotal === 1 ? 'inscrito' : 'inscritos'})
+                </option>
+              ))}
+              <option value="todos">🌐 Todos los Cursos (Vista combinada)</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Pestañas de acceso rápido a cada curso */}
+        {cursosDisponibles.length > 1 && (
+          <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pt-3 border-t border-white/10">
+            <span className="text-[11px] font-semibold text-blue-200 whitespace-nowrap">
+              Cursos:
+            </span>
+            {cursosDisponibles.map(c => {
+              const activo = filtroCurso === c.key;
+              return (
+                <button
+                  key={c.key}
+                  type="button"
+                  onClick={() => setFiltroCurso(c.key)}
+                  className={`text-xs px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                    activo
+                      ? "bg-amber-400 text-slate-950 shadow-md font-black"
+                      : "bg-white/10 text-white hover:bg-white/20 border border-white/10"
+                  }`}
+                >
+                  <span>{c.titulo}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${activo ? "bg-slate-900 text-amber-300" : "bg-black/40 text-white"}`}>
+                    {c.conteoTotal}
+                  </span>
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              onClick={() => setFiltroCurso("todos")}
+              className={`text-xs px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                filtroCurso === "todos"
+                  ? "bg-amber-400 text-slate-950 shadow-md font-black"
+                  : "bg-white/10 text-white hover:bg-white/20 border border-white/10"
+              }`}
+            >
+              <span>Todos los Cursos</span>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${filtroCurso === "todos" ? "bg-slate-900 text-amber-300" : "bg-black/40 text-white"}`}>
+                {solicitudes.length}
+              </span>
+            </button>
+          </div>
+        )}
+      </section>
+
+      {/* TARJETA PRINCIPAL CON MÉTRICAS DEL CURSO SELECCIONADO Y FILTROS */}
       <section className="bg-white rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm border border-gray-200 space-y-6">
         <div>
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2.5">
-                <span className="text-2xl sm:text-3xl">🎓</span>
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-main-blue tracking-tight">
-                  Inscripciones y Solicitudes de Cursos
-                </h2>
+              <div className="flex items-center gap-2">
+                <span className="text-xs uppercase font-extrabold tracking-wider px-2.5 py-0.5 rounded-md bg-blue-100 text-main-blue">
+                  {filtroCurso === "todos" ? "Consolidado" : "Datos Aislados"}
+                </span>
+                <span className="text-xs font-semibold text-gray-500">
+                  Total de inscripciones en este curso: <strong className="text-gray-900">{solicitudesDelCurso.length}</strong>
+                </span>
               </div>
               <p className="text-xs sm:text-sm text-gray-600 mt-1 max-w-2xl">
-                Visualiza datos académicos completos, planes de financiamiento (1 a 4 cuotas sin interés), pagos en línea con Stripe y postulaciones por transferencia.
+                Planes de financiamiento (1 a 4 cuotas), postulaciones bancarias, pagos en línea por Stripe y registros directos de participantes contactados.
               </p>
             </div>
 
-            {/* CONTADORES Y MÉTRICAS */}
+            {/* CONTADORES Y MÉTRICAS DEL CURSO SELECCIONADO */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full lg:w-auto">
               <div className="bg-amber-50 border border-amber-200 px-3 py-2 rounded-2xl text-center">
                 <span className="text-[10px] uppercase font-bold text-amber-800 block">Pendientes</span>
@@ -370,7 +721,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
           </div>
         </div>
 
-        {/* FILTROS Y BÚSQUEDA */}
+        {/* FILTROS Y BÚSQUEDA DENTRO DEL CURSO */}
         <div className="space-y-3 pt-4 border-t border-gray-100">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
             {/* Buscador general */}
@@ -380,7 +731,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
                   type="text"
                   value={busqueda}
                   onChange={(e) => setBusqueda(e.target.value)}
-                  placeholder="🔍 Buscar por nombre, profesión, email, país, tema..."
+                  placeholder="🔍 Buscar por nombre, profesión, email, país, WhatsApp..."
                   className="w-full text-sm px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-main-blue focus:ring-2 focus:ring-blue-100 bg-gray-50 focus:bg-white transition-all"
                 />
                 {busqueda && (
@@ -404,6 +755,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
                 <option value="todos">Todos los Métodos de Pago</option>
                 <option value="stripe">💳 Tarjeta / Stripe Online</option>
                 <option value="transferencia">🏛️ Transferencia Bancaria</option>
+                <option value="efectivo">💵 Efectivo / Otro</option>
               </select>
             </div>
 
@@ -414,9 +766,9 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
                 onChange={(e) => setFiltroEstado(e.target.value)}
                 className="w-full text-xs sm:text-sm px-3 py-2.5 rounded-xl border border-gray-200 bg-white font-medium text-gray-700 focus:outline-none focus:border-main-blue"
               >
-                <option value="todos">Todos los Estados ({solicitudes.length})</option>
-                <option value="pendiente">⏳ Pendientes ({conteoPendientes})</option>
+                <option value="todos">Todos los Estados ({solicitudesDelCurso.length})</option>
                 <option value="contactado">📞 Contactados ({conteoContactados})</option>
+                <option value="pendiente">⏳ Pendientes ({conteoPendientes})</option>
                 <option value="confirmado">✅ Confirmados ({conteoConfirmados})</option>
                 <option value="cancelado">❌ Cancelados</option>
               </select>
@@ -426,9 +778,9 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
           {/* Pastillas de filtro de estado para acceso rápido */}
           <div className="flex flex-wrap gap-1.5 pt-1">
             {[
-              { id: "todos", label: `Todos (${solicitudes.length})` },
-              { id: "pendiente", label: `Pendientes (${conteoPendientes})` },
+              { id: "todos", label: `Todos (${solicitudesDelCurso.length})` },
               { id: "contactado", label: `Contactados (${conteoContactados})` },
+              { id: "pendiente", label: `Pendientes (${conteoPendientes})` },
               { id: "confirmado", label: `Inscritos / Confirmados (${conteoConfirmados})` },
               { id: "cancelado", label: "Cancelados" }
             ].map(f => (
@@ -447,23 +799,43 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
           </div>
         </div>
 
-        {/* LISTADO DE SOLICITUDES */}
+        {/* LISTADO DE SOLICITUDES DEL CURSO */}
         {cargando ? (
           <div className="py-20 flex flex-col items-center justify-center gap-3">
             <CircularProgress size={42} thickness={4} sx={{ color: "#1D3557" }} />
             <span className="text-xs font-bold text-gray-500 tracking-wider uppercase animate-pulse">
-              Cargando inscripciones y expedientes...
+              Cargando inscripciones del curso...
             </span>
           </div>
         ) : solicitudesFiltradas.length === 0 ? (
-          <div className="text-center py-16 bg-gray-50/70 rounded-2xl border border-dashed border-gray-200 space-y-2">
-            <span className="text-4xl">📭</span>
-            <h3 className="text-base font-bold text-gray-700">No se encontraron inscripciones</h3>
-            <p className="text-xs text-gray-500 max-w-sm mx-auto">
-              {solicitudes.length === 0
-                ? "Aún no se han recibido registros a través del formulario del curso."
-                : "No hay solicitudes que coincidan con los filtros o el texto de búsqueda ingresado."}
+          <div className="text-center py-16 bg-gray-50/70 rounded-2xl border border-dashed border-gray-200 space-y-3">
+            <span className="text-4xl block">📭</span>
+            <h3 className="text-base font-bold text-gray-700">
+              No hay inscripciones registradas para este curso
+            </h3>
+            <p className="text-xs text-gray-500 max-w-md mx-auto">
+              {solicitudesDelCurso.length === 0
+                ? "Aún no se han recibido registros para este curso en particular. Puedes agregar a personas contactadas directamente con el botón de abajo."
+                : "No hay solicitudes que coincidan con los filtros de estado o búsqueda seleccionados."}
             </p>
+            {solicitudesDelCurso.length === 0 && (
+              <Button
+                variant="outlined"
+                onClick={abrirRegistroManual}
+                sx={{
+                  color: "#B92F32",
+                  borderColor: "#B92F32",
+                  textTransform: "none",
+                  fontWeight: 700,
+                  fontSize: "12px",
+                  borderRadius: "10px",
+                  mt: 1,
+                  "&:hover": { bgcolor: "#fee2e2", borderColor: "#8b1d20" }
+                }}
+              >
+                ➕ Registrar primer participante en este curso
+              </Button>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
@@ -505,9 +877,20 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
                         <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-900 border border-indigo-200 flex items-center gap-1">
                           💳 Pago con Tarjeta (Stripe)
                         </span>
+                      ) : solicitud.metodoPago === "efectivo" ? (
+                        <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-purple-100 text-purple-900 border border-purple-200 flex items-center gap-1">
+                          💵 Efectivo / Otro
+                        </span>
                       ) : (
                         <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-200 flex items-center gap-1">
                           🏛️ Transferencia Bancaria
+                        </span>
+                      )}
+
+                      {/* Badge Origen */}
+                      {solicitud.origen === "manual_admin" && (
+                        <span className="text-[10px] font-black px-2 py-0.5 rounded bg-gray-100 text-gray-700 border border-gray-200">
+                          ✍️ Registro Manual
                         </span>
                       )}
 
@@ -515,6 +898,13 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
                       {esExAlumno && (
                         <span className="text-[11px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 flex items-center gap-1">
                           ⭐ Ex-alumno IIRESODH
+                        </span>
+                      )}
+
+                      {/* Si está en modo todos, mostrar el curso al que pertenece */}
+                      {filtroCurso === "todos" && (
+                        <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-800 border border-slate-300">
+                          🎓 {solicitud.cursoTitulo || solicitud.cursoId}
                         </span>
                       )}
 
@@ -764,6 +1154,267 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad }) {
           </div>
         )}
       </section>
+
+      {/* MODAL DE REGISTRO MANUAL DE PARTICIPANTE */}
+      <Dialog
+        open={modalManual}
+        onClose={() => !guardandoManual && setModalManual(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 800, color: "#1D3557", borderBottom: "1px solid #f3f4f6" }}>
+          ➕ Registrar Participante Manual (Contactado por WhatsApp / Teléfono / Correo)
+        </DialogTitle>
+        <form onSubmit={handleGuardarManual}>
+          <DialogContent sx={{ py: 3 }} className="space-y-4">
+            <p className="text-xs text-gray-500 -mt-1">
+              Ingresa los datos del interesado que se haya comunicado directamente. Quedará guardado en el expediente oficial del curso con su estado de gestión correspondiente.
+            </p>
+
+            {/* CURSO DESTINO */}
+            <div className="bg-blue-50/60 p-3 rounded-xl border border-blue-200">
+              <label className="block text-xs font-bold text-main-blue uppercase mb-1.5">
+                Curso al que se inscribe *
+              </label>
+              <select
+                value={formManual.cursoKey}
+                onChange={(e) => setFormManual({ ...formManual, cursoKey: e.target.value })}
+                required
+                className="w-full bg-white text-gray-800 font-bold text-sm px-3.5 py-2.5 rounded-lg border border-blue-300 focus:outline-none focus:ring-2 focus:ring-main-blue"
+              >
+                {cursosDisponibles.map(c => (
+                  <option key={c.key} value={c.key}>
+                    🎓 {c.titulo}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* NOMBRES Y APELLIDOS SEGÚN PASAPORTE */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                  Nombres * (según pasaporte)
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ej: Carlos Eduardo"
+                  value={formManual.nombres}
+                  onChange={(e) => setFormManual({ ...formManual, nombres: e.target.value })}
+                  className="w-full text-sm px-3.5 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-main-blue"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                  Apellidos * (según pasaporte)
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ej: Gómez Morales"
+                  value={formManual.apellidos}
+                  onChange={(e) => setFormManual({ ...formManual, apellidos: e.target.value })}
+                  className="w-full text-sm px-3.5 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-main-blue"
+                />
+              </div>
+            </div>
+
+            {/* EMAIL Y TELÉFONO / WHATSAPP */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                  Correo Electrónico *
+                </label>
+                <input
+                  type="email"
+                  required
+                  placeholder="ejemplo@correo.com"
+                  value={formManual.email}
+                  onChange={(e) => setFormManual({ ...formManual, email: e.target.value })}
+                  className="w-full text-sm px-3.5 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-main-blue"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                  Teléfono / WhatsApp * (con código de país)
+                </label>
+                <input
+                  type="tel"
+                  required
+                  placeholder="+506 8888 8888"
+                  value={formManual.telefono}
+                  onChange={(e) => setFormManual({ ...formManual, telefono: e.target.value })}
+                  className="w-full text-sm px-3.5 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-main-blue"
+                />
+              </div>
+            </div>
+
+            {/* PAÍS Y PROFESIÓN */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                  País de Residencia *
+                </label>
+                <select
+                  value={formManual.pais}
+                  onChange={(e) => setFormManual({ ...formManual, pais: e.target.value })}
+                  className="w-full text-sm px-3.5 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-main-blue bg-white"
+                >
+                  {PAISES_LATINOAMERICA.map(p => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                  Profesión u Ocupación
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ej: Juez, Defensor, Docente, Abogado"
+                  value={formManual.profesion}
+                  onChange={(e) => setFormManual({ ...formManual, profesion: e.target.value })}
+                  className="w-full text-sm px-3.5 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-main-blue"
+                />
+              </div>
+            </div>
+
+            {/* INSTITUCIÓN */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Institución u Organización
+              </label>
+              <input
+                type="text"
+                placeholder="Ej: Poder Judicial / Universidad / Despacho privado"
+                value={formManual.institucion}
+                onChange={(e) => setFormManual({ ...formManual, institucion: e.target.value })}
+                className="w-full text-sm px-3.5 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-main-blue"
+              />
+            </div>
+
+            {/* DATOS FINANCIEROS Y ESTADO */}
+            <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-700 block">
+                Modalidad de Pago y Estado del Contacto
+              </span>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                    Estado Inicial *
+                  </label>
+                  <select
+                    value={formManual.estado}
+                    onChange={(e) => setFormManual({ ...formManual, estado: e.target.value })}
+                    className="w-full text-xs font-bold px-3 py-2 rounded-lg border border-gray-300 bg-white"
+                  >
+                    <option value="contactado">📞 Contactado (Seguimiento)</option>
+                    <option value="pendiente">⏳ Pendiente de Pago</option>
+                    <option value="confirmado">✅ Confirmado / Inscrito</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                    Método de Pago
+                  </label>
+                  <select
+                    value={formManual.metodoPago}
+                    onChange={(e) => setFormManual({ ...formManual, metodoPago: e.target.value })}
+                    className="w-full text-xs px-3 py-2 rounded-lg border border-gray-300 bg-white"
+                  >
+                    <option value="transferencia">🏛️ Transferencia Bancaria</option>
+                    <option value="stripe">💳 Tarjeta (Stripe)</option>
+                    <option value="efectivo">💵 Efectivo / Otro</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                    Plan de Financiamiento
+                  </label>
+                  <select
+                    value={formManual.planCuotas}
+                    onChange={(e) => setFormManual({ ...formManual, planCuotas: Number(e.target.value) })}
+                    className="w-full text-xs px-3 py-2 rounded-lg border border-gray-300 bg-white"
+                  >
+                    <option value={1}>Pago Único (1 cuota)</option>
+                    <option value={2}>2 pagos sin interés</option>
+                    <option value={3}>3 pagos sin interés</option>
+                    <option value={4}>4 pagos sin interés</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                    Monto Total Inversión (USD)
+                  </label>
+                  <input
+                    type="number"
+                    value={formManual.montoTotalInversion}
+                    onChange={(e) => setFormManual({ ...formManual, montoTotalInversion: Number(e.target.value) })}
+                    className="w-full text-xs px-3 py-2 rounded-lg border border-gray-300 bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                    Monto Abonado Inicialmente (USD)
+                  </label>
+                  <input
+                    type="number"
+                    value={formManual.montoPagado}
+                    onChange={(e) => setFormManual({ ...formManual, montoPagado: Number(e.target.value) })}
+                    className="w-full text-xs px-3 py-2 rounded-lg border border-gray-300 bg-white"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* NOTAS Y COMENTARIOS INTERNOS */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Comentarios / Bitácora de Contacto (Opcional)
+              </label>
+              <textarea
+                rows={2}
+                placeholder="Ej: Nos escribió por WhatsApp interesado en pagar la primera cuota la próxima quincena..."
+                value={formManual.comentarios}
+                onChange={(e) => setFormManual({ ...formManual, comentarios: e.target.value })}
+                className="w-full text-xs px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-main-blue"
+              />
+            </div>
+          </DialogContent>
+
+          <DialogActions sx={{ p: 2.5, borderTop: "1px solid #f3f4f6" }}>
+            <Button
+              onClick={() => setModalManual(false)}
+              disabled={guardandoManual}
+              sx={{ textTransform: "none", color: "#6b7280" }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={guardandoManual}
+              sx={{
+                bgcolor: "#B92F32",
+                fontWeight: 700,
+                textTransform: "none",
+                borderRadius: "10px",
+                px: 3,
+                "&:hover": { bgcolor: "#8b1d20" }
+              }}
+            >
+              {guardandoManual ? "Guardando..." : "Guardar Participante"}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
 
       {/* DIALOG DE CONFIRMACIÓN DE BORRADO */}
       <Dialog

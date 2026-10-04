@@ -180,6 +180,7 @@ export default function AdminPanel() {
   const navigate = useNavigate();
 
   const [vistaActiva, setVistaActiva] = useState("inicio");
+  const [cursoFiltroSolicitudes, setCursoFiltroSolicitudes] = useState(null);
 
   const [misPermisos, setMisPermisos] = useState({
     comunicaciones: false,
@@ -2675,6 +2676,20 @@ export default function AdminPanel() {
                               </div>
                             </div>
                             <div className="flex gap-2 w-full">
+                              {vistaActiva === 'cursos' && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setCursoFiltroSolicitudes({ id: n.id, slug: n.slug, titulo: n.titulo });
+                                    setVistaActiva("solicitudesCursos");
+                                  }}
+                                  className="px-2.5 bg-blue-50 border border-blue-200 text-main-blue hover:bg-main-blue hover:text-white py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer"
+                                  title="Ver inscripciones de este curso"
+                                >
+                                  <span>📋</span>
+                                  <span className="hidden sm:inline">Inscritos</span>
+                                </button>
+                              )}
                               <button type="button" onClick={() => handleEditarItem(n)} className="flex-1 bg-white border border-gray-200 text-gray-600 hover:text-main-blue hover:border-main-blue hover:bg-blue-50 py-1.5 rounded-lg text-xs font-semibold transition-colors">Editar</button>
                               <button type="button" onClick={() => pedirConfirmacionBorrado(n.id, n.titulo || n.nombre)} className="px-3 bg-white border border-gray-200 text-gray-400 hover:text-main-red hover:border-main-red hover:bg-red-50 py-1.5 rounded-lg transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                             </div>
@@ -2999,8 +3014,12 @@ export default function AdminPanel() {
 
         {vistaActiva === "solicitudesCursos" && (
           <AdminSolicitudesCursos
-            onVolver={() => setVistaActiva("cursos")}
+            onVolver={() => {
+              setCursoFiltroSolicitudes(null);
+              setVistaActiva("cursos");
+            }}
             logActividad={logActividad}
+            cursoInicial={cursoFiltroSolicitudes}
           />
         )}
       </div>
