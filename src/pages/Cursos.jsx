@@ -168,7 +168,7 @@ export default function Cursos() {
   }
 
   return (
-    <main className="bg-white min-h-screen flex flex-col font-sans">
+    <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] min-h-screen flex flex-col font-sans">
       <PageHeader 
         titulo={t('cursos.header_titulo', 'Oferta Académica y Cursos')} 
         subtitulo={t('cursos.header_subtitulo', 'Formación especializada en Derechos Humanos y Litigio Estratégico.')} 

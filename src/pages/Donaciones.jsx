@@ -8,7 +8,7 @@ export default function Donaciones() {
   }, []);
 
   return (
-    <main className="bg-white min-h-screen flex flex-col font-sans">
+    <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] min-h-screen flex flex-col font-sans">
       
       {/* ENCABEZADO Estandarizado */}
       <PageHeader 

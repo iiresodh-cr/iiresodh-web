@@ -90,7 +90,7 @@ export default function PaginaPais({ paisKey: propsPaisKey }) {
   }
 
   return (
-    <main className="bg-white min-h-screen flex flex-col font-sans overflow-x-hidden">
+    <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] min-h-screen flex flex-col font-sans overflow-x-hidden">
       
       <PageHeader 
         titulo={t('pagina_pais.header_titulo', 'IIRESODH {{pais}}').replace('{{pais}}', tituloPaisTraducido)} 

@@ -214,7 +214,7 @@ export default function ResultadosBusqueda() {
   const totalResultados = resultadosPaginas.length + resultadosNoticias.length + resultadosArticulos.length + resultadosCursos.length + resultadosIncidencia.length;
 
   return (
-    <main className="bg-white min-h-screen flex flex-col font-sans">
+    <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] min-h-screen flex flex-col font-sans">
       
       <PageHeader 
         titulo={t('busqueda.header_titulo', 'Resultados de Búsqueda')} 

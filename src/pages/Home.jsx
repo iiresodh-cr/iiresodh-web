@@ -298,12 +298,12 @@ export default function Home() {
     : (noticiasSinHero.length > 0 ? noticiasSinHero : []);
 
   return (
-    <main className="bg-[#FAFBFD] flex flex-col min-h-screen font-sans overflow-x-hidden selection:bg-red-500 selection:text-white">
+    <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] flex flex-col min-h-screen font-sans overflow-x-hidden selection:bg-red-500 selection:text-white">
       
       <div className="relative grow">
         
         {/* Iluminación ambiental y sutil de fondo (sin texturas recargadas) */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] pointer-events-none overflow-hidden opacity-60">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] pointer-events-none overflow-hidden opacity-40 [mask-image:linear-gradient(to_bottom,transparent_0%,black_20%,black_100%)]">
           <div className="absolute -top-40 left-1/4 w-[500px] h-[500px] bg-red-100/40 rounded-full blur-[120px]"></div>
           <div className="absolute top-20 right-10 w-[450px] h-[450px] bg-blue-100/40 rounded-full blur-[140px]"></div>
         </div>

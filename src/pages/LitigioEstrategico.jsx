@@ -38,7 +38,7 @@ export default function LitigioEstrategico() {
   };
 
   return (
-    <main className="bg-white min-h-screen flex flex-col font-sans overflow-x-hidden">
+    <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] min-h-screen flex flex-col font-sans overflow-x-hidden">
       
       <PageHeader 
         titulo={t('litigio.header_titulo', 'Litigio Estratégico')} 

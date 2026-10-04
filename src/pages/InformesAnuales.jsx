@@ -55,7 +55,7 @@ export default function InformesAnuales() {
   }
 
   return (
-    <main className="bg-white min-h-screen flex flex-col font-sans">
+    <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] min-h-screen flex flex-col font-sans">
       <PageHeader 
         titulo={t('informes.header_titulo', 'Informes Anuales')} 
         subtitulo={t('informes.header_subtitulo', 'Transparencia y rendición de cuentas sobre nuestra gestión e impacto en los Derechos Humanos.')} 

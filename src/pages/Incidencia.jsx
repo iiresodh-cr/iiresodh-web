@@ -117,7 +117,7 @@ export default function Incidencia() {
   }
 
   return (
-    <main className="bg-white min-h-screen flex flex-col font-sans overflow-x-hidden">
+    <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] min-h-screen flex flex-col font-sans overflow-x-hidden">
       
       <PageHeader 
         titulo={t('incidencia.header_titulo', 'Incidencia Internacional')} 

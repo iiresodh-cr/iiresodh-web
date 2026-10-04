@@ -663,7 +663,7 @@ export default function CursoLanding() {
   ];
 
   return (
-    <main className="min-h-screen bg-slate-50/60 font-sans text-gray-800 antialiased selection:bg-main-blue selection:text-white">
+    <main className="min-h-screen bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] font-sans text-gray-800 antialiased selection:bg-main-blue selection:text-white">
       
       {/* BANNER DE VISTA PREVIA (BORRADOR NO PÚBLICO) */}
       {!esPublica && (

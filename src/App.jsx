@@ -96,7 +96,7 @@ const FallbackLoader = () => (
 
 function PublicLayout() {
   return (
-    <div className="flex flex-col min-h-screen relative">
+    <div className="flex flex-col min-h-screen relative bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD]">
       {/* Enlace accesible para saltar directamente al contenido principal (WCAG 2.4.1) */}
       <a 
         href="#main-content" 

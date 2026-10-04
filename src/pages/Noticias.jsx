@@ -133,7 +133,7 @@ export default function Noticias() {
   }
 
   return (
-    <main className="bg-white min-h-screen flex flex-col font-sans">
+    <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] min-h-screen flex flex-col font-sans">
       
       <PageHeader 
         titulo={t('noticias.header_titulo', 'Centro de Noticias y Comunicados')} 

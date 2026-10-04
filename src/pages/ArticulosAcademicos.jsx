@@ -104,7 +104,7 @@ export default function ArticulosAcademicos() {
   }
 
   return (
-    <main className="bg-white min-h-screen flex flex-col font-sans">
+    <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] min-h-screen flex flex-col font-sans">
       
       <PageHeader 
         titulo={t('articulos.header_titulo', 'Artículos Académicos')} 

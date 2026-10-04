@@ -260,7 +260,7 @@ export default function Home2() {
   };
 
   return (
-    <main className="bg-white flex flex-col min-h-screen font-sans overflow-x-hidden">
+    <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] flex flex-col min-h-screen font-sans overflow-x-hidden">
       <div className="relative grow pb-20">
         <div className="bg-watermark" aria-hidden="true"></div>
 

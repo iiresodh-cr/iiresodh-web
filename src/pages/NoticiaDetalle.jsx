@@ -236,7 +236,7 @@ export default function NoticiaDetalle() {
   };
 
   return (
-    <main className="bg-white min-h-screen flex flex-col font-sans">
+    <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] min-h-screen flex flex-col font-sans">
       <header className="bg-main-blue text-white py-14 px-6 text-center relative z-20">
         <span className="text-xs font-black text-main-red uppercase tracking-[0.3em] mb-4 block">
           {noticia.fechaPublicacion?.toDate ? 
