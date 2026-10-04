@@ -19,6 +19,7 @@ import brochureP2 from "../assets/cursos/brochure_palermo_p1.jpg";
 import logoIiresodh from "../assets/logo.webp";
 import logoIiresodhColor from "../assets/logo-color.png";
 import FormularioPagoCurso from "../components/cursos/FormularioPagoCurso";
+import SelectorModalidadPago from "../components/cursos/SelectorModalidadPago";
 import { PAISES_LATINOAMERICA } from "../data/paisesLatinoamerica";
 import { Scale, ShieldCheck, Search, GraduationCap, Globe } from "lucide-react";
 
@@ -425,6 +426,7 @@ export default function CursoLanding() {
   // Tab activo principal del Hub Interactivo del Curso
   const [seccionActiva, setSeccionActiva] = useState("legado"); // 'legado' | 'programa' | 'docentes' | 'incluido' | 'brochure' | 'sede' | 'inscripcion'
   const [metodoInscripcion, setMetodoInscripcion] = useState("tarjeta"); // 'tarjeta' | 'transferencia'
+  const [planCuotas, setPlanCuotas] = useState(1); // 1 = Pago único, 2 = 2 pagos, 3 = 3 pagos, 4 = 4 pagos
   const [modalBrochure, setModalBrochure] = useState(null); // null | 1 | 2
 
   // Tab activo en la estructura del programa (Días)
@@ -1614,25 +1616,6 @@ export default function CursoLanding() {
                       </span>
                     </div>
 
-                    {/* FINANCIACIÓN EN CUOTAS (COLAPSABLE, CERRADO POR DEFECTO) */}
-                    <details className="group bg-sky-50/70 border border-sky-200 rounded-2xl p-3.5 text-xs">
-                      <summary className="flex items-center justify-between gap-2 cursor-pointer select-none list-none">
-                        <div className="flex items-center gap-2 text-sky-950 font-bold">
-                          <span>💳</span>
-                          <span>Financiación en Cuotas Sin Intereses</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full border border-sky-200">
-                            0% Recargo
-                          </span>
-                          <span className="text-sky-600 group-open:rotate-180 transition-transform text-xs">▼</span>
-                        </div>
-                      </summary>
-                      <p className="text-sky-900 font-light text-[11px] leading-relaxed pt-2.5 mt-2 border-t border-sky-200/60">
-                        Difiere tu matrícula sin recargo financiero. Por estricto control institucional, <strong>todas las cuotas deben quedar concluidas a más tardar el último día del mes anterior al evento ({landing.fechaLimiteTexto || "30 de abril de 2027"})</strong>. Los planes disponibles se calculan y limitan automáticamente en el formulario según tu fecha de registro.
-                      </p>
-                    </details>
-
                     {/* QUÉ INCLUYE */}
                     <div className="space-y-2 pt-1 text-xs text-gray-600">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">
@@ -1658,6 +1641,14 @@ export default function CursoLanding() {
                       </ul>
                     </div>
                   </div>
+
+                  {/* CUADROS DE FINANCIAMIENTO EN LA COLUMNA IZQUIERDA */}
+                  <SelectorModalidadPago
+                    curso={curso}
+                    landing={landing}
+                    planCuotas={planCuotas}
+                    setPlanCuotas={setPlanCuotas}
+                  />
                 </div>
 
                 {/* COLUMNA DERECHA: FORMULARIO DINÁMICO */}
@@ -1672,13 +1663,15 @@ export default function CursoLanding() {
                           Pago Directo con Tarjeta en Línea
                         </h4>
                         <p className="text-xs text-gray-500 font-light mt-0.5">
-                          Selecciona si deseas pagar en 1 sola exhibición o en 2, 3 o 4 cuotas mensuales sin intereses.
+                          Completa tus datos personales, académicos y de tarjeta para asegurar tu cupo oficial.
                         </p>
                       </div>
 
                       <FormularioPagoCurso
                         curso={curso}
                         landing={landing}
+                        planCuotas={planCuotas}
+                        setPlanCuotas={setPlanCuotas}
                         onSwitchToTransferencia={() => setMetodoInscripcion("transferencia")}
                       />
                     </div>

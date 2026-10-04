@@ -84,7 +84,13 @@ const TEMAS_EXPERIENCIA_OPCIONES = [
 ];
 
 // Formulario interno con acceso al hook de Stripe Elements
-function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
+function CheckoutFormCurso({
+  curso,
+  landing,
+  planCuotas: propPlanCuotas,
+  setPlanCuotas: propSetPlanCuotas,
+  onSwitchToTransferencia
+}) {
   const stripe = useStripe();
   const elements = useElements();
 
@@ -107,7 +113,9 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
   });
 
   // Plan de cuotas seleccionado (1 = Pago único, 2 = 2 pagos, 3 = 3 pagos, 4 = 4 pagos)
-  const [planCuotas, setPlanCuotas] = useState(1);
+  const [internalPlanCuotas, setInternalPlanCuotas] = useState(1);
+  const planCuotas = propPlanCuotas !== undefined ? propPlanCuotas : internalPlanCuotas;
+  const setPlanCuotas = propSetPlanCuotas || setInternalPlanCuotas;
   const [aceptarTerminos, setAceptarTerminos] = useState(false);
 
   // Estados de proceso
@@ -441,146 +449,10 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
 
   return (
     <form onSubmit={handleSubmitPago} className="space-y-6">
-      {/* 1. SELECTOR DE PLAN DE PAGOS (1, 2, 3 o 4 PAGOS SIN INTERESES) */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between flex-wrap gap-1">
-          <label className="block text-xs font-black text-main-blue uppercase tracking-wider">
-            1. Selecciona tu Modalidad de Pago
-          </label>
-          <span className="text-[10px] font-bold text-sky-700 bg-sky-50 px-2.5 py-0.5 rounded-full border border-sky-200">
-            ✓ 0% Costo Financiero
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {opcionesPlanes.map((opcion) => {
-            const isSelected = planCuotas === opcion.cuotas;
-            const isDisponible = opcion.disponible;
-
-            return (
-              <div
-                key={opcion.cuotas}
-                onClick={() => {
-                  if (isDisponible) {
-                    setPlanCuotas(opcion.cuotas);
-                  }
-                }}
-                className={`relative p-3.5 sm:p-4 rounded-2xl border-2 transition-all text-left ${
-                  !isDisponible
-                    ? "border-gray-200 bg-gray-50/70 opacity-60 cursor-not-allowed"
-                    : isSelected
-                    ? "border-sky-600 bg-sky-50/40 shadow-xs cursor-pointer"
-                    : "border-gray-200 bg-white hover:border-sky-200 cursor-pointer"
-                }`}
-              >
-                {/* Radio y Badge */}
-                <div className="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
-                        !isDisponible
-                          ? "border-gray-300 bg-gray-200"
-                          : isSelected
-                          ? "border-sky-600 bg-sky-600"
-                          : "border-gray-300 bg-white"
-                      }`}
-                    >
-                      {isSelected && isDisponible && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
-                    </div>
-                    <span className={`text-xs font-bold leading-tight ${isDisponible ? "text-gray-900" : "text-gray-400 line-through"}`}>
-                      {opcion.titulo}
-                    </span>
-                  </div>
-                  {isDisponible ? (
-                    <span className={`text-[9px] px-2 py-0.5 rounded-full border font-bold uppercase tracking-wider ${opcion.badgeColor}`}>
-                      {opcion.badge}
-                    </span>
-                  ) : (
-                    <span className="text-[9px] px-2 py-0.5 rounded-full border border-red-200 bg-red-50 text-red-700 font-bold uppercase tracking-wider">
-                      Límite Superado
-                    </span>
-                  )}
-                </div>
-
-                {/* Importe */}
-                <div className="pl-6">
-                  <div className="flex items-baseline gap-1">
-                    <span className={`text-lg sm:text-xl font-black ${isDisponible ? "text-main-blue" : "text-gray-400"}`}>
-                      {simboloMoneda}{formatMonto(opcion.montoPorCuota)}
-                    </span>
-                    <span className="text-[11px] font-bold text-gray-500">USD</span>
-                    {opcion.cuotas > 1 && (
-                      <span className="text-[10px] text-gray-400 font-medium">/ cuota</span>
-                    )}
-                  </div>
-                  <p className="text-[11px] text-gray-500 font-light mt-0.5 leading-snug">
-                    {isDisponible ? (
-                      opcion.descripcion
-                    ) : (
-                      <span className="text-red-600 font-normal">
-                        No disponible: la última cuota superaría la fecha límite del {fechaLimiteTexto}.
-                      </span>
-                    )}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* CRONOGRAMA DETALLADO DE CUOTAS CUANDO PLAN > 1 */}
-        {planCuotas > 1 && (
-          <div className="bg-gradient-to-br from-sky-50/80 via-white to-sky-50/50 border border-sky-200/90 rounded-2xl p-4 text-xs space-y-3 shadow-2xs">
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-              <span className="font-extrabold text-sky-950 uppercase tracking-wide text-[11px] flex items-center gap-1.5">
-                <span>📅</span> Cronograma de Cuotas Programadas
-              </span>
-              <span className="text-[10px] font-bold text-sky-800 bg-sky-100/90 px-2 py-0.5 rounded-md border border-sky-200/60">
-                Liquidación antes del evento
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {Array.from({ length: planCuotas }).map((_, i) => {
-                const fechaCuota = calcularFechaCuota(hoy, i);
-                const esHoy = i === 0;
-                return (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between bg-white px-3 py-2 rounded-xl border border-sky-100 shadow-2xs text-[11px]"
-                  >
-                    <div>
-                      <p className="font-bold text-gray-800">
-                        {esHoy ? "1ª Cuota (Inmediata)" : `${i + 1}ª Cuota Mensual`}
-                      </p>
-                      <p className="text-[10px] text-gray-500 font-light">
-                        {esHoy
-                          ? "Cobro hoy al inscribirte"
-                          : fechaCuota.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}
-                      </p>
-                    </div>
-                    <span className="font-black text-main-blue text-xs">
-                      {simboloMoneda}{formatMonto(montoCuotaActual)}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="flex items-start gap-2 pt-2 border-t border-sky-200/70 text-[11px] text-sky-900 leading-snug">
-              <span className="text-base shrink-0">🛡️</span>
-              <span>
-                <strong>Control Institucional de Plazos:</strong> De conformidad con la normativa académica de IIRESODH, todos los pagos concluyen a más tardar el <strong>{fechaLimiteTexto}</strong> (último día del mes anterior al inicio del curso).
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* 2. DATOS PERSONALES Y PROFESIONALES */}
-      <div className="space-y-4 pt-2 border-t border-gray-100">
+      {/* 1. DATOS PERSONALES Y PROFESIONALES */}
+      <div className="space-y-4">
         <label className="block text-xs font-black text-main-blue uppercase tracking-wider">
-          2. Datos Personales y Profesionales
+          1. Datos Personales y Profesionales
         </label>
 
         {/* AVISO PASAPORTE */}
@@ -695,10 +567,10 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
         </div>
       </div>
 
-      {/* 3. PERFIL ACADÉMICO Y EXPERIENCIA PREVIA */}
+      {/* 2. PERFIL ACADÉMICO Y EXPERIENCIA PREVIA */}
       <div className="space-y-4 pt-2 border-t border-gray-100">
         <label className="block text-xs font-black text-main-blue uppercase tracking-wider">
-          3. Perfil Académico y Experiencia en la Materia
+          2. Perfil Académico y Experiencia en la Materia
         </label>
 
         {/* EXPERIENCIA EN TEMAS */}
@@ -834,11 +706,11 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
         </div>
       </div>
 
-      {/* 4. DATOS DE TARJETA CON STRIPE ELEMENTS Y SELLO DE CONFIANZA */}
+      {/* 3. DATOS DE TARJETA CON STRIPE ELEMENTS Y SELLO DE CONFIANZA */}
       <div className="space-y-3 pt-3 border-t border-gray-100">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <label className="block text-xs font-black text-main-blue uppercase tracking-wider">
-            4. Datos de Tarjeta de Crédito / Débito
+            3. Datos de Tarjeta de Crédito / Débito
           </label>
           <div className="flex items-center gap-1.5 px-2.5 py-1 bg-sky-50 rounded-lg border border-sky-100 text-[10px] font-bold text-sky-800">
             <span className="inline-block w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
@@ -863,11 +735,17 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
         </div>
       </div>
 
-      {/* 5. RESUMEN DE CARGO Y TÉRMINOS */}
+      {/* 4. RESUMEN DE CARGO Y TÉRMINOS */}
       <div className="bg-slate-50 border border-gray-200 rounded-2xl p-4 text-xs space-y-2">
         <div className="flex items-center justify-between text-gray-700">
           <span>Inversión total del curso:</span>
           <span className="font-bold text-gray-900">{simboloMoneda}{formatMonto(montoTotal)} USD</span>
+        </div>
+        <div className="flex items-center justify-between text-gray-700">
+          <span>Modalidad de pago seleccionada:</span>
+          <span className="font-bold text-sky-800 bg-sky-100/80 px-2.5 py-0.5 rounded-md border border-sky-200 text-[11px]">
+            {planCuotas === 1 ? "Pago Único Completo" : `${planCuotas} Pagos Sin Intereses`}
+          </span>
         </div>
         <div className="flex items-center justify-between text-main-blue font-bold text-sm border-t border-gray-200 pt-2">
           <span>Importe a cobrar hoy ({planCuotas === 1 ? "Pago total" : "1ª Cuota"}):</span>
@@ -986,12 +864,20 @@ function CheckoutFormCurso({ curso, landing, onSwitchToTransferencia }) {
 }
 
 // Wrapper exportado que incluye el Provider <Elements>
-export default function FormularioPagoCurso({ curso, landing, onSwitchToTransferencia }) {
+export default function FormularioPagoCurso({
+  curso,
+  landing,
+  planCuotas,
+  setPlanCuotas,
+  onSwitchToTransferencia
+}) {
   return (
     <Elements stripe={stripeCursosPromise}>
       <CheckoutFormCurso 
         curso={curso} 
         landing={landing} 
+        planCuotas={planCuotas}
+        setPlanCuotas={setPlanCuotas}
         onSwitchToTransferencia={onSwitchToTransferencia} 
       />
     </Elements>
