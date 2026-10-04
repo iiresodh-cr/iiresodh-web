@@ -46,6 +46,21 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
   const [subiendoPasaporteId, setSubiendoPasaporteId] = useState(null);
   const [modalPasaporte, setModalPasaporte] = useState({ open: false, url: "", nombre: "", tipo: "" });
 
+  // Control de Pagos y Abonos
+  const [modalPagos, setModalPagos] = useState({ open: false, solicitud: null });
+  const [formAbono, setFormAbono] = useState({
+    monto: "",
+    fecha: new Date().toISOString().slice(0, 10),
+    metodo: "transferencia",
+    referencia: "",
+    notas: "",
+    comprobanteFile: null
+  });
+  const [guardandoAbono, setGuardandoAbono] = useState(false);
+  const [editandoPlan, setEditandoPlan] = useState(false);
+  const [formPlan, setFormPlan] = useState({ montoTotalInversion: 3350, planCuotas: 1 });
+  const [guardandoPlan, setGuardandoPlan] = useState(false);
+
   // Alertas
   const [alerta, setAlerta] = useState({ open: false, mensaje: "", esError: false });
   // Modal de confirmación para eliminar
@@ -225,9 +240,12 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
   const conteoContactados = solicitudesDelCurso.filter(s => s.estado === "contactado").length;
   const conteoConfirmados = solicitudesDelCurso.filter(s => s.estado === "confirmado").length;
   const conteoStripe = solicitudesDelCurso.filter(s => s.metodoPago === "stripe").length;
-  const totalRecaudadoStripe = solicitudesDelCurso
-    .filter(s => s.metodoPago === "stripe")
-    .reduce((acc, s) => acc + (Number(s.montoPagado) || 0), 0);
+  const totalRecaudado = solicitudesDelCurso.reduce((acc, s) => acc + (Number(s.montoPagado) || 0), 0);
+  const totalPorCobrar = solicitudesDelCurso.reduce((acc, s) => {
+    const inv = Number(s.montoTotalInversion) || 3350;
+    const pag = Number(s.montoPagado) || 0;
+    return acc + Math.max(0, inv - pag);
+  }, 0);
 
   // 2. Solicitudes filtradas por método de pago, estado secundario y buscador
   const solicitudesFiltradas = useMemo(() => {
@@ -277,7 +295,6 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
 
       mostrarToast(`Copia de pasaporte de ${solicitud.nombre || 'participante'} subida con éxito.`);
 
-      // Registro en log de auditoría
       if (logActividad) {
         await logActividad(
           `Subió copia de pasaporte para ${solicitud.nombre || solicitud.id} (${file.name}) en curso "${solicitud.cursoTitulo || solicitud.cursoId || ''}"`,
@@ -317,7 +334,6 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
 
       mostrarToast(`Estado actualizado a: ${nuevoEstado}`);
 
-      // Registro en log de auditoría
       if (logActividad) {
         await logActividad(
           `Actualizó estado de participante "${solicitudActual.nombre || id}" a "${nuevoEstado}"`,
@@ -346,7 +362,6 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       setSolicitudes(prev => prev.filter(s => s.id !== modalBorrar.id));
       mostrarToast("Solicitud eliminada con éxito.");
 
-      // Registro en log de auditoría
       if (logActividad) {
         await logActividad(
           `Eliminó participante de curso: "${modalBorrar.nombre || modalBorrar.id}" (ID: ${modalBorrar.id})`,
@@ -362,6 +377,243 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       mostrarToast("Error al eliminar la solicitud.", true);
     } finally {
       setModalBorrar({ open: false, id: null, nombre: "", cursoTitulo: "" });
+    }
+  };
+
+  // ==========================================
+  // GESTIÓN Y CONTROL DE PAGOS Y ABONOS
+  // ==========================================
+  const abrirGestionPagos = (solicitud) => {
+    const totalInv = Number(solicitud.montoTotalInversion) || 3350;
+    const cuotas = Number(solicitud.planCuotas) || 1;
+    const pagado = Number(solicitud.montoPagado) || 0;
+    const saldo = Math.max(0, totalInv - pagado);
+
+    // Sugerir monto de la próxima cuota o saldo restante
+    const cuotaMonto = cuotas > 1 ? Number((totalInv / cuotas).toFixed(2)) : totalInv;
+    const sugerido = saldo > 0 ? (saldo < cuotaMonto ? saldo : cuotaMonto) : "";
+
+    setModalPagos({ open: true, solicitud });
+    setFormAbono({
+      monto: sugerido ? String(sugerido) : "",
+      fecha: new Date().toISOString().slice(0, 10),
+      metodo: solicitud.metodoPago || "transferencia",
+      referencia: "",
+      notas: "",
+      comprobanteFile: null
+    });
+    setFormPlan({
+      montoTotalInversion: totalInv,
+      planCuotas: cuotas
+    });
+    setEditandoPlan(false);
+  };
+
+  // Registrar un nuevo abono
+  const handleRegistrarAbono = async (e) => {
+    e.preventDefault();
+    const solicitud = modalPagos.solicitud;
+    if (!solicitud) return;
+
+    const montoNum = Number(formAbono.monto);
+    if (!montoNum || montoNum <= 0) {
+      mostrarToast("Por favor ingresa un monto válido mayor a 0.", true);
+      return;
+    }
+
+    setGuardandoAbono(true);
+    try {
+      let comprobanteData = {};
+      if (formAbono.comprobanteFile) {
+        try {
+          const extension = formAbono.comprobanteFile.name.split('.').pop() || 'pdf';
+          const safeName = `comprobante_${solicitud.id}_${Date.now()}.${extension}`;
+          const rutaStorage = `comprobantes_pagos/${solicitud.cursoId || 'curso'}/${safeName}`;
+          const storageRef = ref(storage, rutaStorage);
+          await uploadBytes(storageRef, formAbono.comprobanteFile);
+          const url = await getDownloadURL(storageRef);
+          comprobanteData = {
+            comprobanteUrl: url,
+            comprobanteNombre: formAbono.comprobanteFile.name
+          };
+        } catch (errUpload) {
+          console.error("Error al subir comprobante de pago:", errUpload);
+        }
+      }
+
+      const nuevoPagoItem = {
+        id: `pago_${Date.now()}`,
+        monto: montoNum,
+        fecha: formAbono.fecha,
+        metodo: formAbono.metodo,
+        referencia: formAbono.referencia.trim(),
+        notas: formAbono.notas.trim(),
+        registradoPor: auth.currentUser?.email || "Administrador",
+        timestamp: new Date().toISOString(),
+        ...comprobanteData
+      };
+
+      const historialPrevio = Array.isArray(solicitud.historialPagos) ? solicitud.historialPagos : [];
+      const nuevoHistorial = [...historialPrevio, nuevoPagoItem];
+
+      const nuevoMontoPagado = Number(((Number(solicitud.montoPagado) || 0) + montoNum).toFixed(2));
+      const totalInv = Number(solicitud.montoTotalInversion) || 3350;
+      const nuevoSaldo = Math.max(0, Number((totalInv - nuevoMontoPagado).toFixed(2)));
+      const planCuotas = Number(solicitud.planCuotas) || 1;
+      const montoPorCuota = totalInv / planCuotas;
+      const cuotasPagadasCalc = Math.min(planCuotas, Math.floor((nuevoMontoPagado + 1) / montoPorCuota));
+
+      const updateData = {
+        montoPagado: nuevoMontoPagado,
+        saldoPendiente: nuevoSaldo,
+        cuotasPagadas: cuotasPagadasCalc,
+        historialPagos: nuevoHistorial,
+        ultimoPagoFecha: formAbono.fecha,
+        ultimoPagoMonto: montoNum
+      };
+
+      // Si quedó 100% liquidado, confirmar inscripción automáticamente
+      if (nuevoSaldo <= 0 && solicitud.estado !== "confirmado") {
+        updateData.estado = "confirmado";
+      }
+
+      await updateDoc(doc(db, "solicitudesCursos", solicitud.id), updateData);
+
+      const solicitudActualizada = { ...solicitud, ...updateData };
+      setSolicitudes(prev => prev.map(s => (s.id === solicitud.id ? solicitudActualizada : s)));
+      setModalPagos({ open: true, solicitud: solicitudActualizada });
+
+      mostrarToast(`Abono de $${montoNum.toLocaleString()} USD registrado con éxito.`);
+
+      if (logActividad) {
+        await logActividad(
+          `Registró abono de $${montoNum.toLocaleString()} USD para "${solicitud.nombre || solicitud.id}" en curso "${solicitud.cursoTitulo || ''}"`,
+          {
+            solicitudId: solicitud.id,
+            participante: solicitud.nombre,
+            montoAbonado: montoNum,
+            nuevoTotalPagado: nuevoMontoPagado,
+            saldoPendiente: nuevoSaldo,
+            referencia: formAbono.referencia,
+            metodo: formAbono.metodo,
+            liquidadoCompletamente: nuevoSaldo <= 0
+          }
+        );
+      }
+
+      // Limpiar formulario de abono
+      setFormAbono({
+        monto: "",
+        fecha: new Date().toISOString().slice(0, 10),
+        metodo: solicitud.metodoPago || "transferencia",
+        referencia: "",
+        notas: "",
+        comprobanteFile: null
+      });
+    } catch (error) {
+      console.error("Error al registrar abono:", error);
+      mostrarToast("Error al registrar el abono.", true);
+    } finally {
+      setGuardandoAbono(false);
+    }
+  };
+
+  // Anular o eliminar un abono
+  const handleEliminarAbono = async (pagoId, montoAbono) => {
+    const solicitud = modalPagos.solicitud;
+    if (!solicitud) return;
+
+    if (!window.confirm(`¿Estás seguro de anular este abono de $${montoAbono} USD?`)) return;
+
+    try {
+      const nuevoHistorial = (solicitud.historialPagos || []).filter(p => p.id !== pagoId);
+      const nuevoMontoPagado = Math.max(0, Number(((Number(solicitud.montoPagado) || 0) - montoAbono).toFixed(2)));
+      const totalInv = Number(solicitud.montoTotalInversion) || 3350;
+      const nuevoSaldo = Math.max(0, Number((totalInv - nuevoMontoPagado).toFixed(2)));
+      const planCuotas = Number(solicitud.planCuotas) || 1;
+      const montoPorCuota = totalInv / planCuotas;
+      const cuotasPagadasCalc = Math.min(planCuotas, Math.floor((nuevoMontoPagado + 1) / montoPorCuota));
+
+      const updateData = {
+        montoPagado: nuevoMontoPagado,
+        saldoPendiente: nuevoSaldo,
+        cuotasPagadas: cuotasPagadasCalc,
+        historialPagos: nuevoHistorial
+      };
+
+      await updateDoc(doc(db, "solicitudesCursos", solicitud.id), updateData);
+
+      const solicitudActualizada = { ...solicitud, ...updateData };
+      setSolicitudes(prev => prev.map(s => (s.id === solicitud.id ? solicitudActualizada : s)));
+      setModalPagos({ open: true, solicitud: solicitudActualizada });
+
+      mostrarToast(`Abono de $${montoAbono} USD anulado correctamente.`);
+
+      if (logActividad) {
+        await logActividad(
+          `Anuló abono de $${montoAbono} USD para "${solicitud.nombre || solicitud.id}"`,
+          {
+            solicitudId: solicitud.id,
+            participante: solicitud.nombre,
+            montoAnulado: montoAbono,
+            nuevoSaldo: nuevoSaldo
+          }
+        );
+      }
+    } catch (error) {
+      console.error("Error al anular abono:", error);
+      mostrarToast("Error al anular el abono.", true);
+    }
+  };
+
+  // Actualizar configuración del plan financiero de la solicitud
+  const handleGuardarPlan = async (e) => {
+    e.preventDefault();
+    const solicitud = modalPagos.solicitud;
+    if (!solicitud) return;
+
+    setGuardandoPlan(true);
+    try {
+      const nuevoTotal = Number(formPlan.montoTotalInversion) || 3350;
+      const nuevoPlanCuotas = Number(formPlan.planCuotas) || 1;
+      const pagado = Number(solicitud.montoPagado) || 0;
+      const nuevoSaldo = Math.max(0, Number((nuevoTotal - pagado).toFixed(2)));
+      const montoPorCuota = nuevoTotal / nuevoPlanCuotas;
+      const cuotasCalc = Math.min(nuevoPlanCuotas, Math.floor((pagado + 1) / montoPorCuota));
+
+      const updateData = {
+        montoTotalInversion: nuevoTotal,
+        planCuotas: nuevoPlanCuotas,
+        saldoPendiente: nuevoSaldo,
+        cuotasPagadas: cuotasCalc
+      };
+
+      await updateDoc(doc(db, "solicitudesCursos", solicitud.id), updateData);
+
+      const solicitudActualizada = { ...solicitud, ...updateData };
+      setSolicitudes(prev => prev.map(s => (s.id === solicitud.id ? solicitudActualizada : s)));
+      setModalPagos({ open: true, solicitud: solicitudActualizada });
+      setEditandoPlan(false);
+
+      mostrarToast("Plan financiero actualizado con éxito.");
+
+      if (logActividad) {
+        await logActividad(
+          `Actualizó plan financiero de "${solicitud.nombre || solicitud.id}": Inversión $${nuevoTotal} USD, ${nuevoPlanCuotas} cuota(s)`,
+          {
+            solicitudId: solicitud.id,
+            participante: solicitud.nombre,
+            montoTotalInversion: nuevoTotal,
+            planCuotas: nuevoPlanCuotas,
+            saldoPendiente: nuevoSaldo
+          }
+        );
+      }
+    } catch (error) {
+      console.error("Error al actualizar plan:", error);
+      mostrarToast("Error al actualizar el plan financiero.", true);
+    } finally {
+      setGuardandoPlan(false);
     }
   };
 
@@ -390,7 +642,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
     setModalManual(true);
   };
 
-  // Guardar participante manual con constancia de consentimiento y log de auditoría
+  // Guardar participante manual
   const handleGuardarManual = async (e) => {
     e.preventDefault();
     if (!formManual.nombres.trim() || !formManual.apellidos.trim() || !formManual.email.trim()) {
@@ -434,6 +686,21 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         }
       }
 
+      // Si se ingresó un abono inicial, crear registro en historialPagos
+      let historialInicial = [];
+      if (pagado > 0) {
+        historialInicial.push({
+          id: `pago_inicial_${Date.now()}`,
+          monto: pagado,
+          fecha: new Date().toISOString().slice(0, 10),
+          metodo: formManual.metodoPago,
+          referencia: "Abono inicial registrado en alta de participante",
+          notas: "Registro administrativo directo",
+          registradoPor: adminActual,
+          timestamp: new Date().toISOString()
+        });
+      }
+
       const constanciaTexto = formManual.detalleConsentimiento.trim()
         ? formManual.detalleConsentimiento.trim()
         : `Consentimiento informado otorgado vía ${formManual.medioConsentimiento} conforme a la Ley N° 8968 de Costa Rica.`;
@@ -455,6 +722,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         montoTotalInversion: totalInv,
         montoPagado: pagado,
         saldoPendiente: Math.max(0, totalInv - pagado),
+        historialPagos: historialInicial,
         estado: formManual.estado || "contactado",
         origen: "manual_admin",
         registradoPorAdmin: adminActual,
@@ -479,9 +747,8 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
 
       setSolicitudes(prev => [nuevoItemLocal, ...prev]);
 
-      mostrarToast(`Participante "${nombreCompleto}" registrado exitosamente con constancia de consentimiento.`);
+      mostrarToast(`Participante "${nombreCompleto}" registrado exitosamente.`);
 
-      // Registro exhaustivo en log de auditoría
       if (logActividad) {
         await logActividad(
           `Registró manualmente a "${nombreCompleto}" en el curso "${cursoElegido.titulo}" con estado "${formManual.estado}"`,
@@ -517,7 +784,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
     }
   };
 
-  // Exportar CSV con constancia y log de auditoría
+  // Exportar CSV
   const exportarCSV = async () => {
     if (solicitudesDelCurso.length === 0) {
       mostrarToast("No hay solicitudes para exportar en este curso.", true);
@@ -552,6 +819,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       "Monto Pagado USD",
       "Monto Total Inversión USD",
       "Saldo Pendiente USD",
+      "Historial Abonos (Cantidad)",
       "ID Stripe PaymentIntent",
       "Curso",
       "Comentarios"
@@ -573,6 +841,8 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       const temas = Array.isArray(s.experienciaTemas)
         ? s.experienciaTemas.join("; ")
         : (s.experienciaTemas || "");
+
+      const cantAbonos = Array.isArray(s.historialPagos) ? s.historialPagos.length : (Number(s.montoPagado) > 0 ? 1 : 0);
 
       return [
         `"${fecha}"`,
@@ -602,6 +872,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         `"${s.montoPagado || (s.metodoPago === 'stripe' ? 3350 : 0)}"`,
         `"${s.montoTotalInversion || 3350}"`,
         `"${s.saldoPendiente !== undefined ? s.saldoPendiente : (s.metodoPago === 'stripe' ? 0 : 3350)}"`,
+        `"${cantAbonos}"`,
         `"${(s.stripePaymentIntentId || s.stripeSessionId || '').replace(/"/g, '""')}"`,
         `"${(s.cursoTitulo || s.cursoId || '').replace(/"/g, '""')}"`,
         `"${(s.comentarios || '').replace(/"/g, '""')}"`
@@ -623,7 +894,6 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
     document.body.removeChild(link);
     mostrarToast(`Reporte CSV de "${cursoActivoObj?.titulo || 'Curso'}" descargado con éxito.`);
 
-    // Registro en log de auditoría
     if (logActividad) {
       await logActividad(
         `Exportó reporte CSV de inscripciones del curso "${cursoActivoObj?.titulo || 'Todos'}"`,
@@ -640,7 +910,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
   const formatearFecha = (timestamp) => {
     if (!timestamp) return "Sin fecha";
     try {
-      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp.seconds * 1000);
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp.seconds ? timestamp.seconds * 1000 : timestamp);
       return date.toLocaleString("es-CR", {
         day: "2-digit",
         month: "short",
@@ -845,16 +1115,16 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                   {filtroCurso === "todos" ? "Consolidado" : "Datos Aislados"}
                 </span>
                 <span className="text-xs font-semibold text-gray-500">
-                  Total de inscripciones en este curso: <strong className="text-gray-900">{solicitudesDelCurso.length}</strong>
+                  Total inscritos: <strong className="text-gray-900">{solicitudesDelCurso.length}</strong>
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-gray-600 mt-1 max-w-2xl">
-                Planes de financiamiento (1 a 4 cuotas), postulaciones bancarias, pagos en línea por Stripe, pasaportes, consentimientos y registros directos de participantes contactados.
+                Control financiero completo de pagos únicos y cuotas de financiamiento, estados de validación, pasaportes y auditoría.
               </p>
             </div>
 
             {/* CONTADORES Y MÉTRICAS DEL CURSO SELECCIONADO */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full lg:w-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 w-full lg:w-auto">
               <div className="bg-amber-50 border border-amber-200 px-3 py-2 rounded-2xl text-center">
                 <span className="text-[10px] uppercase font-bold text-amber-800 block">Pendientes</span>
                 <span className="text-xl font-black text-amber-900 leading-tight">{conteoPendientes}</span>
@@ -868,13 +1138,18 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                 <span className="text-xl font-black text-emerald-900 leading-tight">{conteoConfirmados}</span>
               </div>
               <div className="bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-2xl text-center">
-                <span className="text-[10px] uppercase font-bold text-indigo-800 block">Stripe Online</span>
-                <span className="text-xl font-black text-indigo-900 leading-tight">{conteoStripe}</span>
-                {totalRecaudadoStripe > 0 && (
-                  <span className="text-[9px] font-bold text-indigo-700 block mt-0.5">
-                    ${totalRecaudadoStripe.toLocaleString()} USD
-                  </span>
-                )}
+                <span className="text-[10px] uppercase font-bold text-indigo-800 block">Total Recaudado</span>
+                <span className="text-lg font-black text-indigo-900 leading-tight">
+                  ${totalRecaudado.toLocaleString()}
+                </span>
+                <span className="text-[9px] font-bold text-indigo-600 block">USD</span>
+              </div>
+              <div className="bg-rose-50 border border-rose-200 px-3 py-2 rounded-2xl text-center">
+                <span className="text-[10px] uppercase font-bold text-rose-800 block">Saldo por Cobrar</span>
+                <span className="text-lg font-black text-rose-900 leading-tight">
+                  ${totalPorCobrar.toLocaleString()}
+                </span>
+                <span className="text-[9px] font-bold text-rose-600 block">USD</span>
               </div>
             </div>
           </div>
@@ -1010,6 +1285,12 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                 ? Number(solicitud.saldoPendiente) 
                 : Math.max(0, montoTotal - montoPagado);
 
+              const porcentajePagado = montoTotal > 0 ? Math.round((montoPagado / montoTotal) * 100) : 0;
+              const montoPorCuota = planCuotas > 0 ? montoTotal / planCuotas : montoTotal;
+
+              // Historial de pagos
+              const cantPagos = Array.isArray(solicitud.historialPagos) ? solicitud.historialPagos.length : (montoPagado > 0 ? 1 : 0);
+
               // Formato de temas
               const temas = Array.isArray(solicitud.experienciaTemas)
                 ? solicitud.experienciaTemas
@@ -1021,7 +1302,9 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                 <article
                   key={solicitud.id}
                   className={`p-4 sm:p-6 bg-white border rounded-2xl shadow-xs hover:shadow-md transition-all space-y-4 ${
-                    esStripe ? "border-indigo-200 bg-gradient-to-br from-white via-white to-indigo-50/20" : "border-gray-200"
+                    saldoPendiente <= 0 
+                      ? "border-emerald-200 bg-gradient-to-br from-white via-white to-emerald-50/20" 
+                      : (esStripe ? "border-indigo-200 bg-gradient-to-br from-white via-white to-indigo-50/20" : "border-gray-200")
                   }`}
                 >
                   {/* CABECERA DE LA TARJETA */}
@@ -1031,17 +1314,32 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                         ● {badge.label}
                       </span>
 
+                      {/* Badge Liquidado / Pendiente de Pago */}
+                      {saldoPendiente <= 0 ? (
+                        <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 flex items-center gap-1">
+                          ✓ Totalmente Liquidado
+                        </span>
+                      ) : montoPagado > 0 ? (
+                        <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-900 border border-blue-200 flex items-center gap-1">
+                          ⏳ Con Abonos (${montoPagado.toLocaleString()} pagado)
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200 flex items-center gap-1">
+                          ⚠️ Sin Abonos Registrados
+                        </span>
+                      )}
+
                       {/* Badge Método de Pago */}
                       {esStripe ? (
-                        <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-900 border border-indigo-200 flex items-center gap-1">
+                        <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-900 border border-indigo-200 flex items-center gap-1">
                           💳 Pago con Tarjeta (Stripe)
                         </span>
                       ) : solicitud.metodoPago === "efectivo" ? (
-                        <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-purple-100 text-purple-900 border border-purple-200 flex items-center gap-1">
+                        <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-900 border border-purple-200 flex items-center gap-1">
                           💵 Efectivo / Otro
                         </span>
                       ) : (
-                        <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-200 flex items-center gap-1">
+                        <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200 flex items-center gap-1">
                           🏛️ Transferencia Bancaria
                         </span>
                       )}
@@ -1055,7 +1353,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
 
                       {/* Badge Ex-alumno */}
                       {esExAlumno && (
-                        <span className="text-[11px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 flex items-center gap-1">
+                        <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 flex items-center gap-1">
                           ⭐ Ex-alumno IIRESODH
                         </span>
                       )}
@@ -1305,53 +1603,100 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                       </div>
                     </div>
 
-                    {/* COLUMNA 2: DETALLES FINANCIEROS Y DE PAGO */}
-                    <div className="space-y-2 bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                        Estado Financiero y Plan de Pago
-                      </span>
+                    {/* COLUMNA 2: DETALLES FINANCIEROS Y CONTROL DE PAGOS */}
+                    <div className="space-y-3 bg-slate-50/90 p-4 rounded-2xl border border-slate-200">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                          Control Financiero
+                        </span>
+                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${
+                          saldoPendiente <= 0 ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900'
+                        }`}>
+                          {saldoPendiente <= 0 ? 'Liquidado 100%' : `${porcentajePagado}% Pagado`}
+                        </span>
+                      </div>
 
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-gray-500">Inversión total:</span>
-                          <span className="font-extrabold text-gray-900">${montoTotal.toLocaleString()} USD</span>
+                      {/* BARRA VISUAL DE PROGRESO DE PAGO */}
+                      <div className="space-y-1">
+                        <div className="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full transition-all duration-500 ${saldoPendiente <= 0 ? 'bg-emerald-500' : 'bg-main-blue'}`}
+                            style={{ width: `${Math.min(100, Math.max(0, porcentajePagado))}%` }}
+                          />
                         </div>
+                        <div className="flex justify-between text-[11px] text-gray-500 font-medium">
+                          <span>Abonado: <strong className="text-gray-900">${montoPagado.toLocaleString()}</strong></span>
+                          <span>Total: <strong className="text-gray-900">${montoTotal.toLocaleString()} USD</strong></span>
+                        </div>
+                      </div>
 
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-gray-500">Plan de financiamiento:</span>
+                      {/* DETALLE FINANCIERO */}
+                      <div className="space-y-1.5 pt-1 border-t border-slate-200 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-500">Modalidad:</span>
                           <span className="font-bold text-main-blue">
-                            {planCuotas > 1 ? `${planCuotas} pagos sin interés` : "Pago único (1 cuota)"}
+                            {planCuotas > 1 ? `Financiamiento (${planCuotas} cuotas)` : "Pago Único (1 cuota)"}
                           </span>
                         </div>
 
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-gray-500">Monto abonado:</span>
-                          <span className={`font-black ${montoPagado > 0 ? "text-emerald-700" : "text-gray-600"}`}>
-                            ${montoPagado.toLocaleString()} USD
-                            {planCuotas > 1 && ` (${cuotasPagadas}/${planCuotas} cuotas)`}
-                          </span>
-                        </div>
-
-                        {saldoPendiente > 0 ? (
-                          <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-200">
-                            <span className="text-amber-800 font-bold">Saldo por liquidar:</span>
-                            <span className="font-black text-amber-900">${saldoPendiente.toLocaleString()} USD</span>
-                          </div>
-                        ) : (
-                          <div className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 text-center">
-                            ✓ Inversión Liquidada al 100%
+                        {/* DESGLOSE DE CUOTAS PARA PLANES FINANCIADOS */}
+                        {planCuotas > 1 && (
+                          <div className="pt-1">
+                            <span className="text-[10px] text-gray-400 font-bold uppercase block mb-1">
+                              Cuotas ({cuotasPagadas}/{planCuotas} pagadas):
+                            </span>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1">
+                              {Array.from({ length: planCuotas }).map((_, idx) => {
+                                const cuotaNum = idx + 1;
+                                const pagada = cuotaNum <= cuotasPagadas;
+                                return (
+                                  <div
+                                    key={idx}
+                                    className={`px-1.5 py-1 rounded text-center border text-[10px] font-bold ${
+                                      pagada 
+                                        ? "bg-emerald-50 border-emerald-300 text-emerald-900" 
+                                        : "bg-white border-gray-200 text-gray-500"
+                                    }`}
+                                  >
+                                    <span className="block leading-none text-[9px] uppercase">
+                                      C{cuotaNum} {pagada ? "✓" : "⏳"}
+                                    </span>
+                                    <span className="block leading-tight text-[10px]">
+                                      ${montoPorCuota.toFixed(0)}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
                         )}
 
+                        <div className="flex items-center justify-between pt-1">
+                          <span className="text-gray-600 font-medium">Saldo por Liquidar:</span>
+                          <span className={`font-black ${saldoPendiente > 0 ? 'text-rose-700 text-sm' : 'text-emerald-700'}`}>
+                            {saldoPendiente > 0 ? `$${saldoPendiente.toLocaleString()} USD` : "✓ Sin saldo pendiente"}
+                          </span>
+                        </div>
+
                         {solicitud.stripePaymentIntentId && (
-                          <div className="pt-1.5 border-t border-slate-200 text-[10px] text-gray-500">
-                            <span className="block font-semibold text-gray-600">ID Transacción Stripe:</span>
+                          <div className="pt-1 text-[10px] text-gray-500">
+                            <span className="block font-semibold text-gray-600">ID Stripe:</span>
                             <code className="bg-white px-1.5 py-0.5 rounded border border-gray-200 block truncate text-slate-700 font-mono select-all">
                               {solicitud.stripePaymentIntentId}
                             </code>
                           </div>
                         )}
                       </div>
+
+                      {/* BOTÓN PRINCIPAL PARA GESTIONAR PAGOS Y ABONOS */}
+                      <button
+                        type="button"
+                        onClick={() => abrirGestionPagos(solicitud)}
+                        className="w-full bg-white hover:bg-main-blue hover:text-white text-main-blue border-2 border-main-blue/30 hover:border-main-blue text-xs font-black py-2 px-3 rounded-xl transition-all shadow-2xs hover:shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <span>💳</span>
+                        <span>Gestionar Pagos y Abonos ({cantPagos})</span>
+                      </button>
                     </div>
 
                     {/* COLUMNA 3: EXPERIENCIA, MOTIVACIÓN Y COMENTARIOS */}
@@ -1418,6 +1763,381 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
           </div>
         )}
       </section>
+
+      {/* ========================================================= */}
+      {/* MODAL COMPLETO DE CONTROL DE PAGOS Y ABONOS DEL CURSO     */}
+      {/* ========================================================= */}
+      {modalPagos.open && modalPagos.solicitud && (
+        <Dialog
+          open={modalPagos.open}
+          onClose={() => setModalPagos({ open: false, solicitud: null })}
+          maxWidth="md"
+          fullWidth
+        >
+          <DialogTitle sx={{ fontWeight: 800, color: "#1D3557", borderBottom: "1px solid #f3f4f6", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div className="flex items-center gap-2 truncate">
+              <span className="text-xl">💳</span>
+              <span className="truncate">
+                Control de Pagos: {modalPagos.solicitud.nombre || `${modalPagos.solicitud.nombres || ''} ${modalPagos.solicitud.apellidos || ''}`.trim()}
+              </span>
+            </div>
+            <button
+              onClick={() => setModalPagos({ open: false, solicitud: null })}
+              className="text-gray-400 hover:text-gray-600 text-lg font-bold p-1 cursor-pointer"
+            >
+              ✕
+            </button>
+          </DialogTitle>
+
+          <DialogContent sx={{ py: 3 }} className="space-y-6">
+            {/* CABECERA FINANCIERA RESUMEN */}
+            <div className="bg-gradient-to-r from-slate-900 to-main-blue rounded-2xl p-4 sm:p-5 text-white shadow-md">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-amber-300 tracking-wider block">
+                    Expediente Académico
+                  </span>
+                  <h3 className="text-base sm:text-lg font-black text-white">
+                    {modalPagos.solicitud.nombre || "Participante"}
+                  </h3>
+                  <p className="text-xs text-blue-200">
+                    Curso: {modalPagos.solicitud.cursoTitulo || modalPagos.solicitud.cursoId}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/10 px-3.5 py-2 rounded-xl text-center border border-white/20">
+                    <span className="text-[10px] uppercase text-blue-200 block font-bold">Total Inversión</span>
+                    <span className="text-base font-black text-white">
+                      ${(Number(modalPagos.solicitud.montoTotalInversion) || 3350).toLocaleString()} USD
+                    </span>
+                  </div>
+
+                  <div className="bg-emerald-500/20 px-3.5 py-2 rounded-xl text-center border border-emerald-400/30">
+                    <span className="text-[10px] uppercase text-emerald-200 block font-bold">Abonado</span>
+                    <span className="text-base font-black text-emerald-300">
+                      ${(Number(modalPagos.solicitud.montoPagado) || 0).toLocaleString()} USD
+                    </span>
+                  </div>
+
+                  <div className="bg-rose-500/20 px-3.5 py-2 rounded-xl text-center border border-rose-400/30">
+                    <span className="text-[10px] uppercase text-rose-200 block font-bold">Saldo Restante</span>
+                    <span className="text-base font-black text-rose-300">
+                      ${(Number(modalPagos.solicitud.saldoPendiente) !== undefined 
+                        ? Number(modalPagos.solicitud.saldoPendiente) 
+                        : Math.max(0, (Number(modalPagos.solicitud.montoTotalInversion) || 3350) - (Number(modalPagos.solicitud.montoPagado) || 0))
+                      ).toLocaleString()} USD
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* BARRA DE PROGRESO DE LIQUIDACIÓN */}
+              <div className="mt-4 pt-3 border-t border-white/10 space-y-1.5">
+                <div className="flex justify-between text-xs font-bold text-blue-200">
+                  <span>
+                    Modalidad: {Number(modalPagos.solicitud.planCuotas) > 1 
+                      ? `${modalPagos.solicitud.planCuotas} cuotas de financiamiento` 
+                      : "Pago único de contado"
+                    }
+                  </span>
+                  <span>
+                    {Math.round(((Number(modalPagos.solicitud.montoPagado) || 0) / (Number(modalPagos.solicitud.montoTotalInversion) || 3350)) * 100)}% Liquidado
+                  </span>
+                </div>
+                <div className="w-full bg-white/20 h-2.5 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-amber-400 transition-all duration-500"
+                    style={{ 
+                      width: `${Math.min(100, Math.round(((Number(modalPagos.solicitud.montoPagado) || 0) / (Number(modalPagos.solicitud.montoTotalInversion) || 3350)) * 100))}%` 
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* OPCIÓN PARA AJUSTAR PLAN FINANCIERO O BECA */}
+            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">
+                    Configuración del Plan de Pago
+                  </h4>
+                  <p className="text-xs text-gray-500">
+                    Ajusta si el participante cambió de cuotas o si se le otorgó un monto especial por beca institucional.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditandoPlan(!editandoPlan)}
+                  className="text-xs font-bold text-main-blue hover:text-light-blue px-3 py-1 rounded-lg border border-blue-200 bg-white hover:bg-blue-50 transition-colors cursor-pointer"
+                >
+                  {editandoPlan ? "✕ Cancelar edición" : "✏️ Modificar Plan"}
+                </button>
+              </div>
+
+              {editandoPlan && (
+                <form onSubmit={handleGuardarPlan} className="mt-3 pt-3 border-t border-gray-200 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                      Monto Total Inversión (USD) *
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      value={formPlan.montoTotalInversion}
+                      onChange={(e) => setFormPlan({ ...formPlan, montoTotalInversion: Number(e.target.value) })}
+                      className="w-full text-xs font-bold px-3 py-2 rounded-lg border border-gray-300 bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                      Modalidad / Plan de Cuotas *
+                    </label>
+                    <select
+                      value={formPlan.planCuotas}
+                      onChange={(e) => setFormPlan({ ...formPlan, planCuotas: Number(e.target.value) })}
+                      className="w-full text-xs font-bold px-3 py-2 rounded-lg border border-gray-300 bg-white"
+                    >
+                      <option value={1}>Pago Único (1 cuota)</option>
+                      <option value={2}>Financiamiento en 2 cuotas</option>
+                      <option value={3}>Financiamiento en 3 cuotas</option>
+                      <option value={4}>Financiamiento en 4 cuotas</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-end">
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      disabled={guardandoPlan}
+                      fullWidth
+                      sx={{
+                        bgcolor: "#1D3557",
+                        textTransform: "none",
+                        fontWeight: 700,
+                        fontSize: "12px",
+                        py: 1,
+                        borderRadius: "8px",
+                        "&:hover": { bgcolor: "#14253d" }
+                      }}
+                    >
+                      {guardandoPlan ? "Guardando..." : "Actualizar Plan"}
+                    </Button>
+                  </div>
+                </form>
+              )}
+            </div>
+
+            {/* FORMULARIO PARA REGISTRAR NUEVO ABONO / PAGO */}
+            <div className="bg-blue-50/50 border border-blue-200 rounded-2xl p-4 sm:p-5 space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">➕</span>
+                <h4 className="text-sm font-extrabold text-main-blue uppercase tracking-wider">
+                  Registrar Nuevo Pago o Abono
+                </h4>
+              </div>
+
+              <form onSubmit={handleRegistrarAbono} className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      Monto a Abonar (USD) *
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      required
+                      placeholder="0.00"
+                      value={formAbono.monto}
+                      onChange={(e) => setFormAbono({ ...formAbono, monto: e.target.value })}
+                      className="w-full text-sm font-black px-3.5 py-2 rounded-xl border border-blue-300 bg-white focus:outline-none focus:ring-2 focus:ring-main-blue"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      Fecha del Pago *
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={formAbono.fecha}
+                      onChange={(e) => setFormAbono({ ...formAbono, fecha: e.target.value })}
+                      className="w-full text-sm px-3.5 py-2 rounded-xl border border-gray-300 bg-white focus:outline-none focus:border-main-blue"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      Método de Pago *
+                    </label>
+                    <select
+                      value={formAbono.metodo}
+                      onChange={(e) => setFormAbono({ ...formAbono, metodo: e.target.value })}
+                      className="w-full text-sm px-3.5 py-2 rounded-xl border border-gray-300 bg-white font-medium"
+                    >
+                      <option value="transferencia">🏛️ Transferencia Bancaria</option>
+                      <option value="stripe">💳 Tarjeta / Stripe</option>
+                      <option value="efectivo">💵 Efectivo</option>
+                      <option value="sinpe">📱 SINPE Móvil / Otro</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      Referencia Bancaria o Comprobante #
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ej: Ref. Banco Costa Rica #89472"
+                      value={formAbono.referencia}
+                      onChange={(e) => setFormAbono({ ...formAbono, referencia: e.target.value })}
+                      className="w-full text-xs px-3.5 py-2 rounded-xl border border-gray-300 bg-white focus:outline-none focus:border-main-blue"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      Adjuntar Comprobante (Imagen o PDF)
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*,application/pdf"
+                      onChange={(e) => setFormAbono({ ...formAbono, comprobanteFile: e.target.files?.[0] || null })}
+                      className="w-full text-xs text-gray-600 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-main-blue file:text-white hover:file:bg-light-blue cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    Notas u Observaciones del Abono (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ej: Corresponde a la Cuota 2 de 3 convenida por correo"
+                    value={formAbono.notas}
+                    onChange={(e) => setFormAbono({ ...formAbono, notas: e.target.value })}
+                    className="w-full text-xs px-3.5 py-2 rounded-xl border border-gray-300 bg-white focus:outline-none focus:border-main-blue"
+                  />
+                </div>
+
+                <div className="flex justify-end pt-1">
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={guardandoAbono}
+                    sx={{
+                      bgcolor: "#1D3557",
+                      textTransform: "none",
+                      fontWeight: 700,
+                      px: 3,
+                      py: 1,
+                      borderRadius: "10px",
+                      "&:hover": { bgcolor: "#14253d" }
+                    }}
+                  >
+                    {guardandoAbono ? "Registrando Abono..." : "💾 Registrar Abono"}
+                  </Button>
+                </div>
+              </form>
+            </div>
+
+            {/* TABLA DE HISTORIAL DE PAGOS REGISTRADOS */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-extrabold text-gray-700 uppercase tracking-wider">
+                Historial de Pagos y Abonos Registrados
+              </h4>
+
+              {(!modalPagos.solicitud.historialPagos || modalPagos.solicitud.historialPagos.length === 0) ? (
+                <div className="text-center py-8 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                  <p className="text-xs text-gray-500 font-medium">
+                    No hay abonos individuales registrados en el historial de este participante.
+                    {Number(modalPagos.solicitud.montoPagado) > 0 && ` (Se cuenta con un monto base registrado de $${Number(modalPagos.solicitud.montoPagado).toLocaleString()} USD).`}
+                  </p>
+                </div>
+              ) : (
+                <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-2xs">
+                  <table className="w-full text-left text-xs text-gray-700">
+                    <thead className="bg-gray-100 text-gray-600 font-bold uppercase text-[10px] tracking-wider border-b border-gray-200">
+                      <tr>
+                        <th className="px-3.5 py-2.5">Fecha</th>
+                        <th className="px-3.5 py-2.5">Monto</th>
+                        <th className="px-3.5 py-2.5">Método</th>
+                        <th className="px-3.5 py-2.5">Referencia / Comprobante</th>
+                        <th className="px-3.5 py-2.5">Registrado Por</th>
+                        <th className="px-3.5 py-2.5 text-right">Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 bg-white">
+                      {modalPagos.solicitud.historialPagos.map((pago, idx) => (
+                        <tr key={pago.id || idx} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-3.5 py-2.5 font-semibold text-gray-900 whitespace-nowrap">
+                            {pago.fecha || "Sin fecha"}
+                          </td>
+                          <td className="px-3.5 py-2.5 font-black text-emerald-700 whitespace-nowrap">
+                            ${Number(pago.monto).toLocaleString()} USD
+                          </td>
+                          <td className="px-3.5 py-2.5 capitalize whitespace-nowrap">
+                            {pago.metodo || "Transferencia"}
+                          </td>
+                          <td className="px-3.5 py-2.5 max-w-[200px]">
+                            <span className="block font-semibold text-gray-800 truncate" title={pago.referencia}>
+                              {pago.referencia || "Sin ref."}
+                            </span>
+                            {pago.notas && (
+                              <span className="block text-[10px] text-gray-500 italic truncate" title={pago.notas}>
+                                {pago.notas}
+                              </span>
+                            )}
+                            {pago.comprobanteUrl && (
+                              <a
+                                href={pago.comprobanteUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[10px] font-bold text-main-blue hover:underline inline-flex items-center gap-0.5 mt-0.5"
+                              >
+                                📎 Ver Comprobante
+                              </a>
+                            )}
+                          </td>
+                          <td className="px-3.5 py-2.5 text-[10px] text-gray-500 truncate max-w-[140px]" title={pago.registradoPor}>
+                            {pago.registradoPor || "Admin"}
+                          </td>
+                          <td className="px-3.5 py-2.5 text-right whitespace-nowrap">
+                            <button
+                              type="button"
+                              onClick={() => handleEliminarAbono(pago.id, Number(pago.monto))}
+                              className="text-rose-600 hover:text-rose-800 font-bold text-[11px] p-1 rounded hover:bg-rose-50 transition-colors cursor-pointer"
+                              title="Anular abono"
+                            >
+                              ✕ Anular
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+
+          <DialogActions sx={{ p: 2, borderTop: "1px solid #f3f4f6" }}>
+            <Button
+              onClick={() => setModalPagos({ open: false, solicitud: null })}
+              variant="outlined"
+              sx={{ textTransform: "none", color: "#6b7280", borderColor: "#d1d5db", fontWeight: 700 }}
+            >
+              Cerrar
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
 
       {/* MODAL PARA VISUALIZAR / DESPLEGAR COPIA DEL PASAPORTE */}
       <Dialog

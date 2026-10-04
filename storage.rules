@@ -70,6 +70,11 @@ service firebase.storage {
       allow read, write: if esAdmin();
     }
 
+    // REGLAS PARA COMPROBANTES DE PAGO DE PARTICIPANTES (CONFIDENCIAL - SOLO ADMINS)
+    match /comprobantes_pagos/{allPaths=**} {
+      allow read, write: if esAdmin();
+    }
+
     // TIENDA DE LIBROS
     match /libros {
       match /portadas/{allPaths=**} {
