@@ -889,6 +889,18 @@ useEffect(() => {
         setCarruselExistente(item.imagenesCarruselUrls || []);
         setVideoUrl(item.videoUrl || "");
         setArchivosAdjuntos(item.archivosAdjuntos || []);
+
+        if (item.id) {
+          getDoc(doc(db, "noticias", item.id)).then((freshSnap) => {
+            if (freshSnap.exists()) {
+              const freshData = freshSnap.data();
+              if (Array.isArray(freshData.archivosAdjuntos)) {
+                setArchivosAdjuntos(freshData.archivosAdjuntos);
+                setListaItems(prev => prev.map(it => it.id === item.id ? { ...it, archivosAdjuntos: freshData.archivosAdjuntos } : it));
+              }
+            }
+          }).catch(err => console.warn("Error leyendo versión fresca de noticia:", err));
+        }
       }
 
       if (item.fechaPublicacion) {
@@ -1069,6 +1081,10 @@ useEffect(() => {
       const nuevosAdjuntos = [...archivosAdjuntos, nuevoDoc];
       setArchivosAdjuntos(nuevosAdjuntos);
 
+      if (editandoId) {
+        setListaItems(prev => prev.map(item => item.id === editandoId ? { ...item, archivosAdjuntos: nuevosAdjuntos } : item));
+      }
+
       if (editandoId && vistaActiva === "comunicaciones") {
         try {
           await updateDoc(doc(db, "noticias", editandoId), {
@@ -1101,6 +1117,9 @@ useEffect(() => {
   const eliminarArchivoAdjunto = async (index) => {
     const nuevaLista = archivosAdjuntos.filter((_, i) => i !== index);
     setArchivosAdjuntos(nuevaLista);
+    if (editandoId) {
+      setListaItems(prev => prev.map(item => item.id === editandoId ? { ...item, archivosAdjuntos: nuevaLista } : item));
+    }
     if (editandoId && vistaActiva === "comunicaciones") {
       try {
         await updateDoc(doc(db, "noticias", editandoId), {
@@ -1387,8 +1406,8 @@ useEffect(() => {
             if (itemOriginal.fechaInicio !== datos.fechaInicio && datos.fechaInicio !== undefined) cambios.push('fecha de inicio');
             if (itemOriginal.fechaFin !== datos.fechaFin && datos.fechaFin !== undefined) cambios.push('fecha de finalización');
             
-            const tagsOriginales = itemOriginal.tags || [];
-            const tagsNuevos = datos.tags || [];
+            const tagsOriginales = [...(itemOriginal.tags || [])];
+            const tagsNuevos = [...(datos.tags || [])];
             if (JSON.stringify(tagsOriginales.sort()) !== JSON.stringify(tagsNuevos.sort())) cambios.push('tags');
 
             if (finalPrincipalUrl !== imagenPrincipalAnterior) cambios.push('imagen principal');
@@ -1398,8 +1417,14 @@ useEffect(() => {
             if (nuevasUrls.length > 0 || carruselExistente.length !== (itemOriginal.imagenesCarruselUrls || []).length) cambios.push('galería');
         }
 
+        // Limpiar campos undefined que Firestore rechaza
+        Object.keys(datos).forEach(key => {
+          if (datos[key] === undefined) delete datos[key];
+        });
+
         const detallesUpdate = cambios.length > 0 ? `Campos modificados: ${cambios.join(', ')}.` : 'No se detectaron cambios en los campos principales.';
         await updateDoc(doc(db, coleccion, editandoId), datos);
+        setListaItems(prev => prev.map(item => item.id === editandoId ? { ...item, ...datos } : item));
         await logActividad(`Actualizó un item en "${vistaActiva}": ${datos.titulo || datos.nombre}`, detallesUpdate);
         const mensajeExito = vistaActiva === 'equipo' ? "¡Miembro del equipo actualizado!" : "¡Contenido actualizado con éxito!";
         setMensaje(mensajeExito);
@@ -1425,6 +1450,12 @@ useEffect(() => {
             if (datos.enlaceInscripcion) detallesCreacion.push(`Con enlace de inscripción activo`);
         }
         const detallesString = detallesCreacion.length > 0 ? detallesCreacion.join('. ') + '.' : null;
+        
+        // Limpiar campos undefined que Firestore rechaza
+        Object.keys(datos).forEach(key => {
+          if (datos[key] === undefined) delete datos[key];
+        });
+
         await addDoc(collection(db, coleccion), datos);
         await logActividad(`Creó un item en "${vistaActiva}": ${datos.titulo || datos.nombre}`, detallesString);
         const mensajeExito = vistaActiva === 'equipo' ? "¡Miembro del equipo agregado!" : "¡Contenido publicado con éxito!";
@@ -1434,11 +1465,11 @@ useEffect(() => {
       limpiarFormulario();
       cargarItems(); 
     } catch (err) {
-      console.error(err);
-      setMensaje("Error en el proceso.");
+      console.error("Error al guardar:", err);
+      setMensaje(`Error en el proceso: ${err.message || 'Intenta de nuevo.'}`);
     } finally {
       setLoading(false);
-      setTimeout(() => setMensaje(""), 3000);
+      setTimeout(() => setMensaje(""), 4000);
     }
   };
 
