@@ -131,7 +131,7 @@ function App() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
           
-          {/* EVALUACIÓN DE PROPUESTA HOME V2 (SOLO ACCESO ADMIN) */}
+          {/* HOME PREVIA / RESPALDO V1 (SOLO ACCESO ADMIN) */}
           <Route 
             path="/home2" 
             element={
