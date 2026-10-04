@@ -59,7 +59,7 @@ export default function DocumentoProxy() {
 
   if (error) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center p-6 space-y-4">
+      <main className="min-h-[70vh] flex flex-col items-center justify-center text-center p-6 space-y-4 bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD]">
         <h2 className="text-2xl font-bold text-main-blue">Documento no disponible</h2>
         <p className="text-gray-600 max-w-md">No se pudo encontrar el archivo solicitado o ya no está disponible.</p>
         <button
@@ -68,16 +68,16 @@ export default function DocumentoProxy() {
         >
           Volver al Inicio
         </button>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center bg-white gap-4">
+    <main className="min-h-[70vh] flex flex-col items-center justify-center bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] gap-4">
       <CircularProgress size={45} thickness={4} sx={{ color: '#1D3557' }} />
       <span className="text-main-blue font-bold text-xs uppercase tracking-widest animate-pulse">
         Cargando documento...
       </span>
-    </div>
+    </main>
   );
 }

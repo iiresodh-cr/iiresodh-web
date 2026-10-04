@@ -8,7 +8,7 @@ export default function NotFound() {
   const { t } = useTranslation(); // HOOK DE TRADUCCIÓN
 
   return (
-    <div className="bg-white min-h-screen flex flex-col">
+    <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] min-h-screen flex flex-col font-sans">
       <div className="relative overflow-hidden grow flex items-center justify-center py-20">
         
         <div className="bg-watermark"></div>
@@ -38,6 +38,6 @@ export default function NotFound() {
           </div>
         </section>
       </div>
-    </div>
+    </main>
   );
 }
