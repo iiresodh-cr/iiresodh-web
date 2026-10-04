@@ -11,7 +11,8 @@ import {
   orderBy,
   serverTimestamp 
 } from "firebase/firestore";
-import { db } from "../../firebase/config";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db, storage } from "../../firebase/config";
 import { 
   CircularProgress, 
   Dialog, 
@@ -23,9 +24,7 @@ import {
   Alert,
   Select,
   MenuItem,
-  FormControl,
-  TextField,
-  InputLabel
+  FormControl
 } from "@mui/material";
 import { PAISES_LATINOAMERICA } from "../../data/paisesLatinoamerica";
 
@@ -43,14 +42,19 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
   const [busqueda, setBusqueda] = useState("");
   const [actualizandoId, setActualizandoId] = useState(null);
 
+  // Subida de pasaporte
+  const [subiendoPasaporteId, setSubiendoPasaporteId] = useState(null);
+  const [modalPasaporte, setModalPasaporte] = useState({ open: false, url: "", nombre: "", tipo: "" });
+
   // Alertas
   const [alerta, setAlerta] = useState({ open: false, mensaje: "", esError: false });
   // Modal de confirmación para eliminar
   const [modalBorrar, setModalBorrar] = useState({ open: false, id: null, nombre: "" });
 
-  // Modal para Registro Manual de Participante (por WhatsApp, email o llamada)
+  // Modal para Registro Manual de Participante
   const [modalManual, setModalManual] = useState(false);
   const [guardandoManual, setGuardandoManual] = useState(false);
+  const [archivoPasaporteManual, setArchivoPasaporteManual] = useState(null);
   const [formManual, setFormManual] = useState({
     cursoKey: "",
     nombres: "",
@@ -237,6 +241,52 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
     });
   }, [solicitudesDelCurso, filtroEstado, filtroMetodo, busqueda]);
 
+  // Subir copia de pasaporte a Firebase Storage
+  const handleSubirPasaporte = async (solicitud, file) => {
+    if (!file) return;
+    if (file.size > 25 * 1024 * 1024) {
+      mostrarToast("El archivo de pasaporte no debe superar los 25MB.", true);
+      return;
+    }
+
+    setSubiendoPasaporteId(solicitud.id);
+    try {
+      const extension = file.name.split('.').pop() || 'pdf';
+      const safeName = `pasaporte_${solicitud.id}_${Date.now()}.${extension}`;
+      const rutaStorage = `pasaportes_cursos/${solicitud.cursoId || 'curso'}/${safeName}`;
+      const storageRef = ref(storage, rutaStorage);
+
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+
+      const updateData = {
+        pasaporteUrl: url,
+        pasaporteNombre: file.name,
+        pasaporteTipo: file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image'),
+        pasaporteRutaStorage: rutaStorage,
+        fechaSubidaPasaporte: serverTimestamp()
+      };
+
+      await updateDoc(doc(db, "solicitudesCursos", solicitud.id), updateData);
+
+      setSolicitudes(prev => prev.map(s => (s.id === solicitud.id ? { ...s, ...updateData } : s)));
+
+      mostrarToast(`Copia de pasaporte de ${solicitud.nombre || 'participante'} subida con éxito.`);
+
+      if (logActividad) {
+        logActividad(
+          `Subió copia de pasaporte para ${solicitud.nombre || solicitud.id} (${file.name})`,
+          { id: solicitud.id, archivo: file.name }
+        );
+      }
+    } catch (error) {
+      console.error("Error al subir copia de pasaporte:", error);
+      mostrarToast("Error al subir el archivo de pasaporte a Storage.", true);
+    } finally {
+      setSubiendoPasaporteId(null);
+    }
+  };
+
   const handleCambiarEstado = async (id, nuevoEstado, solicitudActual) => {
     setActualizandoId(id);
     try {
@@ -284,8 +334,9 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
     }
   };
 
-  // Abrir modal de registro manual con el curso activo preseleccionado
+  // Abrir modal de registro manual
   const abrirRegistroManual = () => {
+    setArchivoPasaporteManual(null);
     setFormManual({
       cursoKey: filtroCurso !== "todos" ? filtroCurso : (cursosDisponibles[0]?.key || "palermo-2027"),
       nombres: "",
@@ -325,6 +376,27 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       const pagado = Number(formManual.montoPagado) || 0;
       const cuotas = Number(formManual.planCuotas) || 1;
 
+      let pasaporteSubidoData = {};
+      if (archivoPasaporteManual) {
+        try {
+          const extension = archivoPasaporteManual.name.split('.').pop() || 'pdf';
+          const safeName = `pasaporte_manual_${Date.now()}.${extension}`;
+          const rutaStorage = `pasaportes_cursos/${cursoElegido.id || cursoElegido.key}/${safeName}`;
+          const storageRef = ref(storage, rutaStorage);
+          await uploadBytes(storageRef, archivoPasaporteManual);
+          const url = await getDownloadURL(storageRef);
+          pasaporteSubidoData = {
+            pasaporteUrl: url,
+            pasaporteNombre: archivoPasaporteManual.name,
+            pasaporteTipo: archivoPasaporteManual.type || (archivoPasaporteManual.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image'),
+            pasaporteRutaStorage: rutaStorage,
+            fechaSubidaPasaporte: serverTimestamp()
+          };
+        } catch (errPasaporte) {
+          console.error("Error al subir pasaporte en registro manual:", errPasaporte);
+        }
+      }
+
       const nuevaData = {
         cursoId: cursoElegido.id || cursoElegido.key,
         cursoTitulo: cursoElegido.titulo,
@@ -348,12 +420,12 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         aceptaPoliticaPrivacidad: true,
         versionPoliticaPrivacidad: "2026-09-12",
         constanciaPrivacidad: "Registro administrativo directo en panel.",
-        fechaSolicitud: serverTimestamp()
+        fechaSolicitud: serverTimestamp(),
+        ...pasaporteSubidoData
       };
 
       const docRef = await addDoc(collection(db, "solicitudesCursos"), nuevaData);
 
-      // Prepend a estado local
       const nuevoItemLocal = {
         id: docRef.id,
         ...nuevaData,
@@ -397,6 +469,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       "Profesión",
       "Institución",
       "País",
+      "Copia Pasaporte (URL)",
       "Ex-alumno IIRESODH",
       "Experiencia en Temas",
       "Cursos Previos Internacionales",
@@ -443,11 +516,12 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         `"${(s.profesion || '').replace(/"/g, '""')}"`,
         `"${(s.institucion || '').replace(/"/g, '""')}"`,
         `"${(s.pais || '').replace(/"/g, '""')}"`,
+        `"${(s.pasaporteUrl || '').replace(/"/g, '""')}"`,
         `"${s.alumnoIiresodh === 'si' ? 'SÍ' : 'NO'}"`,
         `"${temas.replace(/"/g, '""')}"`,
         `"${(s.cursosPrevios || 'No').replace(/"/g, '""')}"`,
         `"${(s.motivoParticipacion || '').replace(/"/g, '""')}"`,
-        `"${s.metodoPago === 'stripe' ? 'Tarjeta en Línea (Stripe)' : 'Transferencia Bancaria'}"`,
+        `"${s.metodoPago === 'stripe' ? 'Tarjeta en Línea (Stripe)' : (s.metodoPago === 'efectivo' ? 'Efectivo / Otro' : 'Transferencia Bancaria')}"`,
         `"${s.planCuotas ? `${s.planCuotas} cuota(s)` : 'Pago único'}"`,
         `"${s.cuotasPagadas || (s.metodoPago === 'stripe' ? 1 : 0)}"`,
         `"${s.montoPagado || (s.metodoPago === 'stripe' ? 3350 : 0)}"`,
@@ -690,7 +764,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-gray-600 mt-1 max-w-2xl">
-                Planes de financiamiento (1 a 4 cuotas), postulaciones bancarias, pagos en línea por Stripe y registros directos de participantes contactados.
+                Planes de financiamiento (1 a 4 cuotas), postulaciones bancarias, pagos en línea por Stripe, pasaportes y registros directos de participantes contactados.
               </p>
             </div>
 
@@ -953,7 +1027,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
 
                   {/* CUERPO CON DETALLES DE PAGO Y PERFIL */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* COLUMNA 1: DATOS PERSONALES Y PROFESIÓN */}
+                    {/* COLUMNA 1: DATOS PERSONALES, PROFESIÓN Y PASAPORTE */}
                     <div className="space-y-2">
                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
                         Participante y Perfil
@@ -963,7 +1037,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                       </h4>
                       {(solicitud.nombres || solicitud.apellidos) && (
                         <p className="text-[11px] text-gray-500 font-medium">
-                          🛂 Pasaporte: <span className="text-gray-700 font-semibold">{solicitud.nombres || ""} {solicitud.apellidos || ""}</span>
+                          🛂 Nombre Pasaporte: <span className="text-gray-800 font-bold">{solicitud.nombres || ""} {solicitud.apellidos || ""}</span>
                         </p>
                       )}
                       
@@ -983,7 +1057,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                         🌍 País: <span className="font-semibold text-gray-800">{solicitud.pais || "No especificado"}</span>
                       </p>
 
-                      <div className="pt-2 flex flex-col gap-1 text-xs">
+                      <div className="pt-1 flex flex-col gap-1 text-xs">
                         <div className="flex items-center gap-1.5">
                           <span className="text-gray-400">✉️</span>
                           <a
@@ -1011,6 +1085,98 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                           </div>
                         ) : (
                           <p className="text-gray-400 italic">Sin teléfono registrado</p>
+                        )}
+                      </div>
+
+                      {/* COPIA DEL PASAPORTE (BOTÓN DE SUBIDA Y VISUALIZADOR) */}
+                      <div className="pt-2.5 border-t border-gray-100 space-y-1.5">
+                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">
+                          Copia del Pasaporte
+                        </span>
+
+                        {solicitud.pasaporteUrl ? (
+                          <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 flex items-center justify-between gap-2 shadow-xs">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-xl shrink-0">🛂</span>
+                              <div className="min-w-0">
+                                <span className="text-[11px] font-bold text-slate-800 block truncate" title={solicitud.pasaporteNombre || "Pasaporte"}>
+                                  {solicitud.pasaporteNombre || "Copia_Pasaporte"}
+                                </span>
+                                <span className="text-[9px] text-emerald-700 font-bold block">
+                                  ✓ Documento cargado
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => setModalPasaporte({
+                                  open: true,
+                                  url: solicitud.pasaporteUrl,
+                                  nombre: `${solicitud.nombres || solicitud.nombre || 'Participante'} ${solicitud.apellidos || ''}`.trim(),
+                                  tipo: solicitud.pasaporteTipo || (solicitud.pasaporteUrl.toLowerCase().includes('.pdf') ? 'application/pdf' : 'image')
+                                })}
+                                className="bg-main-blue hover:bg-light-blue text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1 shadow-xs"
+                                title="Ver copia del pasaporte"
+                              >
+                                <span>👁️</span>
+                                <span>Ver</span>
+                              </button>
+
+                              <label
+                                className={`bg-white hover:bg-gray-100 text-gray-600 border border-gray-300 text-[11px] font-bold px-2 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1 ${
+                                  subiendoPasaporteId === solicitud.id ? 'opacity-50 pointer-events-none' : ''
+                                }`}
+                                title="Reemplazar archivo de pasaporte"
+                              >
+                                <span>🔄</span>
+                                <input
+                                  type="file"
+                                  accept="image/*,application/pdf"
+                                  className="hidden"
+                                  disabled={subiendoPasaporteId === solicitud.id}
+                                  onChange={(e) => {
+                                    if (e.target.files?.[0]) {
+                                      handleSubirPasaporte(solicitud, e.target.files[0]);
+                                      e.target.value = "";
+                                    }
+                                  }}
+                                />
+                              </label>
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <label
+                              className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-dashed border-gray-300 bg-gray-50/80 hover:bg-blue-50 hover:border-main-blue text-gray-700 hover:text-main-blue text-xs font-semibold cursor-pointer transition-all ${
+                                subiendoPasaporteId === solicitud.id ? 'opacity-60 pointer-events-none' : ''
+                              }`}
+                            >
+                              {subiendoPasaporteId === solicitud.id ? (
+                                <>
+                                  <CircularProgress size={13} thickness={4} sx={{ color: "#1D3557" }} />
+                                  <span className="text-[11px] font-bold">Subiendo pasaporte...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span>📎</span>
+                                  <span className="text-[11px] font-bold">Subir Copia de Pasaporte (PDF/Imagen)</span>
+                                </>
+                              )}
+                              <input
+                                type="file"
+                                accept="image/*,application/pdf"
+                                className="hidden"
+                                disabled={subiendoPasaporteId === solicitud.id}
+                                onChange={(e) => {
+                                  if (e.target.files?.[0]) {
+                                    handleSubirPasaporte(solicitud, e.target.files[0]);
+                                    e.target.value = "";
+                                  }
+                                }}
+                              />
+                            </label>
+                          </div>
                         )}
                       </div>
 
@@ -1155,6 +1321,67 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         )}
       </section>
 
+      {/* MODAL PARA VISUALIZAR / DESPLEGAR COPIA DEL PASAPORTE */}
+      <Dialog
+        open={modalPasaporte.open}
+        onClose={() => setModalPasaporte({ open: false, url: "", nombre: "", tipo: "" })}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 800, color: "#1D3557", borderBottom: "1px solid #f3f4f6", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div className="flex items-center gap-2 truncate">
+            <span className="text-xl">🛂</span>
+            <span className="truncate">Copia de Pasaporte: {modalPasaporte.nombre}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setModalPasaporte({ open: false, url: "", nombre: "", tipo: "" })}
+            className="text-gray-400 hover:text-gray-600 text-lg font-bold p-1 cursor-pointer"
+          >
+            ✕
+          </button>
+        </DialogTitle>
+        <DialogContent sx={{ p: 2, bgcolor: "#0f172a", display: "flex", justifyContent: "center", alignItems: "center", minHeight: "400px" }}>
+          {modalPasaporte.tipo?.includes("pdf") || modalPasaporte.url?.toLowerCase().includes(".pdf") ? (
+            <iframe
+              src={modalPasaporte.url}
+              title="Copia de Pasaporte PDF"
+              className="w-full h-[70vh] rounded-lg border-0 bg-white"
+            />
+          ) : (
+            <img
+              src={modalPasaporte.url}
+              alt="Copia de Pasaporte"
+              className="max-h-[75vh] max-w-full object-contain rounded-lg shadow-lg"
+            />
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 2, borderTop: "1px solid #e2e8f0", justifyContent: "space-between" }}>
+          <a
+            href={modalPasaporte.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-bold text-main-blue hover:underline flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
+          >
+            <span>↗</span>
+            <span>Abrir en pestaña completa / Descargar</span>
+          </a>
+          <Button
+            onClick={() => setModalPasaporte({ open: false, url: "", nombre: "", tipo: "" })}
+            variant="contained"
+            sx={{
+              textTransform: "none",
+              bgcolor: "#1D3557",
+              fontWeight: 700,
+              borderRadius: "10px",
+              "&:hover": { bgcolor: "#14253d" }
+            }}
+          >
+            Cerrar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* MODAL DE REGISTRO MANUAL DE PARTICIPANTE */}
       <Dialog
         open={modalManual}
@@ -1168,7 +1395,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         <form onSubmit={handleGuardarManual}>
           <DialogContent sx={{ py: 3 }} className="space-y-4">
             <p className="text-xs text-gray-500 -mt-1">
-              Ingresa los datos del interesado que se haya comunicado directamente. Quedará guardado en el expediente oficial del curso con su estado de gestión correspondiente.
+              Ingresa los datos del interesado que se haya comunicado directamente. Quedará guardado en el expediente oficial del curso con su estado de gestión correspondiente y copia de pasaporte.
             </p>
 
             {/* CURSO DESTINO */}
@@ -1292,6 +1519,24 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                 onChange={(e) => setFormManual({ ...formManual, institucion: e.target.value })}
                 className="w-full text-sm px-3.5 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-main-blue"
               />
+            </div>
+
+            {/* SUBIR COPIA DE PASAPORTE EN REGISTRO MANUAL */}
+            <div className="bg-blue-50/40 p-3 rounded-xl border border-blue-200 space-y-1">
+              <label className="block text-xs font-bold text-main-blue uppercase">
+                📎 Copia del Pasaporte (PDF o Imagen) - Opcional
+              </label>
+              <input
+                type="file"
+                accept="image/*,application/pdf"
+                onChange={(e) => setArchivoPasaporteManual(e.target.files?.[0] || null)}
+                className="w-full text-xs text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-main-blue file:text-white hover:file:bg-light-blue cursor-pointer"
+              />
+              {archivoPasaporteManual && (
+                <span className="text-[11px] text-emerald-700 font-bold block pt-1">
+                  ✓ Seleccionado: {archivoPasaporteManual.name} ({(archivoPasaporteManual.size / 1024).toFixed(0)} KB)
+                </span>
+              )}
             </div>
 
             {/* DATOS FINANCIEROS Y ESTADO */}
