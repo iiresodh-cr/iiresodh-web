@@ -4,7 +4,8 @@ import { getAuth } from "firebase/auth";
 import { 
   initializeFirestore, 
   persistentLocalCache, 
-  persistentMultipleTabManager 
+  persistentMultipleTabManager,
+  setLogLevel
 } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getFunctions } from "firebase/functions";
@@ -35,6 +36,9 @@ isSupported().then((supported) => {
     analytics = getAnalytics(app);
   }
 });
+
+// Silenciar avisos internos no críticos de Firestore (ej. leases de sincronización multi-pestaña)
+setLogLevel('error');
 
 // Inicializar Firestore con Caché Persistente habilitado para múltiples pestañas
 export const db = initializeFirestore(app, {
