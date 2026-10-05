@@ -847,16 +847,6 @@ function CheckoutFormCurso({
               <span>🔗 O pagar vía Stripe Checkout externo</span>
             </a>
           )}
-          
-          {onSwitchToTransferencia && (
-            <button
-              type="button"
-              onClick={onSwitchToTransferencia}
-              className="text-gray-600 hover:text-main-blue font-medium underline cursor-pointer"
-            >
-              🏛️ ¿Prefieres transferencia bancaria institucional?
-            </button>
-          )}
         </div>
       </div>
     </form>

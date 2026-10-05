@@ -1648,41 +1648,72 @@ export default function CursoLanding() {
 
                 {/* COLUMNA DERECHA: FORMULARIO DINÁMICO */}
                 <div className="lg:col-span-7 bg-white p-6 md:p-8 rounded-3xl border border-gray-200 shadow-md">
-                  {metodoInscripcion === "tarjeta" ? (
+                  {/* CABECERA DINÁMICA CON SWITCH DE MODALIDAD EN LA ESQUINA SUPERIOR DERECHA */}
+                  <div className="mb-5 pb-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                      <div className="mb-5 pb-3 border-b border-gray-100">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-main-red block mb-0.5">
-                          Inscripción Inmediata
-                        </span>
-                        <h4 className="text-xl font-black text-main-blue tracking-tight">
-                          Pago Directo con Tarjeta en Línea
-                        </h4>
-                        <p className="text-xs text-gray-500 font-light mt-0.5">
-                          Completa tus datos personales, académicos y de tarjeta para asegurar tu cupo oficial.
-                        </p>
-                      </div>
-
-                      <FormularioPagoCurso
-                        curso={curso}
-                        landing={landing}
-                        planCuotas={planCuotas}
-                        setPlanCuotas={setPlanCuotas}
-                        onSwitchToTransferencia={() => setMetodoInscripcion("transferencia")}
-                      />
+                      {metodoInscripcion === "tarjeta" ? (
+                        <>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-main-red block mb-0.5">
+                            Inscripción Inmediata
+                          </span>
+                          <h4 className="text-xl font-black text-main-blue tracking-tight">
+                            Pago Directo con Tarjeta en Línea
+                          </h4>
+                          <p className="text-xs text-gray-500 font-light mt-0.5">
+                            Completa tus datos personales, académicos y de tarjeta para asegurar tu cupo oficial.
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-amber-800 block mb-0.5">
+                            Vía Bancaria Oficial
+                          </span>
+                          <h4 className="text-xl font-black text-main-blue tracking-tight">
+                            Solicitud de Datos de Transferencia y Reserva de Cupo
+                          </h4>
+                          <p className="text-xs text-gray-500 font-light mt-0.5">
+                            Recibe en tu correo la orden bancaria SWIFT/IBAN para tramitar y asegurar tu lugar dentro del cupo limitado.
+                          </p>
+                        </>
+                      )}
                     </div>
+
+                    {/* SWITCH PARA CAMBIAR ENTRE TARJETA Y SOLICITUD DE DATOS */}
+                    <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-200/90 px-3.5 py-2 rounded-2xl shrink-0 self-start sm:self-center shadow-2xs">
+                      <span className={`text-xs font-bold transition-colors ${metodoInscripcion === "tarjeta" ? "text-main-blue" : "text-gray-400"}`}>
+                        Tarjeta
+                      </span>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={metodoInscripcion === "transferencia"}
+                        onClick={() => setMetodoInscripcion(metodoInscripcion === "tarjeta" ? "transferencia" : "tarjeta")}
+                        title={metodoInscripcion === "tarjeta" ? "Cambiar a Solicitud de datos de transferencia" : "Cambiar a Pago con tarjeta"}
+                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-main-blue/30 ${
+                          metodoInscripcion === "transferencia" ? "bg-amber-800" : "bg-main-blue"
+                        }`}
+                      >
+                        <span
+                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                            metodoInscripcion === "transferencia" ? "translate-x-5" : "translate-x-0"
+                          }`}
+                        />
+                      </button>
+                      <span className={`text-xs font-bold transition-colors ${metodoInscripcion === "transferencia" ? "text-amber-800" : "text-gray-400"}`}>
+                        Transferencia
+                      </span>
+                    </div>
+                  </div>
+
+                  {metodoInscripcion === "tarjeta" ? (
+                    <FormularioPagoCurso
+                      curso={curso}
+                      landing={landing}
+                      planCuotas={planCuotas}
+                      setPlanCuotas={setPlanCuotas}
+                    />
                   ) : (
                     <div>
-                      <div className="mb-5 pb-3 border-b border-gray-100">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-amber-800 block mb-0.5">
-                          Vía Bancaria Oficial
-                        </span>
-                        <h4 className="text-xl font-black text-main-blue tracking-tight">
-                          Solicitud de Datos de Transferencia y Reserva de Cupo
-                        </h4>
-                        <p className="text-xs text-gray-500 font-light mt-0.5">
-                          Recibe en tu correo la orden bancaria SWIFT/IBAN para tramitar y asegurar tu lugar dentro del cupo limitado.
-                        </p>
-                      </div>
 
                       {solicitudExitosa ? (
                         <div className="p-6 bg-green-50 rounded-2xl border border-green-200 text-center space-y-3">
