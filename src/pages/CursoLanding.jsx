@@ -792,7 +792,7 @@ export default function CursoLanding() {
             </div>
 
             {/* SUBTÍTULO BROCHURE CON GLASMORFISMO ELEGANTE PARA MÁXIMA LEGIBILIDAD */}
-            <div className="bg-slate-950/75 border border-white/15 border-l-4 border-l-main-red p-3.5 sm:p-4 rounded-xl backdrop-blur-md shadow-xl max-w-4xl text-left">
+            <div className="bg-slate-950/75 border border-white/15 border-l-4 border-l-main-red p-3.5 sm:p-4 rounded-r-xl rounded-l-none backdrop-blur-md shadow-xl max-w-4xl text-left">
               <p className="text-sm md:text-base font-normal text-slate-100 leading-relaxed drop-shadow-sm">
                 {landing.subtitulo || "Investigación Criminal, Cooperación Internacional y Derechos Humanos en la Lucha contra la Criminalidad Organizada y la Trata de Personas"}
               </p>
