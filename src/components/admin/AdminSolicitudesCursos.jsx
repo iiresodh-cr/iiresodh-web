@@ -49,6 +49,9 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
 
   // Control de Pagos y Abonos
   const [modalPagos, setModalPagos] = useState({ open: false, solicitud: null });
+  const [desgloseAbierto, setDesgloseAbierto] = useState({});
+  const [mostrarFormNuevoAbono, setMostrarFormNuevoAbono] = useState(false);
+  const toggleDesglose = (id) => setDesgloseAbierto(prev => ({ ...prev, [id]: !prev[id] }));
   const [formAbono, setFormAbono] = useState({
     monto: "",
     fecha: new Date().toISOString().slice(0, 10),
@@ -730,6 +733,41 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
   // ==========================================
   // GESTIÓN Y CONTROL DE PAGOS Y ABONOS
   // ==========================================
+  // Calcula el desglose completo de pagos, sintetizando el pago de matrícula inicial si aplica
+  const obtenerHistorialCompleto = (sol) => {
+    if (!sol) return [];
+    const lista = Array.isArray(sol.historialPagos) ? [...sol.historialPagos] : [];
+    const sumaHistorial = lista.reduce((acc, p) => acc + (Number(p.monto) || 0), 0);
+    const montoPagado = Number(sol.montoPagado) || 0;
+    const diferencia = Number((montoPagado - sumaHistorial).toFixed(2));
+
+    // Si hay un monto pagado inicial previo que no estaba en el array historialPagos
+    if (diferencia > 0) {
+      let fechaInicial = "Inicial";
+      if (sol.fechaPago) {
+        fechaInicial = typeof sol.fechaPago?.toDate === "function" 
+          ? sol.fechaPago.toDate().toISOString().slice(0, 10) 
+          : String(sol.fechaPago).slice(0, 10);
+      } else if (sol.fechaSolicitud) {
+        fechaInicial = typeof sol.fechaSolicitud?.toDate === "function" 
+          ? sol.fechaSolicitud.toDate().toISOString().slice(0, 10) 
+          : String(sol.fechaSolicitud).slice(0, 10);
+      }
+
+      lista.unshift({
+        id: "pago_inicial_sistema",
+        monto: diferencia,
+        fecha: fechaInicial,
+        metodo: sol.metodoPago || "stripe",
+        referencia: sol.stripePaymentIntentId || sol.stripeSessionId || "Pago Inicial / Matrícula",
+        notas: Number(sol.planCuotas) > 1 ? `Inscripción inicial (Cuota 1 de ${sol.planCuotas})` : "Pago de inscripción en línea",
+        registradoPor: "Pasarela Web Directa",
+        esInicial: true
+      });
+    }
+    return lista;
+  };
+
   const abrirGestionPagos = (solicitud) => {
     const totalInv = Number(solicitud.montoTotalInversion) || 3350;
     const baseSinDesc = Number(solicitud.montoBaseSinDescuento) || (totalInv + (Number(solicitud.descuentoMonto) || 0));
@@ -742,6 +780,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
     const sugerido = saldo > 0 ? (saldo < cuotaMonto ? saldo : cuotaMonto) : "";
 
     setModalPagos({ open: true, solicitud });
+    setMostrarFormNuevoAbono(false);
     setFormAbono({
       monto: sugerido ? String(sugerido) : "",
       fecha: new Date().toISOString().slice(0, 10),
@@ -2051,6 +2090,65 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                             </code>
                           </div>
                         )}
+
+                        {/* DESGLOSE RÁPIDO DIRECTO EN LA TARJETA */}
+                        {(() => {
+                          const historialCard = obtenerHistorialCompleto(solicitud);
+                          const estaAbierto = !!desgloseAbierto[solicitud.id];
+                          return (
+                            <div className="pt-2 border-t border-gray-200/80">
+                              <button
+                                type="button"
+                                onClick={() => toggleDesglose(solicitud.id)}
+                                className="w-full text-[11px] font-bold text-main-blue hover:text-blue-900 bg-blue-50/80 hover:bg-blue-100/80 py-1.5 px-2.5 rounded-xl border border-blue-200/60 flex items-center justify-between transition-colors cursor-pointer"
+                              >
+                                <span className="flex items-center gap-1.5">
+                                  <span>📜</span>
+                                  <span>Desglose de Pagos ({historialCard.length})</span>
+                                </span>
+                                <span className="text-[10px] text-blue-700 font-extrabold">
+                                  {estaAbierto ? "▲ Ocultar" : "▼ Ver detalles"}
+                                </span>
+                              </button>
+
+                              {estaAbierto && (
+                                <div className="mt-2 space-y-1.5 bg-slate-50/90 p-2.5 rounded-xl border border-slate-200 text-xs shadow-2xs animate-fade-in">
+                                  {historialCard.length === 0 ? (
+                                    <p className="text-[11px] text-gray-500 italic py-1 text-center">
+                                      Sin pagos o abonos registrados aún.
+                                    </p>
+                                  ) : (
+                                    historialCard.map((p, pIdx) => (
+                                      <div
+                                        key={p.id || pIdx}
+                                        className="flex items-start justify-between py-1.5 border-b border-gray-200/70 last:border-b-0 gap-2"
+                                      >
+                                        <div className="min-w-0 flex-1">
+                                          <div className="flex items-center gap-1.5 flex-wrap">
+                                            <span className="font-extrabold text-slate-900 text-[11px]">
+                                              {p.fecha}
+                                            </span>
+                                            <span className="text-[9px] uppercase font-bold px-1.5 py-0.2 rounded bg-white border border-gray-200 text-gray-700">
+                                              {p.metodo}
+                                            </span>
+                                          </div>
+                                          <span className="text-[10px] text-gray-600 block truncate" title={p.notas || p.referencia}>
+                                            {p.notas || p.referencia || "Abono"}
+                                          </span>
+                                        </div>
+                                        <div className="text-right shrink-0">
+                                          <span className="font-black text-emerald-700 text-xs block">
+                                            +${Number(p.monto).toLocaleString()} USD
+                                          </span>
+                                        </div>
+                                      </div>
+                                    ))
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </div>
 
                       {/* BOTONES PRINCIPALES DE GESTIÓN FINANCIERA */}
@@ -2061,7 +2159,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                           className="bg-white hover:bg-main-blue hover:text-white text-main-blue border-2 border-main-blue/30 hover:border-main-blue text-xs font-black py-2 px-2.5 rounded-xl transition-all shadow-2xs hover:shadow-xs flex items-center justify-center gap-1.5 cursor-pointer text-center"
                         >
                           <span>💳</span>
-                          <span className="truncate">Abonos ({cantPagos})</span>
+                          <span className="truncate">Control Pagos ({obtenerHistorialCompleto(solicitud).length})</span>
                         </button>
 
                         <button
@@ -2233,28 +2331,377 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
               </div>
             </div>
 
-            {/* OPCIÓN PARA AJUSTAR PLAN FINANCIERO O BECA */}
-            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">
-                    Configuración del Plan de Pago
-                  </h4>
-                  <p className="text-xs text-gray-500">
-                    Ajusta si el participante cambió de cuotas o si se le otorgó un monto especial por beca institucional.
-                  </p>
+            {/* 1. HISTORIAL DE PAGOS Y ABONOS REGISTRADOS (PRIORIDAD VISUAL) */}
+            {(() => {
+              const historialModal = obtenerHistorialCompleto(modalPagos.solicitud);
+              const sumaAbonos = historialModal.reduce((acc, p) => acc + (Number(p.monto) || 0), 0);
+              return (
+                <div className="space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-200 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">📜</span>
+                      <h4 className="text-sm font-extrabold text-slate-800 uppercase tracking-wider">
+                        Historial Detallado de Pagos y Abonos ({historialModal.length})
+                      </h4>
+                    </div>
+                    <span className="text-xs font-black text-emerald-800 bg-emerald-100/80 px-2.5 py-1 rounded-full border border-emerald-300">
+                      Total Registrado: ${sumaAbonos.toLocaleString()} USD
+                    </span>
+                  </div>
+
+                  {historialModal.length === 0 ? (
+                    <div className="text-center py-8 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                      <p className="text-xs text-gray-500 font-medium">
+                        No hay pagos ni abonos registrados para este participante.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-2xs">
+                      <table className="w-full text-left text-xs text-gray-700">
+                        <thead className="bg-slate-100 text-slate-700 font-bold uppercase text-[10px] tracking-wider border-b border-gray-200">
+                          <tr>
+                            <th className="px-3.5 py-2.5">Fecha</th>
+                            <th className="px-3.5 py-2.5">Monto</th>
+                            <th className="px-3.5 py-2.5">Método</th>
+                            <th className="px-3.5 py-2.5">Detalle / Referencia</th>
+                            <th className="px-3.5 py-2.5">Registrado Por</th>
+                            <th className="px-3.5 py-2.5 text-right">Acción</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 bg-white">
+                          {historialModal.map((pago, idx) => (
+                            <tr key={pago.id || idx} className="hover:bg-slate-50 transition-colors">
+                              <td className="px-3.5 py-2.5 font-semibold text-gray-900 whitespace-nowrap">
+                                {pago.fecha || "Sin fecha"}
+                              </td>
+                              <td className="px-3.5 py-2.5 font-black text-emerald-700 whitespace-nowrap">
+                                ${Number(pago.monto).toLocaleString()} USD
+                              </td>
+                              <td className="px-3.5 py-2.5 whitespace-nowrap">
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase inline-flex items-center gap-1 ${
+                                  pago.metodo === 'stripe'
+                                    ? 'bg-indigo-100 text-indigo-900 border border-indigo-200'
+                                    : 'bg-amber-100 text-amber-900 border border-amber-200'
+                                }`}>
+                                  {pago.metodo === 'stripe' ? '💳 Stripe' : '🏛️ Banco'}
+                                </span>
+                              </td>
+                              <td className="px-3.5 py-2.5 max-w-[220px]">
+                                <span className="block font-semibold text-gray-800 truncate" title={pago.notas || pago.referencia}>
+                                  {pago.notas || pago.referencia || "Abono"}
+                                </span>
+                                {pago.referencia && pago.referencia !== pago.notas && (
+                                  <span className="block text-[10px] text-gray-500 font-mono truncate" title={pago.referencia}>
+                                    Ref: {pago.referencia}
+                                  </span>
+                                )}
+                                {pago.comprobanteUrl && (
+                                  <a
+                                    href={pago.comprobanteUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[10px] font-bold text-main-blue hover:underline inline-flex items-center gap-0.5 mt-0.5"
+                                  >
+                                    📎 Ver Comprobante
+                                  </a>
+                                )}
+                              </td>
+                              <td className="px-3.5 py-2.5 text-[10px] text-gray-500 truncate max-w-[140px]" title={pago.registradoPor}>
+                                {pago.registradoPor || "Admin"}
+                              </td>
+                              <td className="px-3.5 py-2.5 text-right whitespace-nowrap">
+                                {pago.esInicial ? (
+                                  <span className="text-[10px] text-gray-400 font-bold italic" title="Pago inicial registrado en la matriculación">
+                                    🔒 Matrícula Base
+                                  </span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleEliminarAbono(pago.id, Number(pago.monto))}
+                                    className="text-rose-600 hover:text-rose-800 font-bold text-[11px] p-1 rounded hover:bg-rose-50 transition-colors cursor-pointer"
+                                    title="Anular abono"
+                                  >
+                                    ✕ Anular
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
+              );
+            })()}
+
+            {/* 2. LISTADO DE ENLACES DE PAGO STRIPE GENERADOS */}
+            {Array.isArray(modalPagos.solicitud.enlacesPago) && modalPagos.solicitud.enlacesPago.length > 0 && (
+              <div className="bg-slate-900 text-white rounded-2xl p-4 sm:p-5 space-y-2.5 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">⚡</span>
+                    <h4 className="text-xs font-black text-amber-300 uppercase tracking-wider">
+                      Enlaces de Pago Stripe Generados ({modalPagos.solicitud.enlacesPago.length})
+                    </h4>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => abrirModalEnlaceStripe(modalPagos.solicitud)}
+                    className="text-xs font-bold text-amber-300 hover:text-white underline cursor-pointer"
+                  >
+                    + Generar otro enlace
+                  </button>
+                </div>
+
+                <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                  {modalPagos.solicitud.enlacesPago.map((enlace, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-white/10 border border-white/10 rounded-xl p-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
+                    >
+                      <div className="space-y-0.5 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-black text-amber-300">
+                            ${Number(enlace.monto).toLocaleString()} USD
+                          </span>
+                          <span className={`text-[10px] font-bold px-2 py-0.2 rounded-full uppercase ${
+                            enlace.estado === 'pagado' ? 'bg-emerald-400 text-emerald-950' : 'bg-amber-400/20 text-amber-200 border border-amber-300/30'
+                          }`}>
+                            {enlace.estado === 'pagado' ? '✓ Pagado' : '⏳ Pendiente'}
+                          </span>
+                          {enlace.emailEnviado && (
+                            <span className="text-[10px] text-blue-200">
+                              ✉️ Correo enviado
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-300 truncate" title={enlace.concepto}>
+                          {enlace.concepto || "Inscripción"}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => copiarAlPortapapeles(enlace.url, "Enlace Stripe copiado al portapapeles. ¡Listo para enviar por WhatsApp!")}
+                          className="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+                          title="Copiar para WhatsApp"
+                        >
+                          <span>📋</span>
+                          <span>Copiar</span>
+                        </button>
+                        <a
+                          href={enlace.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-white/20 hover:bg-white/30 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                          title="Abrir pasarela Stripe"
+                        >
+                          <span>🔗</span>
+                          <span>Abrir</span>
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 3. BARRA DE ACCIONES DE GESTIÓN FINANCIERA */}
+            <div className="bg-gray-100/80 p-3 rounded-2xl flex flex-wrap items-center justify-between gap-2.5 border border-gray-200">
+              <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">
+                Acciones Financieras:
+              </span>
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
                   type="button"
-                  onClick={() => setEditandoPlan(!editandoPlan)}
-                  className="text-xs font-bold text-main-blue hover:text-light-blue px-3 py-1 rounded-lg border border-blue-200 bg-white hover:bg-blue-50 transition-colors cursor-pointer"
+                  onClick={() => {
+                    setMostrarFormNuevoAbono(!mostrarFormNuevoAbono);
+                    if (editandoPlan) setEditandoPlan(false);
+                  }}
+                  className={`text-xs font-bold py-2 px-3 rounded-xl border transition-all cursor-pointer flex items-center gap-1.5 ${
+                    mostrarFormNuevoAbono
+                      ? "bg-main-blue text-white border-main-blue shadow-xs"
+                      : "bg-white text-main-blue border-main-blue/30 hover:bg-blue-50"
+                  }`}
                 >
-                  {editandoPlan ? "✕ Cancelar edición" : "✏️ Modificar Plan"}
+                  <span>➕</span>
+                  <span>{mostrarFormNuevoAbono ? "Ocultar Formulario Abono" : "Registrar Abono Manual"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => abrirModalEnlaceStripe(modalPagos.solicitud)}
+                  className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2 px-3 rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>⚡</span>
+                  <span>Generar Enlace Stripe</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditandoPlan(!editandoPlan);
+                    if (mostrarFormNuevoAbono) setMostrarFormNuevoAbono(false);
+                  }}
+                  className={`text-xs font-bold py-2 px-3 rounded-xl border transition-all cursor-pointer flex items-center gap-1.5 ${
+                    editandoPlan
+                      ? "bg-gray-800 text-white border-gray-800"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  <span>✏️</span>
+                  <span>{editandoPlan ? "Cerrar Configuración Plan" : "Modificar Plan / Descuento"}</span>
                 </button>
               </div>
+            </div>
 
-              {editandoPlan && (
-                <form onSubmit={handleGuardarPlan} className="mt-3 pt-3 border-t border-gray-200 space-y-3">
+            {/* 4. FORMULARIO PARA REGISTRAR NUEVO ABONO MANUAL (DESPLEGABLE) */}
+            {mostrarFormNuevoAbono && (
+              <div className="bg-blue-50/70 border-2 border-blue-200 rounded-2xl p-4 sm:p-5 space-y-3 animate-fade-in">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">➕</span>
+                    <h4 className="text-sm font-extrabold text-main-blue uppercase tracking-wider">
+                      Registrar Nuevo Pago o Abono
+                    </h4>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setMostrarFormNuevoAbono(false)}
+                    className="text-xs text-gray-400 hover:text-gray-600 font-bold"
+                  >
+                    ✕ Cancelar
+                  </button>
+                </div>
+
+                <form onSubmit={handleRegistrarAbono} className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">
+                        Monto a Abonar (USD) *
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        required
+                        placeholder="0.00"
+                        value={formAbono.monto}
+                        onChange={(e) => setFormAbono({ ...formAbono, monto: e.target.value })}
+                        className="w-full text-sm font-black px-3.5 py-2 rounded-xl border border-blue-300 bg-white focus:outline-none focus:ring-2 focus:ring-main-blue"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">
+                        Fecha del Pago *
+                      </label>
+                      <input
+                        type="date"
+                        required
+                        value={formAbono.fecha}
+                        onChange={(e) => setFormAbono({ ...formAbono, fecha: e.target.value })}
+                        className="w-full text-sm px-3.5 py-2 rounded-xl border border-gray-300 bg-white focus:outline-none focus:border-main-blue"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">
+                        Método de Pago *
+                      </label>
+                      <select
+                        value={formAbono.metodo}
+                        onChange={(e) => setFormAbono({ ...formAbono, metodo: e.target.value })}
+                        className="w-full text-sm px-3.5 py-2 rounded-xl border border-gray-300 bg-white font-medium"
+                      >
+                        <option value="transferencia">🏛️ Transferencia Bancaria</option>
+                        <option value="stripe">💳 Tarjeta / Stripe</option>
+                        <option value="efectivo">💵 Efectivo</option>
+                        <option value="sinpe">📱 SINPE Móvil / Otro</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">
+                        Referencia Bancaria o Comprobante #
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Ej: Ref. Banco Costa Rica #89472"
+                        value={formAbono.referencia}
+                        onChange={(e) => setFormAbono({ ...formAbono, referencia: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2 rounded-xl border border-gray-300 bg-white focus:outline-none focus:border-main-blue"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">
+                        Adjuntar Comprobante (Imagen o PDF)
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*,application/pdf"
+                        onChange={(e) => setFormAbono({ ...formAbono, comprobanteFile: e.target.files?.[0] || null })}
+                        className="w-full text-xs text-gray-600 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-main-blue file:text-white hover:file:bg-light-blue cursor-pointer"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      Notas u Observaciones del Abono (Opcional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ej: Corresponde a la Cuota 2 de 3 convenida por correo"
+                      value={formAbono.notas}
+                      onChange={(e) => setFormAbono({ ...formAbono, notas: e.target.value })}
+                      className="w-full text-xs px-3.5 py-2 rounded-xl border border-gray-300 bg-white focus:outline-none focus:border-main-blue"
+                    />
+                  </div>
+
+                  <div className="flex justify-end pt-1">
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      disabled={guardandoAbono}
+                      sx={{
+                        bgcolor: "#1D3557",
+                        textTransform: "none",
+                        fontWeight: 700,
+                        px: 3,
+                        py: 1,
+                        borderRadius: "10px",
+                        "&:hover": { bgcolor: "#14253d" }
+                      }}
+                    >
+                      {guardandoAbono ? "Registrando Abono..." : "💾 Registrar Abono"}
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* 5. CONFIGURACIÓN DEL PLAN DE PAGO (DESPLEGABLE) */}
+            {editandoPlan && (
+              <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4 sm:p-5 space-y-3 animate-fade-in">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">
+                    Configuración del Plan de Pago y Descuentos
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() => setEditandoPlan(false)}
+                    className="text-xs text-gray-400 hover:text-gray-600 font-bold"
+                  >
+                    ✕ Cerrar
+                  </button>
+                </div>
+
+                <form onSubmit={handleGuardarPlan} className="space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                     <div>
                       <label className="block text-[11px] font-semibold text-gray-600 mb-1">
@@ -2356,289 +2803,8 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                     </Button>
                   </div>
                 </form>
-              )}
-            </div>
-
-            {/* SECCIÓN ENLACES DE PAGO STRIPE PERSONALIZADOS */}
-            <div className="bg-slate-900 text-white rounded-2xl p-4 sm:p-5 space-y-3 shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">⚡</span>
-                  <div>
-                    <h4 className="text-sm font-extrabold uppercase tracking-wider text-amber-300">
-                      Enlace de Pago Seguro (Stripe Checkout)
-                    </h4>
-                    <p className="text-xs text-slate-300">
-                      Genera un enlace de pago oficial con monto personalizado para enviar por correo o WhatsApp.
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => abrirModalEnlaceStripe(modalPagos.solicitud)}
-                  className="bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black py-2.5 px-4 rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 cursor-pointer shrink-0"
-                >
-                  <span>⚡ Generar Enlace Stripe</span>
-                </button>
               </div>
-
-              {/* LISTADO DE ENLACES GENERADOS PREVIAMENTE */}
-              {Array.isArray(modalPagos.solicitud.enlacesPago) && modalPagos.solicitud.enlacesPago.length > 0 && (
-                <div className="pt-3 border-t border-white/10 space-y-2">
-                  <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block">
-                    Enlaces de Pago Generados ({modalPagos.solicitud.enlacesPago.length}):
-                  </span>
-                  <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                    {modalPagos.solicitud.enlacesPago.map((enlace, idx) => (
-                      <div
-                        key={idx}
-                        className="bg-white/10 border border-white/10 rounded-xl p-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
-                      >
-                        <div className="space-y-0.5 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-black text-amber-300">
-                              ${Number(enlace.monto).toLocaleString()} USD
-                            </span>
-                            <span className={`text-[10px] font-bold px-2 py-0.2 rounded-full uppercase ${
-                              enlace.estado === 'pagado' ? 'bg-emerald-400 text-emerald-950' : 'bg-amber-400/20 text-amber-200 border border-amber-300/30'
-                            }`}>
-                              {enlace.estado === 'pagado' ? '✓ Pagado' : '⏳ Pendiente'}
-                            </span>
-                            {enlace.emailEnviado && (
-                              <span className="text-[10px] text-blue-200">
-                                ✉️ Correo enviado
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-slate-300 truncate" title={enlace.concepto}>
-                            {enlace.concepto || "Inscripción"}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => copiarAlPortapapeles(enlace.url, "Enlace Stripe copiado al portapapeles. ¡Listo para enviar por WhatsApp!")}
-                            className="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1"
-                            title="Copiar para WhatsApp"
-                          >
-                            <span>📋</span>
-                            <span>Copiar</span>
-                          </button>
-                          <a
-                            href={enlace.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-white/20 hover:bg-white/30 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1"
-                            title="Abrir enlace"
-                          >
-                            <span>🔗</span>
-                            <span>Abrir</span>
-                          </a>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* FORMULARIO PARA REGISTRAR NUEVO ABONO / PAGO */}
-            <div className="bg-blue-50/50 border border-blue-200 rounded-2xl p-4 sm:p-5 space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">➕</span>
-                <h4 className="text-sm font-extrabold text-main-blue uppercase tracking-wider">
-                  Registrar Nuevo Pago o Abono
-                </h4>
-              </div>
-
-              <form onSubmit={handleRegistrarAbono} className="space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Monto a Abonar (USD) *
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      required
-                      placeholder="0.00"
-                      value={formAbono.monto}
-                      onChange={(e) => setFormAbono({ ...formAbono, monto: e.target.value })}
-                      className="w-full text-sm font-black px-3.5 py-2 rounded-xl border border-blue-300 bg-white focus:outline-none focus:ring-2 focus:ring-main-blue"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Fecha del Pago *
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={formAbono.fecha}
-                      onChange={(e) => setFormAbono({ ...formAbono, fecha: e.target.value })}
-                      className="w-full text-sm px-3.5 py-2 rounded-xl border border-gray-300 bg-white focus:outline-none focus:border-main-blue"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Método de Pago *
-                    </label>
-                    <select
-                      value={formAbono.metodo}
-                      onChange={(e) => setFormAbono({ ...formAbono, metodo: e.target.value })}
-                      className="w-full text-sm px-3.5 py-2 rounded-xl border border-gray-300 bg-white font-medium"
-                    >
-                      <option value="transferencia">🏛️ Transferencia Bancaria</option>
-                      <option value="stripe">💳 Tarjeta / Stripe</option>
-                      <option value="efectivo">💵 Efectivo</option>
-                      <option value="sinpe">📱 SINPE Móvil / Otro</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Referencia Bancaria o Comprobante #
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Ej: Ref. Banco Costa Rica #89472"
-                      value={formAbono.referencia}
-                      onChange={(e) => setFormAbono({ ...formAbono, referencia: e.target.value })}
-                      className="w-full text-xs px-3.5 py-2 rounded-xl border border-gray-300 bg-white focus:outline-none focus:border-main-blue"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Adjuntar Comprobante (Imagen o PDF)
-                    </label>
-                    <input
-                      type="file"
-                      accept="image/*,application/pdf"
-                      onChange={(e) => setFormAbono({ ...formAbono, comprobanteFile: e.target.files?.[0] || null })}
-                      className="w-full text-xs text-gray-600 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-main-blue file:text-white hover:file:bg-light-blue cursor-pointer"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Notas u Observaciones del Abono (Opcional)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Ej: Corresponde a la Cuota 2 de 3 convenida por correo"
-                    value={formAbono.notas}
-                    onChange={(e) => setFormAbono({ ...formAbono, notas: e.target.value })}
-                    className="w-full text-xs px-3.5 py-2 rounded-xl border border-gray-300 bg-white focus:outline-none focus:border-main-blue"
-                  />
-                </div>
-
-                <div className="flex justify-end pt-1">
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    disabled={guardandoAbono}
-                    sx={{
-                      bgcolor: "#1D3557",
-                      textTransform: "none",
-                      fontWeight: 700,
-                      px: 3,
-                      py: 1,
-                      borderRadius: "10px",
-                      "&:hover": { bgcolor: "#14253d" }
-                    }}
-                  >
-                    {guardandoAbono ? "Registrando Abono..." : "💾 Registrar Abono"}
-                  </Button>
-                </div>
-              </form>
-            </div>
-
-            {/* TABLA DE HISTORIAL DE PAGOS REGISTRADOS */}
-            <div className="space-y-2">
-              <h4 className="text-xs font-extrabold text-gray-700 uppercase tracking-wider">
-                Historial de Pagos y Abonos Registrados
-              </h4>
-
-              {(!modalPagos.solicitud.historialPagos || modalPagos.solicitud.historialPagos.length === 0) ? (
-                <div className="text-center py-8 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                  <p className="text-xs text-gray-500 font-medium">
-                    No hay abonos individuales registrados en el historial de este participante.
-                    {Number(modalPagos.solicitud.montoPagado) > 0 && ` (Se cuenta con un monto base registrado de $${Number(modalPagos.solicitud.montoPagado).toLocaleString()} USD).`}
-                  </p>
-                </div>
-              ) : (
-                <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-2xs">
-                  <table className="w-full text-left text-xs text-gray-700">
-                    <thead className="bg-gray-100 text-gray-600 font-bold uppercase text-[10px] tracking-wider border-b border-gray-200">
-                      <tr>
-                        <th className="px-3.5 py-2.5">Fecha</th>
-                        <th className="px-3.5 py-2.5">Monto</th>
-                        <th className="px-3.5 py-2.5">Método</th>
-                        <th className="px-3.5 py-2.5">Referencia / Comprobante</th>
-                        <th className="px-3.5 py-2.5">Registrado Por</th>
-                        <th className="px-3.5 py-2.5 text-right">Acción</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 bg-white">
-                      {modalPagos.solicitud.historialPagos.map((pago, idx) => (
-                        <tr key={pago.id || idx} className="hover:bg-slate-50 transition-colors">
-                          <td className="px-3.5 py-2.5 font-semibold text-gray-900 whitespace-nowrap">
-                            {pago.fecha || "Sin fecha"}
-                          </td>
-                          <td className="px-3.5 py-2.5 font-black text-emerald-700 whitespace-nowrap">
-                            ${Number(pago.monto).toLocaleString()} USD
-                          </td>
-                          <td className="px-3.5 py-2.5 capitalize whitespace-nowrap">
-                            {pago.metodo || "Transferencia"}
-                          </td>
-                          <td className="px-3.5 py-2.5 max-w-[200px]">
-                            <span className="block font-semibold text-gray-800 truncate" title={pago.referencia}>
-                              {pago.referencia || "Sin ref."}
-                            </span>
-                            {pago.notas && (
-                              <span className="block text-[10px] text-gray-500 italic truncate" title={pago.notas}>
-                                {pago.notas}
-                              </span>
-                            )}
-                            {pago.comprobanteUrl && (
-                              <a
-                                href={pago.comprobanteUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-[10px] font-bold text-main-blue hover:underline inline-flex items-center gap-0.5 mt-0.5"
-                              >
-                                📎 Ver Comprobante
-                              </a>
-                            )}
-                          </td>
-                          <td className="px-3.5 py-2.5 text-[10px] text-gray-500 truncate max-w-[140px]" title={pago.registradoPor}>
-                            {pago.registradoPor || "Admin"}
-                          </td>
-                          <td className="px-3.5 py-2.5 text-right whitespace-nowrap">
-                            <button
-                              type="button"
-                              onClick={() => handleEliminarAbono(pago.id, Number(pago.monto))}
-                              className="text-rose-600 hover:text-rose-800 font-bold text-[11px] p-1 rounded hover:bg-rose-50 transition-colors cursor-pointer"
-                              title="Anular abono"
-                            >
-                              ✕ Anular
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+            )}
           </DialogContent>
 
           <DialogActions sx={{ p: 2, borderTop: "1px solid #f3f4f6" }}>
