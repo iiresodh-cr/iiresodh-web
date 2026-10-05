@@ -1680,9 +1680,15 @@ export default function CursoLanding() {
 
                     {/* SWITCH PARA CAMBIAR ENTRE TARJETA Y SOLICITUD DE DATOS */}
                     <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-200/90 px-3.5 py-2 rounded-2xl shrink-0 self-start sm:self-center shadow-2xs">
-                      <span className={`text-xs font-bold transition-colors ${metodoInscripcion === "tarjeta" ? "text-main-blue" : "text-gray-400"}`}>
+                      <button
+                        type="button"
+                        onClick={() => setMetodoInscripcion("tarjeta")}
+                        className={`text-xs font-bold transition-colors cursor-pointer select-none ${
+                          metodoInscripcion === "tarjeta" ? "text-main-blue font-extrabold" : "text-gray-400 hover:text-gray-600"
+                        }`}
+                      >
                         Tarjeta
-                      </span>
+                      </button>
                       <button
                         type="button"
                         role="switch"
@@ -1699,9 +1705,15 @@ export default function CursoLanding() {
                           }`}
                         />
                       </button>
-                      <span className={`text-xs font-bold transition-colors ${metodoInscripcion === "transferencia" ? "text-amber-800" : "text-gray-400"}`}>
+                      <button
+                        type="button"
+                        onClick={() => setMetodoInscripcion("transferencia")}
+                        className={`text-xs font-bold transition-colors cursor-pointer select-none ${
+                          metodoInscripcion === "transferencia" ? "text-amber-800 font-extrabold" : "text-gray-400 hover:text-gray-600"
+                        }`}
+                      >
                         Transferencia
-                      </span>
+                      </button>
                     </div>
                   </div>
 
