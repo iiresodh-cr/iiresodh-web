@@ -1187,7 +1187,9 @@ export default function AdminPanel() {
       let finalPrincipalUrl = imagenPrincipalAnterior;
       if (imagenPrincipal) {
         const refImg = ref(storage, `${carpeta}/portadas/${Date.now()}_${imagenPrincipal.name}`);
-        await uploadBytes(refImg, imagenPrincipal);
+        await uploadBytes(refImg, imagenPrincipal, {
+          cacheControl: 'public, max-age=31536000, immutable'
+        });
         finalPrincipalUrl = await getDownloadURL(refImg);
       }
 
@@ -1197,7 +1199,9 @@ export default function AdminPanel() {
       if (vistaActiva === "libros" && archivoLibro) {
         const rutaCompleta = `${carpeta}/archivos/${Date.now()}_${archivoLibro.name}`;
         const refLibro = ref(storage, rutaCompleta);
-        await uploadBytes(refLibro, archivoLibro);
+        await uploadBytes(refLibro, archivoLibro, {
+          cacheControl: 'public, max-age=86400'
+        });
         finalArchivoLibroUrl = await getDownloadURL(refLibro);
         rutaStorageLibro = rutaCompleta;
       }
@@ -1205,14 +1209,18 @@ export default function AdminPanel() {
       let finalArchivoInformeUrl = archivoInformeAnterior;
       if (vistaActiva === "informes" && archivoInforme) {
         const refInf = ref(storage, `informes/archivos/${Date.now()}_${archivoInforme.name}`);
-        await uploadBytes(refInf, archivoInforme);
+        await uploadBytes(refInf, archivoInforme, {
+          cacheControl: 'public, max-age=86400'
+        });
         finalArchivoInformeUrl = await getDownloadURL(refInf);
       }
 
       let finalArchivoIncidenciaUrl = archivoIncidenciaAnterior;
       if (vistaActiva === "incidencia" && archivoIncidencia) {
         const refInc = ref(storage, `incidencia/archivos/${Date.now()}_${archivoIncidencia.name}`);
-        await uploadBytes(refInc, archivoIncidencia);
+        await uploadBytes(refInc, archivoIncidencia, {
+          cacheControl: 'public, max-age=86400'
+        });
         finalArchivoIncidenciaUrl = await getDownloadURL(refInc);
       }
 
@@ -1220,7 +1228,9 @@ export default function AdminPanel() {
       if (vistaActiva === "comunicaciones" || vistaActiva === "cursos") {
         for (const file of imagenesCarrusel) {
           const refCar = ref(storage, `${carpeta}/carrusel/${Date.now()}_${file.name}`);
-          await uploadBytes(refCar, file);
+          await uploadBytes(refCar, file, {
+            cacheControl: 'public, max-age=31536000, immutable'
+          });
           const url = await getDownloadURL(refCar);
           nuevasUrls.push(url);
         }

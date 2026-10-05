@@ -137,14 +137,15 @@ export const formatearTextoConLinksYHashtags = (texto, idiomaActual = 'es') => {
   return procesado;
 };
 
-// Funciones de caché (TTL de 10 minutos)
-const CACHE_TTL_MINUTES = 10;
+// Funciones de caché local (Patrón Stale-While-Revalidate)
+// Permite renderizado instantáneo a 0 ms con los datos locales mientras se revalida siempre con Firestore
 const getCachedData = (key) => {
   try {
     const cached = localStorage.getItem(key);
     if (cached) {
       const parsed = JSON.parse(cached);
-      if (Date.now() - parsed.timestamp < CACHE_TTL_MINUTES * 60 * 1000) {
+      // Mantener los datos locales disponibles (hasta 7 días de respaldo) para inicio instantáneo
+      if (parsed && parsed.data && (Date.now() - (parsed.timestamp || 0) < 7 * 24 * 60 * 60 * 1000)) {
         return parsed.data;
       }
     }
@@ -156,6 +157,23 @@ const setCachedData = (key, data) => {
     localStorage.setItem(key, JSON.stringify({ timestamp: Date.now(), data }));
   } catch (e) { console.error('Cache write error', e); }
 };
+
+// Precargar de inmediato en el navegador la imagen destacada guardada en caché para despliegue instantáneo
+if (typeof document !== "undefined") {
+  const cached = getCachedData('home_noticias');
+  if (cached && cached[0] && cached[0].imagenPrincipalUrl) {
+    let existingPreload = document.querySelector('link[rel="preload"][as="image"]#hero-preload');
+    if (!existingPreload) {
+      existingPreload = document.createElement("link");
+      existingPreload.id = "hero-preload";
+      existingPreload.rel = "preload";
+      existingPreload.as = "image";
+      existingPreload.fetchPriority = "high";
+      existingPreload.href = cached[0].imagenPrincipalUrl;
+      document.head.appendChild(existingPreload);
+    }
+  }
+}
 
 const formatearFecha = (fecha, idioma = 'es') => {
   if (!fecha) return "";
@@ -223,37 +241,45 @@ export default function Home() {
     const fetchNoticias = async () => {
       try {
         const qPersistentes = query(collection(db, "noticias"), where("persistente", "==", true));
-        const snapPersistentes = await getDocs(qPersistentes);
-        let noticiasFijas = snapPersistentes.docs.map(doc => ({ id: doc.id, ...doc.data() })).slice(0, 3);
-        
-        let noticiasRecientes = [];
-        const faltantes = 8 - noticiasFijas.length;
-        if (faltantes > 0) {
-          const qRecientes = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), limit(12));
-          const snapRecientes = await getDocs(qRecientes);
-          const idsFijas = noticiasFijas.map(n => n.id);
-          noticiasRecientes = snapRecientes.docs
-            .map(doc => ({ id: doc.id, ...doc.data() }))
-            .filter(n => !idsFijas.includes(n.id))
-            .slice(0, faltantes);
-        }
+        const qRecientes = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), limit(12));
+
+        // Ejecución en paralelo: evita esperar dos viajes de ida y vuelta a Firestore
+        const [snapPersistentes, snapRecientes] = await Promise.all([
+          getDocs(qPersistentes),
+          getDocs(qRecientes)
+        ]);
+
+        const noticiasFijas = snapPersistentes.docs.map(doc => ({ id: doc.id, ...doc.data() })).slice(0, 3);
+        const idsFijas = new Set(noticiasFijas.map(n => n.id));
+        const faltantes = Math.max(0, 8 - noticiasFijas.length);
+        const noticiasRecientes = snapRecientes.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter(n => !idsFijas.has(n.id))
+          .slice(0, faltantes);
         
         const finalNoticias = [...noticiasFijas, ...noticiasRecientes];
         setNoticias(finalNoticias);
         setCachedData('home_noticias', finalNoticias);
 
-        // Preload para la imagen principal
-        const firstNews = noticiasFijas.length > 0 ? noticiasFijas[0] : noticiasRecientes[0];
+        // Preload para la imagen principal de la lista actualizada
+        const firstNews = finalNoticias[0];
         if (firstNews && firstNews.imagenPrincipalUrl) {
-          const preloadLink = document.createElement("link");
+          let preloadLink = document.querySelector('link[rel="preload"][as="image"]#hero-preload');
+          if (!preloadLink) {
+            preloadLink = document.createElement("link");
+            preloadLink.id = "hero-preload";
+            preloadLink.rel = "preload";
+            preloadLink.as = "image";
+            preloadLink.fetchPriority = "high";
+            document.head.appendChild(preloadLink);
+          }
           preloadLink.href = firstNews.imagenPrincipalUrl;
-          preloadLink.rel = "preload";
-          preloadLink.as = "image";
-          preloadLink.fetchPriority = "high";
-          document.head.appendChild(preloadLink);
         }
-      } catch (e) { console.error(e); }
-      finally { setLoading(false); }
+      } catch (e) { 
+        console.error("Error al obtener noticias:", e); 
+      } finally { 
+        setLoading(false); 
+      }
     };
 
     fetchNoticias();
@@ -379,15 +405,20 @@ export default function Home() {
                     className="group relative block w-full max-w-md mx-auto rounded-3xl overflow-hidden shadow-2xl border border-slate-200/80 bg-white transition-all duration-500 hover:shadow-2xl hover:border-slate-300 hover:-translate-y-1"
                   >
                     <div className="relative aspect-[4/5] overflow-hidden bg-slate-100">
-                      <div 
-                        className="w-full h-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
-                        style={{ backgroundImage: `url(${noticiaDestacada.imagenPrincipalUrl})` }}
-                        role="img"
-                        aria-label={tituloDestacado || "Noticia destacada"}
-                      />
+                      {noticiaDestacada.imagenPrincipalUrl ? (
+                        <img 
+                          src={noticiaDestacada.imagenPrincipalUrl} 
+                          alt={tituloDestacado || "Noticia destacada"}
+                          fetchPriority="high"
+                          decoding="async"
+                          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-slate-200" />
+                      )}
                       
                       {/* Viñeta degradada para legibilidad perfecta */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#0B1E40] via-[#0B1E40]/40 to-transparent opacity-95"></div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0B1E40] via-[#0B1E40]/40 to-transparent opacity-95 pointer-events-none"></div>
 
                       {/* Badge Superior */}
                       <div className="absolute top-5 left-5 z-10 flex items-center gap-2">
@@ -486,15 +517,19 @@ export default function Home() {
                             onClick={() => navigate(`/noticias/${noticia.slug || noticia.id}`, { state: { noticiaPreCargada: noticia } })}
                           >
                             {/* Fotografía de Fondo con Zoom Suave */}
-                            <div 
-                              className="absolute inset-0 w-full h-full bg-cover bg-center transition-transform duration-3000 ease-out group-hover/slide:scale-105"
-                              style={{ backgroundImage: `url(${noticia.imagenPrincipalUrl})` }}
-                              role="img"
-                              aria-label={tituloTraducido || "Imagen de la noticia"}
-                            />
+                            {noticia.imagenPrincipalUrl ? (
+                              <img 
+                                src={noticia.imagenPrincipalUrl}
+                                alt={tituloTraducido || "Imagen de la noticia"}
+                                decoding="async"
+                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-3000 ease-out group-hover/slide:scale-105"
+                              />
+                            ) : (
+                              <div className="absolute inset-0 w-full h-full bg-[#0B1E40]" />
+                            )}
                             
                             {/* Doble Degradado Cinematográfico */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#0B1E40] via-[#0B1E40]/75 to-transparent"></div>
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#0B1E40] via-[#0B1E40]/75 to-transparent pointer-events-none"></div>
 
                             {/* Contenido Editorial con Tipografía Impecable */}
                             <div className="relative p-6 md:p-8 z-10 text-white flex flex-col justify-end max-w-2xl">
@@ -600,7 +635,7 @@ export default function Home() {
                                   src={item.imagenPrincipalUrl} 
                                   alt="" 
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                  loading="lazy"
+                                  decoding="async"
                                 />
                               </div>
                             )}

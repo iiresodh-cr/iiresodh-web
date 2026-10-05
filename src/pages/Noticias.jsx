@@ -195,7 +195,7 @@ export default function Noticias() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-6" role="list">
-                  {noticias.map((noticia) => {
+                  {noticias.map((noticia, index) => {
                     
                     // ==========================================
                     // TRADUCCIÓN DINÁMICA DE LA BASE DE DATOS
@@ -221,6 +221,9 @@ export default function Noticias() {
                               src={noticia.imagenPrincipalUrl} 
                               alt="" 
                               aria-hidden="true"
+                              loading={index < 3 ? "eager" : "lazy"}
+                              fetchPriority={index === 0 ? "high" : "auto"}
+                              decoding="async"
                               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
                             />
                           </div>
