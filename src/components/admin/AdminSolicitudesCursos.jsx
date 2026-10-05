@@ -548,17 +548,18 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
   };
 
   const handleGenerarEnlaceStripe = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     const solicitud = modalEnlaceStripe.solicitud;
     if (!solicitud) return;
 
     const montoNum = Number(modalEnlaceStripe.monto);
     if (!montoNum || montoNum <= 0) {
+      setModalEnlaceStripe(prev => ({ ...prev, error: "Por favor ingresa un monto válido mayor a 0 para el enlace de pago." }));
       mostrarToast("Por favor ingresa un monto válido mayor a 0 para el enlace de pago.", true);
       return;
     }
 
-    setModalEnlaceStripe(prev => ({ ...prev, cargando: true }));
+    setModalEnlaceStripe(prev => ({ ...prev, cargando: true, error: null }));
     try {
       const generarEnlaceFn = httpsCallable(functions, "generarEnlacePagoCurso");
       const resp = await generarEnlaceFn({
@@ -576,7 +577,8 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       setModalEnlaceStripe(prev => ({
         ...prev,
         urlGenerada: data.url,
-        cargando: false
+        cargando: false,
+        error: null
       }));
 
       // Actualizar la solicitud localmente para reflejar el nuevo enlace en enlacesPago
@@ -619,8 +621,9 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       }
     } catch (error) {
       console.error("Error al generar enlace de Stripe:", error);
-      mostrarToast(error.message || "Error al generar el enlace de pago con Stripe.", true);
-      setModalEnlaceStripe(prev => ({ ...prev, cargando: false }));
+      const msg = error.message || "Error al generar el enlace de pago con Stripe.";
+      mostrarToast(msg, true);
+      setModalEnlaceStripe(prev => ({ ...prev, cargando: false, error: msg }));
     }
   };
 
@@ -3197,6 +3200,13 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
               </label>
             </div>
 
+            {/* ALERTA DE ERROR VISIBLE EN EL MODAL */}
+            {modalEnlaceStripe.error && (
+              <Alert severity="error" sx={{ borderRadius: "12px", fontSize: "12px" }}>
+                {modalEnlaceStripe.error}
+              </Alert>
+            )}
+
             {/* RESULTADO TRAS GENERAR ENLACE */}
             {modalEnlaceStripe.urlGenerada && (
               <div className="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-4 space-y-2.5 animate-fade-in">
@@ -3244,6 +3254,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
             {!modalEnlaceStripe.urlGenerada && (
               <Button
                 type="submit"
+                onClick={handleGenerarEnlaceStripe}
                 variant="contained"
                 disabled={modalEnlaceStripe.cargando}
                 sx={{
