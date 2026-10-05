@@ -89,13 +89,15 @@ function CheckoutFormCurso({
   landing,
   planCuotas: propPlanCuotas,
   setPlanCuotas: propSetPlanCuotas,
+  formData: propFormData,
+  setFormData: propSetFormData,
   onSwitchToTransferencia
 }) {
   const stripe = useStripe();
   const elements = useElements();
 
   // Estados de datos del participante y perfil académico
-  const [formData, setFormData] = useState({
+  const [internalFormData, setInternalFormData] = useState({
     nombres: "",
     apellidos: "",
     nombre: "",
@@ -111,6 +113,9 @@ function CheckoutFormCurso({
     detalleCursosPrevios: "",
     alumnoIiresodh: "no"
   });
+
+  const formData = propFormData || internalFormData;
+  const setFormData = propSetFormData || setInternalFormData;
 
   // Plan de cuotas seleccionado (1 = Pago único, 2 = 2 pagos, 3 = 3 pagos, 4 = 4 pagos)
   const [internalPlanCuotas, setInternalPlanCuotas] = useState(1);
@@ -138,7 +143,16 @@ function CheckoutFormCurso({
     const val = parseFloat(s);
     return (!isNaN(val) && val >= 50) ? val : 3350;
   };
-  const montoTotal = parsearMontoTotal(precioTexto);
+  const montoBase = parsearMontoTotal(precioTexto);
+
+  // Estados de Cupón de Descuento o Beca Institucional
+  const [codigoCuponInput, setCodigoCuponInput] = useState("");
+  const [cuponAplicado, setCuponAplicado] = useState(null);
+  const [validandoCupon, setValidandoCupon] = useState(false);
+  const [errorCupon, setErrorCupon] = useState(null);
+
+  const montoDescuento = cuponAplicado ? Number(cuponAplicado.descuentoMonto) || 0 : 0;
+  const montoTotal = Math.max(0, montoBase - montoDescuento);
 
   // Formateador estándar financiero USD: coma (,) para miles y punto (.) para 2 decimales en todas las cuotas y pagos
   const formatMonto = (num) => {
@@ -147,6 +161,37 @@ function CheckoutFormCurso({
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
+  };
+
+  const handleValidarCupon = async () => {
+    if (!codigoCuponInput.trim()) return;
+    setValidandoCupon(true);
+    setErrorCupon(null);
+    try {
+      const validarFn = httpsCallable(functions, "validarCuponDescuento");
+      const resp = await validarFn({
+        codigo: codigoCuponInput.trim(),
+        cursoId: curso?.id || "palermo-2027",
+        montoBase: montoBase
+      });
+      if (resp.data && resp.data.valido) {
+        setCuponAplicado(resp.data);
+        setErrorCupon(null);
+      } else {
+        setErrorCupon(resp.data?.mensaje || "El código no es válido o ha expirado.");
+      }
+    } catch (err) {
+      console.error("Error validando cupón:", err);
+      setErrorCupon("No se pudo verificar el cupón. Intenta nuevamente.");
+    } finally {
+      setValidandoCupon(false);
+    }
+  };
+
+  const handleRemoverCupon = () => {
+    setCuponAplicado(null);
+    setCodigoCuponInput("");
+    setErrorCupon(null);
   };
 
   // Monto por cuota según plan
@@ -317,6 +362,9 @@ function CheckoutFormCurso({
         alumnoIiresodh: formData.alumnoIiresodh,
         monto: montoCuotaActual,
         montoTotal: montoTotal,
+        montoBaseSinDescuento: montoBase,
+        cuponCodigo: cuponAplicado?.codigo || null,
+        descuentoMonto: montoDescuento,
         moneda: monedaDetectada,
         planCuotas: planCuotas,
         numCuota: 1,
@@ -349,6 +397,9 @@ function CheckoutFormCurso({
           id: resultado.paymentIntent.id,
           montoPagado: montoCuotaActual,
           montoTotal: montoTotal,
+          montoBase: montoBase,
+          descuentoMonto: montoDescuento,
+          cuponCodigo: cuponAplicado?.codigo || null,
           planCuotas: planCuotas,
           moneda: monedaDetectada,
           email: formData.email.trim(),
@@ -706,6 +757,64 @@ function CheckoutFormCurso({
         </div>
       </div>
 
+      {/* CÓDIGO DE DESCUENTO O BECA INSTITUCIONAL */}
+      <div className="pt-3 border-t border-gray-100">
+        <label className="block text-xs font-black text-main-blue uppercase tracking-wider mb-2">
+          ¿Cuentas con un código de descuento o beca institucional?
+        </label>
+        
+        {cuponAplicado ? (
+          <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs animate-fade-in">
+            <div className="flex items-center gap-2.5 text-emerald-900">
+              <span className="text-lg">🏷️</span>
+              <div>
+                <span className="font-bold">
+                  Beca / Descuento aplicado: <code className="bg-emerald-100 px-1.5 py-0.5 rounded font-mono text-emerald-800 font-bold">{cuponAplicado.codigo}</code>
+                </span>
+                <p className="text-[11px] text-emerald-700 font-medium mt-0.5">
+                  {cuponAplicado.descripcion} (-${formatMonto(montoDescuento)} USD)
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleRemoverCupon}
+              className="text-[11px] text-emerald-800 hover:text-red-700 underline font-bold cursor-pointer"
+            >
+              Remover
+            </button>
+          </div>
+        ) : (
+          <div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={codigoCuponInput}
+                onChange={(e) => {
+                  setCodigoCuponInput(e.target.value.toUpperCase());
+                  setErrorCupon(null);
+                }}
+                placeholder="Ingresa tu código (Ej: BECA15, CONVENIO2027)"
+                className="flex-1 text-xs px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white uppercase font-mono tracking-wider"
+              />
+              <button
+                type="button"
+                disabled={validandoCupon || !codigoCuponInput.trim()}
+                onClick={handleValidarCupon}
+                className="px-4 py-2.5 bg-main-blue hover:bg-light-blue disabled:bg-gray-200 disabled:text-gray-400 text-white text-xs font-bold rounded-xl transition cursor-pointer shrink-0"
+              >
+                {validandoCupon ? "Validando..." : "Aplicar"}
+              </button>
+            </div>
+            {errorCupon && (
+              <p className="text-[11px] text-red-600 font-semibold mt-1.5 animate-fade-in">
+                ⚠️ {errorCupon}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* 3. DATOS DE TARJETA CON STRIPE ELEMENTS Y SELLO DE CONFIANZA */}
       <div className="space-y-3 pt-3 border-t border-gray-100">
         <div className="flex items-center justify-between flex-wrap gap-2">
@@ -738,9 +847,25 @@ function CheckoutFormCurso({
       {/* 4. RESUMEN DE CARGO Y TÉRMINOS */}
       <div className="bg-slate-50 border border-gray-200 rounded-2xl p-4 text-xs space-y-2">
         <div className="flex items-center justify-between text-gray-700">
-          <span>Inversión total del curso:</span>
-          <span className="font-bold text-gray-900">{simboloMoneda}{formatMonto(montoTotal)} USD</span>
+          <span>Inversión regular del curso:</span>
+          <span className={`font-bold ${cuponAplicado ? "line-through text-gray-400" : "text-gray-900"}`}>
+            {simboloMoneda}{formatMonto(montoBase)} USD
+          </span>
         </div>
+        {cuponAplicado && (
+          <div className="flex items-center justify-between text-emerald-800 font-semibold bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200 text-[11px]">
+            <span className="flex items-center gap-1.5">
+              <span>🏷️</span> Cupón aplicado ({cuponAplicado.codigo}):
+            </span>
+            <span className="font-bold">-{simboloMoneda}{formatMonto(montoDescuento)} USD</span>
+          </div>
+        )}
+        {cuponAplicado && (
+          <div className="flex items-center justify-between text-gray-800 font-semibold">
+            <span>Inversión final con descuento:</span>
+            <span className="font-bold text-gray-900">{simboloMoneda}{formatMonto(montoTotal)} USD</span>
+          </div>
+        )}
         <div className="flex items-center justify-between text-gray-700">
           <span>Modalidad de pago seleccionada:</span>
           <span className="font-bold text-sky-800 bg-sky-100/80 px-2.5 py-0.5 rounded-md border border-sky-200 text-[11px]">
@@ -859,6 +984,8 @@ export default function FormularioPagoCurso({
   landing,
   planCuotas,
   setPlanCuotas,
+  formData,
+  setFormData,
   onSwitchToTransferencia
 }) {
   return (
@@ -868,6 +995,8 @@ export default function FormularioPagoCurso({
         landing={landing} 
         planCuotas={planCuotas}
         setPlanCuotas={setPlanCuotas}
+        formData={formData}
+        setFormData={setFormData}
         onSwitchToTransferencia={onSwitchToTransferencia} 
       />
     </Elements>

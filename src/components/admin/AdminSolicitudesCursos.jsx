@@ -12,7 +12,8 @@ import {
   serverTimestamp 
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { auth, db, storage } from "../../firebase/config";
+import { httpsCallable } from "firebase/functions";
+import { auth, db, storage, functions } from "../../firebase/config";
 import { 
   CircularProgress, 
   Dialog, 
@@ -58,8 +59,41 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
   });
   const [guardandoAbono, setGuardandoAbono] = useState(false);
   const [editandoPlan, setEditandoPlan] = useState(false);
-  const [formPlan, setFormPlan] = useState({ montoTotalInversion: 3350, planCuotas: 1 });
+  const [formPlan, setFormPlan] = useState({
+    montoBase: 3350,
+    descuentoMonto: 0,
+    descuentoMotivo: "",
+    cuponCodigo: "",
+    montoTotalInversion: 3350,
+    planCuotas: 1
+  });
   const [guardandoPlan, setGuardandoPlan] = useState(false);
+
+  // Generador de Enlaces de Pago Stripe (Checkout personalizado)
+  const [modalEnlaceStripe, setModalEnlaceStripe] = useState({
+    open: false,
+    solicitud: null,
+    monto: "",
+    concepto: "",
+    enviarEmail: true,
+    urlGenerada: null,
+    cargando: false
+  });
+
+  // Gestión de Cupones de Descuento y Becas
+  const [modalCupones, setModalCupones] = useState(false);
+  const [cupones, setCupones] = useState([]);
+  const [cargandoCupones, setCargandoCupones] = useState(false);
+  const [guardandoCupon, setGuardandoCupon] = useState(false);
+  const [formNuevoCupon, setFormNuevoCupon] = useState({
+    codigo: "",
+    tipo: "monto_fijo", // "monto_fijo" | "porcentaje"
+    valor: "",
+    fechaExpiracion: "",
+    limiteUsos: "",
+    descripcion: "",
+    activo: true
+  });
 
   // Alertas
   const [alerta, setAlerta] = useState({ open: false, mensaje: "", esError: false });
@@ -81,6 +115,10 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
     institucion: "",
     metodoPago: "transferencia",
     planCuotas: 1,
+    montoBase: 3350,
+    descuentoMonto: 0,
+    descuentoMotivo: "",
+    cuponCodigo: "",
     montoTotalInversion: 3350,
     montoPagado: 0,
     estado: "contactado",
@@ -461,11 +499,237 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
     }
   };
 
+  // Copiar al portapapeles con fallback seguro
+  const copiarAlPortapapeles = async (texto, mensaje = "Enlace copiado al portapapeles.") => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(texto);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = texto;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+      mostrarToast(mensaje);
+    } catch (err) {
+      console.error("Error al copiar:", err);
+      mostrarToast("No se pudo copiar automáticamente.", true);
+    }
+  };
+
+  // ==========================================
+  // GENERACIÓN DE ENLACE DE PAGO STRIPE PERSONALIZADO
+  // ==========================================
+  const abrirModalEnlaceStripe = (solicitud, montoSugerido = null) => {
+    const totalInv = Number(solicitud.montoTotalInversion) || 3350;
+    const pagado = Number(solicitud.montoPagado) || 0;
+    const saldo = Math.max(0, totalInv - pagado);
+
+    let montoInicial = "";
+    if (montoSugerido && Number(montoSugerido) > 0) {
+      montoInicial = String(montoSugerido);
+    } else if (saldo > 0) {
+      montoInicial = String(saldo);
+    } else {
+      montoInicial = String(totalInv);
+    }
+
+    setModalEnlaceStripe({
+      open: true,
+      solicitud,
+      monto: montoInicial,
+      concepto: `Inscripción Curso - ${solicitud.cursoTitulo || 'IIRESODH'}`,
+      enviarEmail: true,
+      urlGenerada: null,
+      cargando: false
+    });
+  };
+
+  const handleGenerarEnlaceStripe = async (e) => {
+    e.preventDefault();
+    const solicitud = modalEnlaceStripe.solicitud;
+    if (!solicitud) return;
+
+    const montoNum = Number(modalEnlaceStripe.monto);
+    if (!montoNum || montoNum <= 0) {
+      mostrarToast("Por favor ingresa un monto válido mayor a 0 para el enlace de pago.", true);
+      return;
+    }
+
+    setModalEnlaceStripe(prev => ({ ...prev, cargando: true }));
+    try {
+      const generarEnlaceFn = httpsCallable(functions, "generarEnlacePagoCurso");
+      const resp = await generarEnlaceFn({
+        solicitudId: solicitud.id,
+        monto: montoNum,
+        concepto: modalEnlaceStripe.concepto.trim() || `Inscripción ${solicitud.cursoTitulo || 'Curso IIRESODH'}`,
+        enviarEmail: modalEnlaceStripe.enviarEmail
+      });
+
+      const data = resp.data || {};
+      if (!data.success || !data.url) {
+        throw new Error(data.error || "No se devolvió un enlace válido de Stripe.");
+      }
+
+      setModalEnlaceStripe(prev => ({
+        ...prev,
+        urlGenerada: data.url,
+        cargando: false
+      }));
+
+      // Actualizar la solicitud localmente para reflejar el nuevo enlace en enlacesPago
+      const nuevoEnlaceItem = {
+        sessionId: data.sessionId,
+        url: data.url,
+        monto: montoNum,
+        concepto: modalEnlaceStripe.concepto.trim(),
+        fecha: new Date().toISOString(),
+        emailEnviado: data.emailEnviado,
+        estado: "pendiente"
+      };
+
+      const enlacesPrevios = Array.isArray(solicitud.enlacesPago) ? solicitud.enlacesPago : [];
+      const nuevosEnlaces = [nuevoEnlaceItem, ...enlacesPrevios];
+      const solicitudActualizada = { ...solicitud, enlacesPago: nuevosEnlaces };
+
+      setSolicitudes(prev => prev.map(s => (s.id === solicitud.id ? solicitudActualizada : s)));
+      if (modalPagos.open && modalPagos.solicitud?.id === solicitud.id) {
+        setModalPagos(prev => ({ ...prev, solicitud: solicitudActualizada }));
+      }
+
+      mostrarToast(
+        data.emailEnviado 
+          ? `Enlace generado con éxito y enviado por correo a ${solicitud.email}.`
+          : "Enlace generado con éxito. Listo para copiar y compartir."
+      );
+
+      if (logActividad) {
+        await logActividad(
+          `Generó enlace de pago Stripe de $${montoNum} USD para "${solicitud.nombre || solicitud.id}" (Email enviado: ${data.emailEnviado ? 'Sí' : 'No'})`,
+          {
+            solicitudId: solicitud.id,
+            participante: solicitud.nombre,
+            monto: montoNum,
+            concepto: modalEnlaceStripe.concepto,
+            emailEnviado: data.emailEnviado
+          }
+        );
+      }
+    } catch (error) {
+      console.error("Error al generar enlace de Stripe:", error);
+      mostrarToast(error.message || "Error al generar el enlace de pago con Stripe.", true);
+      setModalEnlaceStripe(prev => ({ ...prev, cargando: false }));
+    }
+  };
+
+  // ==========================================
+  // GESTIÓN DE CUPONES DE DESCUENTO Y BECAS
+  // ==========================================
+  const cargarCupones = async () => {
+    setCargandoCupones(true);
+    try {
+      const snap = await getDocs(collection(db, "cuponesDescuento"));
+      const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setCupones(items);
+    } catch (error) {
+      console.error("Error al cargar cupones:", error);
+      mostrarToast("Error al cargar cupones de descuento.", true);
+    } finally {
+      setCargandoCupones(false);
+    }
+  };
+
+  const abrirGestionCupones = () => {
+    setModalCupones(true);
+    cargarCupones();
+  };
+
+  const handleCrearCupon = async (e) => {
+    e.preventDefault();
+    if (!formNuevoCupon.codigo.trim() || !formNuevoCupon.valor) {
+      mostrarToast("Código y valor del cupón son obligatorios.", true);
+      return;
+    }
+
+    setGuardandoCupon(true);
+    try {
+      const codigoLimpieza = formNuevoCupon.codigo.trim().toUpperCase().replace(/\s+/g, "");
+      const nuevoDoc = {
+        codigo: codigoLimpieza,
+        tipo: formNuevoCupon.tipo, // "monto_fijo" o "porcentaje"
+        valor: Number(formNuevoCupon.valor),
+        fechaExpiracion: formNuevoCupon.fechaExpiracion || null,
+        limiteUsos: formNuevoCupon.limiteUsos ? Number(formNuevoCupon.limiteUsos) : null,
+        usosActuales: 0,
+        descripcion: formNuevoCupon.descripcion.trim(),
+        activo: Boolean(formNuevoCupon.activo),
+        creadoEn: serverTimestamp(),
+        creadoPor: auth.currentUser?.email || "Administrador"
+      };
+
+      await addDoc(collection(db, "cuponesDescuento"), nuevoDoc);
+      mostrarToast(`Cupón ${codigoLimpieza} creado exitosamente.`);
+      setFormNuevoCupon({
+        codigo: "",
+        tipo: "monto_fijo",
+        valor: "",
+        fechaExpiracion: "",
+        limiteUsos: "",
+        descripcion: "",
+        activo: true
+      });
+      cargarCupones();
+
+      if (logActividad) {
+        await logActividad(
+          `Creó cupón de descuento "${codigoLimpieza}": ${nuevoDoc.tipo === 'porcentaje' ? nuevoDoc.valor + '%' : '$' + nuevoDoc.valor + ' USD'}`,
+          { codigo: codigoLimpieza, ...nuevoDoc }
+        );
+      }
+    } catch (error) {
+      console.error("Error al crear cupón:", error);
+      mostrarToast("Error al crear el cupón.", true);
+    } finally {
+      setGuardandoCupon(false);
+    }
+  };
+
+  const handleToggleCuponActivo = async (cupon) => {
+    try {
+      await updateDoc(doc(db, "cuponesDescuento", cupon.id), {
+        activo: !cupon.activo
+      });
+      setCupones(prev => prev.map(c => c.id === cupon.id ? { ...c, activo: !cupon.activo } : c));
+      mostrarToast(`Cupón ${cupon.codigo} ${!cupon.activo ? 'activado' : 'desactivado'}.`);
+    } catch (error) {
+      console.error("Error al actualizar cupón:", error);
+      mostrarToast("Error al cambiar estado del cupón.", true);
+    }
+  };
+
+  const handleEliminarCupon = async (cupon) => {
+    if (!window.confirm(`¿Estás seguro de eliminar permanentemente el cupón ${cupon.codigo}?`)) return;
+    try {
+      await deleteDoc(doc(db, "cuponesDescuento", cupon.id));
+      setCupones(prev => prev.filter(c => c.id !== cupon.id));
+      mostrarToast(`Cupón ${cupon.codigo} eliminado.`);
+      if (logActividad) {
+        await logActividad(`Eliminó cupón de descuento "${cupon.codigo}"`, { cuponId: cupon.id, codigo: cupon.codigo });
+      }
+    } catch (error) {
+      console.error("Error al eliminar cupón:", error);
+      mostrarToast("Error al eliminar el cupón.", true);
+    }
+  };
+
   // ==========================================
   // GESTIÓN Y CONTROL DE PAGOS Y ABONOS
   // ==========================================
   const abrirGestionPagos = (solicitud) => {
     const totalInv = Number(solicitud.montoTotalInversion) || 3350;
+    const baseSinDesc = Number(solicitud.montoBaseSinDescuento) || (totalInv + (Number(solicitud.descuentoMonto) || 0));
     const cuotas = Number(solicitud.planCuotas) || 1;
     const pagado = Number(solicitud.montoPagado) || 0;
     const saldo = Math.max(0, totalInv - pagado);
@@ -484,6 +748,10 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       comprobanteFile: null
     });
     setFormPlan({
+      montoBase: baseSinDesc,
+      descuentoMonto: Number(solicitud.descuentoMonto) || 0,
+      descuentoMotivo: solicitud.descuentoMotivo || "",
+      cuponCodigo: solicitud.cuponCodigo || "",
       montoTotalInversion: totalInv,
       planCuotas: cuotas
     });
@@ -655,18 +923,26 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
 
     setGuardandoPlan(true);
     try {
-      const nuevoTotal = Number(formPlan.montoTotalInversion) || 3350;
+      const base = Number(formPlan.montoBase) || 3350;
+      const desc = Math.max(0, Number(formPlan.descuentoMonto) || 0);
+      const nuevoTotal = Math.max(0, Number((base - desc).toFixed(2)));
       const nuevoPlanCuotas = Number(formPlan.planCuotas) || 1;
       const pagado = Number(solicitud.montoPagado) || 0;
       const nuevoSaldo = Math.max(0, Number((nuevoTotal - pagado).toFixed(2)));
-      const montoPorCuota = nuevoTotal / nuevoPlanCuotas;
+      const montoPorCuota = nuevoPlanCuotas > 0 ? nuevoTotal / nuevoPlanCuotas : nuevoTotal;
       const cuotasCalc = Math.min(nuevoPlanCuotas, Math.floor((pagado + 1) / montoPorCuota));
 
       const updateData = {
+        montoBaseSinDescuento: base,
+        descuentoMonto: desc,
+        descuentoMotivo: (formPlan.descuentoMotivo || "").trim(),
+        cuponCodigo: (formPlan.cuponCodigo || "").trim().toUpperCase(),
         montoTotalInversion: nuevoTotal,
         planCuotas: nuevoPlanCuotas,
         saldoPendiente: nuevoSaldo,
-        cuotasPagadas: cuotasCalc
+        cuotasPagadas: cuotasCalc,
+        fechaModificacionPlan: serverTimestamp(),
+        planModificadoPor: auth.currentUser?.email || "Administrador"
       };
 
       await updateDoc(doc(db, "solicitudesCursos", solicitud.id), updateData);
@@ -676,14 +952,16 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       setModalPagos({ open: true, solicitud: solicitudActualizada });
       setEditandoPlan(false);
 
-      mostrarToast("Plan financiero actualizado con éxito.");
+      mostrarToast("Plan financiero y descuentos actualizados con éxito.");
 
       if (logActividad) {
         await logActividad(
-          `Actualizó plan financiero de "${solicitud.nombre || solicitud.id}": Inversión $${nuevoTotal} USD, ${nuevoPlanCuotas} cuota(s)`,
+          `Actualizó plan financiero de "${solicitud.nombre || solicitud.id}": Base $${base}, Descuento $${desc} (${formPlan.cuponCodigo || formPlan.descuentoMotivo || 'N/A'}), Total $${nuevoTotal} USD, ${nuevoPlanCuotas} cuota(s)`,
           {
             solicitudId: solicitud.id,
             participante: solicitud.nombre,
+            montoBase: base,
+            descuentoMonto: desc,
             montoTotalInversion: nuevoTotal,
             planCuotas: nuevoPlanCuotas,
             saldoPendiente: nuevoSaldo
@@ -712,6 +990,10 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       institucion: "",
       metodoPago: "transferencia",
       planCuotas: 1,
+      montoBase: 3350,
+      descuentoMonto: 0,
+      descuentoMotivo: "",
+      cuponCodigo: "",
       montoTotalInversion: 3350,
       montoPagado: 0,
       estado: "contactado",
@@ -740,7 +1022,9 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       };
 
       const nombreCompleto = `${formManual.nombres.trim()} ${formManual.apellidos.trim()}`;
-      const totalInv = Number(formManual.montoTotalInversion) || 3350;
+      const baseInversion = Number(formManual.montoBase) || 3350;
+      const descMonto = Math.max(0, Number(formManual.descuentoMonto) || 0);
+      const totalInv = Math.max(0, Number((baseInversion - descMonto).toFixed(2)));
       const pagado = Number(formManual.montoPagado) || 0;
       const cuotas = Number(formManual.planCuotas) || 1;
       const adminActual = auth.currentUser?.email || "Administrador";
@@ -800,6 +1084,10 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         metodoPago: formManual.metodoPago,
         planCuotas: cuotas,
         cuotasPagadas: pagado > 0 ? 1 : 0,
+        montoBaseSinDescuento: baseInversion,
+        descuentoMonto: descMonto,
+        descuentoMotivo: (formManual.descuentoMotivo || "").trim(),
+        cuponCodigo: (formManual.cuponCodigo || "").trim().toUpperCase(),
         montoTotalInversion: totalInv,
         montoPagado: pagado,
         saldoPendiente: Math.max(0, totalInv - pagado),
@@ -1046,6 +1334,24 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         </button>
 
         <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+          <Button
+            variant="contained"
+            onClick={abrirGestionCupones}
+            sx={{
+              bgcolor: "#1D3557",
+              textTransform: "none",
+              fontSize: "13px",
+              py: 1,
+              px: 2,
+              borderRadius: "12px",
+              fontWeight: 700,
+              boxShadow: "0 2px 4px rgba(29, 53, 87, 0.2)",
+              "&:hover": { bgcolor: "#14253d" }
+            }}
+          >
+            🏷️ Cupones y Becas
+          </Button>
+
           <Button
             variant="contained"
             onClick={abrirRegistroManual}
@@ -1671,6 +1977,23 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
 
                       {/* DETALLE FINANCIERO */}
                       <div className="space-y-1.5 pt-1 border-t border-slate-200 text-xs">
+                        {Number(solicitud.descuentoMonto) > 0 && (
+                          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2 text-emerald-900 space-y-0.5">
+                            <div className="flex items-center justify-between text-[11px] font-bold">
+                              <span className="flex items-center gap-1">
+                                <span>🏷️</span>
+                                <span>Beca / Descuento:</span>
+                              </span>
+                              <span>-${Number(solicitud.descuentoMonto).toLocaleString()} USD</span>
+                            </div>
+                            {(solicitud.cuponCodigo || solicitud.descuentoMotivo) && (
+                              <p className="text-[10px] text-emerald-700 font-medium truncate">
+                                {solicitud.cuponCodigo ? `Cupón: ${solicitud.cuponCodigo}` : ''} {solicitud.descuentoMotivo ? `(${solicitud.descuentoMotivo})` : ''}
+                              </p>
+                            )}
+                          </div>
+                        )}
+
                         <div className="flex items-center justify-between">
                           <span className="text-gray-500">Modalidad:</span>
                           <span className="font-bold text-main-blue">
@@ -1727,15 +2050,27 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                         )}
                       </div>
 
-                      {/* BOTÓN PRINCIPAL PARA GESTIONAR PAGOS Y ABONOS */}
-                      <button
-                        type="button"
-                        onClick={() => abrirGestionPagos(solicitud)}
-                        className="w-full bg-white hover:bg-main-blue hover:text-white text-main-blue border-2 border-main-blue/30 hover:border-main-blue text-xs font-black py-2 px-3 rounded-xl transition-all shadow-2xs hover:shadow-xs flex items-center justify-center gap-2 cursor-pointer"
-                      >
-                        <span>💳</span>
-                        <span>Gestionar Pagos y Abonos ({cantPagos})</span>
-                      </button>
+                      {/* BOTONES PRINCIPALES DE GESTIÓN FINANCIERA */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => abrirGestionPagos(solicitud)}
+                          className="bg-white hover:bg-main-blue hover:text-white text-main-blue border-2 border-main-blue/30 hover:border-main-blue text-xs font-black py-2 px-2.5 rounded-xl transition-all shadow-2xs hover:shadow-xs flex items-center justify-center gap-1.5 cursor-pointer text-center"
+                        >
+                          <span>💳</span>
+                          <span className="truncate">Abonos ({cantPagos})</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => abrirModalEnlaceStripe(solicitud)}
+                          className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2 px-2.5 rounded-xl transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer text-center"
+                          title="Generar enlace de pago Stripe personalizado para enviar por WhatsApp o correo"
+                        >
+                          <span>⚡</span>
+                          <span className="truncate">Enlace Stripe</span>
+                        </button>
+                      </div>
                     </div>
 
                     {/* COLUMNA 3: EXPERIENCIA, MOTIVACIÓN Y COMENTARIOS */}
@@ -1916,56 +2251,193 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
               </div>
 
               {editandoPlan && (
-                <form onSubmit={handleGuardarPlan} className="mt-3 pt-3 border-t border-gray-200 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-[11px] font-semibold text-gray-600 mb-1">
-                      Monto Total Inversión (USD) *
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      value={formPlan.montoTotalInversion}
-                      onChange={(e) => setFormPlan({ ...formPlan, montoTotalInversion: Number(e.target.value) })}
-                      className="w-full text-xs font-bold px-3 py-2 rounded-lg border border-gray-300 bg-white"
-                    />
+                <form onSubmit={handleGuardarPlan} className="mt-3 pt-3 border-t border-gray-200 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                        Inversión Regular Base (USD) *
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        value={formPlan.montoBase}
+                        onChange={(e) => setFormPlan({ ...formPlan, montoBase: Number(e.target.value) })}
+                        className="w-full text-xs font-bold px-3 py-2 rounded-lg border border-gray-300 bg-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                        Descuento / Beca (USD)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={formPlan.descuentoMonto}
+                        onChange={(e) => setFormPlan({ ...formPlan, descuentoMonto: Number(e.target.value) })}
+                        className="w-full text-xs font-bold px-3 py-2 rounded-lg border border-gray-300 bg-white text-emerald-700"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                        Código de Cupón (opcional)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Ej: BECA2027"
+                        value={formPlan.cuponCodigo}
+                        onChange={(e) => setFormPlan({ ...formPlan, cuponCodigo: e.target.value.toUpperCase() })}
+                        className="w-full text-xs font-bold px-3 py-2 rounded-lg border border-gray-300 bg-white uppercase"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                        Modalidad de Cuotas *
+                      </label>
+                      <select
+                        value={formPlan.planCuotas}
+                        onChange={(e) => setFormPlan({ ...formPlan, planCuotas: Number(e.target.value) })}
+                        className="w-full text-xs font-bold px-3 py-2 rounded-lg border border-gray-300 bg-white"
+                      >
+                        <option value={1}>Pago Único (1 cuota)</option>
+                        <option value={2}>Financiamiento en 2 cuotas</option>
+                        <option value={3}>Financiamiento en 3 cuotas</option>
+                        <option value={4}>Financiamiento en 4 cuotas</option>
+                      </select>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-[11px] font-semibold text-gray-600 mb-1">
-                      Modalidad / Plan de Cuotas *
-                    </label>
-                    <select
-                      value={formPlan.planCuotas}
-                      onChange={(e) => setFormPlan({ ...formPlan, planCuotas: Number(e.target.value) })}
-                      className="w-full text-xs font-bold px-3 py-2 rounded-lg border border-gray-300 bg-white"
-                    >
-                      <option value={1}>Pago Único (1 cuota)</option>
-                      <option value={2}>Financiamiento en 2 cuotas</option>
-                      <option value={3}>Financiamiento en 3 cuotas</option>
-                      <option value={4}>Financiamiento en 4 cuotas</option>
-                    </select>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+                    <div className="sm:col-span-2">
+                      <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                        Motivo / Justificación del Descuento o Beca
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Ej: Beca institucional acordada por convenio / Descuento grupo"
+                        value={formPlan.descuentoMotivo}
+                        onChange={(e) => setFormPlan({ ...formPlan, descuentoMotivo: e.target.value })}
+                        className="w-full text-xs px-3 py-2 rounded-lg border border-gray-300 bg-white"
+                      />
+                    </div>
+
+                    <div className="bg-blue-50/80 border border-blue-200 rounded-xl p-2.5 text-center">
+                      <span className="text-[10px] font-bold text-main-blue block uppercase">
+                        Inversión Neta Final:
+                      </span>
+                      <span className="text-base font-black text-gray-900">
+                        ${Math.max(0, (Number(formPlan.montoBase) || 0) - (Number(formPlan.descuentoMonto) || 0)).toLocaleString()} USD
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="flex items-end">
+                  <div className="flex justify-end pt-1">
                     <Button
                       type="submit"
                       variant="contained"
                       disabled={guardandoPlan}
-                      fullWidth
                       sx={{
                         bgcolor: "#1D3557",
                         textTransform: "none",
                         fontWeight: 700,
                         fontSize: "12px",
                         py: 1,
+                        px: 3,
                         borderRadius: "8px",
                         "&:hover": { bgcolor: "#14253d" }
                       }}
                     >
-                      {guardandoPlan ? "Guardando..." : "Actualizar Plan"}
+                      {guardandoPlan ? "Guardando..." : "💾 Actualizar Plan Financiero"}
                     </Button>
                   </div>
                 </form>
+              )}
+            </div>
+
+            {/* SECCIÓN ENLACES DE PAGO STRIPE PERSONALIZADOS */}
+            <div className="bg-slate-900 text-white rounded-2xl p-4 sm:p-5 space-y-3 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">⚡</span>
+                  <div>
+                    <h4 className="text-sm font-extrabold uppercase tracking-wider text-amber-300">
+                      Enlace de Pago Seguro (Stripe Checkout)
+                    </h4>
+                    <p className="text-xs text-slate-300">
+                      Genera un enlace de pago oficial con monto personalizado para enviar por correo o WhatsApp.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => abrirModalEnlaceStripe(modalPagos.solicitud)}
+                  className="bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black py-2.5 px-4 rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 cursor-pointer shrink-0"
+                >
+                  <span>⚡ Generar Enlace Stripe</span>
+                </button>
+              </div>
+
+              {/* LISTADO DE ENLACES GENERADOS PREVIAMENTE */}
+              {Array.isArray(modalPagos.solicitud.enlacesPago) && modalPagos.solicitud.enlacesPago.length > 0 && (
+                <div className="pt-3 border-t border-white/10 space-y-2">
+                  <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block">
+                    Enlaces de Pago Generados ({modalPagos.solicitud.enlacesPago.length}):
+                  </span>
+                  <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                    {modalPagos.solicitud.enlacesPago.map((enlace, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-white/10 border border-white/10 rounded-xl p-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
+                      >
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-black text-amber-300">
+                              ${Number(enlace.monto).toLocaleString()} USD
+                            </span>
+                            <span className={`text-[10px] font-bold px-2 py-0.2 rounded-full uppercase ${
+                              enlace.estado === 'pagado' ? 'bg-emerald-400 text-emerald-950' : 'bg-amber-400/20 text-amber-200 border border-amber-300/30'
+                            }`}>
+                              {enlace.estado === 'pagado' ? '✓ Pagado' : '⏳ Pendiente'}
+                            </span>
+                            {enlace.emailEnviado && (
+                              <span className="text-[10px] text-blue-200">
+                                ✉️ Correo enviado
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-300 truncate" title={enlace.concepto}>
+                            {enlace.concepto || "Inscripción"}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => copiarAlPortapapeles(enlace.url, "Enlace Stripe copiado al portapapeles. ¡Listo para enviar por WhatsApp!")}
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+                            title="Copiar para WhatsApp"
+                          >
+                            <span>📋</span>
+                            <span>Copiar</span>
+                          </button>
+                          <a
+                            href={enlace.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-white/20 hover:bg-white/30 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                            title="Abrir enlace"
+                          >
+                            <span>🔗</span>
+                            <span>Abrir</span>
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
 
@@ -2502,28 +2974,80 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2">
                 <div>
                   <label className="block text-[11px] font-semibold text-gray-600 mb-1">
-                    Monto Total Inversión (USD)
+                    Inversión Regular Base (USD)
                   </label>
                   <input
                     type="number"
-                    value={formManual.montoTotalInversion}
-                    onChange={(e) => setFormManual({ ...formManual, montoTotalInversion: Number(e.target.value) })}
+                    value={formManual.montoBase}
+                    onChange={(e) => setFormManual({ ...formManual, montoBase: Number(e.target.value) })}
+                    className="w-full text-xs font-bold px-3 py-2 rounded-lg border border-gray-300 bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                    Descuento / Beca (USD)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formManual.descuentoMonto}
+                    onChange={(e) => setFormManual({ ...formManual, descuentoMonto: Number(e.target.value) })}
+                    className="w-full text-xs font-bold px-3 py-2 rounded-lg border border-gray-300 bg-white text-emerald-700"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                    Código de Cupón (opcional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ej: BECA2027"
+                    value={formManual.cuponCodigo}
+                    onChange={(e) => setFormManual({ ...formManual, cuponCodigo: e.target.value.toUpperCase() })}
+                    className="w-full text-xs font-bold px-3 py-2 rounded-lg border border-gray-300 bg-white uppercase"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                    Monto Abonado Hoy (USD)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formManual.montoPagado}
+                    onChange={(e) => setFormManual({ ...formManual, montoPagado: Number(e.target.value) })}
+                    className="w-full text-xs font-bold px-3 py-2 rounded-lg border border-gray-300 bg-white text-main-blue"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center pt-1">
+                <div className="sm:col-span-2">
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                    Motivo / Justificación del Descuento o Beca
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ej: Beca acordada por correo / Convenio institucional"
+                    value={formManual.descuentoMotivo}
+                    onChange={(e) => setFormManual({ ...formManual, descuentoMotivo: e.target.value })}
                     className="w-full text-xs px-3 py-2 rounded-lg border border-gray-300 bg-white"
                   />
                 </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">
-                    Monto Abonado Inicialmente (USD)
-                  </label>
-                  <input
-                    type="number"
-                    value={formManual.montoPagado}
-                    onChange={(e) => setFormManual({ ...formManual, montoPagado: Number(e.target.value) })}
-                    className="w-full text-xs px-3 py-2 rounded-lg border border-gray-300 bg-white"
-                  />
+
+                <div className="bg-white border border-gray-200 rounded-xl p-2.5 text-center shadow-2xs">
+                  <span className="text-[10px] font-bold text-gray-500 block uppercase">
+                    Inversión Neta Final:
+                  </span>
+                  <span className="text-base font-black text-gray-900">
+                    ${Math.max(0, (Number(formManual.montoBase) || 0) - (Number(formManual.descuentoMonto) || 0)).toLocaleString()} USD
+                  </span>
                 </div>
               </div>
             </div>
@@ -2568,6 +3092,432 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
             </Button>
           </DialogActions>
         </form>
+      </Dialog>
+
+      {/* MODAL PARA GENERAR ENLACE DE PAGO STRIPE PERSONALIZADO */}
+      <Dialog
+        open={modalEnlaceStripe.open}
+        onClose={() => !modalEnlaceStripe.cargando && setModalEnlaceStripe(prev => ({ ...prev, open: false }))}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 800, color: "#1D3557", borderBottom: "1px solid #f3f4f6", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div className="flex items-center gap-2">
+            <span className="text-xl">⚡</span>
+            <span>Generar Enlace Stripe Personalizado</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => !modalEnlaceStripe.cargando && setModalEnlaceStripe(prev => ({ ...prev, open: false }))}
+            className="text-gray-400 hover:text-gray-600 text-lg font-bold p-1 cursor-pointer"
+          >
+            ✕
+          </button>
+        </DialogTitle>
+
+        <form onSubmit={handleGenerarEnlaceStripe}>
+          <DialogContent sx={{ py: 3 }} className="space-y-4">
+            {modalEnlaceStripe.solicitud && (
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1 text-xs">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500 font-medium">Participante:</span>
+                  <span className="font-bold text-gray-900">
+                    {modalEnlaceStripe.solicitud.nombre || `${modalEnlaceStripe.solicitud.nombres || ''} ${modalEnlaceStripe.solicitud.apellidos || ''}`.trim()}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500 font-medium">Correo:</span>
+                  <span className="font-bold text-main-blue">{modalEnlaceStripe.solicitud.email}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500 font-medium">Curso:</span>
+                  <span className="font-semibold text-gray-800 truncate max-w-[260px]">
+                    {modalEnlaceStripe.solicitud.cursoTitulo || modalEnlaceStripe.solicitud.cursoId}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center pt-1 border-t border-slate-200">
+                  <span className="text-gray-600 font-medium">Saldo pendiente en expediente:</span>
+                  <span className="font-black text-rose-700">
+                    ${(Number(modalEnlaceStripe.solicitud.saldoPendiente) || 0).toLocaleString()} USD
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">
+                Monto a Cobrar en este Enlace (USD) *
+              </label>
+              <div className="relative">
+                <span className="absolute left-3.5 top-2.5 font-bold text-gray-500">$</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  placeholder="0.00"
+                  value={modalEnlaceStripe.monto}
+                  onChange={(e) => setModalEnlaceStripe(prev => ({ ...prev, monto: e.target.value }))}
+                  className="w-full text-base font-black pl-8 pr-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue"
+                />
+              </div>
+              <p className="text-[11px] text-gray-500 mt-1">
+                Puedes digitar cualquier monto acordado (por ejemplo una cuota específica pactada o el saldo total).
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">
+                Concepto o Descripción del Cobro *
+              </label>
+              <input
+                type="text"
+                required
+                value={modalEnlaceStripe.concepto}
+                onChange={(e) => setModalEnlaceStripe(prev => ({ ...prev, concepto: e.target.value }))}
+                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:border-main-blue"
+              />
+            </div>
+
+            <div className="bg-blue-50/70 border border-blue-200 rounded-xl p-3">
+              <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={modalEnlaceStripe.enviarEmail}
+                  onChange={(e) => setModalEnlaceStripe(prev => ({ ...prev, enviarEmail: e.target.checked }))}
+                  className="mt-0.5 w-4 h-4 text-main-blue rounded border-gray-300 focus:ring-main-blue cursor-pointer"
+                />
+                <div className="text-xs">
+                  <span className="font-bold text-main-blue block">
+                    Enviar notificación con botón de pago directo por correo electrónico
+                  </span>
+                  <span className="text-[11px] text-gray-600 block leading-tight">
+                    Se enviará una plantilla oficial de IIRESODH con el desglose y botón a <strong>{modalEnlaceStripe.solicitud?.email}</strong>.
+                  </span>
+                </div>
+              </label>
+            </div>
+
+            {/* RESULTADO TRAS GENERAR ENLACE */}
+            {modalEnlaceStripe.urlGenerada && (
+              <div className="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-4 space-y-2.5 animate-fade-in">
+                <div className="flex items-center gap-2 text-emerald-900 font-extrabold text-xs uppercase tracking-wider">
+                  <span>✓</span>
+                  <span>Enlace de Pago Creado Exitosamente</span>
+                </div>
+
+                <div className="bg-white p-2.5 rounded-xl border border-emerald-200 text-xs text-gray-700 font-mono break-all select-all">
+                  {modalEnlaceStripe.urlGenerada}
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => copiarAlPortapapeles(modalEnlaceStripe.urlGenerada, "¡Enlace copiado! Listo para pegar en WhatsApp.")}
+                    className="flex-1 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span>📋</span>
+                    <span>Copiar Enlace para WhatsApp</span>
+                  </button>
+                  <a
+                    href={modalEnlaceStripe.urlGenerada}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-white hover:bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-xs py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <span>🔗</span>
+                    <span>Probar Enlace</span>
+                  </a>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+
+          <DialogActions sx={{ p: 2.5, borderTop: "1px solid #f3f4f6" }}>
+            <Button
+              onClick={() => setModalEnlaceStripe(prev => ({ ...prev, open: false }))}
+              disabled={modalEnlaceStripe.cargando}
+              sx={{ textTransform: "none", color: "#6b7280" }}
+            >
+              {modalEnlaceStripe.urlGenerada ? "Cerrar" : "Cancelar"}
+            </Button>
+
+            {!modalEnlaceStripe.urlGenerada && (
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={modalEnlaceStripe.cargando}
+                sx={{
+                  bgcolor: "#1D3557",
+                  fontWeight: 700,
+                  textTransform: "none",
+                  borderRadius: "10px",
+                  px: 3,
+                  py: 1,
+                  "&:hover": { bgcolor: "#14253d" }
+                }}
+              >
+                {modalEnlaceStripe.cargando ? (
+                  <>
+                    <CircularProgress size={14} thickness={5} sx={{ color: "white", mr: 1 }} />
+                    <span>Generando Enlace Stripe...</span>
+                  </>
+                ) : (
+                  "⚡ Generar y Enviar Enlace"
+                )}
+              </Button>
+            )}
+          </DialogActions>
+        </form>
+      </Dialog>
+
+      {/* MODAL DE GESTIÓN DE CUPONES DE DESCUENTO Y BECAS */}
+      <Dialog
+        open={modalCupones}
+        onClose={() => setModalCupones(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 800, color: "#1D3557", borderBottom: "1px solid #f3f4f6", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🏷️</span>
+            <span>Gestión de Cupones de Descuento y Becas</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setModalCupones(false)}
+            className="text-gray-400 hover:text-gray-600 text-lg font-bold p-1 cursor-pointer"
+          >
+            ✕
+          </button>
+        </DialogTitle>
+
+        <DialogContent sx={{ py: 3 }} className="space-y-6">
+          {/* FORMULARIO PARA CREAR NUEVO CUPÓN */}
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-3">
+            <h4 className="text-xs font-black uppercase tracking-wider text-main-blue flex items-center gap-1.5">
+              <span>➕</span>
+              <span>Crear Nuevo Código de Descuento o Beca</span>
+            </h4>
+
+            <form onSubmit={handleCrearCupon} className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    Código del Cupón *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ej: BECA2027"
+                    value={formNuevoCupon.codigo}
+                    onChange={(e) => setFormNuevoCupon({ ...formNuevoCupon, codigo: e.target.value.toUpperCase() })}
+                    className="w-full text-xs font-black uppercase px-3 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-main-blue"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    Tipo de Descuento *
+                  </label>
+                  <select
+                    value={formNuevoCupon.tipo}
+                    onChange={(e) => setFormNuevoCupon({ ...formNuevoCupon, tipo: e.target.value })}
+                    className="w-full text-xs font-semibold px-3 py-2 rounded-lg border border-gray-300 bg-white"
+                  >
+                    <option value="monto_fijo">💵 Monto Fijo ($ USD)</option>
+                    <option value="porcentaje">％ Porcentaje (%)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    Valor del Descuento *
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="1"
+                    required
+                    placeholder={formNuevoCupon.tipo === 'porcentaje' ? "Ej: 20 (para 20%)" : "Ej: 300 (para $300)"}
+                    value={formNuevoCupon.valor}
+                    onChange={(e) => setFormNuevoCupon({ ...formNuevoCupon, valor: e.target.value })}
+                    className="w-full text-xs font-bold px-3 py-2 rounded-lg border border-gray-300 bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    Límite de Usos (Opcional)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="Ilimitado"
+                    value={formNuevoCupon.limiteUsos}
+                    onChange={(e) => setFormNuevoCupon({ ...formNuevoCupon, limiteUsos: e.target.value })}
+                    className="w-full text-xs px-3 py-2 rounded-lg border border-gray-300 bg-white"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-2">
+                  <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    Descripción / Motivo de la Beca o Convenio
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ej: Beca parcial para colegiados / Convenio institucional"
+                    value={formNuevoCupon.descripcion}
+                    onChange={(e) => setFormNuevoCupon({ ...formNuevoCupon, descripcion: e.target.value })}
+                    className="w-full text-xs px-3 py-2 rounded-lg border border-gray-300 bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    Fecha de Expiración (Opcional)
+                  </label>
+                  <input
+                    type="date"
+                    value={formNuevoCupon.fechaExpiracion}
+                    onChange={(e) => setFormNuevoCupon({ ...formNuevoCupon, fechaExpiracion: e.target.value })}
+                    className="w-full text-xs px-3 py-2 rounded-lg border border-gray-300 bg-white"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-1">
+                <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-700 font-medium">
+                  <input
+                    type="checkbox"
+                    checked={formNuevoCupon.activo}
+                    onChange={(e) => setFormNuevoCupon({ ...formNuevoCupon, activo: e.target.checked })}
+                    className="w-4 h-4 text-main-blue rounded border-gray-300"
+                  />
+                  <span>Cupón Activo Inmediatamente</span>
+                </label>
+
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={guardandoCupon}
+                  sx={{
+                    bgcolor: "#1D3557",
+                    textTransform: "none",
+                    fontWeight: 700,
+                    fontSize: "12px",
+                    py: 1,
+                    px: 3,
+                    borderRadius: "8px",
+                    "&:hover": { bgcolor: "#14253d" }
+                  }}
+                >
+                  {guardandoCupon ? "Guardando..." : "➕ Crear Cupón"}
+                </Button>
+              </div>
+            </form>
+          </div>
+
+          {/* LISTADO DE CUPONES EXISTENTES */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-black uppercase tracking-wider text-gray-700">
+                Cupones Registrados ({cupones.length})
+              </h4>
+              <button
+                type="button"
+                onClick={cargarCupones}
+                disabled={cargandoCupones}
+                className="text-xs font-bold text-main-blue hover:underline cursor-pointer"
+              >
+                🔄 Actualizar listado
+              </button>
+            </div>
+
+            {cargandoCupones ? (
+              <div className="py-8 text-center">
+                <CircularProgress size={24} thickness={4} sx={{ color: "#1D3557" }} />
+              </div>
+            ) : cupones.length === 0 ? (
+              <div className="text-center py-8 bg-gray-50 border border-dashed border-gray-200 rounded-2xl">
+                <p className="text-xs text-gray-500 font-medium">
+                  Aún no hay cupones de descuento registrados. Crea el primero con el formulario superior.
+                </p>
+              </div>
+            ) : (
+              <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-2xs">
+                <table className="w-full text-left text-xs text-gray-700">
+                  <thead className="bg-gray-100 text-gray-600 font-bold uppercase text-[10px] tracking-wider border-b border-gray-200">
+                    <tr>
+                      <th className="px-3.5 py-2.5">Código</th>
+                      <th className="px-3.5 py-2.5">Descuento</th>
+                      <th className="px-3.5 py-2.5">Descripción</th>
+                      <th className="px-3.5 py-2.5">Usos</th>
+                      <th className="px-3.5 py-2.5">Vigencia</th>
+                      <th className="px-3.5 py-2.5 text-center">Estado</th>
+                      <th className="px-3.5 py-2.5 text-right">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 bg-white">
+                    {cupones.map((c) => (
+                      <tr key={c.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-3.5 py-2.5 font-black text-gray-900 font-mono">
+                          {c.codigo}
+                        </td>
+                        <td className="px-3.5 py-2.5 font-extrabold text-emerald-700 whitespace-nowrap">
+                          {c.tipo === "porcentaje" ? `${c.valor}%` : `$${Number(c.valor).toLocaleString()} USD`}
+                        </td>
+                        <td className="px-3.5 py-2.5 max-w-[200px] truncate text-gray-600" title={c.descripcion}>
+                          {c.descripcion || "Sin descripción"}
+                        </td>
+                        <td className="px-3.5 py-2.5 whitespace-nowrap">
+                          {c.usosActuales || 0} {c.limiteUsos ? `/ ${c.limiteUsos}` : '(ilimitado)'}
+                        </td>
+                        <td className="px-3.5 py-2.5 whitespace-nowrap text-gray-500">
+                          {c.fechaExpiracion || "Permanente"}
+                        </td>
+                        <td className="px-3.5 py-2.5 text-center whitespace-nowrap">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleCuponActivo(c)}
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition-colors ${
+                              c.activo !== false 
+                                ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200" 
+                                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                            }`}
+                          >
+                            {c.activo !== false ? "✓ Activo" : "✕ Inactivo"}
+                          </button>
+                        </td>
+                        <td className="px-3.5 py-2.5 text-right whitespace-nowrap">
+                          <button
+                            type="button"
+                            onClick={() => handleEliminarCupon(c)}
+                            className="text-rose-600 hover:text-rose-800 font-bold text-[11px] p-1 rounded hover:bg-rose-50 transition-colors cursor-pointer"
+                            title="Eliminar cupón"
+                          >
+                            🗑️
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+
+        <DialogActions sx={{ p: 2, borderTop: "1px solid #f3f4f6" }}>
+          <Button
+            onClick={() => setModalCupones(false)}
+            variant="outlined"
+            sx={{ textTransform: "none", color: "#6b7280", borderColor: "#d1d5db", fontWeight: 700 }}
+          >
+            Cerrar
+          </Button>
+        </DialogActions>
       </Dialog>
 
       {/* DIALOG DE CONFIRMACIÓN DE BORRADO */}

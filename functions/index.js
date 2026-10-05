@@ -996,7 +996,10 @@ exports.crearIntentoPagoCurso = onCall({
     experienciaTemas,
     motivoParticipacion,
     cursosPrevios,
-    alumnoIiresodh
+    alumnoIiresodh,
+    cuponCodigo,
+    descuentoMonto,
+    montoBaseSinDescuento
   } = request.data || {};
 
   const nombreFinal = (nombre || `${nombres || ""} ${apellidos || ""}`).trim() || "Participante Curso";
@@ -1128,6 +1131,9 @@ exports.crearIntentoPagoCurso = onCall({
         numCuotaActual: String(numCuota || 1),
         montoCuota: String(cuotaMonto),
         montoTotal: String(totalInversion),
+        montoBaseSinDescuento: String(montoBaseSinDescuento || totalInversion),
+        cuponCodigo: String(cuponCodigo || ""),
+        descuentoMonto: String(descuentoMonto || 0),
         saldoPendiente: String(Math.max(0, totalInversion - cuotaMonto)),
         fechaLimitePago: fechaLimitePagoDate.toISOString().split("T")[0],
         politicaLiquidacion: "Totalmente pagado antes del último día del mes previo al evento",
@@ -1699,25 +1705,81 @@ exports.stripeWebhookCursos = onRequest({
       const cursoId = metadata.cursoId || "palermo-2027";
       const cursoTitulo = metadata.cursoTitulo || metadata.cursoNombre || "Curso Internacional - Palermo";
 
-      // Si existía una solicitud previa con ese correo y curso, actualizarla
-      const solicitudesPrevias = await db.collection("solicitudesCursos")
-        .where("email", "==", email.toLowerCase().trim())
-        .where("cursoId", "==", cursoId)
-        .limit(1)
-        .get();
+      const solicitudId = metadata.solicitudId;
+      let docSnap = null;
 
-      if (!solicitudesPrevias.empty) {
-        const docId = solicitudesPrevias.docs[0].id;
-        await db.collection("solicitudesCursos").doc(docId).update({
-          estado: "confirmado",
+      if (solicitudId) {
+        const sDoc = await db.collection("solicitudesCursos").doc(solicitudId).get();
+        if (sDoc.exists) {
+          docSnap = sDoc;
+        }
+      }
+
+      if (!docSnap) {
+        const solicitudesPrevias = await db.collection("solicitudesCursos")
+          .where("email", "==", email.toLowerCase().trim())
+          .where("cursoId", "==", cursoId)
+          .limit(1)
+          .get();
+        if (!solicitudesPrevias.empty) {
+          docSnap = solicitudesPrevias.docs[0];
+        }
+      }
+
+      const nuevoPagoItem = {
+        id: session.id,
+        monto: montoTotal,
+        fecha: new Date().toISOString().slice(0, 10),
+        metodo: "stripe",
+        referencia: session.payment_intent || session.id,
+        notas: metadata.concepto || "Abono mediante enlace de pago Stripe",
+        registradoPor: "Stripe Checkout (Automático)",
+        timestamp: new Date().toISOString()
+      };
+
+      let saldoPendienteFinal = 0;
+      let planCuotasFinal = 1;
+      let numCuotaFinal = 1;
+
+      if (docSnap) {
+        const docId = docSnap.id;
+        const currentData = docSnap.data();
+        const historialPrevio = Array.isArray(currentData.historialPagos) ? currentData.historialPagos : [];
+        const nuevoHistorial = [...historialPrevio, nuevoPagoItem];
+        const montoPrevio = Number(currentData.montoPagado) || 0;
+        const nuevoMontoPagado = Number((montoPrevio + montoTotal).toFixed(2));
+        const totalInv = Number(currentData.montoTotalInversion) || (montoPrevio + montoTotal);
+        const nuevoSaldo = Math.max(0, Number((totalInv - nuevoMontoPagado).toFixed(2)));
+        saldoPendienteFinal = nuevoSaldo;
+        planCuotasFinal = Number(currentData.planCuotas) || 1;
+        numCuotaFinal = Math.min(planCuotasFinal, nuevoHistorial.length);
+
+        // Actualizar estado en enlacesPago si coincide
+        let enlacesActualizados = Array.isArray(currentData.enlacesPago)
+          ? currentData.enlacesPago.map(ep => ep.id === session.id ? { ...ep, estado: "pagado", fechaPago: new Date().toISOString() } : ep)
+          : [];
+
+        const updateData = {
           metodoPago: "stripe",
-          montoPagado: montoTotal,
-          moneda: moneda,
+          montoPagado: nuevoMontoPagado,
+          saldoPendiente: nuevoSaldo,
+          historialPagos: nuevoHistorial,
+          enlacesPago: enlacesActualizados,
           stripeSessionId: session.id,
           stripePaymentIntentId: session.payment_intent || null,
+          ultimoPagoFecha: new Date().toISOString().slice(0, 10),
+          ultimoPagoMonto: montoTotal,
           fechaPago: admin.firestore.FieldValue.serverTimestamp()
-        });
-        console.log(`Solicitud de curso previa ${docId} actualizada a 'confirmado' exitosamente.`);
+        };
+
+        if (nuevoSaldo <= 0) {
+          updateData.estado = "confirmado";
+        } else if (currentData.estado === "pendiente" || currentData.estado === "contactado") {
+          updateData.estado = "parcial";
+        }
+
+        await db.collection("solicitudesCursos").doc(docId).update(updateData);
+        console.log(`Solicitud ${docId} actualizada con abono Stripe de ${montoTotal} USD. Saldo pendiente: ${nuevoSaldo}.`);
       } else {
         await db.collection("solicitudesCursos").add({
           cursoId: cursoId,
@@ -1729,10 +1791,13 @@ exports.stripeWebhookCursos = onRequest({
           telefono: telefono,
           institucion: metadata.institucion || "",
           pais: pais,
-          comentarios: `Pago de inscripción completado en Stripe Checkout (${moneda} ${montoTotal}).`,
+          comentarios: `Pago completado en Stripe Checkout (${moneda} ${montoTotal}).`,
           estado: "confirmado",
           metodoPago: "stripe",
+          montoTotalInversion: montoTotal,
           montoPagado: montoTotal,
+          saldoPendiente: 0,
+          historialPagos: [nuevoPagoItem],
           moneda: moneda,
           stripeSessionId: session.id,
           stripePaymentIntentId: session.payment_intent || null,
@@ -1749,9 +1814,9 @@ exports.stripeWebhookCursos = onRequest({
         cursoTitulo,
         montoTotal,
         moneda,
-        planCuotas: 1,
-        numCuotaActual: 1,
-        saldoPendiente: 0,
+        planCuotas: planCuotasFinal,
+        numCuotaActual: numCuotaFinal,
+        saldoPendiente: saldoPendienteFinal,
         paymentIntentId: session.payment_intent || session.id,
         profesion: metadata.profesion || "",
         institucion: metadata.institucion || "",
@@ -1767,11 +1832,11 @@ exports.stripeWebhookCursos = onRequest({
           telefono,
           pais,
           cursoTitulo,
-          planCuotas: 1,
-          numCuotaActual: 1,
+          planCuotas: planCuotasFinal,
+          numCuotaActual: numCuotaFinal,
           monto: montoTotal,
           moneda,
-          saldoPendiente: 0,
+          saldoPendiente: saldoPendienteFinal,
           paymentIntentId: session.payment_intent || session.id,
           customerId: session.customer || null,
           esCobroAutomatico: false
@@ -2427,3 +2492,297 @@ exports.reenviarConfirmacionCurso = onRequest({
     return res.status(500).json({ error: err.message });
   }
 });
+
+// ============================================================================
+// 16. GENERAR ENLACE DE PAGO STRIPE PERSONALIZADO (DESDE PANEL ADMIN)
+// ============================================================================
+exports.generarEnlacePagoCurso = onCall({
+  secrets: [
+    STRIPE_CURSOS_SECRET_KEY,
+    GMAIL_CLIENT_ID,
+    GMAIL_CLIENT_SECRET,
+    GMAIL_REFRESH_TOKEN
+  ],
+  region: "us-central1",
+  cors: true
+}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Debes estar autenticado para realizar esta acción.");
+  }
+
+  const {
+    solicitudId,
+    monto,
+    concepto,
+    enviarEmail = true
+  } = request.data || {};
+
+  if (!solicitudId) {
+    throw new HttpsError("invalid-argument", "El ID de la solicitud es requerido.");
+  }
+
+  const montoNum = Number(monto);
+  if (isNaN(montoNum) || montoNum <= 0) {
+    throw new HttpsError("invalid-argument", "El monto a pagar debe ser mayor a 0.");
+  }
+
+  const db = admin.firestore();
+  const solicitudSnap = await db.collection("solicitudesCursos").doc(solicitudId).get();
+  if (!solicitudSnap.exists) {
+    throw new HttpsError("not-found", "La solicitud del curso no fue encontrada.");
+  }
+
+  const solicitud = solicitudSnap.data();
+  const email = (solicitud.email || "").toLowerCase().trim();
+  const nombre = solicitud.nombre || `${solicitud.nombres || ""} ${solicitud.apellidos || ""}`.trim() || "Participante";
+  const cursoTitulo = solicitud.cursoTitulo || "Curso Internacional - Palermo 2027";
+  const cursoId = solicitud.cursoId || "palermo-2027";
+  const conceptoFinal = (concepto || "Abono / Cuota personalizada acordada").trim();
+
+  try {
+    const stripeKey = getStripeCursosKey();
+    const stripe = new Stripe(stripeKey);
+
+    const amountInCents = Math.round(montoNum * 100);
+
+    // Crear sesión de Stripe Checkout
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      customer_email: email,
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            unit_amount: amountInCents,
+            product_data: {
+              name: `${cursoTitulo} - ${conceptoFinal}`,
+              description: `Abono de matrícula acordado para ${nombre} | IIRESODH`
+            }
+          },
+          quantity: 1
+        }
+      ],
+      mode: 'payment',
+      success_url: `https://iiresodh-web.web.app/cursos/${cursoId}?pago_exitoso=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `https://iiresodh-web.web.app/cursos/${cursoId}?pago_cancelado=true`,
+      metadata: {
+        solicitudId: solicitudId,
+        cursoId: cursoId,
+        cursoTitulo: cursoTitulo,
+        nombre: nombre,
+        email: email,
+        tipo: "abono_personalizado",
+        concepto: conceptoFinal,
+        monto: String(montoNum)
+      }
+    });
+
+    const enlaceItem = {
+      id: session.id,
+      url: session.url,
+      monto: montoNum,
+      concepto: conceptoFinal,
+      fechaCreacion: new Date().toISOString(),
+      creadoPor: request.auth.token?.email || "Administrador",
+      estado: "pendiente"
+    };
+
+    // Guardar registro del enlace en la solicitud
+    await db.collection("solicitudesCursos").doc(solicitudId).update({
+      enlacesPago: admin.firestore.FieldValue.arrayUnion(enlaceItem),
+      ultimoEnlacePagoUrl: session.url,
+      ultimoEnlacePagoFecha: new Date().toISOString()
+    });
+
+    // Enviar por correo si está habilitado
+    let emailEnviado = false;
+    if (enviarEmail && email) {
+      try {
+        const transporter = getMailTransporter();
+        const htmlContent = `
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden;">
+            <div style="background-color: #1D3557; padding: 24px; text-align: center;">
+              <img src="cid:logo_iiresodh" alt="IIRESODH" style="max-height: 52px; width: auto; max-width: 250px; margin: 0 auto; display: block; border: 0;" />
+            </div>
+
+            <div style="padding: 32px 24px;">
+              <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 14px 18px; margin-bottom: 24px; text-align: center;">
+                <p style="color: #1e40af; font-size: 14px; font-weight: bold; margin: 0;">
+                  💳 Enlace Oficial para Pago en Línea con Tarjeta
+                </p>
+              </div>
+
+              <p style="font-size: 15px; color: #1e293b; line-height: 1.6; margin-top: 0;">
+                Estimado/a <strong>${nombre}</strong>,
+              </p>
+              <p style="font-size: 14px; color: #475569; line-height: 1.6;">
+                Por este medio te compartimos el enlace seguro para realizar el pago correspondiente a tu participación en el programa <strong>${cursoTitulo}</strong>, según lo acordado con la coordinación institucional.
+              </p>
+
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; margin: 24px 0;">
+                <h3 style="color: #1D3557; font-size: 13px; font-weight: 700; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px;">
+                  Detalle del Pago Solicitado
+                </h3>
+                <table style="width: 100%; font-size: 13px; color: #334155; border-collapse: collapse;">
+                  <tr>
+                    <td style="padding: 6px 0; color: #64748b;">Programa:</td>
+                    <td style="padding: 6px 0; font-weight: 600; text-align: right;">${cursoTitulo}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #64748b;">Concepto:</td>
+                    <td style="padding: 6px 0; font-weight: 600; text-align: right;">${conceptoFinal}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #64748b;">Monto a pagar:</td>
+                    <td style="padding: 6px 0; font-weight: 800; font-size: 18px; color: #B92F32; text-align: right;">USD $${montoNum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${session.url}" target="_blank" style="background-color: #B92F32; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 14px; padding: 14px 32px; border-radius: 12px; display: inline-block; letter-spacing: 0.3px; box-shadow: 0 4px 12px rgba(185, 47, 50, 0.25);">
+                  🔒 Completar Pago Seguro con Tarjeta →
+                </a>
+              </div>
+
+              <p style="font-size: 12px; color: #64748b; line-height: 1.5; text-align: center;">
+                El pago se procesa de forma directa y cifrada a través de la pasarela internacional de <strong>Stripe</strong>. Al completar el pago, recibirás de inmediato el comprobante oficial en tu correo electrónico.
+              </p>
+
+              <p style="font-size: 13px; color: #1e293b; margin-top: 28px;">
+                Cualquier duda o consulta, puedes responder directamente a este correo o escribir a <a href="mailto:cursos@iiresodh.org" style="color: #1D3557; font-weight: bold;">cursos@iiresodh.org</a>.<br><br>
+                Cordialmente,<br>
+                <strong>Coordinación Académica y de Admisiones</strong><br>
+                Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH)<br>
+                <a href="https://iiresodh.org" style="color: #B92F32; text-decoration: none; font-size: 12px;">www.iiresodh.org</a>
+              </p>
+            </div>
+
+            <div style="background-color: #f1f5f9; padding: 14px 24px; text-align: center; font-size: 11px; color: #64748b;">
+              Mensaje oficial emitido por IIRESODH. Por favor no compartas este enlace con terceros.
+            </div>
+          </div>
+        `;
+
+        await transporter.sendMail({
+          from: `"IIRESODH - Cursos Internacionales" <contacto@iiresodh.org>`,
+          to: email,
+          bcc: EMAILS_ADMIN_CURSOS,
+          subject: `Enlace de Pago Oficial: ${conceptoFinal} - ${cursoTitulo}`,
+          html: htmlContent,
+          attachments: getLogoAttachment()
+        });
+        emailEnviado = true;
+      } catch (errEmail) {
+        console.error("Error enviando email con enlace de pago:", errEmail);
+      }
+    }
+
+    return {
+      success: true,
+      url: session.url,
+      sessionId: session.id,
+      emailEnviado: emailEnviado
+    };
+  } catch (error) {
+    console.error("Error generando enlace de pago Stripe:", error);
+    throw new HttpsError("internal", error.message || "No se pudo generar el enlace de pago en Stripe.");
+  }
+});
+
+// ============================================================================
+// 17. VALIDAR Y APLICAR CÓDIGO DE DESCUENTO O BECA
+// ============================================================================
+exports.validarCuponDescuento = onCall({
+  region: "us-central1",
+  cors: true
+}, async (request) => {
+  const { codigo, cursoId, montoBase = 3350 } = request.data || {};
+
+  if (!codigo || typeof codigo !== "string") {
+    throw new HttpsError("invalid-argument", "El código de descuento es requerido.");
+  }
+
+  const codigoNormalizado = codigo.trim().toUpperCase();
+  const db = admin.firestore();
+
+  try {
+    const cuponQuery = await db.collection("cuponesDescuento")
+      .where("codigo", "==", codigoNormalizado)
+      .limit(1)
+      .get();
+
+    if (cuponQuery.empty) {
+      return {
+        valido: false,
+        mensaje: "El código de descuento ingresado no existe."
+      };
+    }
+
+    const cuponDoc = cuponQuery.docs[0];
+    const cupon = cuponDoc.data();
+
+    if (cupon.activo === false) {
+      return {
+        valido: false,
+        mensaje: "Este código de descuento se encuentra actualmente inactivo."
+      };
+    }
+
+    if (cupon.fechaExpiracion) {
+      const fechaExp = new Date(cupon.fechaExpiracion);
+      if (!isNaN(fechaExp.getTime()) && new Date() > fechaExp) {
+        return {
+          valido: false,
+          mensaje: "Este código de descuento ha expirado."
+        };
+      }
+    }
+
+    if (cupon.limiteUsos && typeof cupon.limiteUsos === "number") {
+      const usos = cupon.usosActuales || 0;
+      if (usos >= cupon.limiteUsos) {
+        return {
+          valido: false,
+          mensaje: "Este código de descuento ha alcanzado su límite máximo de usos."
+        };
+      }
+    }
+
+    if (Array.isArray(cupon.cursos) && cupon.cursos.length > 0 && !cupon.cursos.includes("todos")) {
+      if (cursoId && !cupon.cursos.includes(cursoId)) {
+        return {
+          valido: false,
+          mensaje: "Este código de descuento no es aplicable a este programa académico."
+        };
+      }
+    }
+
+    const valor = Number(cupon.valor) || 0;
+    const base = Number(montoBase) || 3350;
+    let descuentoMonto = 0;
+
+    if (cupon.tipo === "porcentaje") {
+      descuentoMonto = Math.round((base * valor) / 100);
+    } else {
+      descuentoMonto = Math.min(base, valor);
+    }
+
+    const montoFinal = Math.max(0, base - descuentoMonto);
+
+    return {
+      valido: true,
+      id: cuponDoc.id,
+      codigo: codigoNormalizado,
+      tipo: cupon.tipo || "monto_fijo",
+      valor: valor,
+      descuentoMonto: descuentoMonto,
+      montoFinal: montoFinal,
+      descripcion: cupon.descripcion || `Descuento ${cupon.tipo === "porcentaje" ? valor + "%" : "$" + valor + " USD"}`
+    };
+  } catch (error) {
+    console.error("Error al validar cupón de descuento:", error);
+    throw new HttpsError("internal", "No se pudo verificar el cupón en este momento.");
+  }
+});
+

@@ -425,7 +425,7 @@ export default function CursoLanding() {
 
   // Tab activo principal del Hub Interactivo del Curso
   const [seccionActiva, setSeccionActiva] = useState("legado"); // 'legado' | 'programa' | 'docentes' | 'incluido' | 'brochure' | 'sede' | 'inscripcion'
-  const [metodoInscripcion, setMetodoInscripcion] = useState("tarjeta"); // 'tarjeta' | 'transferencia'
+  const [metodoInscripcion, setMetodoInscripcion] = useState("interes"); // 'interes' | 'tarjeta' | 'transferencia'
   const [planCuotas, setPlanCuotas] = useState(1); // 1 = Pago único, 2 = 2 pagos, 3 = 3 pagos, 4 = 4 pagos
   const [modalBrochure, setModalBrochure] = useState(null); // null | 1 | 2
 
@@ -517,6 +517,7 @@ export default function CursoLanding() {
       return;
     }
 
+    const esInteres = metodoInscripcion === "interes";
     setEnviandoSolicitud(true);
     try {
       const temasFinales = formData.experienciaTemas.includes("Otro") && formData.experienciaOtro.trim()
@@ -545,7 +546,8 @@ export default function CursoLanding() {
         cursosPrevios: cursosPreviosFinal,
         alumnoIiresodh: formData.alumnoIiresodh,
         comentarios: formData.comentarios.trim(),
-        metodoPago: "transferencia",
+        modalidadSolicitud: esInteres ? "registro_interes" : "transferencia_bancaria",
+        metodoPago: esInteres ? "contacto_posterior" : "transferencia",
         montoTotalInversion: 3350,
         moneda: "USD",
         aceptaPoliticaPrivacidad: true,
@@ -560,7 +562,9 @@ export default function CursoLanding() {
       setAceptarPrivacidadTransferencia(false);
       setAlerta({
         open: true,
-        mensaje: "¡Solicitud recibida con éxito! Nuestro departamento académico te contactará a la brevedad con la información bancaria y el expediente oficial.",
+        mensaje: esInteres
+          ? "¡Interés y reserva registrados con éxito! Nuestro departamento académico te contactará a la brevedad para coordinar los detalles."
+          : "¡Solicitud recibida con éxito! Nuestro departamento académico te contactará a la brevedad con la información bancaria y el expediente oficial.",
         tipo: "success"
       });
       setFormData({
@@ -1552,17 +1556,28 @@ export default function CursoLanding() {
 
               {/* SELECTOR DE MÉTODO DE INSCRIPCIÓN Y PAGO */}
               <div className="flex justify-center mb-6">
-                <div className="inline-flex p-1 bg-slate-100 rounded-2xl border border-gray-200 shadow-inner">
+                <div className="inline-flex flex-wrap justify-center p-1 bg-slate-100 rounded-2xl border border-gray-200 shadow-inner gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setMetodoInscripcion("interes")}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                      metodoInscripcion === "interes"
+                        ? "bg-white text-emerald-800 shadow-md border border-gray-100 scale-100"
+                        : "text-gray-500 hover:text-gray-800"
+                    }`}
+                  >
+                    <span>📋 Mostrar Interés (Gestión Manual)</span>
+                  </button>
                   <button
                     type="button"
                     onClick={() => setMetodoInscripcion("tarjeta")}
-                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
                       metodoInscripcion === "tarjeta"
                         ? "bg-white text-main-blue shadow-md border border-gray-100 scale-100"
                         : "text-gray-500 hover:text-gray-800"
                     }`}
                   >
-                    <span>💳 Pago en Línea (Cuotas Sin Intereses)</span>
+                    <span>💳 Pago en Línea (Cuotas)</span>
                     <span className="hidden sm:inline-block text-[9px] bg-sky-100 text-sky-800 font-bold px-1.5 py-0.5 rounded border border-sky-200">
                       0% Interés
                     </span>
@@ -1570,9 +1585,9 @@ export default function CursoLanding() {
                   <button
                     type="button"
                     onClick={() => setMetodoInscripcion("transferencia")}
-                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
                       metodoInscripcion === "transferencia"
-                        ? "bg-white text-main-blue shadow-md border border-gray-100 scale-100"
+                        ? "bg-white text-amber-800 shadow-md border border-gray-100 scale-100"
                         : "text-gray-500 hover:text-gray-800"
                     }`}
                   >
@@ -1648,10 +1663,23 @@ export default function CursoLanding() {
 
                 {/* COLUMNA DERECHA: FORMULARIO DINÁMICO */}
                 <div className="lg:col-span-7 bg-white p-6 md:p-8 rounded-3xl border border-gray-200 shadow-md">
-                  {/* CABECERA DINÁMICA CON SWITCH DE MODALIDAD EN LA ESQUINA SUPERIOR DERECHA */}
+                  {/* CABECERA DINÁMICA CON SELECTOR DE 3 MODALIDADES EN LA ESQUINA SUPERIOR DERECHA */}
                   <div className="mb-5 pb-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                      {metodoInscripcion === "tarjeta" ? (
+                      {metodoInscripcion === "interes" && (
+                        <>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700 block mb-0.5">
+                            Gestión y Asesoría Personalizada
+                          </span>
+                          <h4 className="text-xl font-black text-main-blue tracking-tight">
+                            Registro de Interés y Reserva de Cupo
+                          </h4>
+                          <p className="text-xs text-gray-500 font-light mt-0.5">
+                            Ingresa tus datos para apartar tu plaza. Te contactaremos posteriormente para coordinar tu participación y opciones de pago.
+                          </p>
+                        </>
+                      )}
+                      {metodoInscripcion === "tarjeta" && (
                         <>
                           <span className="text-[10px] font-black uppercase tracking-widest text-main-red block mb-0.5">
                             Inscripción Inmediata
@@ -1660,10 +1688,11 @@ export default function CursoLanding() {
                             Pago Directo con Tarjeta en Línea
                           </h4>
                           <p className="text-xs text-gray-500 font-light mt-0.5">
-                            Completa tus datos personales, académicos y de tarjeta para asegurar tu cupo oficial.
+                            Completa tus datos personales, académicos y de tarjeta para asegurar tu cupo oficial al instante.
                           </p>
                         </>
-                      ) : (
+                      )}
+                      {metodoInscripcion === "transferencia" && (
                         <>
                           <span className="text-[10px] font-black uppercase tracking-widest text-amber-800 block mb-0.5">
                             Vía Bancaria Oficial
@@ -1678,38 +1707,37 @@ export default function CursoLanding() {
                       )}
                     </div>
 
-                    {/* SWITCH PARA CAMBIAR ENTRE TARJETA Y SOLICITUD DE DATOS */}
-                    <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-200/90 px-3.5 py-2 rounded-2xl shrink-0 self-start sm:self-center shadow-2xs">
+                    {/* SELECTOR SEGMENTADO DE 3 VÍAS */}
+                    <div className="inline-flex items-center p-1 bg-slate-100 border border-slate-200/90 rounded-2xl shrink-0 self-start sm:self-center shadow-2xs gap-0.5">
+                      <button
+                        type="button"
+                        onClick={() => setMetodoInscripcion("interes")}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${
+                          metodoInscripcion === "interes"
+                            ? "bg-white text-emerald-800 font-extrabold shadow-xs border border-slate-200/80"
+                            : "text-gray-500 hover:text-gray-700"
+                        }`}
+                      >
+                        Mostrar Interés
+                      </button>
                       <button
                         type="button"
                         onClick={() => setMetodoInscripcion("tarjeta")}
-                        className={`text-xs font-bold transition-colors cursor-pointer select-none ${
-                          metodoInscripcion === "tarjeta" ? "text-main-blue font-extrabold" : "text-gray-400 hover:text-gray-600"
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${
+                          metodoInscripcion === "tarjeta"
+                            ? "bg-white text-main-blue font-extrabold shadow-xs border border-slate-200/80"
+                            : "text-gray-500 hover:text-gray-700"
                         }`}
                       >
                         Tarjeta
                       </button>
                       <button
                         type="button"
-                        role="switch"
-                        aria-checked={metodoInscripcion === "transferencia"}
-                        onClick={() => setMetodoInscripcion(metodoInscripcion === "tarjeta" ? "transferencia" : "tarjeta")}
-                        title={metodoInscripcion === "tarjeta" ? "Cambiar a Solicitud de datos de transferencia" : "Cambiar a Pago con tarjeta"}
-                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-main-blue/30 ${
-                          metodoInscripcion === "transferencia" ? "bg-amber-800" : "bg-main-blue"
-                        }`}
-                      >
-                        <span
-                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                            metodoInscripcion === "transferencia" ? "translate-x-5" : "translate-x-0"
-                          }`}
-                        />
-                      </button>
-                      <button
-                        type="button"
                         onClick={() => setMetodoInscripcion("transferencia")}
-                        className={`text-xs font-bold transition-colors cursor-pointer select-none ${
-                          metodoInscripcion === "transferencia" ? "text-amber-800 font-extrabold" : "text-gray-400 hover:text-gray-600"
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${
+                          metodoInscripcion === "transferencia"
+                            ? "bg-white text-amber-800 font-extrabold shadow-xs border border-slate-200/80"
+                            : "text-gray-500 hover:text-gray-700"
                         }`}
                       >
                         Transferencia
@@ -1723,6 +1751,8 @@ export default function CursoLanding() {
                       landing={landing}
                       planCuotas={planCuotas}
                       setPlanCuotas={setPlanCuotas}
+                      formData={formData}
+                      setFormData={setFormData}
                     />
                   ) : (
                     <div>
@@ -1733,10 +1763,14 @@ export default function CursoLanding() {
                             ✓
                           </div>
                           <h4 className="text-base font-bold text-green-900">
-                            ¡Solicitud Registrada con Éxito!
+                            {metodoInscripcion === "interes"
+                              ? "¡Interés y Reserva Registrados con Éxito!"
+                              : "¡Solicitud Registrada con Éxito!"}
                           </h4>
                           <p className="text-xs text-green-800 font-light max-w-sm mx-auto">
-                            En menos de 24 horas hábiles recibirás en tu correo los datos bancarios y el expediente del curso.
+                            {metodoInscripcion === "interes"
+                              ? "Hemos recibido tus datos correctamente. Nuestro departamento académico te contactará a la brevedad vía correo electrónico o WhatsApp para coordinar tu participación y brindarte atención personalizada."
+                              : "En menos de 24 horas hábiles recibirás en tu correo los datos bancarios y el expediente del curso."}
                           </p>
                           <button
                             onClick={() => setSolicitudExitosa(false)}
@@ -1993,13 +2027,19 @@ export default function CursoLanding() {
 
                           <div>
                             <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                              Comentarios o Requerimientos de Facturación Institucional
+                              {metodoInscripcion === "interes"
+                                ? "Comentarios, consultas previas o requerimientos (opcional)"
+                                : "Comentarios o Requerimientos de Facturación Institucional"}
                             </label>
                             <textarea
                               rows={2}
                               value={formData.comentarios}
                               onChange={(e) => setFormData({ ...formData, comentarios: e.target.value })}
-                              placeholder="Requerimientos de orden de compra, certificado SWIFT/IBAN o consulta de hospedaje..."
+                              placeholder={
+                                metodoInscripcion === "interes"
+                                  ? "Dudas sobre fechas, hospedaje, proceso de admisión o facilidades de pago..."
+                                  : "Requerimientos de orden de compra, certificado SWIFT/IBAN o consulta de hospedaje..."
+                              }
                               className="w-full text-base sm:text-sm px-3.5 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-1 focus:ring-main-blue resize-none bg-white"
                             />
                           </div>
@@ -2043,30 +2083,45 @@ export default function CursoLanding() {
                             </span>
                           </label>
 
+                          {/* BANNER INFORMATIVO SEGÚN MODALIDAD */}
+                          {metodoInscripcion === "interes" ? (
+                            <div className="bg-emerald-50/80 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-900 flex items-start gap-2.5">
+                              <span className="text-base">🤝</span>
+                              <span className="text-[11px] leading-relaxed">
+                                <strong>Gestión y Asesoría Personalizada:</strong> Al enviar este formulario registras tu interés y apartas temporalmente tu plaza. No se te solicitará ningún cobro con tarjeta ni números de cuenta en este momento; nuestro equipo te contactará para formalizar tu proceso.
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="bg-amber-50/80 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 flex items-start gap-2.5">
+                              <span className="text-base">🏛️</span>
+                              <span className="text-[11px] leading-relaxed">
+                                <strong>Orden de Transferencia Oficial:</strong> Al registrar tu solicitud, recibirás por correo electrónico las instrucciones con las cuentas bancarias oficiales (códigos SWIFT e IBAN) para realizar la transferencia de tu matrícula.
+                              </span>
+                            </div>
+                          )}
+
                           <button
                             type="submit"
                             disabled={enviandoSolicitud}
-                            className="w-full bg-main-blue hover:bg-light-blue text-white font-bold text-xs uppercase tracking-widest py-3.5 px-5 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
+                            className={`w-full text-white font-bold text-xs uppercase tracking-widest py-3.5 px-5 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation ${
+                              metodoInscripcion === "interes"
+                                ? "bg-emerald-700 hover:bg-emerald-800"
+                                : "bg-main-blue hover:bg-light-blue"
+                            }`}
                           >
                             {enviandoSolicitud ? (
                               <>
                                 <CircularProgress size={14} sx={{ color: "white" }} />
-                                <span>Procesando solicitud oficial...</span>
+                                <span>Procesando solicitud...</span>
                               </>
                             ) : (
-                              <span>Enviar Solicitud de Datos Bancarios</span>
+                              <span>
+                                {metodoInscripcion === "interes"
+                                  ? "📋 Registrar Mi Interés y Apartar Cupo"
+                                  : "🏛️ Enviar Solicitud de Datos Bancarios"}
+                              </span>
                             )}
                           </button>
-
-                          <div className="pt-2 text-center">
-                            <button
-                              type="button"
-                              onClick={() => setMetodoInscripcion("tarjeta")}
-                              className="text-xs text-main-blue hover:underline font-semibold cursor-pointer"
-                            >
-                              ← O pagar directamente en línea con tarjeta (1, 2, 3 o 4 cuotas)
-                            </button>
-                          </div>
                         </form>
                       )}
 
