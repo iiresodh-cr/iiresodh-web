@@ -1745,6 +1745,14 @@ exports.stripeWebhookCursos = onRequest({
         const docId = docSnap.id;
         const currentData = docSnap.data();
         const historialPrevio = Array.isArray(currentData.historialPagos) ? currentData.historialPagos : [];
+
+        // Evitar duplicación si el abono ya fue insertado en el historial
+        const yaRegistrado = historialPrevio.some(p => p.id === session.id || (session.payment_intent && p.referencia === session.payment_intent));
+        if (yaRegistrado) {
+          console.log(`El abono para session ${session.id} ya se encuentra registrado en el historial de la solicitud ${docId}.`);
+          return res.json({ received: true });
+        }
+
         const nuevoHistorial = [...historialPrevio, nuevoPagoItem];
         const montoPrevio = Number(currentData.montoPagado) || 0;
         const nuevoMontoPagado = Number((montoPrevio + montoTotal).toFixed(2));
@@ -1864,7 +1872,37 @@ exports.stripeWebhookCursos = onRequest({
       }
 
       const metadata = paymentIntent.metadata || {};
-      const email = paymentIntent.receipt_email || metadata.email || metadata.emailCliente || "cliente@anonimo.com";
+
+      // Si el PaymentIntent proviene de una sesión de Checkout o es un abono personalizado por enlace,
+      // DEBE ser procesado exclusivamente por el evento 'checkout.session.completed'.
+      if (
+        metadata.origen === "checkout_session" ||
+        metadata.tipo === "abono_personalizado" ||
+        metadata.solicitudId
+      ) {
+        console.log(`PaymentIntent ${paymentIntent.id} corresponde a Checkout Session / abono personalizado. Se delega a checkout.session.completed para evitar duplicados.`);
+        return res.json({ received: true });
+      }
+
+      // Si el PaymentIntent no tiene metadatos de participante (ej. cursoId o email),
+      // verificamos si pertenece a una Checkout Session en Stripe para ignorarlo.
+      if (!metadata.cursoId || (!metadata.email && !paymentIntent.receipt_email)) {
+        try {
+          const sessions = await stripe.checkout.sessions.list({ payment_intent: paymentIntent.id, limit: 1 });
+          if (sessions && sessions.data && sessions.data.length > 0) {
+            console.log(`PaymentIntent ${paymentIntent.id} pertenece a la Checkout Session ${sessions.data[0].id}. Omitiendo en payment_intent.succeeded.`);
+            return res.json({ received: true });
+          }
+        } catch (eCheck) {
+          console.warn("No se pudo verificar Checkout Session para PaymentIntent:", eCheck.message);
+        }
+
+        // Si no tiene cursoId ni email y no es una sesión, NO se debe crear un registro fantasma anónimo.
+        console.warn(`PaymentIntent ${paymentIntent.id} omitido porque carece de información de participante requerida (cursoId / email).`);
+        return res.json({ received: true });
+      }
+
+      const email = (paymentIntent.receipt_email || metadata.email || metadata.emailCliente || "").toLowerCase().trim();
       const nombre = metadata.nombre || "Participante Confirmado";
       const montoTotal = (paymentIntent.amount || 0) / 100;
       const moneda = (paymentIntent.currency || "usd").toUpperCase();
@@ -1878,7 +1916,7 @@ exports.stripeWebhookCursos = onRequest({
 
       // Verificar si ya existía una solicitud con este email y curso
       const checkPrev = await db.collection("solicitudesCursos")
-        .where("email", "==", email.toLowerCase().trim())
+        .where("email", "==", email)
         .where("cursoId", "==", cursoId)
         .limit(1)
         .get();
@@ -2572,8 +2610,24 @@ exports.generarEnlacePagoCurso = onCall({
         nombre: nombre,
         email: email,
         tipo: "abono_personalizado",
+        origen: "checkout_session",
         concepto: conceptoFinal,
         monto: String(montoNum)
+      },
+      payment_intent_data: {
+        metadata: {
+          solicitudId: solicitudId,
+          cursoId: cursoId,
+          cursoTitulo: cursoTitulo,
+          nombre: nombre,
+          email: email,
+          tipo: "abono_personalizado",
+          origen: "checkout_session",
+          concepto: conceptoFinal,
+          monto: String(montoNum)
+        },
+        receipt_email: email,
+        description: `Abono ${cursoTitulo} - ${conceptoFinal} (${nombre})`
       }
     });
 
