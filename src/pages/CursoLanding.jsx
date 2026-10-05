@@ -498,13 +498,8 @@ export default function CursoLanding() {
 
   const handleSubmitSolicitud = async (e) => {
     e.preventDefault();
-    if (!formData.nombres.trim() || !formData.apellidos.trim() || !formData.email.trim()) {
-      setAlerta({ open: true, mensaje: "Por favor completa tus nombres, apellidos (conforme al pasaporte) y correo electrónico.", tipo: "warning" });
-      return;
-    }
-
-    if (!formData.profesion.trim()) {
-      setAlerta({ open: true, mensaje: "Por favor indica tu profesión u ocupación profesional.", tipo: "warning" });
+    if (!formData.nombres.trim() || !formData.apellidos.trim() || !formData.email.trim() || !formData.telefono.trim()) {
+      setAlerta({ open: true, mensaje: "Por favor completa tus nombres, apellidos (conforme al pasaporte), correo electrónico y teléfono de contacto.", tipo: "warning" });
       return;
     }
 
@@ -1750,11 +1745,10 @@ export default function CursoLanding() {
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
                               <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                Profesión / Cargo Actual *
+                                Profesión / Cargo Actual <span className="text-gray-400 font-normal lowercase">(opcional)</span>
                               </label>
                               <input
                                 type="text"
-                                required
                                 value={formData.profesion}
                                 onChange={(e) => setFormData({ ...formData, profesion: e.target.value })}
                                 placeholder="Ej: Juez Penal / Fiscal / Abogado Litigante"
@@ -1764,7 +1758,7 @@ export default function CursoLanding() {
 
                             <div>
                               <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                Institución / Despacho
+                                Institución / Despacho / Universidad
                               </label>
                               <input
                                 type="text"
