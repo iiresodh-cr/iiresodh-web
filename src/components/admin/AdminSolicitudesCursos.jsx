@@ -132,79 +132,132 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
   const cursosDisponibles = useMemo(() => {
     const map = new Map();
 
-    // Cursos desde la colección 'cursos'
+    // 1. Cursos desde la colección 'cursos'
     cursos.forEach(c => {
       const key = c.slug || c.id;
+      const aliasSet = new Set([
+        c.id,
+        c.slug,
+        c.titulo,
+        key
+      ].filter(Boolean).map(x => String(x).toLowerCase().trim()));
+
+      const tituloLower = String(c.titulo || "").toLowerCase();
+      if (tituloLower.includes("palermo")) {
+        aliasSet.add("palermo");
+        aliasSet.add("palermo-2027");
+        aliasSet.add("curso palermo iiresodh 2027");
+        aliasSet.add("curso-palermo-2027");
+      }
+
       map.set(key, {
         key,
         id: c.id,
         slug: c.slug || c.id,
         titulo: c.titulo || c.slug || c.id,
-        alias: [c.id, c.slug, c.titulo].filter(Boolean).map(x => String(x).toLowerCase().trim())
+        alias: Array.from(aliasSet)
       });
     });
 
-    // Detectar cursos adicionales presentes en solicitudes
+    // 2. Detectar cursos adicionales presentes en solicitudes
     solicitudes.forEach(s => {
-      const keyCandidate = s.cursoId || s.cursoTitulo || "palermo-2027";
-      const rawTitulo = s.cursoTitulo || s.cursoId || "Curso Internacional";
+      const sId = String(s.cursoId || "").toLowerCase().trim();
+      const sTit = String(s.cursoTitulo || "").toLowerCase().trim();
 
-      let matched = false;
+      let matchedItem = null;
       for (const [, cursoItem] of map.entries()) {
         if (
-          cursoItem.alias.includes(String(s.cursoId || "").toLowerCase().trim()) ||
-          cursoItem.alias.includes(String(s.cursoTitulo || "").toLowerCase().trim())
+          cursoItem.alias.includes(sId) ||
+          cursoItem.alias.includes(sTit) ||
+          (sTit && cursoItem.titulo && (sTit.includes(cursoItem.titulo.toLowerCase()) || cursoItem.titulo.toLowerCase().includes(sTit))) ||
+          ((sId.includes("palermo") || sTit.includes("palermo")) && cursoItem.alias.some(a => a.includes("palermo")))
         ) {
-          matched = true;
+          matchedItem = cursoItem;
           break;
         }
       }
 
-      if (!matched) {
+      if (matchedItem) {
+        if (s.cursoId) matchedItem.alias.push(sId);
+        if (s.cursoTitulo) matchedItem.alias.push(sTit);
+      } else {
+        const keyCandidate = s.cursoId || s.cursoTitulo || "curso-adicional";
+        const rawTitulo = s.cursoTitulo || s.cursoId || "Curso Internacional";
         map.set(keyCandidate, {
           key: keyCandidate,
           id: s.cursoId || keyCandidate,
           slug: s.cursoId || keyCandidate,
           titulo: rawTitulo,
-          alias: [s.cursoId, s.cursoTitulo].filter(Boolean).map(x => String(x).toLowerCase().trim())
+          alias: [s.cursoId, s.cursoTitulo, keyCandidate].filter(Boolean).map(x => String(x).toLowerCase().trim())
         });
       }
     });
 
-    // Si aún no hay ninguno, aseguramos Palermo 2027 por defecto
+    // 3. Fallback por si la base aún estuviese totalmente vacía
     if (map.size === 0) {
       map.set("palermo-2027", {
         key: "palermo-2027",
         id: "palermo-2027",
         slug: "palermo-2027",
         titulo: "Curso Internacional 2027 - Palermo",
-        alias: ["palermo-2027", "curso internacional 2027 - palermo"]
+        alias: ["palermo-2027", "palermo", "curso internacional 2027 - palermo", "curso palermo iiresodh 2027"]
       });
     }
 
-    // Calcular conteo por curso
+    // 4. Calcular conteo exacto por cada curso
     return Array.from(map.values()).map(c => {
       const conteo = solicitudes.filter(s => {
         const sid = String(s.cursoId || "").toLowerCase().trim();
         const stit = String(s.cursoTitulo || "").toLowerCase().trim();
-        return c.alias.includes(sid) || c.alias.includes(stit);
+        if (c.alias.includes(sid) || c.alias.includes(stit)) return true;
+        if (c.id && String(s.cursoId || "") === String(c.id)) return true;
+        if (c.slug && String(s.cursoId || "") === String(c.slug)) return true;
+        if (c.titulo && stit && (stit.includes(c.titulo.toLowerCase()) || c.titulo.toLowerCase().includes(stit))) return true;
+        if ((sid.includes("palermo") || stit.includes("palermo")) && c.alias.some(a => a.includes("palermo"))) return true;
+        return false;
       }).length;
       return { ...c, conteoTotal: conteo };
     });
   }, [cursos, solicitudes]);
 
-  // Selección automática del primer curso si filtroCurso está vacío
+  // Selección automática y reconciliación del curso activo
   useEffect(() => {
-    if (!filtroCurso && cursosDisponibles.length > 0) {
-      if (cursoInicial?.slug || cursoInicial?.id) {
-        const matching = cursosDisponibles.find(
-          c => c.key === cursoInicial.slug || c.key === cursoInicial.id || c.id === cursoInicial.id
-        );
-        if (matching) {
-          setFiltroCurso(matching.key);
-          return;
-        }
+    if (cursosDisponibles.length === 0) return;
+    if (filtroCurso === "todos") return;
+
+    // Si se especificó un curso inicial, darle prioridad absoluta
+    if (cursoInicial?.slug || cursoInicial?.id || cursoInicial?.titulo) {
+      const rawBuscado = [cursoInicial.id, cursoInicial.slug, cursoInicial.titulo]
+        .filter(Boolean)
+        .map(x => String(x).toLowerCase().trim());
+
+      const found = cursosDisponibles.find(c => 
+        c.key === cursoInicial.slug ||
+        c.key === cursoInicial.id ||
+        c.id === cursoInicial.id ||
+        c.slug === cursoInicial.slug ||
+        c.alias.some(a => rawBuscado.includes(a))
+      );
+      if (found && filtroCurso !== found.key) {
+        setFiltroCurso(found.key);
+        return;
       }
+    }
+
+    // Verificar si el valor actual de filtroCurso coincide con algún curso disponible
+    const matching = cursosDisponibles.find(c => 
+      c.key === filtroCurso || 
+      c.id === filtroCurso || 
+      c.slug === filtroCurso || 
+      c.alias.includes(String(filtroCurso || "").toLowerCase().trim())
+    );
+
+    if (matching) {
+      if (filtroCurso !== matching.key) {
+        setFiltroCurso(matching.key);
+      }
+    } else {
+      // Si no existe, asociar con el primer curso disponible
       setFiltroCurso(cursosDisponibles[0].key);
     }
   }, [cursosDisponibles, cursoInicial, filtroCurso]);
@@ -214,19 +267,47 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
     if (filtroCurso === "todos") {
       return { key: "todos", titulo: "Todos los Cursos Académicos (Consolidado)" };
     }
-    return cursosDisponibles.find(c => c.key === filtroCurso) || cursosDisponibles[0] || null;
+    return (
+      cursosDisponibles.find(c => 
+        c.key === filtroCurso || 
+        c.id === filtroCurso || 
+        c.slug === filtroCurso || 
+        c.alias.includes(String(filtroCurso || "").toLowerCase().trim())
+      ) ||
+      cursosDisponibles[0] ||
+      null
+    );
   }, [cursosDisponibles, filtroCurso]);
 
   // Comprobar si una solicitud pertenece al curso seleccionado
   const esDeCurso = (s, cursoKey) => {
     if (!cursoKey || cursoKey === "todos") return true;
-    const target = cursosDisponibles.find(c => c.key === cursoKey);
-    if (!target) {
-      return s.cursoId === cursoKey || s.cursoTitulo === cursoKey;
-    }
+
+    const target = cursosDisponibles.find(c => 
+      c.key === cursoKey ||
+      c.id === cursoKey ||
+      c.slug === cursoKey ||
+      c.alias.includes(String(cursoKey).toLowerCase().trim())
+    );
+
     const sid = String(s.cursoId || "").toLowerCase().trim();
     const stit = String(s.cursoTitulo || "").toLowerCase().trim();
-    return target.alias.includes(sid) || target.alias.includes(stit);
+
+    if (!target) {
+      const keyNorm = String(cursoKey).toLowerCase().trim();
+      return sid === keyNorm || stit === keyNorm || (keyNorm && (stit.includes(keyNorm) || keyNorm.includes(stit)));
+    }
+
+    if (target.alias.includes(sid) || target.alias.includes(stit)) return true;
+    if (target.id && String(s.cursoId || "") === String(target.id)) return true;
+    if (target.slug && String(s.cursoId || "") === String(target.slug)) return true;
+    if (target.titulo && stit && (stit.includes(target.titulo.toLowerCase()) || target.titulo.toLowerCase().includes(stit))) return true;
+
+    if ((sid.includes("palermo") || stit.includes("palermo")) && target.alias.some(a => a.includes("palermo"))) {
+      return true;
+    }
+
+    return false;
   };
 
   // 1. Solicitudes aisladas del curso seleccionado (para estadísticas y conteos exactos)
