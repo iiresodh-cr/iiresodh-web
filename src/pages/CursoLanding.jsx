@@ -770,12 +770,12 @@ export default function CursoLanding() {
               </span>
             </div>
 
-            {/* TÍTULO PRINCIPAL OFICIAL CON PANTALLA TRASLÚCIDA PARA MÁXIMA LEGIBILIDAD */}
-            <div className="bg-slate-950/75 sm:bg-slate-950/70 border border-white/20 p-5 sm:p-6 md:p-7 rounded-2xl backdrop-blur-md shadow-2xl space-y-2 max-w-4xl mx-auto lg:mx-0 text-left">
-              <span className="text-xs sm:text-sm font-bold uppercase tracking-[0.25em] text-red-500 block drop-shadow-sm">
+            {/* TÍTULO PRINCIPAL OFICIAL CON ALTO CONTRASTE TIPOGRÁFICO (SIN CAJA, MÁXIMA NITIDEZ) */}
+            <div className="space-y-2">
+              <span className="text-xs sm:text-sm font-bold uppercase tracking-[0.25em] text-red-500 block [text-shadow:_0_2px_4px_rgba(0,0,0,0.9),_0_1px_2px_rgba(0,0,0,1)]">
                 Curso Internacional
               </span>
-              <h1 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight leading-tight uppercase font-sans text-white drop-shadow-md">
+              <h1 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight leading-tight uppercase font-sans text-white [text-shadow:_0_2px_4px_rgba(0,0,0,0.95),_0_4px_16px_rgba(0,0,0,0.9),_0_1px_2px_rgba(0,0,0,1)]">
                 Aplicación de las Convenciones de Palermo contra el Crimen Organizado
               </h1>
             </div>
