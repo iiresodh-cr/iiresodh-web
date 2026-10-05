@@ -1142,48 +1142,6 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
           </div>
         </div>
 
-        {/* Pestañas de acceso rápido a cada curso */}
-        {cursosDisponibles.length > 1 && (
-          <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pt-3 border-t border-white/10">
-            <span className="text-[11px] font-semibold text-blue-200 whitespace-nowrap">
-              Cursos:
-            </span>
-            {cursosDisponibles.map(c => {
-              const activo = filtroCurso === c.key;
-              return (
-                <button
-                  key={c.key}
-                  type="button"
-                  onClick={() => setFiltroCurso(c.key)}
-                  className={`text-xs px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
-                    activo
-                      ? "bg-amber-400 text-slate-950 shadow-md font-black"
-                      : "bg-white/10 text-white hover:bg-white/20 border border-white/10"
-                  }`}
-                >
-                  <span>{c.titulo}</span>
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${activo ? "bg-slate-900 text-amber-300" : "bg-black/40 text-white"}`}>
-                    {c.conteoTotal}
-                  </span>
-                </button>
-              );
-            })}
-            <button
-              type="button"
-              onClick={() => setFiltroCurso("todos")}
-              className={`text-xs px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
-                filtroCurso === "todos"
-                  ? "bg-amber-400 text-slate-950 shadow-md font-black"
-                  : "bg-white/10 text-white hover:bg-white/20 border border-white/10"
-              }`}
-            >
-              <span>Todos los Cursos</span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${filtroCurso === "todos" ? "bg-slate-900 text-amber-300" : "bg-black/40 text-white"}`}>
-                {solicitudes.length}
-              </span>
-            </button>
-          </div>
-        )}
       </section>
 
       {/* TARJETA PRINCIPAL CON MÉTRICAS DEL CURSO SELECCIONADO Y FILTROS */}
