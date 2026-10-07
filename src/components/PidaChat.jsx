@@ -96,30 +96,127 @@ export default function PidaChat() {
 
   const cancelarReinicio = () => setMostrarConfirmacion(false);
 
-  // Formatear Negritas y URLs clicables
+  // Formatear Markdown links [Texto](URL), Negritas **texto**, Emails y URLs directas
   const formatearMensaje = (texto) => {
     if (!texto) return "";
     
-    const regex = /(https?:\/\/[^\s]+|\*\*.*?\*\*)/g;
-    const partes = texto.split(regex);
+    // Normalizar enlaces rotos o con saltos de línea [texto]\s*(url) o [email]\s*(mailto:...)
+    const textoNormalizado = texto.replace(/\[([^\]]+)\]\s*\(([^)]+)\)/g, (match, label, rawUrl) => {
+      const cleanUrl = rawUrl.trim();
+      const cleanLabel = label.trim();
+      // Si era un mailto: roto
+      if (cleanUrl.startsWith('mailto:')) {
+        return cleanUrl.replace(/^mailto:/, '');
+      }
+      // Si era un whatsapp con query params feos
+      if (cleanUrl.includes('wa.me')) {
+        return `https://wa.me/50640816188`;
+      }
+      // Si es enlace al curso
+      if (cleanUrl.includes('curso-internacional-palermo-2027')) {
+        return `https://iiresodh.org/cursos/curso-internacional-palermo-2027`;
+      }
+      return `[${cleanLabel}](${cleanUrl})`;
+    });
+
+    // Tokeniza enlaces markdown [texto](url), negritas **texto**, urls directas y correos electrónicos
+    const regex = /(\[[^\]]+\]\([^\s\)]+\)|\*\*.*?\*\*|https?:\/\/[^\s\),]+|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
+    const partes = textoNormalizado.split(regex);
     
     return partes.map((parte, i) => {
-      if (parte.startsWith('**') && parte.endsWith('**')) {
-        return <strong key={i} className="font-bold text-gray-900">{parte.slice(2, -2)}</strong>;
-      }
-      if (parte.match(/^https?:\/\//)) {
+      if (!parte) return null;
+
+      // 1. Enlace Markdown [Texto](url) (si quedara alguno)
+      const mdLinkMatch = parte.match(/^\[([^\]]+)\]\(([^\s\)]+)\)$/);
+      if (mdLinkMatch) {
+        const [, rawLinkText, linkUrl] = mdLinkMatch;
+        const cleanText = rawLinkText.replace(/^\*\*(.*?)\*\*$/, '$1');
+        const esExterna = linkUrl.startsWith('http://') || linkUrl.startsWith('https://') || linkUrl.startsWith('mailto:');
         return (
           <a 
             key={i} 
-            href={parte} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="text-main-red hover:text-light-blue underline font-semibold break-all transition-colors"
+            href={linkUrl} 
+            target={linkUrl.startsWith('mailto:') ? undefined : (esExterna ? "_blank" : "_self")} 
+            rel={esExterna && !linkUrl.startsWith('mailto:') ? "noopener noreferrer" : undefined}
+            className="text-main-red hover:text-light-blue underline font-semibold break-words transition-colors mx-0.5"
           >
-            {parte}
+            {cleanText}
           </a>
         );
       }
+
+      // 2. Negritas **texto**
+      if (parte.startsWith('**') && parte.endsWith('**')) {
+        return <strong key={i} className="font-bold text-gray-900">{parte.slice(2, -2)}</strong>;
+      }
+
+      // 3. URLs directas (bare URLs)
+      if (parte.match(/^https?:\/\//)) {
+        const cleanUrl = parte.replace(/[.,;:]+$/, '');
+        const trailing = parte.slice(cleanUrl.length);
+
+        // Caso especial WhatsApp: mostrar botón/badge limpio y atractivo
+        if (cleanUrl.includes('wa.me')) {
+          return (
+            <span key={i} className="inline-block my-1">
+              <a 
+                href={cleanUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors no-underline cursor-pointer"
+              >
+                <span>💬</span> WhatsApp: +506 4081 6188
+              </a>
+              {trailing}
+            </span>
+          );
+        }
+
+        // Caso especial Curso Palermo: mostrar enlace claro y atractivo
+        if (cleanUrl.includes('curso-internacional-palermo-2027')) {
+          return (
+            <span key={i} className="inline-block my-1">
+              <a 
+                href={cleanUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="inline-flex items-center gap-1.5 px-3 py-1 bg-main-red hover:bg-red-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors no-underline cursor-pointer"
+              >
+                <span>🌐</span> Ver Curso Palermo 2027
+              </a>
+              {trailing}
+            </span>
+          );
+        }
+
+        return (
+          <span key={i}>
+            <a 
+              href={cleanUrl} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-main-red hover:text-light-blue underline font-semibold break-all transition-colors"
+            >
+              {cleanUrl}
+            </a>
+            {trailing}
+          </span>
+        );
+      }
+
+      // 4. Correo electrónico directo
+      if (parte.match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)) {
+        return (
+          <a 
+            key={i} 
+            href={`mailto:${parte}`} 
+            className="text-main-red hover:text-light-blue underline font-semibold break-all transition-colors inline-flex items-center gap-1"
+          >
+            <span>✉️</span> {parte}
+          </a>
+        );
+      }
+
       return <span key={i}>{parte}</span>;
     });
   };
