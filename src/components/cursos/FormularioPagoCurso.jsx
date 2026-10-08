@@ -311,8 +311,8 @@ function CheckoutFormCurso({
       return;
     }
 
-    if (!formData.nombres.trim() || !formData.apellidos.trim() || !formData.email.trim() || !formData.telefono.trim()) {
-      setErrorPago("Por favor completa tus nombres, apellidos (conforme a tu pasaporte), correo electrónico y teléfono de contacto.");
+    if (!formData.nombres.trim() || !formData.apellidos.trim() || !(formData.documentoIdentidad || "").trim() || !formData.email.trim() || !formData.telefono.trim()) {
+      setErrorPago("Por favor completa tus nombres, apellidos, documento de identidad, correo electrónico y teléfono de contacto.");
       return;
     }
 
@@ -322,7 +322,9 @@ function CheckoutFormCurso({
     }
 
     if (!aceptarTerminos && !terminosAceptadosExternos) {
-      setErrorPago("Debes aceptar los Términos de Contratación y la Política de Privacidad para proceder con la inscripción.");
+      setErrorPago("Debes aceptar los Términos de Contratación y la Política de Privacidad en el Paso 2 para proceder con el pago.");
+      const paso2Elem = document.getElementById("paso-terminos-contratacion");
+      if (paso2Elem) paso2Elem.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 
@@ -926,10 +928,22 @@ function CheckoutFormCurso({
         )}
 
         {soloPasarelaPago ? (
-          <div className="flex items-center gap-2 text-xs text-emerald-800 font-medium bg-emerald-50 px-3.5 py-2.5 rounded-xl border border-emerald-200">
-            <span>✓</span>
-            <span>Términos de Contratación y Clickwrap aceptados por el participante.</span>
-          </div>
+          terminosAceptadosExternos ? (
+            <div className="flex items-center gap-2 text-xs text-emerald-800 font-medium bg-emerald-50 px-3.5 py-2.5 rounded-xl border border-emerald-200 animate-fade-in">
+              <span>✓</span>
+              <span>Términos de Contratación y Clickwrap aceptados en el Paso 2.</span>
+            </div>
+          ) : (
+            <div className="flex items-start gap-2.5 text-xs text-amber-900 font-medium bg-amber-50/90 px-3.5 py-2.5 rounded-xl border border-amber-300 animate-fade-in">
+              <span className="text-base shrink-0">⚠️</span>
+              <div className="space-y-0.5">
+                <span className="font-bold block">Aceptación de Términos Requerida</span>
+                <span className="text-[11px] text-amber-800 leading-tight block">
+                  Debes marcar la casilla de aceptación de los Términos de Contratación en el <strong>Paso 2</strong> para habilitar y procesar tu pago oficial.
+                </span>
+              </div>
+            </div>
+          )
         ) : (
           <>
             {/* CLÁUSULA INFORMATIVA DE PROTECCIÓN DE DATOS - LEY N° 8968 (COSTA RICA) (COLAPSABLE, CERRADA POR DEFECTO) */}
@@ -986,8 +1000,8 @@ function CheckoutFormCurso({
 
         <button
           type="submit"
-          disabled={loadingPago || !stripe}
-          className="w-full bg-main-red hover:bg-red-800 disabled:bg-gray-400 text-white font-bold text-xs uppercase tracking-widest py-4 px-6 rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
+          disabled={loadingPago || !stripe || (soloPasarelaPago && !terminosAceptadosExternos) || (!soloPasarelaPago && !aceptarTerminos)}
+          className="w-full bg-main-red hover:bg-red-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-widest py-4 px-6 rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
         >
           {loadingPago ? (
             <>

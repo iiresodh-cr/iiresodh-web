@@ -590,9 +590,13 @@ export default function CursoLanding() {
     if (!aceptarPrivacidadTransferencia) {
       setAlerta({
         open: true,
-        mensaje: "Debes aceptar los Términos de Contratación y la Política de Privacidad para continuar.",
+        mensaje: "Debes aceptar los Términos de Contratación y la Política de Privacidad en el Paso 2 para poder formalizar tu solicitud.",
         tipo: "warning"
       });
+      const paso2Elem = document.getElementById("paso-terminos-contratacion");
+      if (paso2Elem) {
+        paso2Elem.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
       return;
     }
 
@@ -2096,22 +2100,35 @@ export default function CursoLanding() {
                     </div>
 
                     {/* PASO 2: TÉRMINOS DE CONTRATACIÓN Y CLICKWRAP */}
-                    <div className="space-y-4">
+                    <div id="paso-terminos-contratacion" className="space-y-4">
                       <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
-                        <span className="w-7 h-7 rounded-full bg-main-blue text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
-                          2
+                        <span className={`w-7 h-7 rounded-full font-bold text-xs flex items-center justify-center shrink-0 shadow-xs transition-colors ${
+                          aceptarPrivacidadTransferencia ? "bg-emerald-600 text-white" : "bg-main-blue text-white"
+                        }`}>
+                          {aceptarPrivacidadTransferencia ? "✓" : "2"}
                         </span>
                         <div>
-                          <h3 className="text-base font-extrabold text-main-blue tracking-tight">
-                            Términos de Contratación y Consentimiento Informado
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-base font-extrabold text-main-blue tracking-tight">
+                              Términos de Contratación y Consentimiento Informado
+                            </h3>
+                            {aceptarPrivacidadTransferencia && (
+                              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                                Aceptado
+                              </span>
+                            )}
+                          </div>
                           <p className="text-[11px] text-gray-500 font-light">
-                            Condiciones contractuales, canales de pago y política de privacidad
+                            Condiciones contractuales, canales de pago y política de privacidad (Requisito obligatorio)
                           </p>
                         </div>
                       </div>
 
-                      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-3">
+                      <div className={`rounded-2xl p-4 sm:p-5 space-y-3 border transition-all ${
+                        aceptarPrivacidadTransferencia
+                          ? "bg-emerald-50/50 border-emerald-300 shadow-xs"
+                          : "bg-slate-50 border-slate-200"
+                      }`}>
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200/80">
                           <span className="text-xs font-bold text-gray-800 flex items-center gap-2">
                             <span>📜</span> Contrato de Servicios Académicos — Palermo 2027
@@ -2285,6 +2302,11 @@ export default function CursoLanding() {
                               <span>📋 Confirmar Registro de Interés y Apartar Cupo</span>
                             )}
                           </button>
+                          {!aceptarPrivacidadTransferencia && (
+                            <p className="text-[11px] text-amber-700 text-center font-medium">
+                              ⚠️ Requiere haber aceptado los Términos de Contratación en el Paso 2
+                            </p>
+                          )}
                         </div>
                       )}
 
@@ -2315,6 +2337,11 @@ export default function CursoLanding() {
                               <span>🏛️ Confirmar Inscripción y Solicitar Cuentas Bancarias</span>
                             )}
                           </button>
+                          {!aceptarPrivacidadTransferencia && (
+                            <p className="text-[11px] text-amber-700 text-center font-medium">
+                              ⚠️ Requiere haber aceptado los Términos de Contratación en el Paso 2
+                            </p>
+                          )}
                         </div>
                       )}
 
