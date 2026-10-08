@@ -851,15 +851,11 @@ export default function CursoLanding() {
 
               {/* COLUMNA DERECHA: IMAGEN FIJA DEL AULA BUNKER (lg:col-span-7) */}
               <div className="lg:col-span-7">
-                <div
-                  className="relative group h-48 sm:h-56 md:h-60 w-full rounded-2xl overflow-hidden border border-white/20 bg-slate-950/60 shadow-xl cursor-pointer"
-                  onClick={() => setModalFotoPalermo(1)}
-                  title="Aula Bunker del Maxi-Proceso (clic para ampliar)"
-                >
+                <div className="relative h-48 sm:h-56 md:h-60 w-full rounded-2xl overflow-hidden border border-white/20 bg-slate-950/60 shadow-xl">
                   <img
                     src={palermoFoto2}
                     alt="Aula Bunker del Maxi-Proceso"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                   <div className="absolute bottom-3 left-3 sm:left-4 right-4 text-left">
@@ -869,10 +865,6 @@ export default function CursoLanding() {
                     <h4 className="text-white text-xs sm:text-sm font-bold tracking-tight drop-shadow-md">
                       Aula Bunker del Maxi-Proceso
                     </h4>
-                  </div>
-                  <div className="absolute top-3 right-3 z-20 bg-black/60 hover:bg-black/80 backdrop-blur-xs text-white text-[11px] font-medium px-2.5 py-1 rounded-lg border border-white/20 flex items-center gap-1.5 transition-colors">
-                    <span>🔍</span>
-                    <span className="hidden sm:inline">Ampliar</span>
                   </div>
                 </div>
               </div>
