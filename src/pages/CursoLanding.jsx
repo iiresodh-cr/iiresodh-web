@@ -1205,6 +1205,33 @@ export default function CursoLanding() {
                   </div>
                 </div>
 
+                {/* ¿QUÉ APRENDERÁS? (DEL BROCHURE) */}
+                <div className="bg-slate-900 text-white p-6 sm:p-8 rounded-r-3xl rounded-l-none border-l-4 border-l-main-red relative overflow-hidden">
+                  <div className="relative z-10">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400 block mb-1">
+                      Resultados de Formación
+                    </span>
+                    <h3 className="text-xl md:text-2xl font-black text-white tracking-tight mb-4">
+                      ¿Qué aprenderás en este curso internacional?
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {queAprenderas.map((resultado, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-white/10 border border-white/15 p-4 rounded-xl flex items-start gap-3 backdrop-blur-xs"
+                        >
+                          <span className="w-6 h-6 rounded-full bg-amber-400 text-neutral-950 font-black text-xs flex items-center justify-center shrink-0 mt-0.5">
+                            {idx + 1}
+                          </span>
+                          <p className="text-xs text-neutral-200 font-light leading-relaxed">
+                            {resultado}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
                 {/* ¿QUÉ ESTÁ INCLUIDO Y QUÉ NO? (DEL BROCHURE) */}
                 <div id="seccion-que-esta-incluido" className="pt-2 scroll-mt-24">
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
@@ -1290,33 +1317,6 @@ export default function CursoLanding() {
                         ))}
                       </div>
 
-                    </div>
-                  </div>
-                </div>
-
-                {/* ¿QUÉ APRENDERÁS? (DEL BROCHURE) */}
-                <div className="pt-2 bg-slate-900 text-white p-6 sm:p-8 rounded-3xl relative overflow-hidden">
-                  <div className="relative z-10">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400 block mb-1">
-                      Resultados de Formación
-                    </span>
-                    <h3 className="text-xl md:text-2xl font-black text-white tracking-tight mb-4">
-                      ¿Qué aprenderás en este curso internacional?
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {queAprenderas.map((resultado, idx) => (
-                        <div
-                          key={idx}
-                          className="bg-white/10 border border-white/15 p-4 rounded-xl flex items-start gap-3 backdrop-blur-xs"
-                        >
-                          <span className="w-6 h-6 rounded-full bg-amber-400 text-neutral-950 font-black text-xs flex items-center justify-center shrink-0 mt-0.5">
-                            {idx + 1}
-                          </span>
-                          <p className="text-xs text-neutral-200 font-light leading-relaxed">
-                            {resultado}
-                          </p>
-                        </div>
-                      ))}
                     </div>
                   </div>
                 </div>
