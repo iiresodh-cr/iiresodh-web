@@ -1130,7 +1130,7 @@ export default function CursoLanding() {
                       Perspectiva Histórica y Jurídica
                     </span>
                     <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
-                      {landing.legadoTitulo || "Nuestro Legado y Visión"}
+                      {landing.legadoTitulo || "Legado y Visión"}
                     </h2>
                     <div className="w-12 h-1 bg-main-red my-3 rounded-full" />
                     <p className="text-gray-700 font-light text-base leading-relaxed text-justify">
