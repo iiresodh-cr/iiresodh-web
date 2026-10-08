@@ -37,7 +37,7 @@ export const FOTOS_PALERMO = [
   },
   {
     src: palermoFoto2,
-    titulo: "Teatro Politeama Garibaldi",
+    titulo: "Aula Bunker",
     lugar: "Palermo, Sicilia"
   },
   {
@@ -47,8 +47,8 @@ export const FOTOS_PALERMO = [
   },
   {
     src: palermoFoto4,
-    titulo: "Teatro Antiguo y Costa Siciliana",
-    lugar: "Sicilia, Italia"
+    titulo: "Teatro Politeama Garibaldi",
+    lugar: "Palermo, Sicilia"
   },
   {
     src: palermoFoto5,
