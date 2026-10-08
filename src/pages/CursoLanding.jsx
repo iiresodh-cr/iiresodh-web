@@ -1061,7 +1061,7 @@ export default function CursoLanding() {
                       return (
                         <div
                           key={idx}
-                          className="bg-white p-3.5 rounded-2xl border border-gray-200/80 flex items-center gap-3.5 hover:border-main-red/40 hover:shadow-xs transition-all duration-200 group"
+                          className="bg-white p-3.5 rounded-r-2xl rounded-l-none border border-gray-200/80 border-l-4 border-l-main-blue flex items-center gap-3.5 hover:border-main-red/40 hover:border-l-main-blue hover:shadow-xs transition-all duration-200 group"
                         >
                           <div className="shrink-0 flex items-center justify-center text-main-red group-hover:scale-110 transition-transform">
                             <Icono className="w-6 h-6 text-main-red" strokeWidth={2} />
