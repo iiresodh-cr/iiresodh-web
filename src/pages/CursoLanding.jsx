@@ -1587,7 +1587,7 @@ export default function CursoLanding() {
              ========================================== */}
             {seccionActiva === "brochure" && (
               <div className="space-y-6 animate-fade-in">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+                <div className="pb-3 border-b border-gray-100">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block">
                       Material Informativo
@@ -1595,17 +1595,6 @@ export default function CursoLanding() {
                     <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
                       Brochure Oficial del Evento
                     </h2>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <a
-                      href={contacto?.whatsappUrl || "https://wa.me/50640816188"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase px-3.5 py-2 rounded-xl transition shadow-xs flex items-center gap-1.5"
-                    >
-                      <span>💬 WhatsApp</span>
-                      <span>+506 4081 6188</span>
-                    </a>
                   </div>
                 </div>
 
