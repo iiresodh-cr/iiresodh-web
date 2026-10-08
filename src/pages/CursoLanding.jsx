@@ -328,7 +328,7 @@ export const DATOS_PALERMO_2027 = {
         fecha: "Miércoles 19 de mayo de 2027",
         titulo: "«Follow the money»: lavado de activos y recuperación de bienes",
         horario: "09:00–13:00 y 15:00–18:00",
-        descripcion: "El principio fundamental de Giovanni Falcone: seguir la ruta del dinero ilícito. Técnicas forenses de decomiso y visita a un lugar emblemático (Ejemplo: Bien Confiscado a la mafia).",
+        descripcion: "El principio fundamental de Giovanni Falcone: seguir la ruta del dinero ilícito. Técnicas forenses de decomiso y visita a un lugar emblemático.",
         lugarEmblematico: "Sede de Bien Confiscado gestionado para uso social",
         temas: [
           "Doctrina Falcone: de la contabilidad forense a la imputación patrimonial",
@@ -1321,28 +1321,6 @@ export default function CursoLanding() {
                   </div>
                 </div>
 
-                {/* CUATRO PILARES DOGMÁTICOS */}
-                <div>
-                  <h3 className="text-xs font-black uppercase tracking-wider text-gray-400 mb-3">
-                    Cuatro Pilares Dogmáticos del Programa
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                    {pilares.map((pilar, idx) => (
-                      <div
-                        key={idx}
-                        className="bg-slate-50 p-3.5 rounded-xl border border-gray-100 hover:border-main-blue/30 hover:bg-white hover:shadow-xs transition flex flex-col justify-start"
-                      >
-                        <h4 className="text-xs md:text-[13px] font-bold text-main-blue mb-1 leading-snug">
-                          {pilar.titulo}
-                        </h4>
-                        <p className="text-[11px] text-gray-600 font-light leading-relaxed">
-                          {pilar.descripcion}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
                 <div className="pt-4 flex justify-between items-center flex-wrap gap-3">
                   <a
                     href={contacto?.whatsappUrl || "https://wa.me/50640816188"}
@@ -1381,6 +1359,28 @@ export default function CursoLanding() {
                     <span className="text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-lg font-bold border border-slate-200">
                       ⏱️ Sesiones: 9:00–13:00 y 15:00–18:00
                     </span>
+                  </div>
+                </div>
+
+                {/* CUATRO PILARES DOGMÁTICOS */}
+                <div>
+                  <h3 className="text-xs font-black uppercase tracking-wider text-gray-400 mb-3">
+                    Cuatro Pilares Dogmáticos del Programa
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {pilares.map((pilar, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-slate-50 p-3.5 rounded-xl border border-gray-100 hover:border-main-blue/30 hover:bg-white hover:shadow-xs transition flex flex-col justify-start"
+                      >
+                        <h4 className="text-xs md:text-[13px] font-bold text-main-blue mb-1 leading-snug">
+                          {pilar.titulo}
+                        </h4>
+                        <p className="text-[11px] text-gray-600 font-light leading-relaxed">
+                          {pilar.descripcion}
+                        </p>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
