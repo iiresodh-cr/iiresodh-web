@@ -84,7 +84,7 @@ export default function SelectorModalidadPago({
       cuotas: 3,
       titulo: "3 Pagos Sin Intereses",
       badge: "0% Interés",
-      badgeColor: "bg-sky-100 text-sky-800 border-sky-300 font-bold",
+      badgeColor: "bg-sky-50 text-sky-700 border-sky-200 font-medium",
       montoPorCuota: calcularMontoCuota(3),
       descripcion: `1ª cuota hoy y 2 cuotas mensuales. Liquidación: ${calcularFechaCuota(hoy, 2).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}.`,
       destacado: true,
@@ -94,7 +94,7 @@ export default function SelectorModalidadPago({
     {
       cuotas: 4,
       titulo: "4 Pagos Sin Intereses",
-      badge: "0% Interés • Flexible",
+      badge: "0% Interés",
       badgeColor: "bg-sky-50 text-sky-700 border-sky-200 font-medium",
       montoPorCuota: calcularMontoCuota(4),
       descripcion: `1ª cuota hoy y 3 cuotas mensuales. Liquidación: ${calcularFechaCuota(hoy, 3).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}.`,
@@ -136,10 +136,10 @@ export default function SelectorModalidadPago({
                 }
               }}
               className={`relative p-3 rounded-2xl border-2 transition-all text-left ${!isDisponible
-                  ? "border-gray-200 bg-gray-100/60 opacity-60 cursor-not-allowed"
-                  : isSelected
-                    ? "border-sky-600 bg-sky-50/50 shadow-xs ring-2 ring-sky-500/20 cursor-pointer scale-[1.01]"
-                    : "border-gray-200 bg-white hover:border-sky-300 hover:bg-sky-50/20 cursor-pointer"
+                ? "border-gray-200 bg-gray-100/60 opacity-60 cursor-not-allowed"
+                : isSelected
+                  ? "border-sky-600 bg-sky-50/50 shadow-xs ring-2 ring-sky-500/20 cursor-pointer scale-[1.01]"
+                  : "border-gray-200 bg-white hover:border-sky-300 hover:bg-sky-50/20 cursor-pointer"
                 }`}
             >
               {/* Radio y Badge */}
@@ -147,10 +147,10 @@ export default function SelectorModalidadPago({
                 <div className="flex items-center gap-2">
                   <div
                     className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${!isDisponible
-                        ? "border-gray-300 bg-gray-200"
-                        : isSelected
-                          ? "border-sky-600 bg-sky-600"
-                          : "border-gray-300 bg-white"
+                      ? "border-gray-300 bg-gray-200"
+                      : isSelected
+                        ? "border-sky-600 bg-sky-600"
+                        : "border-gray-300 bg-white"
                       }`}
                   >
                     {isSelected && isDisponible && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
