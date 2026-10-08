@@ -140,7 +140,6 @@ export const DATOS_PALERMO_2027 = {
       whatsapp: "+506 4081 6188",
       whatsappUrl: "https://wa.me/50640816188?text=Hola,%20solicito%20informaci%C3%B3n%20sobre%20el%20Curso%20Internacional%20Palermo%202027",
       email: "cursos@iiresodh.org",
-      emailAlternativo: "contacto@iiresodh.org"
     },
 
     // Docentes Destacados
@@ -303,7 +302,7 @@ export const DATOS_PALERMO_2027 = {
         fecha: "Lunes 17 de mayo de 2027",
         titulo: "Marco jurídico internacional del crimen organizado",
         horario: "09:00–13:00 y 15:00–18:00",
-        descripcion: "Apertura institucional del curso y análisis exegético de la Convención de Palermo. Apertura de actividades y visita a lugar emblemático (Ejemplo: Aula Búnker del Maxi-Proceso).",
+        descripcion: "Apertura institucional del curso y análisis exegético de la Convención de Palermo. Apertura de actividades.",
         lugarEmblematico: "Aula Búnker del Palacio de Justicia de Palermo",
         temas: [
           "Génesis y alcance de la Convención de las Naciones Unidas de 2000 (UNTOC)",
@@ -342,12 +341,12 @@ export const DATOS_PALERMO_2027 = {
         fecha: "Jueves 20 de mayo de 2027",
         titulo: "Protocolo de Palermo: trata de personas",
         horario: "09:00–13:00 y 15:00–18:00",
-        descripcion: "Dogmática y aplicación judicial del Protocolo de Palermo contra la trata de personas. Inicio de la simulación de caso transnacional (Parte I).",
+        descripcion: "Dogmática y aplicación judicial del Protocolo de Palermo contra la trata de personas. Inicio de la simulación de caso transnacional.",
         lugarEmblematico: "Sede Académica Internacional",
         temas: [
           "Diferenciación típica entre trata de personas y tráfico ilícito de personas migrantes",
           "Enfoque de derechos humanos y protección judicial integral a víctimas",
-          "Simulación de caso transnacional (Parte I): apertura de expediente y medidas cautelares"
+          "Simulación de caso transnacional: apertura de expediente y medidas cautelares"
         ]
       },
       {
@@ -1676,7 +1675,7 @@ export default function CursoLanding() {
                       ¿Tienes dudas o necesitas orden de facturación institucional?
                     </h4>
                     <p className="text-xs text-neutral-300 font-light mt-0.5">
-                      Escríbenos a <a href="mailto:cursos@iiresodh.org" className="underline text-amber-300">cursos@iiresodh.org</a> o <a href="mailto:contacto@iiresodh.org" className="underline text-amber-300">contacto@iiresodh.org</a>
+                      Escríbenos a <a href="mailto:cursos@iiresodh.org" className="underline text-amber-300">cursos@iiresodh.org</a>
                     </p>
                   </div>
                   <button
