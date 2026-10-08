@@ -1133,11 +1133,22 @@ export default function CursoLanding() {
                         <button
                           key={index}
                           onClick={() => setDiaActivo(index)}
-                          className={`text-left p-3.5 rounded-xl border transition cursor-pointer shrink-0 lg:shrink w-auto lg:w-full ${activo
+                          className={`group relative text-left p-3.5 pl-4.5 rounded-r-xl rounded-l-none border transition-all cursor-pointer shrink-0 lg:shrink w-auto lg:w-full overflow-hidden ${activo
                             ? "bg-main-blue text-white border-main-blue shadow-md"
                             : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
                             }`}
                         >
+                          {/* Franja izquierda indicadora */}
+                          <div className="absolute left-0 inset-y-0 w-1.5 bg-gray-300 overflow-hidden">
+                            <div
+                              className={`absolute inset-0 transition-transform duration-300 ease-out ${
+                                activo
+                                  ? "bg-main-red scale-y-100"
+                                  : "bg-main-blue transform origin-top scale-y-0 group-hover:scale-y-100"
+                              }`}
+                            />
+                          </div>
+
                           <div className="flex items-center justify-between">
                             <span className={`text-[10px] font-black uppercase tracking-wider ${activo ? "text-amber-300" : "text-main-red"}`}>
                               {item.dia} • {item.fecha?.split("de")[0] || ""}
