@@ -1063,10 +1063,10 @@ export default function CursoLanding() {
                           key={idx}
                           className="bg-white p-3.5 rounded-2xl border border-gray-200/80 flex items-center gap-3.5 hover:border-main-red/40 hover:shadow-xs transition-all duration-200 group"
                         >
-                          <div className="w-11 h-11 rounded-xl bg-red-50/80 border border-red-100 flex items-center justify-center shrink-0 text-main-red shadow-2xs group-hover:scale-105 transition-transform">
-                            <Icono className="w-6 h-6 text-main-red" strokeWidth={1.8} />
+                          <div className="shrink-0 flex items-center justify-center text-main-red group-hover:scale-110 transition-transform">
+                            <Icono className="w-6 h-6 text-main-red" strokeWidth={2} />
                           </div>
-                          <p className="text-xs md:text-[13px] text-gray-800 font-medium leading-snug">
+                          <p className="text-xs md:text-[13px] text-gray-800 font-bold leading-snug">
                             {item.perfil}
                           </p>
                         </div>
