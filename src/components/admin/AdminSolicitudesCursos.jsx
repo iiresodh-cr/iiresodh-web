@@ -372,6 +372,9 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
   // 2. Solicitudes filtradas por método de pago, estado secundario y buscador
   const solicitudesFiltradas = useMemo(() => {
     return solicitudesDelCurso.filter(s => {
+      const estadoActual = s.estado || "pendiente";
+      const cumpleEstado = filtroEstado === "todos" || estadoActual === filtroEstado;
+
       const esMetodoInteres = s.modalidadSolicitud === "registro_interes" || s.tipoRegistro === "interes" || s.metodoPago === "contacto_posterior";
       const esMetodoTransferencia = s.metodoPago === "transferencia" || s.metodoPago === "transferencia_bancaria" || s.tipoRegistro === "transferencia";
       const cumpleMetodo = filtroMetodo === "todos" ||
