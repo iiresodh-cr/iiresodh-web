@@ -1019,9 +1019,6 @@ export default function CursoLanding() {
                       <h3 className="text-sm sm:text-base font-bold text-main-blue">
                         IIRESODH & Instituto de Derechos Humanos de la Universidad Nacional de la Plata (UNLP - Argentina)
                       </h3>
-                      <p className="text-xs text-slate-600 font-light mt-0.5 max-w-xl">
-                        Programa académico diseñado y certificado conjuntamente por ambas instituciones de referencia internacional.
-                      </p>
                     </div>
                   </div>
 
