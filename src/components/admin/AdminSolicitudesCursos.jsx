@@ -14,6 +14,7 @@ import {
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { httpsCallable } from "firebase/functions";
 import { auth, db, storage, functions } from "../../firebase/config";
+import ModalTerminosClickwrap from "../cursos/ModalTerminosClickwrap";
 import { 
   CircularProgress, 
   Dialog, 
@@ -106,11 +107,13 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
   // Modal para Registro Manual de Participante
   const [modalManual, setModalManual] = useState(false);
   const [guardandoManual, setGuardandoManual] = useState(false);
+  const [modalClickwrapAdmin, setModalClickwrapAdmin] = useState(false);
   const [archivoPasaporteManual, setArchivoPasaporteManual] = useState(null);
   const [formManual, setFormManual] = useState({
     cursoKey: "",
     nombres: "",
     apellidos: "",
+    documentoIdentidad: "",
     email: "",
     telefono: "",
     pais: "Costa Rica",
@@ -127,6 +130,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
     estado: "contactado",
     comentarios: "",
     otorgoConsentimiento: true,
+    aceptaTerminosClickwrap: true,
     medioConsentimiento: "WhatsApp",
     detalleConsentimiento: ""
   });
@@ -1126,6 +1130,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         nombre: nombreCompleto,
         nombres: formManual.nombres.trim(),
         apellidos: formManual.apellidos.trim(),
+        documentoIdentidad: (formManual.documentoIdentidad || "").trim(),
         email: formManual.email.trim(),
         telefono: formManual.telefono.trim(),
         pais: formManual.pais,
@@ -1146,8 +1151,17 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         origen: "manual_admin",
         registradoPorAdmin: adminActual,
         comentarios: formManual.comentarios.trim(),
-        // Consentimiento explícito Ley 8968
+        // Consentimiento explícito Ley 8968 y Términos de Contratación Clickwrap
         aceptaPoliticaPrivacidad: !!formManual.otorgoConsentimiento,
+        terminosContratacionAceptados: !!formManual.aceptaTerminosClickwrap,
+        clickwrapAceptado: !!formManual.aceptaTerminosClickwrap,
+        versionTerminos: "TerminosContratacion-Palermo-2027-v1",
+        terminosTitulo: "Inscripción y Términos de Contratación — Curso Internacional Palermo 2027",
+        fechaAceptacionTerminos: serverTimestamp(),
+        fechaAceptacionISO: new Date().toISOString(),
+        constanciaTerminos: formManual.aceptaTerminosClickwrap
+          ? `Términos y clickwrap aceptados vía ${formManual.medioConsentimiento} (Registrado por admin: ${adminActual}).`
+          : "Pendiente de aceptación",
         medioConsentimiento: formManual.medioConsentimiento,
         versionPoliticaPrivacidad: "2026-09-12",
         constanciaPrivacidad: constanciaTexto,
@@ -2984,6 +2998,20 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
               </div>
             </div>
 
+            {/* DOCUMENTO DE IDENTIDAD */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Documento de Identidad / DNI / Pasaporte
+              </label>
+              <input
+                type="text"
+                placeholder="Ej: Pasaporte o DNI del participante"
+                value={formManual.documentoIdentidad}
+                onChange={(e) => setFormManual({ ...formManual, documentoIdentidad: e.target.value })}
+                className="w-full text-sm px-3.5 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-main-blue"
+              />
+            </div>
+
             {/* EMAIL Y TELÉFONO / WHATSAPP */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -3076,12 +3104,22 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
               )}
             </div>
 
-            {/* SECCIÓN CONSENTIMIENTO INFORMADO (LEY 8968) */}
-            <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3.5 space-y-2.5">
-              <span className="text-[11px] font-black uppercase tracking-wider text-emerald-900 block flex items-center gap-1.5">
-                🛡️ Consentimiento de Privacidad y Tratamiento de Datos (Ley N° 8968)
-              </span>
+            {/* SECCIÓN CONSENTIMIENTO INFORMADO (LEY 8968) Y TÉRMINOS CLICKWRAP */}
+            <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3.5 space-y-3">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <span className="text-[11px] font-black uppercase tracking-wider text-emerald-900 block flex items-center gap-1.5">
+                  🛡️ Consentimiento de Datos (Ley N° 8968) y Términos Contractuales (Clickwrap)
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setModalClickwrapAdmin(true)}
+                  className="text-[10px] font-bold text-main-blue hover:text-main-red bg-white px-2 py-0.5 rounded border border-blue-200 shadow-2xs hover:shadow-xs transition flex items-center gap-1 cursor-pointer"
+                >
+                  <span>📜 Consultar Términos Clickwrap</span>
+                </button>
+              </div>
 
+              {/* CHECKBOX 1: PRIVACIDAD Y DATOS PERSONALES */}
               <label className="flex items-start gap-2.5 cursor-pointer">
                 <input
                   type="checkbox"
@@ -3090,15 +3128,28 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                   className="mt-0.5 w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
                 />
                 <span className="text-xs text-emerald-950 font-medium leading-snug">
-                  <strong>Constancia de Consentimiento Expreso:</strong> El participante ha manifestado de forma informada su consentimiento para el tratamiento de sus datos personales y académicos.
+                  <strong>Tratamiento de Datos Personales (Ley N° 8968):</strong> El participante ha manifestado de forma informada su consentimiento para el tratamiento de sus datos personales y académicos.
                 </span>
               </label>
 
-              {formManual.otorgoConsentimiento && (
+              {/* CHECKBOX 2: TÉRMINOS DE CONTRATACIÓN CLICKWRAP */}
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formManual.aceptaTerminosClickwrap}
+                  onChange={(e) => setFormManual({ ...formManual, aceptaTerminosClickwrap: e.target.checked })}
+                  className="mt-0.5 w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                />
+                <span className="text-xs text-emerald-950 font-medium leading-snug">
+                  <strong>Aceptación de Términos de Contratación (Clickwrap Palermo):</strong> El participante ha sido informado y acepta expresamente las condiciones contractuales, políticas de pagos y reembolsos, y exclusiones del programa.
+                </span>
+              </label>
+
+              {(formManual.otorgoConsentimiento || formManual.aceptaTerminosClickwrap) && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-emerald-200/60">
                   <div>
                     <label className="block text-[10px] font-bold uppercase text-emerald-900 mb-1">
-                      Medio o Canal de Consentimiento *
+                      Medio o Canal de Consentimiento / Aceptación *
                     </label>
                     <select
                       value={formManual.medioConsentimiento}
@@ -3106,6 +3157,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                       className="w-full text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-300 bg-white text-emerald-950 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     >
                       <option value="WhatsApp">💬 Mensaje de WhatsApp</option>
+                      <option value="Aceptación Digital Clickwrap (Web)">🌐 Aceptación Digital Clickwrap (Web)</option>
                       <option value="Correo Electrónico">✉️ Correo Electrónico</option>
                       <option value="Llamada Telefónica">📞 Llamada Telefónica</option>
                       <option value="Formulario Físico / Escrito">📝 Formulario Físico / Escrito</option>
@@ -3118,7 +3170,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                     </label>
                     <input
                       type="text"
-                      placeholder="Ej: Aceptó términos por WhatsApp el 04/10/2026"
+                      placeholder="Ej: Aceptó términos contractuales y privacidad por WhatsApp el 08/10/2026"
                       value={formManual.detalleConsentimiento}
                       onChange={(e) => setFormManual({ ...formManual, detalleConsentimiento: e.target.value })}
                       className="w-full text-xs px-3 py-1.5 rounded-lg border border-emerald-300 bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
@@ -3788,6 +3840,16 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
           {alerta.mensaje}
         </Alert>
       </Snackbar>
+
+      {/* MODAL DE CONSULTA DE TÉRMINOS CLICKWRAP PARA EL ADMINISTRADOR */}
+      <ModalTerminosClickwrap
+        open={modalClickwrapAdmin}
+        onClose={() => setModalClickwrapAdmin(false)}
+        onAceptar={() => {
+          setFormManual(prev => ({ ...prev, aceptaTerminosClickwrap: true }));
+          setModalClickwrapAdmin(false);
+        }}
+      />
     </div>
   );
 }
