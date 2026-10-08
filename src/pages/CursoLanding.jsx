@@ -243,6 +243,25 @@ export const DATOS_PALERMO_2027 = {
       }
     ],
 
+    // ¿Qué no está incluido?
+    queNoEstaIncluido: [
+      {
+        titulo: "Traslados desde y hacia su país de origen",
+        descripcion: "Boletos aéreos internacionales de ida y vuelta a Palermo, ni traslados previos o posteriores al itinerario oficial.",
+        icono: "✈️"
+      },
+      {
+        titulo: "Póliza de gastos médicos",
+        descripcion: "Seguro médico internacional de viaje, cobertura hospitalaria o seguros privados de salud individuales.",
+        icono: "🏥"
+      },
+      {
+        titulo: "Visas y trámites migratorios requeridos",
+        descripcion: "Gestión y tasas consulares para visado de ingreso a Italia o espacio Schengen, pasaportes ni permisos migratorios.",
+        icono: "🛂"
+      }
+    ],
+
     // ¿Qué aprenderás?
     queAprenderas: [
       "Aplicar los principios del debido proceso y las garantías procesales en la investigación de delitos complejos y criminalidad organizada.",
@@ -736,7 +755,9 @@ export default function CursoLanding() {
   const destacados = landing.destacados && landing.destacados.length > 0 ? landing.destacados : DATOS_PALERMO_2027.landingPage.destacados;
   const docentes = landing.docentesDestacados || DATOS_PALERMO_2027.landingPage.docentesDestacados;
   const aQuienDirigido = landing.aQuienDirigido || DATOS_PALERMO_2027.landingPage.aQuienDirigido;
-  const queEstaIncluido = landing.queEstaIncluido || DATOS_PALERMO_2027.landingPage.queEstaIncluido;
+  const esPalermo2027 = slug === "palermo-2027" || curso?.slug === "palermo-2027" || curso?.id === "palermo-2027";
+  const queEstaIncluido = (esPalermo2027 && DATOS_PALERMO_2027.landingPage.queEstaIncluido) || landing.queEstaIncluido || DATOS_PALERMO_2027.landingPage.queEstaIncluido;
+  const queNoEstaIncluido = (esPalermo2027 && DATOS_PALERMO_2027.landingPage.queNoEstaIncluido) || landing.queNoEstaIncluido || DATOS_PALERMO_2027.landingPage.queNoEstaIncluido;
   const queAprenderas = landing.queAprenderas || DATOS_PALERMO_2027.landingPage.queAprenderas;
   const contacto = landing.contacto || DATOS_PALERMO_2027.landingPage.contacto;
 
@@ -1174,28 +1195,92 @@ export default function CursoLanding() {
                   </div>
                 </div>
 
-                {/* ¿QUÉ ESTÁ INCLUIDO? (DEL BROCHURE) */}
+                {/* ¿QUÉ ESTÁ INCLUIDO Y QUÉ NO? (DEL BROCHURE) */}
                 <div className="pt-2">
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
                     Logística y Servicios Integrales
                   </span>
-                  <h3 className="text-xl md:text-2xl font-black text-main-blue tracking-tight mb-3">
+                  <h3 className="text-xl md:text-2xl font-black text-main-blue tracking-tight mb-4">
                     ¿Qué está incluido en la matrícula?
                   </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                    {queEstaIncluido.map((item, index) => (
-                      <div
-                        key={index}
-                        className="p-3.5 rounded-xl border border-gray-200/80 bg-slate-50/70 hover:bg-white hover:border-main-blue/30 hover:shadow-xs transition flex flex-col justify-start"
-                      >
-                        <h4 className="text-xs md:text-[13px] font-bold text-main-blue mb-1 leading-snug">
-                          {item.titulo}
-                        </h4>
-                        <p className="text-[11px] text-gray-600 font-light leading-relaxed">
-                          {item.descripcion}
-                        </p>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                    {/* COLUMNA 1: LO QUE INCLUYE (8 cols on lg) */}
+                    <div className="lg:col-span-8 bg-slate-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 space-y-3.5">
+                      <div className="flex items-center justify-between pb-2.5 border-b border-emerald-100">
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 font-extrabold text-xs flex items-center justify-center shrink-0">
+                            ✓
+                          </span>
+                          <h4 className="text-sm md:text-base font-extrabold text-main-blue tracking-tight">
+                            Servicios y Beneficios Incluidos
+                          </h4>
+                        </div>
+                        <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/80 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                          Cubierto 100%
+                        </span>
                       </div>
-                    ))}
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {queEstaIncluido.map((item, index) => (
+                          <div
+                            key={index}
+                            className="p-3.5 rounded-xl border border-gray-200/80 bg-white hover:border-emerald-400/60 hover:shadow-xs transition flex flex-col justify-start"
+                          >
+                            <div className="flex items-start gap-2 mb-1">
+                              <span className="text-emerald-600 font-black text-sm shrink-0 leading-tight">
+                                ✓
+                              </span>
+                              <h5 className="text-xs md:text-[13px] font-bold text-main-blue leading-snug">
+                                {item.titulo}
+                              </h5>
+                            </div>
+                            <p className="text-[11px] text-gray-600 font-light leading-relaxed pl-5">
+                              {item.descripcion}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* COLUMNA 2: LO QUE NO INCLUYE (4 cols on lg) */}
+                    <div className="lg:col-span-4 bg-slate-50/70 border border-red-200/80 rounded-2xl p-4 sm:p-5 space-y-3.5">
+                      <div className="flex items-center justify-between pb-2.5 border-b border-red-100">
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-full bg-red-100 text-main-red font-extrabold text-xs flex items-center justify-center shrink-0">
+                            ✕
+                          </span>
+                          <h4 className="text-sm md:text-base font-extrabold text-main-blue tracking-tight">
+                            No Incluido en la Matrícula
+                          </h4>
+                        </div>
+                        <span className="text-[10px] font-bold text-main-red bg-red-100/80 px-2.5 py-0.5 rounded-full border border-red-200">
+                          Cuenta del participante
+                        </span>
+                      </div>
+
+                      <div className="space-y-3">
+                        {queNoEstaIncluido.map((item, index) => (
+                          <div
+                            key={index}
+                            className="p-3.5 rounded-xl border border-red-200/70 bg-white hover:border-red-400/60 hover:shadow-xs transition flex flex-col justify-start"
+                          >
+                            <div className="flex items-start gap-2 mb-1">
+                              <span className="text-main-red font-black text-sm shrink-0 leading-tight">
+                                ✕
+                              </span>
+                              <h5 className="text-xs md:text-[13px] font-bold text-gray-900 leading-snug">
+                                {item.titulo}
+                              </h5>
+                            </div>
+                            <p className="text-[11px] text-gray-600 font-light leading-relaxed pl-5">
+                              {item.descripcion}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+
+                    </div>
                   </div>
                 </div>
 
