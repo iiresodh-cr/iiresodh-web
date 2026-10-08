@@ -252,7 +252,7 @@ export const DATOS_PALERMO_2027 = {
     ],
 
     // Sección Legado y Visión
-    legadoTitulo: "Nuestro Legado y Visión",
+    legadoTitulo: "Legado y Visión",
     legadoTexto: "El legado histórico de los magistrados Giovanni Falcone y Paolo Borsellino sentó las bases de la lucha contemporánea contra el crimen organizado y la macrocriminalidad financiera. En el año 2000, Palermo fue la sede donde la comunidad internacional aprobó la histórica Convención de las Naciones Unidas contra la Delincuencia Organizada Transnacional. Este curso internacional conecta ese precedente histórico con los desafíos judiciales de vanguardia, el decomiso de activos ilícitos y la cooperación penal transfronteriza, organizado en conjunto por IIRESODH y el Instituto de Derechos Humanos de la Universidad Nacional de La Plata.",
     pilares: [
       {
@@ -474,7 +474,7 @@ export default function CursoLanding() {
       .then((data) => {
         if (data?.ip) setClientIp(data.ip);
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   // Carrousel de fotos de Palermo y Modal Lightbox
@@ -966,9 +966,9 @@ export default function CursoLanding() {
                   textTransform: 'none',
                   boxShadow: 'none',
                   '&:hover': {
-                    bgcolor: '#F0FDF4', 
-                    color: '#16A34A', 
-                    borderColor: '#BBF7D0', 
+                    bgcolor: '#F0FDF4',
+                    color: '#16A34A',
+                    borderColor: '#BBF7D0',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
                   }
                 }}
@@ -982,7 +982,7 @@ export default function CursoLanding() {
                 target="_blank"
                 rel="noreferrer"
                 variant="outlined"
-                startIcon={<svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>}
+                startIcon={<svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>}
                 aria-label="Compartir en Facebook"
                 sx={{
                   borderRadius: 50,
@@ -996,9 +996,9 @@ export default function CursoLanding() {
                   textTransform: 'none',
                   boxShadow: 'none',
                   '&:hover': {
-                    bgcolor: '#EFF6FF', 
-                    color: '#1D4ED8', 
-                    borderColor: '#BFDBFE', 
+                    bgcolor: '#EFF6FF',
+                    color: '#1D4ED8',
+                    borderColor: '#BFDBFE',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
                   }
                 }}
@@ -1012,7 +1012,7 @@ export default function CursoLanding() {
                 target="_blank"
                 rel="noreferrer"
                 variant="outlined"
-                startIcon={<svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>}
+                startIcon={<svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>}
                 aria-label="Compartir en Twitter (X)"
                 sx={{
                   borderRadius: 50,
@@ -1026,8 +1026,8 @@ export default function CursoLanding() {
                   textTransform: 'none',
                   boxShadow: 'none',
                   '&:hover': {
-                    bgcolor: '#000000', 
-                    color: '#FFFFFF', 
+                    bgcolor: '#000000',
+                    color: '#FFFFFF',
                     borderColor: '#000000',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                   }
@@ -1053,8 +1053,8 @@ export default function CursoLanding() {
                   textTransform: 'none',
                   boxShadow: 'none',
                   '&:hover': {
-                    bgcolor: '#F3F4F6', 
-                    color: '#374151', 
+                    bgcolor: '#F3F4F6',
+                    color: '#374151',
                     borderColor: '#E5E7EB',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
                   }
@@ -1308,11 +1308,10 @@ export default function CursoLanding() {
                           {/* Franja izquierda indicadora */}
                           <div className="absolute left-0 inset-y-0 w-1.5 bg-gray-300 overflow-hidden">
                             <div
-                              className={`absolute inset-0 transition-transform duration-300 ease-out ${
-                                activo
-                                  ? "bg-main-red scale-y-100"
-                                  : "bg-main-blue transform origin-top scale-y-0 group-hover:scale-y-100"
-                              }`}
+                              className={`absolute inset-0 transition-transform duration-300 ease-out ${activo
+                                ? "bg-main-red scale-y-100"
+                                : "bg-main-blue transform origin-top scale-y-0 group-hover:scale-y-100"
+                                }`}
                             />
                           </div>
 
@@ -1662,9 +1661,8 @@ export default function CursoLanding() {
                       {FOTOS_PALERMO.map((foto, idx) => (
                         <div
                           key={idx}
-                          className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-                            slidePalermoActual === idx ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
-                          }`}
+                          className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${slidePalermoActual === idx ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
+                            }`}
                         >
                           <img
                             src={foto.src}
@@ -1729,9 +1727,8 @@ export default function CursoLanding() {
                               e.stopPropagation();
                               setSlidePalermoActual(i);
                             }}
-                            className={`h-2 rounded-full transition-all cursor-pointer ${
-                              slidePalermoActual === i ? "w-6 bg-main-red" : "w-2 bg-white/60 hover:bg-white"
-                            }`}
+                            className={`h-2 rounded-full transition-all cursor-pointer ${slidePalermoActual === i ? "w-6 bg-main-red" : "w-2 bg-white/60 hover:bg-white"
+                              }`}
                             aria-label={`Ver foto ${i + 1}`}
                           />
                         ))}
@@ -1809,7 +1806,7 @@ export default function CursoLanding() {
                   </div>
                 ) : (
                   <div className="bg-white p-6 sm:p-10 rounded-3xl border border-gray-200 shadow-md space-y-8">
-                    
+
                     {/* PASO 1: FORMULARIO DE DATOS OFICIALES */}
                     <div className="space-y-5">
                       <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
@@ -2069,7 +2066,7 @@ export default function CursoLanding() {
                                 checked={formData.alumnoIiresodh === "si"}
                                 onChange={() => setFormData({ ...formData, alumnoIiresodh: "si" })}
                               />
-                              <span>Sí (Comunidad)</span>
+                              <span>Sí</span>
                             </label>
                             <label className="flex items-center gap-1 cursor-pointer font-medium text-gray-700">
                               <input
@@ -2102,9 +2099,8 @@ export default function CursoLanding() {
                     {/* PASO 2: TÉRMINOS DE CONTRATACIÓN Y CLICKWRAP */}
                     <div id="paso-terminos-contratacion" className="space-y-4">
                       <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
-                        <span className={`w-7 h-7 rounded-full font-bold text-xs flex items-center justify-center shrink-0 shadow-xs transition-colors ${
-                          aceptarPrivacidadTransferencia ? "bg-emerald-600 text-white" : "bg-main-blue text-white"
-                        }`}>
+                        <span className={`w-7 h-7 rounded-full font-bold text-xs flex items-center justify-center shrink-0 shadow-xs transition-colors ${aceptarPrivacidadTransferencia ? "bg-emerald-600 text-white" : "bg-main-blue text-white"
+                          }`}>
                           {aceptarPrivacidadTransferencia ? "✓" : "2"}
                         </span>
                         <div>
@@ -2124,11 +2120,10 @@ export default function CursoLanding() {
                         </div>
                       </div>
 
-                      <div className={`rounded-2xl p-4 sm:p-5 space-y-3 border transition-all ${
-                        aceptarPrivacidadTransferencia
-                          ? "bg-emerald-50/50 border-emerald-300 shadow-xs"
-                          : "bg-slate-50 border-slate-200"
-                      }`}>
+                      <div className={`rounded-2xl p-4 sm:p-5 space-y-3 border transition-all ${aceptarPrivacidadTransferencia
+                        ? "bg-emerald-50/50 border-emerald-300 shadow-xs"
+                        : "bg-slate-50 border-slate-200"
+                        }`}>
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200/80">
                           <span className="text-xs font-bold text-gray-800 flex items-center gap-2">
                             <span>📜</span> Contrato de Servicios Académicos — Palermo 2027
@@ -2138,7 +2133,7 @@ export default function CursoLanding() {
                             onClick={() => setModalTerminosOpen(true)}
                             className="inline-flex items-center gap-1.5 text-xs font-bold text-main-blue hover:text-main-red underline cursor-pointer self-start sm:self-auto"
                           >
-                            <span>Ver Términos de Contratación (Clickwrap)</span>
+                            <span>Ver Términos de Contratación</span>
                             <span>↗</span>
                           </button>
                         </div>
@@ -2243,7 +2238,7 @@ export default function CursoLanding() {
                               Transferencia Bancaria
                             </h4>
                             <p className="text-[11px] text-gray-500 font-light leading-relaxed">
-                              Solicita cuentas bancarias autorizadas en EE. UU. (SWIFT) o Costa Rica. Reserva provisional por 5 días.
+                              Solicita cuentas bancarias autorizadas. Reserva provisional por 5 días.
                             </p>
                           </div>
                         </div>
@@ -2317,7 +2312,7 @@ export default function CursoLanding() {
                             <div className="space-y-1">
                               <span className="font-bold text-sm block">Orden de Transferencia Bancaria Oficial</span>
                               <p className="text-[11px] leading-relaxed">
-                                Al formalizar esta solicitud, recibirás por correo electrónico las instrucciones con las cuentas bancarias oficiales (códigos internacionales SWIFT e IBAN) de <strong>IIRESODH PAYMENTS, LLC (Delaware, EE. UU.)</strong> o <strong>IIRESODH Costa Rica</strong>. Tu cupo se reservará provisionalmente por 5 días naturales para la acreditación de los fondos.
+                                Al formalizar esta solicitud, recibirás por correo electrónico las instrucciones con las cuentas bancarias oficiales. Tu cupo se reservará provisionalmente por 5 días naturales para la acreditación de los fondos.
                               </p>
                             </div>
                           </div>
