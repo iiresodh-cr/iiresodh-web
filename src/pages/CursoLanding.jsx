@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import { collection, query, where, getDocs, doc, getDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import { db, auth } from "../firebase/config";
+import { onAuthStateChanged } from "firebase/auth";
 import { CircularProgress, Alert, Snackbar, Button } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
