@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 
 // // Assets locales predeterminados
 import falconeDefaultImg from "../assets/cursos/falcone_borsellino.jpg";
+import falconeRecorte from "../assets/cursos/falcone_recorte.jpg";
 import palermoDefaultImg from "../assets/cursos/palermo_catedral.jpg";
 import palermoJusticiaBw from "../assets/cursos/palermo_justicia_bw.jpg";
 import palermoAulaBunkerBw from "../assets/cursos/palermo_aula_bunker_bw.jpg";
@@ -16,12 +17,45 @@ import palermoCollageHeroBw from "../assets/cursos/palermo_collage_hero_bw.jpg";
 import logoUnlp from "../assets/cursos/logo_unlp_ddhh.png";
 import brochureP1 from "../assets/cursos/brochure_palermo_p2.jpg";
 import brochureP2 from "../assets/cursos/brochure_palermo_p1.jpg";
+import palermoFoto1 from "../assets/palermo/palermo_1.jpg";
+import palermoFoto2 from "../assets/palermo/palermo_2.jpg";
+import palermoFoto3 from "../assets/palermo/palermo_3.jpg";
+import palermoFoto4 from "../assets/palermo/palermo_4.jpg";
+import palermoFoto5 from "../assets/palermo/palermo_5.jpg";
 import logoIiresodh from "../assets/logo.webp";
 import logoIiresodhColor from "../assets/logo-color.png";
 import FormularioPagoCurso from "../components/cursos/FormularioPagoCurso";
 import SelectorModalidadPago from "../components/cursos/SelectorModalidadPago";
 import { PAISES_LATINOAMERICA } from "../data/paisesLatinoamerica";
 import { Scale, ShieldCheck, Search, GraduationCap, Globe } from "lucide-react";
+
+export const FOTOS_PALERMO = [
+  {
+    src: palermoFoto1,
+    titulo: "Palacio de Justicia",
+    lugar: "Palermo, Sicilia"
+  },
+  {
+    src: palermoFoto2,
+    titulo: "Teatro Politeama Garibaldi",
+    lugar: "Palermo, Sicilia"
+  },
+  {
+    src: palermoFoto3,
+    titulo: "Teatro Massimo",
+    lugar: "Palermo, Sicilia"
+  },
+  {
+    src: palermoFoto4,
+    titulo: "Teatro Antiguo y Costa Siciliana",
+    lugar: "Sicilia, Italia"
+  },
+  {
+    src: palermoFoto5,
+    titulo: "Puerto de Palermo y Monte Pellegrino",
+    lugar: "Palermo, Sicilia"
+  }
+];
 
 const obtenerIconoPerfil = (item, idx) => {
   const ico = String(item?.icono || "");
@@ -429,8 +463,36 @@ export default function CursoLanding() {
   const [planCuotas, setPlanCuotas] = useState(1); // 1 = Pago único, 2 = 2 pagos, 3 = 3 pagos, 4 = 4 pagos
   const [modalBrochure, setModalBrochure] = useState(null); // null | 1 | 2
 
+  // Carrousel de fotos de Palermo y Modal Lightbox
+  const [slidePalermoActual, setSlidePalermoActual] = useState(0);
+  const [modalFotoPalermo, setModalFotoPalermo] = useState(null); // null | índice de foto
+
   // Tab activo en la estructura del programa (Días)
   const [diaActivo, setDiaActivo] = useState(0);
+
+  // Auto-play del carrousel de fotos de Palermo
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSlidePalermoActual((prev) => (prev + 1) % FOTOS_PALERMO.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Navegación por teclado para el modal de fotos
+  useEffect(() => {
+    if (modalFotoPalermo === null) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setModalFotoPalermo(null);
+      if (e.key === "ArrowLeft") {
+        setModalFotoPalermo((prev) => (prev - 1 + FOTOS_PALERMO.length) % FOTOS_PALERMO.length);
+      }
+      if (e.key === "ArrowRight") {
+        setModalFotoPalermo((prev) => (prev + 1) % FOTOS_PALERMO.length);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [modalFotoPalermo]);
 
   // Escuchar estado de autenticación para administradores
   useEffect(() => {
@@ -737,8 +799,8 @@ export default function CursoLanding() {
               </h1>
             </div>
 
-            {/* UBICACIÓN, FECHAS Y CUPOS LIMITADOS */}
-            <div className="flex flex-wrap items-center justify-between gap-3 text-xs md:text-sm font-medium text-slate-200">
+            {/* UBICACIÓN Y FECHAS */}
+            <div className="flex flex-wrap items-center gap-3 text-xs md:text-sm font-medium text-slate-200">
               <span className="flex items-center gap-2 bg-slate-950/70 px-3.5 py-1.5 rounded-lg border border-white/20 backdrop-blur-md drop-shadow-xs">
                 <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -747,10 +809,6 @@ export default function CursoLanding() {
                 <span>Palermo, Sicilia, Italia</span>
                 <span className="text-white/40">•</span>
                 <span>17 – 23 de Mayo de 2027</span>
-              </span>
-
-              <span className="text-base sm:text-lg md:text-xl font-black italic uppercase tracking-[0.15em] text-red-500 sm:ml-auto text-right [text-shadow:_0_2px_4px_rgba(0,0,0,0.9),_0_1px_2px_rgba(0,0,0,1)]">
-                ¡Cupos Limitados!
               </span>
             </div>
 
@@ -767,48 +825,114 @@ export default function CursoLanding() {
           <div className="bg-slate-900/90 border border-white/15 border-l-4 border-l-main-red p-6 md:p-8 rounded-r-2xl rounded-l-none backdrop-blur-md shadow-2xl space-y-6">
 
             {/* FILA SUPERIOR: PRECIO, DETALLE Y BENEFICIOS INCLUIDOS DISTRIBUIDOS */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-4 items-center">
 
-              {/* COLUMNA IZQUIERDA: PRECIO Y ESPECIFICACIÓN GENERAL (lg:col-span-7) */}
-              <div className="lg:col-span-7 space-y-3 text-left">
-                <div className="flex items-baseline gap-3 flex-wrap">
-                  <span className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-sans">
+              {/* COLUMNA IZQUIERDA: PRECIO Y ESPECIFICACIÓN GENERAL (lg:col-span-5) */}
+              <div className="lg:col-span-5 space-y-2.5 text-left pl-2 sm:pl-6 lg:pl-8 pr-0 sm:pr-2">
+                <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-black italic uppercase tracking-[0.15em] text-red-500 block [text-shadow:_0_2px_4px_rgba(0,0,0,0.9),_0_1px_2px_rgba(0,0,0,1)]">
+                  ¡Cupos Limitados!
+                </span>
+                <span className="text-white font-light text-sm sm:text-base block">
+                  Inversión:
+                </span>
+                <div>
+                  <span className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight font-sans">
                     {normalizarPrecio(landing.precioInversion)}
-                  </span>
-                  <span className="text-xs uppercase font-bold tracking-wider text-slate-300 bg-white/10 px-3 py-1 rounded-md border border-white/15">
-                    Inversión Académica Total
-                  </span>
-                  <span className="text-xs uppercase font-bold tracking-wider text-slate-300 bg-white/10 px-3 py-1 rounded-md border border-white/15">
-                    Cupos Limitados
                   </span>
                 </div>
 
-                <p className="text-xs sm:text-sm text-slate-300 font-light leading-relaxed">
-                  {landing.inversionDetalle || "Por participante. Incluye alojamiento en hotel 4★ en Palermo, traslados internos de logística académica, clases magistrales con expertos internacionales y doble certificación oficial."}
-                </p>
+                <div className="pt-0.5">
+                  <span className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-white">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+                    Facilidades de pago en cuotas disponible
+                  </span>
+                </div>
               </div>
 
-              {/* COLUMNA DERECHA: CAJA DE BENEFICIOS INCLUIDOS EN FORMATO TARJETA (lg:col-span-5) */}
-              <div className="lg:col-span-5 bg-white/5 border border-white/10 p-4 sm:p-5 rounded-xl space-y-2.5">
-                <span className="text-[11px] uppercase tracking-wider font-bold text-slate-300 block">
-                  El programa incluye:
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-200">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-400 font-bold shrink-0">✓</span>
-                    <span>Hotel 4★ en Palermo</span>
+              {/* COLUMNA DERECHA: CARROUSEL DE FOTOS DE PALERMO (lg:col-span-7) */}
+              <div className="lg:col-span-7">
+                <div
+                  className="relative group h-48 sm:h-56 md:h-60 w-full rounded-2xl overflow-hidden border border-white/20 bg-slate-950/60 shadow-xl cursor-pointer"
+                  onClick={() => setModalFotoPalermo(slidePalermoActual)}
+                  title="Haz clic para ver las fotos en grande"
+                >
+                  {/* Slides con transición fade suave */}
+                  {FOTOS_PALERMO.map((foto, idx) => (
+                    <div
+                      key={idx}
+                      className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                        slidePalermoActual === idx ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
+                      }`}
+                    >
+                      <img
+                        src={foto.src}
+                        alt={foto.titulo}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+
+                      {/* Gradiente oscuro inferior para texto */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+
+                      {/* Pie de foto del slide */}
+                      <div className="absolute bottom-3 left-3 sm:left-4 right-20 text-left">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block mb-0.5">
+                          {foto.lugar}
+                        </span>
+                        <h4 className="text-white text-xs sm:text-sm font-bold tracking-tight drop-shadow-md truncate">
+                          {foto.titulo}
+                        </h4>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Badge en esquina superior derecha indicando clic para ampliar */}
+                  <div className="absolute top-3 right-3 z-20 bg-black/60 hover:bg-black/80 backdrop-blur-xs text-white text-[11px] font-medium px-2.5 py-1 rounded-lg border border-white/20 flex items-center gap-1.5 transition-colors">
+                    <span>🔍</span>
+                    <span className="hidden sm:inline">Ver fotos</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-400 font-bold shrink-0">✓</span>
-                    <span>Traslados internos</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-400 font-bold shrink-0">✓</span>
-                    <span>Magistrados antimafia</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-400 font-bold shrink-0">✓</span>
-                    <span>Doble aval IIRESODH & UNLP</span>
+
+                  {/* Flecha izquierda */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSlidePalermoActual((prev) => (prev - 1 + FOTOS_PALERMO.length) % FOTOS_PALERMO.length);
+                    }}
+                    className="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/55 hover:bg-black/85 text-white flex items-center justify-center transition-all cursor-pointer border border-white/20 active:scale-95 text-sm"
+                    aria-label="Foto anterior"
+                  >
+                    ❮
+                  </button>
+
+                  {/* Flecha derecha */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSlidePalermoActual((prev) => (prev + 1) % FOTOS_PALERMO.length);
+                    }}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/55 hover:bg-black/85 text-white flex items-center justify-center transition-all cursor-pointer border border-white/20 active:scale-95 text-sm"
+                    aria-label="Siguiente foto"
+                  >
+                    ❯
+                  </button>
+
+                  {/* Indicadores / Puntos */}
+                  <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5">
+                    {FOTOS_PALERMO.map((_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSlidePalermoActual(i);
+                        }}
+                        className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                          slidePalermoActual === i ? "w-5 bg-main-red" : "w-1.5 bg-white/60 hover:bg-white"
+                        }`}
+                        aria-label={`Ver foto ${i + 1}`}
+                      />
+                    ))}
                   </div>
                 </div>
               </div>
@@ -818,43 +942,26 @@ export default function CursoLanding() {
             {/* SEPARADOR HORIZONTAL SUTIL */}
             <div className="border-t border-white/10" />
 
-            {/* FILA INFERIOR: BOTONES DE ACCIÓN Y FACILIDADES DE PAGO */}
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-1">
-              <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                <button
-                  onClick={() => irASeccion("inscripcion")}
-                  className="flex-1 sm:flex-initial bg-main-red hover:bg-[#8b1515] text-white font-bold text-xs uppercase tracking-wider py-3.5 px-7 rounded-xl shadow-lg transition-all active:scale-95 text-center cursor-pointer whitespace-nowrap"
-                >
-                  Inscríbete Ahora
-                </button>
-                <button
-                  onClick={() => irASeccion("programa")}
-                  className="flex-1 sm:flex-initial bg-white/10 hover:bg-white/20 text-white font-semibold text-xs uppercase tracking-wider py-3.5 px-5 rounded-xl border border-white/20 transition-colors text-center cursor-pointer whitespace-nowrap"
-                >
-                  Ver Programa ({programa.length} Días)
-                </button>
-                <button
-                  onClick={() => setModalBrochure(1)}
-                  className="flex-1 sm:flex-initial bg-white/10 hover:bg-white/20 text-white font-semibold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl border border-white/20 transition-colors text-center cursor-pointer whitespace-nowrap"
-                >
-                  Brochure 📄
-                </button>
-                <a
-                  href={contacto?.whatsappUrl || "https://wa.me/50640816188"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 sm:flex-initial bg-white/10 hover:bg-white/20 text-white font-semibold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl border border-white/20 transition-colors text-center cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5"
-                >
-                  WhatsApp
-                </a>
-              </div>
-
-              <div className="text-[11px] text-slate-400 font-normal text-center md:text-right shrink-0">
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                  Facilidades de pago en cuotas disponibles
-                </span>
-              </div>
+            {/* FILA INFERIOR: BOTONES DE ACCIÓN */}
+            <div className="flex items-center justify-between gap-3 pt-1">
+              <button
+                onClick={() => irASeccion("inscripcion")}
+                className="bg-main-red hover:bg-[#8b1515] text-white font-bold text-xs uppercase tracking-wider py-3.5 px-7 rounded-xl shadow-lg transition-all active:scale-95 text-center cursor-pointer whitespace-nowrap"
+              >
+                Inscríbete Ahora
+              </button>
+              <a
+                href={contacto?.whatsappUrl || "https://wa.me/50640816188"}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Contactar por WhatsApp"
+                aria-label="WhatsApp"
+                className="bg-white/10 hover:bg-[#25D366]/20 border border-white/20 hover:border-[#25D366]/50 p-2.5 rounded-xl transition-all flex items-center justify-center cursor-pointer shadow-md active:scale-95 shrink-0 ml-auto"
+              >
+                <svg className="w-6 h-6 fill-[#25D366]" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
+                </svg>
+              </a>
             </div>
 
           </div>
@@ -918,26 +1025,29 @@ export default function CursoLanding() {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => irASeccion("brochure")}
-                    className="shrink-0 bg-white hover:bg-slate-100 text-main-blue border border-slate-300 font-bold text-xs uppercase tracking-wider py-3 px-5 rounded-xl shadow-xs transition"
-                  >
-                    Consultar Brochure Oficial 📄
-                  </button>
                 </div>
 
                 {/* PERSPECTIVA HISTÓRICA */}
-                <div className="max-w-4xl">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
-                    Perspectiva Histórica y Jurídica
-                  </span>
-                  <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
-                    {landing.legadoTitulo || "Nuestro Legado y Visión"}
-                  </h2>
-                  <div className="w-12 h-1 bg-main-red my-3 rounded-full" />
-                  <p className="text-gray-700 font-light text-base leading-relaxed text-justify">
-                    {landing.legadoTexto || DATOS_PALERMO_2027.landingPage.legadoTexto}
-                  </p>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                  <div className="lg:col-span-7 xl:col-span-7">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
+                      Perspectiva Histórica y Jurídica
+                    </span>
+                    <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
+                      {landing.legadoTitulo || "Nuestro Legado y Visión"}
+                    </h2>
+                    <div className="w-12 h-1 bg-main-red my-3 rounded-full" />
+                    <p className="text-gray-700 font-light text-base leading-relaxed text-justify">
+                      {landing.legadoTexto || DATOS_PALERMO_2027.landingPage.legadoTexto}
+                    </p>
+                  </div>
+                  <div className="lg:col-span-5 xl:col-span-5 flex items-center justify-center lg:justify-end">
+                    <img
+                      src={falconeRecorte}
+                      alt="Giovanni Falcone y Paolo Borsellino"
+                      className="w-full max-w-md lg:max-w-full h-auto object-contain"
+                    />
+                  </div>
                 </div>
 
                 {/* ¿A QUIÉN ESTÁ DIRIGIDO? (DEL BROCHURE) */}
@@ -2171,6 +2281,72 @@ export default function CursoLanding() {
                   Inscribirme
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL VISOR LIGHTBOX DE FOTOS DE PALERMO */}
+      {modalFotoPalermo !== null && (
+        <div
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fade-in select-none"
+          onClick={() => setModalFotoPalermo(null)}
+        >
+          {/* Botón cerrar */}
+          <button
+            onClick={() => setModalFotoPalermo(null)}
+            className="absolute top-4 right-4 z-50 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white text-xl flex items-center justify-center transition-colors cursor-pointer border border-white/20 shadow-xl"
+            title="Cerrar visor (Esc)"
+            aria-label="Cerrar visor"
+          >
+            ✕
+          </button>
+
+          {/* Flecha anterior */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setModalFotoPalermo((prev) => (prev - 1 + FOTOS_PALERMO.length) % FOTOS_PALERMO.length);
+            }}
+            className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-black/60 hover:bg-black/90 text-white text-2xl flex items-center justify-center transition-all cursor-pointer border border-white/20 shadow-2xl active:scale-95"
+            title="Foto anterior (←)"
+            aria-label="Foto anterior"
+          >
+            ❮
+          </button>
+
+          {/* Flecha siguiente */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setModalFotoPalermo((prev) => (prev + 1) % FOTOS_PALERMO.length);
+            }}
+            className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-black/60 hover:bg-black/90 text-white text-2xl flex items-center justify-center transition-all cursor-pointer border border-white/20 shadow-2xl active:scale-95"
+            title="Siguiente foto (→)"
+            aria-label="Siguiente foto"
+          >
+            ❯
+          </button>
+
+          {/* Contenedor de la foto principal */}
+          <div
+            className="relative max-w-5xl max-h-[90vh] flex flex-col items-center justify-center px-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={FOTOS_PALERMO[modalFotoPalermo].src}
+              alt={FOTOS_PALERMO[modalFotoPalermo].titulo}
+              className="max-w-full max-h-[78vh] w-auto h-auto object-contain rounded-2xl shadow-2xl border border-white/15"
+            />
+
+            {/* Pie de foto con título, lugar y contador */}
+            <div className="mt-3 text-center">
+              <h4 className="text-white text-base sm:text-lg font-bold tracking-tight">
+                {FOTOS_PALERMO[modalFotoPalermo].titulo}
+              </h4>
+              <p className="text-slate-300 text-xs sm:text-sm font-light mt-0.5">
+                {FOTOS_PALERMO[modalFotoPalermo].lugar} • {modalFotoPalermo + 1} de {FOTOS_PALERMO.length}
+              </p>
             </div>
           </div>
         </div>
