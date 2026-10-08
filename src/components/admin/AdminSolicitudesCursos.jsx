@@ -384,7 +384,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       if (!busq) return cumpleEstado && cumpleMetodo;
 
       const temasStr = Array.isArray(s.experienciaTemas) ? s.experienciaTemas.join(" ") : (s.experienciaTemas || "");
-      const textoCompleto = `${s.nombre || ""} ${s.nombres || ""} ${s.apellidos || ""} ${s.email || ""} ${s.telefono || ""} ${s.profesion || ""} ${s.institucion || ""} ${s.pais || ""} ${s.cursoTitulo || ""} ${temasStr} ${s.stripePaymentIntentId || ""}`.toLowerCase();
+      const textoCompleto = `${s.nombre || ""} ${s.nombres || ""} ${s.apellidos || ""} ${s.documentoIdentidad || ""} ${s.email || ""} ${s.telefono || ""} ${s.profesion || ""} ${s.institucion || ""} ${s.pais || ""} ${s.cursoTitulo || ""} ${temasStr} ${s.stripePaymentIntentId || ""}`.toLowerCase();
       return cumpleEstado && cumpleMetodo && textoCompleto.includes(busq);
     });
   }, [solicitudesDelCurso, filtroEstado, filtroMetodo, busqueda]);
@@ -1823,6 +1823,12 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                       {(solicitud.nombres || solicitud.apellidos) && (
                         <p className="text-[11px] text-gray-500 font-medium">
                           🛂 Nombre Pasaporte: <span className="text-gray-800 font-bold">{solicitud.nombres || ""} {solicitud.apellidos || ""}</span>
+                        </p>
+                      )}
+
+                      {solicitud.documentoIdentidad && (
+                        <p className="text-[11px] text-gray-500 font-medium">
+                          🪪 Doc. Identidad: <span className="text-gray-800 font-bold">{solicitud.documentoIdentidad}</span>
                         </p>
                       )}
                       

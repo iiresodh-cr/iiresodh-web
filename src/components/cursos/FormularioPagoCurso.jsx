@@ -103,6 +103,7 @@ function CheckoutFormCurso({
     nombres: "",
     apellidos: "",
     nombre: "",
+    documentoIdentidad: "",
     email: "",
     telefono: "",
     institucion: "",
@@ -354,6 +355,7 @@ function CheckoutFormCurso({
         nombre: nombreCompleto,
         nombres: formData.nombres.trim(),
         apellidos: formData.apellidos.trim(),
+        documentoIdentidad: (formData.documentoIdentidad || "").trim(),
         telefono: formData.telefono.trim(),
         institucion: formData.institucion.trim(),
         pais: formData.pais,
@@ -512,7 +514,7 @@ function CheckoutFormCurso({
               {formData.nombres || ""} {formData.apellidos || ""}
             </h5>
             <p className="text-gray-500 font-light mt-0.5">
-              {formData.email} • {formData.telefono} • {formData.pais}
+              {formData.documentoIdentidad ? `Doc: ${formData.documentoIdentidad} • ` : ""}{formData.email} • {formData.telefono} • {formData.pais}
             </p>
           </div>
           <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white text-emerald-800 font-bold rounded-xl border border-sky-200 text-xs self-start sm:self-auto shadow-2xs">
@@ -623,19 +625,35 @@ function CheckoutFormCurso({
           </div>
         </div>
 
-        <div>
-          <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-            País de Residencia *
-          </label>
-          <select
-            value={formData.pais}
-            onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
-            className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
-          >
-            {PAISES_LATINOAMERICA.map((p) => (
-              <option key={p} value={p}>{p}</option>
-            ))}
-          </select>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+              Documento de Identidad * <span className="text-gray-400 font-normal lowercase">(DNI / Cédula / Pasaporte)</span>
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.documentoIdentidad}
+              onChange={(e) => setFormData({ ...formData, documentoIdentidad: e.target.value })}
+              placeholder="Ej: Pasaporte o Cédula Nacional"
+              className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+              País de Residencia *
+            </label>
+            <select
+              value={formData.pais}
+              onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
+              className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+            >
+              {PAISES_LATINOAMERICA.map((p) => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 

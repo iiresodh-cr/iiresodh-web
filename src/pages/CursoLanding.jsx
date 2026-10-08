@@ -440,6 +440,7 @@ export default function CursoLanding() {
     nombres: "",
     apellidos: "",
     nombre: "",
+    documentoIdentidad: "",
     institucion: "",
     email: "",
     telefono: "",
@@ -576,8 +577,8 @@ export default function CursoLanding() {
 
   const handleSubmitSolicitud = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
-    if (!formData.nombres.trim() || !formData.apellidos.trim() || !formData.email.trim() || !formData.telefono.trim()) {
-      setAlerta({ open: true, mensaje: "Por favor completa tus nombres, apellidos (conforme al pasaporte), correo electrónico y teléfono de contacto.", tipo: "warning" });
+    if (!formData.nombres.trim() || !formData.apellidos.trim() || !formData.documentoIdentidad.trim() || !formData.email.trim() || !formData.telefono.trim()) {
+      setAlerta({ open: true, mensaje: "Por favor completa tus nombres, apellidos, documento de identidad, correo electrónico y teléfono de contacto.", tipo: "warning" });
       return;
     }
 
@@ -614,6 +615,7 @@ export default function CursoLanding() {
         nombre: nombreCompleto,
         nombres: formData.nombres.trim(),
         apellidos: formData.apellidos.trim(),
+        documentoIdentidad: formData.documentoIdentidad.trim(),
         institucion: formData.institucion.trim(),
         email: formData.email.trim(),
         telefono: formData.telefono.trim(),
@@ -1916,19 +1918,35 @@ export default function CursoLanding() {
                         </div>
                       </div>
 
-                      <div>
-                        <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                          País de Residencia *
-                        </label>
-                        <select
-                          value={formData.pais}
-                          onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
-                          className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
-                        >
-                          {PAISES_LATINOAMERICA.map((p) => (
-                            <option key={p} value={p}>{p}</option>
-                          ))}
-                        </select>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                          <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                            Documento de Identidad * <span className="text-gray-400 font-normal lowercase">(DNI / Cédula / Pasaporte)</span>
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={formData.documentoIdentidad}
+                            onChange={(e) => setFormData({ ...formData, documentoIdentidad: e.target.value })}
+                            placeholder="Ej: Pasaporte o Cédula Nacional"
+                            className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                            País de Residencia *
+                          </label>
+                          <select
+                            value={formData.pais}
+                            onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
+                            className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+                          >
+                            {PAISES_LATINOAMERICA.map((p) => (
+                              <option key={p} value={p}>{p}</option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
 
                       {/* EXPERIENCIA EN TEMAS */}
