@@ -228,7 +228,7 @@ export const DATOS_PALERMO_2027 = {
       },
       {
         titulo: "Alojamiento en hotel 4 estrellas",
-        descripcion: "Estancia completa de calidad superior en Palermo durante los días del programa.",
+        descripcion: "Estancia completa de calidad superior en Palermo durante los días del programa, incluyento desayunos y coffe breaks.",
         icono: "🏨"
       },
       {
@@ -237,8 +237,8 @@ export const DATOS_PALERMO_2027 = {
         icono: "🚌"
       },
       {
-        titulo: "Desayunos y coffee breaks",
-        descripcion: "Espacios diarios de refrigerio y networking para intercambio entre los participantes y docentes.",
+        titulo: "Espacios diarios de Networking",
+        descripcion: "Espacios diarios de networking para intercambio entre los participantes y docentes.",
         icono: "☕"
       }
     ],
