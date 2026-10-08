@@ -47,7 +47,7 @@ export const FOTOS_PALERMO = [
   },
   {
     src: palermoFoto4,
-    titulo: "Teatro Politeama Garibaldi",
+    titulo: "Palazzo Steri",
     lugar: "Palermo, Sicilia"
   },
   {
