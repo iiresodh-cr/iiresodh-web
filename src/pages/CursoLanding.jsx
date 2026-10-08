@@ -799,7 +799,7 @@ export default function CursoLanding() {
       )}
 
       {/* HERO INSTITUCIONAL CON COLLAGE FOTOGRÁFICO EN BLANCO Y NEGRO (NÍTIDO, CINEMATOGRÁFICO Y SOLEMNE) */}
-      <section className="relative text-white pt-8 pb-12 md:pt-12 md:pb-16 overflow-hidden border-b border-slate-800 bg-[#0a1526]">
+      <section className="relative text-white pt-8 pb-6 md:pt-12 md:pb-8 overflow-hidden border-b border-slate-800 bg-[#0a1526]">
         {/* COLLAGE FOTOGRÁFICO DE FONDO EN BLANCO Y NEGRO (NÍTIDO, CLARO Y TOTALMENTE VISIBLE) */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           <img
