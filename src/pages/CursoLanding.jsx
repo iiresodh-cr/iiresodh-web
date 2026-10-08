@@ -692,6 +692,17 @@ export default function CursoLanding() {
   };
 
   const irASeccion = (seccion) => {
+    if (seccion === "incluido") {
+      setSeccionActiva("legado");
+      setTimeout(() => {
+        const elem = document.getElementById("seccion-que-esta-incluido") || document.getElementById("hub-interactivo");
+        if (elem) {
+          elem.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 60);
+      return;
+    }
+
     setSeccionActiva(seccion);
     const elem = document.getElementById("hub-interactivo");
     if (elem) {
@@ -1195,7 +1206,7 @@ export default function CursoLanding() {
                 </div>
 
                 {/* ¿QUÉ ESTÁ INCLUIDO Y QUÉ NO? (DEL BROCHURE) */}
-                <div className="pt-2">
+                <div id="seccion-que-esta-incluido" className="pt-2 scroll-mt-24">
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
                     Logística y Servicios Integrales
                   </span>
@@ -1688,10 +1699,10 @@ export default function CursoLanding() {
 
                 <div className="pt-4 flex justify-between items-center">
                   <button
-                    onClick={() => irASeccion("incluido")}
+                    onClick={() => irASeccion("docentes")}
                     className="text-gray-500 hover:text-main-blue text-xs font-bold transition cursor-pointer"
                   >
-                    ← Ver Qué Incluye
+                    ← Ver Docentes Destacados
                   </button>
                   <button
                     onClick={() => irASeccion("sede")}
