@@ -673,7 +673,7 @@ export default function CursoLanding() {
   ];
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] font-sans text-gray-800 antialiased selection:bg-main-blue selection:text-white">
+    <main className="min-h-screen bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] flex flex-col font-sans text-gray-800 antialiased selection:bg-main-blue selection:text-white overflow-x-hidden">
       
       {/* BANNER DE VISTA PREVIA (BORRADOR NO PÚBLICO) */}
       {!esPublica && (
@@ -716,62 +716,20 @@ export default function CursoLanding() {
             alt="Collage Conmemorativo Palermo: Falcone, Borsellino, Palacio de Justicia y Aula Búnker"
             className="w-full h-full object-cover object-center filter contrast-105 brightness-95 opacity-85 sm:opacity-90"
           />
-          {/* Overlay mínimo: transparente en el centro para que las fotos se vean con total claridad */}
+          {/* Velo blanco acentuado para aclarar la foto e iluminar el fondo */}
+          <div className="absolute inset-0 bg-white/70" />
+          {/* Overlay con degradado para legibilidad */}
           <div className="absolute inset-0 bg-gradient-to-b from-slate-950/45 via-transparent to-slate-950/70" />
         </div>
 
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 md:px-8 space-y-7">
           
-          {/* CONVOCATORIA OFICIAL CONJUNTA IIRESODH & INSTITUTO DE DDHH UNLP */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-5 border-b border-white/15">
-            <div className="inline-flex items-center gap-4 sm:gap-5 bg-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-2xl shadow-xl border border-white/20">
-              {/* Logo IIRESODH en Color Oficial */}
-              <img
-                src={logoIiresodhColor}
-                alt="IIRESODH - Instituto Internacional de Responsabilidad Social y Derechos Humanos"
-                className="h-8 sm:h-9 w-auto object-contain"
-              />
-
-              <div className="h-8 w-px bg-slate-200" />
-
-              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-600 whitespace-nowrap">
-                En conjunto con
-              </span>
-
-              <div className="h-8 w-px bg-slate-200" />
-
-              {/* Logo Instituto de Derechos Humanos UNLP en Color (Tamaño proporcional optimizado) */}
-              <img
-                src={logoUnlp}
-                alt="Instituto de Derechos Humanos - Universidad Nacional de La Plata"
-                className="h-12 sm:h-14 w-auto object-contain"
-              />
-            </div>
-
-            <span className="text-xs uppercase tracking-widest text-slate-200 font-semibold bg-slate-950/50 px-3.5 py-1.5 rounded-lg border border-white/15 backdrop-blur-xs drop-shadow-sm">
-              Convocatoria Académica Internacional
-            </span>
-          </div>
-
           {/* CONTENIDO PRINCIPAL: TÍTULOS Y DETALLES DEL CURSO */}
           <div className="space-y-4 text-center lg:text-left">
             
-            {/* BADGES SUPERIORES (SOBRIOS, UNIFICADOS Y ELEGANTES) */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs font-medium text-slate-200">
-              <span className="bg-slate-950/70 border border-white/20 px-3 py-1 rounded-md text-slate-100 backdrop-blur-md shadow-xs">
-                Alta Especialización Judicial
-              </span>
-              <span className="bg-slate-950/70 border border-white/20 px-3 py-1 rounded-md text-slate-100 backdrop-blur-md shadow-xs">
-                Cupos Limitados
-              </span>
-              <span className="bg-slate-950/70 border border-white/20 px-3 py-1 rounded-md text-slate-100 backdrop-blur-md shadow-xs">
-                17 – 23 de Mayo de 2027
-              </span>
-            </div>
-
             {/* TÍTULO PRINCIPAL OFICIAL CON ALTO CONTRASTE TIPOGRÁFICO (SIN CAJA, MÁXIMA NITIDEZ) */}
             <div className="space-y-2">
-              <span className="text-xs sm:text-sm font-bold uppercase tracking-[0.25em] text-red-500 block [text-shadow:_0_2px_4px_rgba(0,0,0,0.9),_0_1px_2px_rgba(0,0,0,1)]">
+              <span className="text-sm sm:text-base md:text-lg font-black uppercase tracking-[0.2em] text-red-500 block [text-shadow:_0_2px_4px_rgba(0,0,0,0.9),_0_1px_2px_rgba(0,0,0,1)]">
                 Curso Internacional
               </span>
               <h1 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight leading-tight uppercase font-sans text-white [text-shadow:_0_2px_4px_rgba(0,0,0,0.95),_0_4px_16px_rgba(0,0,0,0.9),_0_1px_2px_rgba(0,0,0,1)]">
@@ -779,14 +737,20 @@ export default function CursoLanding() {
               </h1>
             </div>
 
-            {/* UBICACIÓN DE LA SEDE */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs md:text-sm font-medium text-slate-200">
+            {/* UBICACIÓN, FECHAS Y CUPOS LIMITADOS */}
+            <div className="flex flex-wrap items-center justify-between gap-3 text-xs md:text-sm font-medium text-slate-200">
               <span className="flex items-center gap-2 bg-slate-950/70 px-3.5 py-1.5 rounded-lg border border-white/20 backdrop-blur-md drop-shadow-xs">
-                <svg className="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                {(landing.ubicacionFechas ? landing.ubicacionFechas.split('|')[0].trim() : "Palermo, Sicilia, Italia")}
+                <span>Palermo, Sicilia, Italia</span>
+                <span className="text-white/40">•</span>
+                <span>17 – 23 de Mayo de 2027</span>
+              </span>
+
+              <span className="text-base sm:text-lg md:text-xl font-black italic uppercase tracking-[0.15em] text-red-500 sm:ml-auto text-right [text-shadow:_0_2px_4px_rgba(0,0,0,0.9),_0_1px_2px_rgba(0,0,0,1)]">
+                ¡Cupos Limitados!
               </span>
             </div>
 
@@ -904,32 +868,35 @@ export default function CursoLanding() {
         </div>
       </section>
 
-      {/* HUB INTERACTIVO DEL CURSO */}
-      <div id="hub-interactivo" className="max-w-7xl mx-auto px-4 md:px-8 py-8">
-        
-        {/* BARRA DE PESTAÑAS PRINCIPAL */}
-        <div className="sticky top-2 z-30 bg-white/95 backdrop-blur-md p-2 rounded-2xl shadow-lg border border-gray-200 mb-8 flex flex-wrap items-center justify-center gap-1.5 md:gap-2">
-          {PESTANAS.map((tab) => {
-            const esActivo = seccionActiva === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setSeccionActiva(tab.id)}
-                className={`flex items-center gap-2 py-2.5 px-3.5 md:px-4 rounded-xl text-xs md:text-sm font-bold tracking-wide transition-all cursor-pointer ${
-                  esActivo
-                    ? "bg-main-blue text-white shadow-md shadow-main-blue/25 scale-102"
-                    : "text-gray-600 hover:text-main-blue hover:bg-gray-100/80"
-                }`}
-              >
-                <span>{tab.icono}</span>
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
+      {/* HUB INTERACTIVO DEL CURSO (ESTILO PLANO DEL SITIO WEB: SIN SOMBRAS NI BORDES REDONDEADOS EN EL FONDO) */}
+      <div id="hub-interactivo" className="relative overflow-hidden grow pb-20">
+        <div className="bg-watermark" aria-hidden="true"></div>
 
-        {/* CONTENEDOR DE CONTENIDO SEGÚN LA PESTAÑA ACTIVA */}
-        <div className="bg-white rounded-3xl border border-gray-200 shadow-md p-6 md:p-10 min-h-[500px]">
+        <section className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-8 pb-16">
+          
+          {/* BARRA DE PESTAÑAS PRINCIPAL */}
+          <div className="sticky top-2 z-30 bg-white/95 backdrop-blur-md p-2 rounded-xl border border-gray-200 shadow-xs mb-8 flex flex-wrap items-center justify-center gap-1.5 md:gap-2">
+            {PESTANAS.map((tab) => {
+              const esActivo = seccionActiva === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setSeccionActiva(tab.id)}
+                  className={`flex items-center gap-2 py-2.5 px-3.5 md:px-4 rounded-lg text-xs md:text-sm font-bold tracking-wide transition-all cursor-pointer ${
+                    esActivo
+                      ? "bg-main-blue text-white shadow-xs"
+                      : "text-gray-600 hover:text-main-blue hover:bg-gray-100/80"
+                  }`}
+                >
+                  <span>{tab.icono}</span>
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* CONTENEDOR DE CONTENIDO SEGÚN LA PESTAÑA ACTIVA (FONDO PLANO, SIN TARJETA FLOTANTE) */}
+          <div className="min-h-[500px]">
           
           {/* ==========================================
               PESTAÑA 1: SOBRE EL CURSO / LEGADO / OBJETIVOS
@@ -2136,7 +2103,9 @@ export default function CursoLanding() {
 
         </div>
 
-      </div>
+      </section>
+
+    </div>
 
 
 
