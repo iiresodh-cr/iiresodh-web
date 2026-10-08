@@ -372,8 +372,13 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
   // 2. Solicitudes filtradas por método de pago, estado secundario y buscador
   const solicitudesFiltradas = useMemo(() => {
     return solicitudesDelCurso.filter(s => {
-      const cumpleEstado = filtroEstado === "todos" || (s.estado || "pendiente") === filtroEstado;
-      const cumpleMetodo = filtroMetodo === "todos" || (s.metodoPago || "transferencia") === filtroMetodo;
+      const esMetodoInteres = s.modalidadSolicitud === "registro_interes" || s.tipoRegistro === "interes" || s.metodoPago === "contacto_posterior";
+      const esMetodoTransferencia = s.metodoPago === "transferencia" || s.metodoPago === "transferencia_bancaria" || s.tipoRegistro === "transferencia";
+      const cumpleMetodo = filtroMetodo === "todos" ||
+        (filtroMetodo === "interes" && esMetodoInteres) ||
+        (filtroMetodo === "transferencia" && esMetodoTransferencia) ||
+        (filtroMetodo === "stripe" && (s.metodoPago === "stripe" || s.stripePaymentIntentId)) ||
+        (s.metodoPago || "transferencia") === filtroMetodo;
 
       const busq = busqueda.toLowerCase().trim();
       if (!busq) return cumpleEstado && cumpleMetodo;
@@ -1574,6 +1579,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                 className="w-full text-xs sm:text-sm px-3 py-2.5 rounded-xl border border-gray-200 bg-white font-medium text-gray-700 focus:outline-none focus:border-main-blue"
               >
                 <option value="todos">Todos los Métodos de Pago</option>
+                <option value="interes">📋 Manifestó Interés (Sin Pago)</option>
                 <option value="stripe">💳 Tarjeta / Stripe Online</option>
                 <option value="transferencia">🏛️ Transferencia Bancaria</option>
                 <option value="efectivo">💵 Efectivo / Otro</option>
@@ -1716,8 +1722,12 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                         </span>
                       )}
 
-                      {/* Badge Método de Pago */}
-                      {esStripe ? (
+                      {/* Badge Método de Pago / Registro */}
+                      {solicitud.modalidadSolicitud === "registro_interes" || solicitud.tipoRegistro === "interes" || solicitud.metodoPago === "contacto_posterior" ? (
+                        <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 flex items-center gap-1">
+                          📋 Manifiesta Interés
+                        </span>
+                      ) : esStripe ? (
                         <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-900 border border-indigo-200 flex items-center gap-1">
                           💳 Pago con Tarjeta (Stripe)
                         </span>
@@ -1986,6 +1996,26 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                             Fecha: {formatearFecha(solicitud.fechaAceptacionPrivacidad)}
                             {solicitud.registradoPorAdmin && ` | Autorizado por: ${solicitud.registradoPorAdmin}`}
                           </span>
+                        )}
+
+                        {/* TÉRMINOS DE CONTRATACIÓN (CLICKWRAP) PALERMO 2027 */}
+                        {(solicitud.terminosContratacionAceptados || solicitud.clickwrapAceptado) && (
+                          <div className="pt-2 border-t border-gray-100 mt-2 space-y-1">
+                            <span className="text-[10px] font-bold text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 inline-flex items-center gap-1 text-[10px]">
+                              <span>📜</span>
+                              <span>Términos y Clickwrap Aceptados</span>
+                            </span>
+                            {solicitud.clientIp && solicitud.clientIp !== "no_disponible" && (
+                              <span className="text-[9px] text-gray-500 font-mono block">
+                                IP Aceptación: <strong>{solicitud.clientIp}</strong>
+                              </span>
+                            )}
+                            {solicitud.fechaAceptacionISO && (
+                              <span className="text-[9px] text-gray-400 block">
+                                UTC: {solicitud.fechaAceptacionISO}
+                              </span>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>

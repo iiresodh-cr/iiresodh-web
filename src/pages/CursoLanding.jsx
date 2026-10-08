@@ -26,6 +26,7 @@ import logoIiresodh from "../assets/logo.webp";
 import logoIiresodhColor from "../assets/logo-color.png";
 import FormularioPagoCurso from "../components/cursos/FormularioPagoCurso";
 import SelectorModalidadPago from "../components/cursos/SelectorModalidadPago";
+import ModalTerminosClickwrap from "../components/cursos/ModalTerminosClickwrap";
 import { PAISES_LATINOAMERICA } from "../data/paisesLatinoamerica";
 import { Scale, ShieldCheck, Search, GraduationCap, Globe } from "lucide-react";
 
@@ -462,6 +463,18 @@ export default function CursoLanding() {
   const [metodoInscripcion, setMetodoInscripcion] = useState("interes"); // 'interes' | 'tarjeta' | 'transferencia'
   const [planCuotas, setPlanCuotas] = useState(1); // 1 = Pago único, 2 = 2 pagos, 3 = 3 pagos, 4 = 4 pagos
   const [modalBrochure, setModalBrochure] = useState(null); // null | 1 | 2
+  const [modalTerminosOpen, setModalTerminosOpen] = useState(false);
+  const [clientIp, setClientIp] = useState("");
+
+  // Obtener IP pública del cliente para constancia y registro del clickwrap
+  useEffect(() => {
+    fetch("https://api.ipify.org?format=json")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.ip) setClientIp(data.ip);
+      })
+      .catch(() => {});
+  }, []);
 
   // Carrousel de fotos de Palermo y Modal Lightbox
   const [slidePalermoActual, setSlidePalermoActual] = useState(0);
@@ -562,7 +575,7 @@ export default function CursoLanding() {
   }, [slug]);
 
   const handleSubmitSolicitud = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     if (!formData.nombres.trim() || !formData.apellidos.trim() || !formData.email.trim() || !formData.telefono.trim()) {
       setAlerta({ open: true, mensaje: "Por favor completa tus nombres, apellidos (conforme al pasaporte), correo electrónico y teléfono de contacto.", tipo: "warning" });
       return;
@@ -576,7 +589,7 @@ export default function CursoLanding() {
     if (!aceptarPrivacidadTransferencia) {
       setAlerta({
         open: true,
-        mensaje: "Debes aceptar la Política de Privacidad y autorizar el tratamiento de datos para enviar la solicitud.",
+        mensaje: "Debes aceptar los Términos de Contratación y la Política de Privacidad para continuar.",
         tipo: "warning"
       });
       return;
@@ -612,9 +625,19 @@ export default function CursoLanding() {
         alumnoIiresodh: formData.alumnoIiresodh,
         comentarios: formData.comentarios.trim(),
         modalidadSolicitud: esInteres ? "registro_interes" : "transferencia_bancaria",
-        metodoPago: esInteres ? "contacto_posterior" : "transferencia",
+        metodoPago: esInteres ? "contacto_posterior" : "transferencia_bancaria",
+        tipoRegistro: metodoInscripcion,
         montoTotalInversion: 3350,
         moneda: "USD",
+        // TÉRMINOS DE CONTRATACIÓN Y CLICKWRAP
+        terminosContratacionAceptados: true,
+        clickwrapAceptado: true,
+        versionTerminos: "TerminosContratacion-Palermo-2027-v1",
+        terminosTitulo: "Inscripción y Términos de Contratación — Curso Internacional Palermo 2027",
+        fechaAceptacionTerminos: serverTimestamp(),
+        fechaAceptacionISO: new Date().toISOString(),
+        clientIp: clientIp || "no_disponible",
+        userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
         aceptaPoliticaPrivacidad: true,
         fechaAceptacionPrivacidad: serverTimestamp(),
         versionPoliticaPrivacidad: "2026-09-12",
@@ -629,31 +652,14 @@ export default function CursoLanding() {
         open: true,
         mensaje: esInteres
           ? "¡Interés y reserva registrados con éxito! Nuestro departamento académico te contactará a la brevedad para coordinar los detalles."
-          : "¡Solicitud recibida con éxito! Nuestro departamento académico te contactará a la brevedad con la información bancaria y el expediente oficial.",
+          : "¡Solicitud recibida con éxito! Nuestro departamento académico te contactará a la brevedad con la información bancaria oficial.",
         tipo: "success"
       });
-      setFormData({
-        nombres: "",
-        apellidos: "",
-        nombre: "",
-        institucion: "",
-        email: "",
-        telefono: "",
-        pais: "Costa Rica",
-        comentarios: "",
-        profesion: "",
-        experienciaTemas: [],
-        experienciaOtro: "",
-        motivoParticipacion: "",
-        cursosPrevios: "no",
-        detalleCursosPrevios: "",
-        alumnoIiresodh: "no"
-      });
-    } catch (error) {
-      console.error("Error al enviar solicitud:", error);
+    } catch (err) {
+      console.error("Error al enviar solicitud:", err);
       setAlerta({
         open: true,
-        mensaje: "No se pudo procesar tu solicitud en este momento. Por favor intenta de nuevo o escríbenos directamente a formacion@iiresodh.org.",
+        mensaje: "Ocurrió un error al enviar la solicitud. Por favor intenta de nuevo o escríbenos directamente a formacion@iiresodh.org.",
         tipo: "error"
       });
     } finally {
@@ -682,8 +688,8 @@ export default function CursoLanding() {
 
   const landing = curso?.landingPage || DATOS_PALERMO_2027.landingPage;
   const esPublica = landing.publicada === true;
-  // Acceso permitido únicamente si la página está publicada o si el usuario es administrador autenticado
-  const tieneAcceso = esPublica || esAdmin;
+  // Acceso permitido únicamente si la página está publicada, si es admin o si se especifica ?preview=true
+  const tieneAcceso = esPublica || esAdmin || isPreviewParam;
 
   if (!tieneAcceso) {
     return (
@@ -1751,587 +1757,589 @@ export default function CursoLanding() {
               PESTAÑA 5: INSCRIPCIÓN Y PAGO (FORMULARIO)
              ========================================== */}
             {seccionActiva === "inscripcion" && (
-              <div className="space-y-6 animate-fade-in">
-                <div className="text-center max-w-2xl mx-auto mb-4">
+              <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
+                <div className="text-center max-w-2xl mx-auto mb-2">
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
-                    Reserva Oficial
+                    Proceso Oficial de Admisión
                   </span>
                   <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
-                    Opciones de Inscripción y Pago
+                    Inscripción y Admisión Académica
                   </h2>
                   <div className="w-12 h-1 bg-main-red mx-auto my-2 rounded-full" />
+                  <p className="text-xs sm:text-sm text-gray-500 font-light mt-1">
+                    Completa tus datos oficiales a continuación. Una vez registrados, podrás decidir si deseas únicamente manifestar interés o proceder con el pago (en cuotas con tarjeta o mediante transferencia bancaria).
+                  </p>
                 </div>
 
-
-                {/* SELECTOR DE MÉTODO DE INSCRIPCIÓN Y PAGO */}
-                <div className="flex justify-center mb-6">
-                  <div className="inline-flex flex-wrap justify-center p-1 bg-slate-100 rounded-2xl border border-gray-200 shadow-inner gap-1">
-                    <button
-                      type="button"
-                      onClick={() => setMetodoInscripcion("interes")}
-                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${metodoInscripcion === "interes"
-                        ? "bg-white text-emerald-800 shadow-md border border-gray-100 scale-100"
-                        : "text-gray-500 hover:text-gray-800"
-                        }`}
-                    >
-                      <span>📋 Mostrar Interés (Gestión Manual)</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setMetodoInscripcion("tarjeta")}
-                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${metodoInscripcion === "tarjeta"
-                        ? "bg-white text-main-blue shadow-md border border-gray-100 scale-100"
-                        : "text-gray-500 hover:text-gray-800"
-                        }`}
-                    >
-                      <span>💳 Pago en Línea (Cuotas)</span>
-                      <span className="hidden sm:inline-block text-[9px] bg-sky-100 text-sky-800 font-bold px-1.5 py-0.5 rounded border border-sky-200">
-                        0% Interés
+                {solicitudExitosa ? (
+                  <div className="p-8 bg-green-50 rounded-3xl border border-green-200 text-center space-y-4 animate-fade-in shadow-sm">
+                    <div className="w-16 h-16 bg-green-100 text-green-700 rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
+                      ✓
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-emerald-800 bg-emerald-100/80 px-3 py-1 rounded-full border border-emerald-200 inline-block mb-1">
+                        {metodoInscripcion === "interes" ? "Interés Registrado" : "Reserva Provisional"}
                       </span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setMetodoInscripcion("transferencia")}
-                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${metodoInscripcion === "transferencia"
-                        ? "bg-white text-amber-800 shadow-md border border-gray-100 scale-100"
-                        : "text-gray-500 hover:text-gray-800"
-                        }`}
-                    >
-                      <span>🏛️ Transferencia Institucional</span>
-                    </button>
+                      <h4 className="text-xl font-black text-green-950">
+                        {metodoInscripcion === "interes"
+                          ? "¡Interés y Reserva Registrados con Éxito!"
+                          : "¡Solicitud Registrada con Éxito!"}
+                      </h4>
+                    </div>
+                    <p className="text-xs sm:text-sm text-green-900 font-light max-w-lg mx-auto leading-relaxed">
+                      {metodoInscripcion === "interes"
+                        ? "Hemos recibido tus datos correctamente. Nuestro departamento académico te contactará a la brevedad vía correo electrónico o WhatsApp para coordinar tu participación, resolver consultas y brindarte atención personalizada."
+                        : "Hemos registrado tu solicitud y generado tu reserva provisional de cupo por 5 días naturales. En menos de 24 horas hábiles recibirás en tu correo los datos bancarios oficiales (códigos SWIFT e IBAN) de IIRESODH PAYMENTS, LLC (EE. UU.) o IIRESODH Costa Rica."}
+                    </p>
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setSolicitudExitosa(false)}
+                        className="bg-green-700 hover:bg-green-800 text-white font-bold text-xs uppercase tracking-wider py-3 px-6 rounded-xl transition cursor-pointer shadow-sm active:scale-95"
+                      >
+                        Completar otra inscripción o solicitud
+                      </button>
+                    </div>
                   </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
-                  {/* COLUMNA IZQUIERDA: RESUMEN Y BENEFICIOS DE MATRÍCULA */}
-                  <div className="lg:col-span-5 space-y-4">
-                    <div className="bg-slate-50 border border-gray-200 p-6 rounded-3xl shadow-xs space-y-4">
-                      <div className="flex items-center justify-between pb-3 border-b border-gray-200">
+                ) : (
+                  <div className="bg-white p-6 sm:p-10 rounded-3xl border border-gray-200 shadow-md space-y-8">
+                    
+                    {/* PASO 1: FORMULARIO DE DATOS OFICIALES */}
+                    <div className="space-y-5">
+                      <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
+                        <span className="w-7 h-7 rounded-full bg-main-blue text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+                          1
+                        </span>
                         <div>
-                          <span className="text-[10px] font-black uppercase tracking-widest text-main-red block">
-                            Matrícula Oficial
-                          </span>
-                          <h3 className="text-base font-extrabold text-main-blue">
-                            Inversión Académica
+                          <h3 className="text-base font-extrabold text-main-blue tracking-tight">
+                            Datos del Participante y Perfil Académico
                           </h3>
+                          <p className="text-[11px] text-gray-500 font-light">
+                            Conforme a tu documento oficial de identidad o pasaporte
+                          </p>
                         </div>
-                        <span className="text-2xl font-black text-main-blue">
-                          {normalizarPrecio(landing.precioInversion)}
+                      </div>
+
+                      {/* AVISO PASAPORTE */}
+                      <div className="bg-sky-50/70 border border-sky-200/80 rounded-xl px-3.5 py-2.5 text-xs text-sky-900 flex items-center gap-2">
+                        <span className="text-base">🛂</span>
+                        <span className="text-[11px] font-medium leading-tight">
+                          Ingresa tus nombres y apellidos <strong>exactamente conforme aparecen en tu pasaporte</strong> para la emisión de certificaciones oficiales, reservas y acreditación internacional.
                         </span>
                       </div>
 
-                      {/* BADGE DE DISPONIBILIDAD DE CUPOS */}
-                      <div className="bg-rose-50 border border-rose-200/80 rounded-xl px-3.5 py-2.5 flex items-center justify-between text-xs">
-                        <span className="flex items-center gap-2 font-bold text-rose-800 text-[11px]">
-                          <span className="w-2 h-2 rounded-full bg-rose-600 animate-pulse" />
-                          Disponibilidad: Cupos Limitados
-                        </span>
-                        <span className="text-[10px] font-bold text-rose-700 bg-rose-100/90 px-2 py-0.5 rounded-md border border-rose-200/60">
-                          Plazas reducidas
-                        </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                          <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                            Nombres * <span className="text-gray-400 font-normal lowercase">(según pasaporte)</span>
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={formData.nombres}
+                            onChange={(e) => setFormData({ ...formData, nombres: e.target.value })}
+                            placeholder="Ej: Carlos Alberto"
+                            className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                            Apellidos * <span className="text-gray-400 font-normal lowercase">(según pasaporte)</span>
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={formData.apellidos}
+                            onChange={(e) => setFormData({ ...formData, apellidos: e.target.value })}
+                            placeholder="Ej: Mendoza Alvarado"
+                            className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+                          />
+                        </div>
                       </div>
 
-                      {/* QUÉ INCLUYE */}
-                      <div className="space-y-2 pt-1 text-xs text-gray-600">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">
-                          Beneficios Incluidos:
-                        </span>
-                        <ul className="space-y-2 text-[11px]">
-                          <li className="flex items-start gap-2">
-                            <span className="text-sky-700 font-bold">✓</span>
-                            <span>Sesiones magistrales y talleres de litigio con fiscales y jueces antimafia.</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="text-sky-700 font-bold">✓</span>
-                            <span>Visitas institucionales en Palermo y tribunales de justicia histórica.</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="text-sky-700 font-bold">✓</span>
-                            <span>Certificación académica internacional de alta especialización emitida por IIRESODH.</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="text-sky-700 font-bold">✓</span>
-                            <span>Expediente documental, lecturas y materiales exclusivos de investigación.</span>
-                          </li>
-                        </ul>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                          <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                            Profesión / Cargo Actual <span className="text-gray-400 font-normal lowercase">(opcional)</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.profesion}
+                            onChange={(e) => setFormData({ ...formData, profesion: e.target.value })}
+                            placeholder="Ej: Juez Penal / Fiscal / Abogado Litigante"
+                            className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                            Institución / Despacho / Universidad
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.institucion}
+                            onChange={(e) => setFormData({ ...formData, institucion: e.target.value })}
+                            placeholder="Poder Judicial / Fiscalía / Bufete"
+                            className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+                          />
+                        </div>
                       </div>
-                    </div>
 
-                    {/* CUADROS DE FINANCIAMIENTO EN LA COLUMNA IZQUIERDA */}
-                    <SelectorModalidadPago
-                      curso={curso}
-                      landing={landing}
-                      planCuotas={planCuotas}
-                      setPlanCuotas={setPlanCuotas}
-                    />
-                  </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                          <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                            Correo Electrónico *
+                          </label>
+                          <input
+                            type="email"
+                            required
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            placeholder="tu.correo@institucion.org"
+                            className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+                          />
+                        </div>
 
-                  {/* COLUMNA DERECHA: FORMULARIO DINÁMICO */}
-                  <div className="lg:col-span-7 bg-white p-6 md:p-8 rounded-3xl border border-gray-200 shadow-md">
-                    {/* CABECERA DINÁMICA CON SELECTOR DE 3 MODALIDADES EN LA ESQUINA SUPERIOR DERECHA */}
-                    <div className="mb-5 pb-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                          <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                            Teléfono / WhatsApp *
+                          </label>
+                          <input
+                            type="tel"
+                            required
+                            value={formData.telefono}
+                            onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+                            placeholder="+506 8888-8888"
+                            className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+                          />
+                        </div>
+                      </div>
+
                       <div>
-                        {metodoInscripcion === "interes" && (
-                          <>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700 block mb-0.5">
-                              Gestión y Asesoría Personalizada
-                            </span>
-                            <h4 className="text-xl font-black text-main-blue tracking-tight">
-                              Registro de Interés y Reserva de Cupo
-                            </h4>
-                            <p className="text-xs text-gray-500 font-light mt-0.5">
-                              Ingresa tus datos para apartar tu plaza. Te contactaremos posteriormente para coordinar tu participación y opciones de pago.
-                            </p>
-                          </>
-                        )}
-                        {metodoInscripcion === "tarjeta" && (
-                          <>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-main-red block mb-0.5">
-                              Inscripción Inmediata
-                            </span>
-                            <h4 className="text-xl font-black text-main-blue tracking-tight">
-                              Pago Directo con Tarjeta en Línea
-                            </h4>
-                            <p className="text-xs text-gray-500 font-light mt-0.5">
-                              Completa tus datos personales, académicos y de tarjeta para asegurar tu cupo oficial al instante.
-                            </p>
-                          </>
-                        )}
-                        {metodoInscripcion === "transferencia" && (
-                          <>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-amber-800 block mb-0.5">
-                              Vía Bancaria Oficial
-                            </span>
-                            <h4 className="text-xl font-black text-main-blue tracking-tight">
-                              Solicitud de Datos de Transferencia y Reserva de Cupo
-                            </h4>
-                            <p className="text-xs text-gray-500 font-light mt-0.5">
-                              Recibe en tu correo la orden bancaria SWIFT/IBAN para tramitar y asegurar tu lugar dentro del cupo limitado.
-                            </p>
-                          </>
-                        )}
+                        <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                          País de Residencia *
+                        </label>
+                        <select
+                          value={formData.pais}
+                          onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
+                          className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+                        >
+                          {PAISES_LATINOAMERICA.map((p) => (
+                            <option key={p} value={p}>{p}</option>
+                          ))}
+                        </select>
                       </div>
 
-                      {/* SELECTOR SEGMENTADO DE 3 VÍAS */}
-                      <div className="inline-flex items-center p-1 bg-slate-100 border border-slate-200/90 rounded-2xl shrink-0 self-start sm:self-center shadow-2xs gap-0.5">
-                        <button
-                          type="button"
-                          onClick={() => setMetodoInscripcion("interes")}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${metodoInscripcion === "interes"
-                            ? "bg-white text-emerald-800 font-extrabold shadow-xs border border-slate-200/80"
-                            : "text-gray-500 hover:text-gray-700"
-                            }`}
-                        >
-                          Mostrar Interés
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setMetodoInscripcion("tarjeta")}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${metodoInscripcion === "tarjeta"
-                            ? "bg-white text-main-blue font-extrabold shadow-xs border border-slate-200/80"
-                            : "text-gray-500 hover:text-gray-700"
-                            }`}
-                        >
-                          Tarjeta
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setMetodoInscripcion("transferencia")}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${metodoInscripcion === "transferencia"
-                            ? "bg-white text-amber-800 font-extrabold shadow-xs border border-slate-200/80"
-                            : "text-gray-500 hover:text-gray-700"
-                            }`}
-                        >
-                          Transferencia
-                        </button>
-                      </div>
-                    </div>
-
-                    {metodoInscripcion === "tarjeta" ? (
-                      <FormularioPagoCurso
-                        curso={curso}
-                        landing={landing}
-                        planCuotas={planCuotas}
-                        setPlanCuotas={setPlanCuotas}
-                        formData={formData}
-                        setFormData={setFormData}
-                      />
-                    ) : (
-                      <div>
-
-                        {solicitudExitosa ? (
-                          <div className="p-6 bg-green-50 rounded-2xl border border-green-200 text-center space-y-3">
-                            <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto text-xl">
-                              ✓
-                            </div>
-                            <h4 className="text-base font-bold text-green-900">
-                              {metodoInscripcion === "interes"
-                                ? "¡Interés y Reserva Registrados con Éxito!"
-                                : "¡Solicitud Registrada con Éxito!"}
-                            </h4>
-                            <p className="text-xs text-green-800 font-light max-w-sm mx-auto">
-                              {metodoInscripcion === "interes"
-                                ? "Hemos recibido tus datos correctamente. Nuestro departamento académico te contactará a la brevedad vía correo electrónico o WhatsApp para coordinar tu participación y brindarte atención personalizada."
-                                : "En menos de 24 horas hábiles recibirás en tu correo los datos bancarios y el expediente del curso."}
-                            </p>
-                            <button
-                              onClick={() => setSolicitudExitosa(false)}
-                              className="bg-green-700 hover:bg-green-800 text-white font-bold text-xs uppercase tracking-wider py-2 px-4 rounded-lg transition cursor-pointer"
-                            >
-                              Enviar otra solicitud
-                            </button>
-                          </div>
-                        ) : (
-                          <form onSubmit={handleSubmitSolicitud} className="space-y-4 text-left">
-                            {/* AVISO PASAPORTE */}
-                            <div className="bg-sky-50/70 border border-sky-200/80 rounded-xl px-3.5 py-2.5 text-xs text-sky-900 flex items-center gap-2">
-                              <span className="text-base">🛂</span>
-                              <span className="text-[11px] font-medium leading-tight">
-                                Ingresa tus nombres y apellidos <strong>exactamente conforme aparecen en tu pasaporte</strong> para la emisión de certificaciones oficiales, reservas y acreditación internacional.
-                              </span>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              <div>
-                                <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                  Nombres * <span className="text-gray-400 font-normal lowercase">(según pasaporte)</span>
-                                </label>
-                                <input
-                                  type="text"
-                                  required
-                                  value={formData.nombres}
-                                  onChange={(e) => setFormData({ ...formData, nombres: e.target.value })}
-                                  placeholder="Ej: Carlos Alberto"
-                                  className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
-                                />
-                              </div>
-
-                              <div>
-                                <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                  Apellidos * <span className="text-gray-400 font-normal lowercase">(según pasaporte)</span>
-                                </label>
-                                <input
-                                  type="text"
-                                  required
-                                  value={formData.apellidos}
-                                  onChange={(e) => setFormData({ ...formData, apellidos: e.target.value })}
-                                  placeholder="Ej: Mendoza Alvarado"
-                                  className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
-                                />
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              <div>
-                                <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                  Profesión / Cargo Actual <span className="text-gray-400 font-normal lowercase">(opcional)</span>
-                                </label>
-                                <input
-                                  type="text"
-                                  value={formData.profesion}
-                                  onChange={(e) => setFormData({ ...formData, profesion: e.target.value })}
-                                  placeholder="Ej: Juez Penal / Fiscal / Abogado Litigante"
-                                  className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
-                                />
-                              </div>
-
-                              <div>
-                                <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                  Institución / Despacho / Universidad
-                                </label>
-                                <input
-                                  type="text"
-                                  value={formData.institucion}
-                                  onChange={(e) => setFormData({ ...formData, institucion: e.target.value })}
-                                  placeholder="Poder Judicial / Fiscalía / Bufete"
-                                  className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
-                                />
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              <div>
-                                <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                  Correo Electrónico *
-                                </label>
-                                <input
-                                  type="email"
-                                  required
-                                  value={formData.email}
-                                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                  placeholder="tu.correo@institucion.org"
-                                  className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
-                                />
-                              </div>
-
-                              <div>
-                                <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                  Teléfono / WhatsApp *
-                                </label>
-                                <input
-                                  type="tel"
-                                  required
-                                  value={formData.telefono}
-                                  onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
-                                  placeholder="+506 8888-8888"
-                                  className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
-                                />
-                              </div>
-                            </div>
-
-                            <div>
-                              <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                País de Residencia *
-                              </label>
-                              <select
-                                value={formData.pais}
-                                onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
-                                className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+                      {/* EXPERIENCIA EN TEMAS */}
+                      <div className="pt-1">
+                        <span className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                          Experiencia o vinculación en estos temas:
+                        </span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {["Crimen organizado", "Trata de personas", "Lavado de activos", "Litigio estratégico", "Otro"].map((tema) => {
+                            const checked = formData.experienciaTemas.includes(tema);
+                            return (
+                              <label
+                                key={tema}
+                                className={`flex items-center gap-2 p-2 rounded-xl border text-xs cursor-pointer select-none transition-all ${checked
+                                  ? "bg-blue-50/70 border-main-blue text-main-blue font-bold shadow-xs"
+                                  : "bg-white border-gray-200 text-gray-700 hover:border-gray-300"
+                                  }`}
                               >
-                                {PAISES_LATINOAMERICA.map((p) => (
-                                  <option key={p} value={p}>{p}</option>
-                                ))}
-                              </select>
-                            </div>
-
-                            {/* EXPERIENCIA EN TEMAS */}
-                            <div className="pt-2">
-                              <span className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                                Experiencia o vinculación en estos temas:
-                              </span>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                {["Crimen organizado", "Trata de personas", "Lavado de activos", "Litigio estratégico", "Otro"].map((tema) => {
-                                  const checked = formData.experienciaTemas.includes(tema);
-                                  return (
-                                    <label
-                                      key={tema}
-                                      className={`flex items-center gap-2 p-2 rounded-xl border text-xs cursor-pointer select-none transition-all ${checked
-                                        ? "bg-blue-50/70 border-main-blue text-main-blue font-bold shadow-xs"
-                                        : "bg-white border-gray-200 text-gray-700 hover:border-gray-300"
-                                        }`}
-                                    >
-                                      <input
-                                        type="checkbox"
-                                        checked={checked}
-                                        onChange={() => {
-                                          const existe = formData.experienciaTemas.includes(tema);
-                                          setFormData({
-                                            ...formData,
-                                            experienciaTemas: existe
-                                              ? formData.experienciaTemas.filter((t) => t !== tema)
-                                              : [...formData.experienciaTemas, tema]
-                                          });
-                                        }}
-                                        className="w-4 h-4 rounded border-gray-300 text-main-blue focus:ring-main-blue cursor-pointer"
-                                      />
-                                      <span>{tema}</span>
-                                    </label>
-                                  );
-                                })}
-                              </div>
-
-                              {formData.experienciaTemas.includes("Otro") && (
-                                <div className="mt-2 animate-fade-in">
-                                  <input
-                                    type="text"
-                                    value={formData.experienciaOtro}
-                                    onChange={(e) => setFormData({ ...formData, experienciaOtro: e.target.value })}
-                                    placeholder="Especifica el área..."
-                                    className="w-full text-xs px-3 py-1.5 rounded-lg border border-blue-200 bg-blue-50/30 focus:outline-none focus:ring-1 focus:ring-main-blue"
-                                  />
-                                </div>
-                              )}
-                            </div>
-
-                            {/* MOTIVACIÓN */}
-                            <div>
-                              <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                ¿Por qué deseas participar en el curso? *
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() => {
+                                    const existe = formData.experienciaTemas.includes(tema);
+                                    setFormData({
+                                      ...formData,
+                                      experienciaTemas: existe
+                                        ? formData.experienciaTemas.filter((t) => t !== tema)
+                                        : [...formData.experienciaTemas, tema]
+                                    });
+                                  }}
+                                  className="w-4 h-4 rounded border-gray-300 text-main-blue focus:ring-main-blue cursor-pointer"
+                                />
+                                <span>{tema}</span>
                               </label>
-                              <textarea
-                                rows={3}
-                                required
-                                value={formData.motivoParticipacion}
-                                onChange={(e) => setFormData({ ...formData, motivoParticipacion: e.target.value })}
-                                placeholder="Describe tus expectativas, objetivos profesionales o aplicación práctica en tus labores..."
-                                className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue resize-none bg-white"
-                              />
-                            </div>
+                            );
+                          })}
+                        </div>
 
-                            {/* PREGUNTAS ACADÉMICAS CONDICIONALES */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-2xl border border-gray-200 text-xs">
-                              <div className="space-y-1.5">
-                                <span className="block font-bold text-gray-800 leading-tight">
-                                  ¿Cursos internacionales previos en estos temas?
-                                </span>
-                                <div className="flex items-center gap-3">
-                                  <label className="flex items-center gap-1 cursor-pointer font-medium text-gray-700">
-                                    <input
-                                      type="radio"
-                                      name="cursosPreviosTrans"
-                                      value="si"
-                                      checked={formData.cursosPrevios === "si"}
-                                      onChange={() => setFormData({ ...formData, cursosPrevios: "si" })}
-                                    />
-                                    <span>Sí</span>
-                                  </label>
-                                  <label className="flex items-center gap-1 cursor-pointer font-medium text-gray-700">
-                                    <input
-                                      type="radio"
-                                      name="cursosPreviosTrans"
-                                      value="no"
-                                      checked={formData.cursosPrevios === "no"}
-                                      onChange={() => setFormData({ ...formData, cursosPrevios: "no", detalleCursosPrevios: "" })}
-                                    />
-                                    <span>No</span>
-                                  </label>
-                                </div>
-                                {formData.cursosPrevios === "si" && (
-                                  <input
-                                    type="text"
-                                    value={formData.detalleCursosPrevios}
-                                    onChange={(e) => setFormData({ ...formData, detalleCursosPrevios: e.target.value })}
-                                    placeholder="¿Cuáles cursos?"
-                                    className="w-full text-xs px-2.5 py-1 rounded border border-gray-300 bg-white"
-                                  />
-                                )}
-                              </div>
-
-                              <div className="space-y-1.5">
-                                <span className="block font-bold text-gray-800 leading-tight">
-                                  ¿Has sido alumno(a) de IIRESODH?
-                                </span>
-                                <div className="flex items-center gap-3 pt-1">
-                                  <label className="flex items-center gap-1 cursor-pointer font-bold text-emerald-700">
-                                    <input
-                                      type="radio"
-                                      name="alumnoIiresodhTrans"
-                                      value="si"
-                                      checked={formData.alumnoIiresodh === "si"}
-                                      onChange={() => setFormData({ ...formData, alumnoIiresodh: "si" })}
-                                    />
-                                    <span>Sí (Comunidad)</span>
-                                  </label>
-                                  <label className="flex items-center gap-1 cursor-pointer font-medium text-gray-700">
-                                    <input
-                                      type="radio"
-                                      name="alumnoIiresodhTrans"
-                                      value="no"
-                                      checked={formData.alumnoIiresodh === "no"}
-                                      onChange={() => setFormData({ ...formData, alumnoIiresodh: "no" })}
-                                    />
-                                    <span>No</span>
-                                  </label>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div>
-                              <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                {metodoInscripcion === "interes"
-                                  ? "Comentarios, consultas previas o requerimientos (opcional)"
-                                  : "Comentarios o Requerimientos de Facturación Institucional"}
-                              </label>
-                              <textarea
-                                rows={2}
-                                value={formData.comentarios}
-                                onChange={(e) => setFormData({ ...formData, comentarios: e.target.value })}
-                                placeholder={
-                                  metodoInscripcion === "interes"
-                                    ? "Dudas sobre fechas, hospedaje, proceso de admisión o facilidades de pago..."
-                                    : "Requerimientos de orden de compra, certificado SWIFT/IBAN o consulta de hospedaje..."
-                                }
-                                className="w-full text-base sm:text-sm px-3.5 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-1 focus:ring-main-blue resize-none bg-white"
-                              />
-                            </div>
-
-                            {/* CLÁUSULA INFORMATIVA DE PROTECCIÓN DE DATOS - LEY N° 8968 (COSTA RICA) (COLAPSABLE, CERRADA POR DEFECTO) */}
-                            <details className="group bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-gray-600 leading-relaxed text-left">
-                              <summary className="font-bold text-gray-800 flex items-center justify-between cursor-pointer select-none text-xs list-none">
-                                <span className="flex items-center gap-1.5">
-                                  <span>🛡️</span> Protección de Datos Personales (Ley N° 8968 / Costa Rica)
-                                </span>
-                                <span className="text-gray-400 group-open:rotate-180 transition-transform text-xs">▼</span>
-                              </summary>
-                              <div className="pt-2.5 space-y-2 border-t border-slate-200/60 mt-2">
-                                <p className="text-[11px] leading-relaxed">
-                                  De conformidad con la Ley N° 8968 (Protección de la Persona frente al Tratamiento de sus Datos Personales), se le informa que sus datos personales y de perfil académico serán incorporados a las bases de datos de la <strong>Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH)</strong>, Cédula de Persona Jurídica 3-002-671392, con la finalidad exclusiva de remitirle la información bancaria para la reserva de cupo, emitir el expediente del curso y coordinar su participación académica.
-                                </p>
-                                <p className="text-[11px] leading-relaxed text-gray-500">
-                                  La entrega de datos es voluntaria, con la consecuencia de que no facilitarlos imposibilita remitirle el expediente bancario e inscribirle. Sus datos no serán cedidos a terceros con fines comerciales o publicitarios. Puede ejercer en cualquier momento sus derechos de Acceso, Rectificación, Cancelación y Oposición (ARCO) escribiendo a <a href="mailto:contacto@iiresodh.org" className="text-main-blue font-bold hover:underline">contacto@iiresodh.org</a>.
-                                </p>
-                              </div>
-                            </details>
-
-                            <label className="flex items-start gap-2.5 text-xs text-gray-700 font-medium cursor-pointer select-none text-left">
-                              <input
-                                type="checkbox"
-                                checked={aceptarPrivacidadTransferencia}
-                                onChange={(e) => setAceptarPrivacidadTransferencia(e.target.checked)}
-                                className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-main-blue focus:ring-main-blue cursor-pointer"
-                              />
-                              <span className="leading-snug">
-                                He leído y acepto la{" "}
-                                <a
-                                  href="/privacidad"
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-main-blue font-bold underline hover:text-light-blue"
-                                >
-                                  Política de Privacidad y Protección de Datos Personales
-                                </a>{" "}
-                                de IIRESODH y autorizo expresamente el tratamiento de mis datos para los fines de este curso.
-                              </span>
-                            </label>
-
-                            {/* BANNER INFORMATIVO SEGÚN MODALIDAD */}
-                            {metodoInscripcion === "interes" ? (
-                              <div className="bg-emerald-50/80 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-900 flex items-start gap-2.5">
-                                <span className="text-base">🤝</span>
-                                <span className="text-[11px] leading-relaxed">
-                                  <strong>Gestión y Asesoría Personalizada:</strong> Al enviar este formulario registras tu interés y apartas temporalmente tu plaza. No se te solicitará ningún cobro con tarjeta ni números de cuenta en este momento; nuestro equipo te contactará para formalizar tu proceso.
-                                </span>
-                              </div>
-                            ) : (
-                              <div className="bg-amber-50/80 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 flex items-start gap-2.5">
-                                <span className="text-base">🏛️</span>
-                                <span className="text-[11px] leading-relaxed">
-                                  <strong>Orden de Transferencia Oficial:</strong> Al registrar tu solicitud, recibirás por correo electrónico las instrucciones con las cuentas bancarias oficiales (códigos SWIFT e IBAN) para realizar la transferencia de tu matrícula.
-                                </span>
-                              </div>
-                            )}
-
-                            <button
-                              type="submit"
-                              disabled={enviandoSolicitud}
-                              className={`w-full text-white font-bold text-xs uppercase tracking-widest py-3.5 px-5 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation ${metodoInscripcion === "interes"
-                                ? "bg-emerald-700 hover:bg-emerald-800"
-                                : "bg-main-blue hover:bg-light-blue"
-                                }`}
-                            >
-                              {enviandoSolicitud ? (
-                                <>
-                                  <CircularProgress size={14} sx={{ color: "white" }} />
-                                  <span>Procesando solicitud...</span>
-                                </>
-                              ) : (
-                                <span>
-                                  {metodoInscripcion === "interes"
-                                    ? "📋 Registrar Mi Interés y Apartar Cupo"
-                                    : "🏛️ Enviar Solicitud de Datos Bancarios"}
-                                </span>
-                              )}
-                            </button>
-                          </form>
+                        {formData.experienciaTemas.includes("Otro") && (
+                          <div className="mt-2 animate-fade-in">
+                            <input
+                              type="text"
+                              value={formData.experienciaOtro}
+                              onChange={(e) => setFormData({ ...formData, experienciaOtro: e.target.value })}
+                              placeholder="Especifica el área..."
+                              className="w-full text-xs px-3 py-1.5 rounded-lg border border-blue-200 bg-blue-50/30 focus:outline-none focus:ring-1 focus:ring-main-blue"
+                            />
+                          </div>
                         )}
-
                       </div>
-                    )}
+
+                      {/* MOTIVACIÓN */}
+                      <div>
+                        <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                          ¿Por qué deseas participar en el curso? *
+                        </label>
+                        <textarea
+                          rows={3}
+                          required
+                          value={formData.motivoParticipacion}
+                          onChange={(e) => setFormData({ ...formData, motivoParticipacion: e.target.value })}
+                          placeholder="Describe tus expectativas, objetivos profesionales o aplicación práctica en tus labores..."
+                          className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue resize-none bg-white"
+                        />
+                      </div>
+
+                      {/* PREGUNTAS ACADÉMICAS CONDICIONALES */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-2xl border border-gray-200 text-xs">
+                        <div className="space-y-1.5">
+                          <span className="block font-bold text-gray-800 leading-tight">
+                            ¿Cursos internacionales previos en estos temas?
+                          </span>
+                          <div className="flex items-center gap-3">
+                            <label className="flex items-center gap-1 cursor-pointer font-medium text-gray-700">
+                              <input
+                                type="radio"
+                                name="cursosPreviosLanding"
+                                value="si"
+                                checked={formData.cursosPrevios === "si"}
+                                onChange={() => setFormData({ ...formData, cursosPrevios: "si" })}
+                              />
+                              <span>Sí</span>
+                            </label>
+                            <label className="flex items-center gap-1 cursor-pointer font-medium text-gray-700">
+                              <input
+                                type="radio"
+                                name="cursosPreviosLanding"
+                                value="no"
+                                checked={formData.cursosPrevios === "no"}
+                                onChange={() => setFormData({ ...formData, cursosPrevios: "no", detalleCursosPrevios: "" })}
+                              />
+                              <span>No</span>
+                            </label>
+                          </div>
+                          {formData.cursosPrevios === "si" && (
+                            <input
+                              type="text"
+                              value={formData.detalleCursosPrevios}
+                              onChange={(e) => setFormData({ ...formData, detalleCursosPrevios: e.target.value })}
+                              placeholder="¿Cuáles cursos?"
+                              className="w-full text-xs px-2.5 py-1 rounded border border-gray-300 bg-white"
+                            />
+                          )}
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <span className="block font-bold text-gray-800 leading-tight">
+                            ¿Has sido alumno(a) de IIRESODH?
+                          </span>
+                          <div className="flex items-center gap-3 pt-1">
+                            <label className="flex items-center gap-1 cursor-pointer font-bold text-emerald-700">
+                              <input
+                                type="radio"
+                                name="alumnoIiresodhLanding"
+                                value="si"
+                                checked={formData.alumnoIiresodh === "si"}
+                                onChange={() => setFormData({ ...formData, alumnoIiresodh: "si" })}
+                              />
+                              <span>Sí (Comunidad)</span>
+                            </label>
+                            <label className="flex items-center gap-1 cursor-pointer font-medium text-gray-700">
+                              <input
+                                type="radio"
+                                name="alumnoIiresodhLanding"
+                                value="no"
+                                checked={formData.alumnoIiresodh === "no"}
+                                onChange={() => setFormData({ ...formData, alumnoIiresodh: "no" })}
+                              />
+                              <span>No</span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                          Comentarios, consultas previas o requerimientos (opcional)
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={formData.comentarios}
+                          onChange={(e) => setFormData({ ...formData, comentarios: e.target.value })}
+                          placeholder="Dudas sobre fechas, hospedaje, requerimientos de facturación institucional o facilidades de pago..."
+                          className="w-full text-base sm:text-sm px-3.5 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-1 focus:ring-main-blue resize-none bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    {/* PASO 2: TÉRMINOS DE CONTRATACIÓN Y CLICKWRAP */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
+                        <span className="w-7 h-7 rounded-full bg-main-blue text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+                          2
+                        </span>
+                        <div>
+                          <h3 className="text-base font-extrabold text-main-blue tracking-tight">
+                            Términos de Contratación y Consentimiento Informado
+                          </h3>
+                          <p className="text-[11px] text-gray-500 font-light">
+                            Condiciones contractuales, canales de pago y política de privacidad
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200/80">
+                          <span className="text-xs font-bold text-gray-800 flex items-center gap-2">
+                            <span>📜</span> Contrato de Servicios Académicos — Palermo 2027
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setModalTerminosOpen(true)}
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-main-blue hover:text-main-red underline cursor-pointer self-start sm:self-auto"
+                          >
+                            <span>Ver Términos de Contratación (Clickwrap)</span>
+                            <span>↗</span>
+                          </button>
+                        </div>
+
+                        <label className="flex items-start gap-2.5 text-xs text-gray-700 font-medium cursor-pointer select-none text-left">
+                          <input
+                            type="checkbox"
+                            checked={aceptarPrivacidadTransferencia}
+                            onChange={(e) => setAceptarPrivacidadTransferencia(e.target.checked)}
+                            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-main-blue focus:ring-main-blue cursor-pointer"
+                          />
+                          <span className="leading-relaxed">
+                            He leído y acepto los{" "}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setModalTerminosOpen(true);
+                              }}
+                              className="text-main-blue font-bold underline hover:text-main-red cursor-pointer"
+                            >
+                              Términos de Contratación
+                            </button>{" "}
+                            del Curso Internacional Palermo 2027 y la{" "}
+                            <a
+                              href="/privacidad"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-main-blue font-bold underline hover:text-light-blue"
+                            >
+                              Política de Privacidad
+                            </a>{" "}
+                            de IIRESODH. Manifiesto mi voluntad libre e informada de contratar y registrarme bajo estas condiciones.
+                          </span>
+                        </label>
+                        <p className="text-[10px] text-gray-400 font-light">
+                          * Tu fecha, hora, dirección IP y datos de registro quedarán archivados electrónicamente como constancia y evidencia formal de tu aceptación contractual.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* PASO 3: DECISIÓN DE INSCRIPCIÓN Y MEDIO DE PAGO */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
+                        <span className="w-7 h-7 rounded-full bg-main-blue text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+                          3
+                        </span>
+                        <div>
+                          <h3 className="text-base font-extrabold text-main-blue tracking-tight">
+                            ¿Cómo deseas proceder con tu inscripción?
+                          </h3>
+                          <p className="text-[11px] text-gray-500 font-light">
+                            Selecciona si deseas manifestar interés, solicitar transferencia bancaria o pagar en línea con tarjeta
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* SELECTOR DE 3 OPCIONES */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        {/* Opción 1: Manifestar Interés */}
+                        <div
+                          onClick={() => setMetodoInscripcion("interes")}
+                          className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${metodoInscripcion === "interes"
+                            ? "border-emerald-600 bg-emerald-50/60 shadow-xs"
+                            : "border-gray-200 hover:border-gray-300 bg-white"
+                            }`}
+                        >
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-2xl">📋</span>
+                              <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${metodoInscripcion === "interes" ? "border-emerald-600 bg-emerald-600" : "border-gray-300"
+                                }`}>
+                                {metodoInscripcion === "interes" && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                              </span>
+                            </div>
+                            <h4 className="font-extrabold text-sm text-gray-900">
+                              Manifestar Interés
+                            </h4>
+                            <p className="text-[11px] text-gray-500 font-light leading-relaxed">
+                              Reserva provisional sin pago inmediato. Te contactaremos para brindarte asesoría y coordinar tu proceso.
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Opción 2: Transferencia Bancaria */}
+                        <div
+                          onClick={() => setMetodoInscripcion("transferencia")}
+                          className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${metodoInscripcion === "transferencia"
+                            ? "border-amber-600 bg-amber-50/60 shadow-xs"
+                            : "border-gray-200 hover:border-gray-300 bg-white"
+                            }`}
+                        >
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-2xl">🏛️</span>
+                              <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${metodoInscripcion === "transferencia" ? "border-amber-600 bg-amber-600" : "border-gray-300"
+                                }`}>
+                                {metodoInscripcion === "transferencia" && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                              </span>
+                            </div>
+                            <h4 className="font-extrabold text-sm text-gray-900">
+                              Transferencia Bancaria
+                            </h4>
+                            <p className="text-[11px] text-gray-500 font-light leading-relaxed">
+                              Solicita cuentas bancarias autorizadas en EE. UU. (SWIFT) o Costa Rica. Reserva provisional por 5 días.
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Opción 3: Pagar con Tarjeta */}
+                        <div
+                          onClick={() => setMetodoInscripcion("tarjeta")}
+                          className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${metodoInscripcion === "tarjeta"
+                            ? "border-main-blue bg-blue-50/60 shadow-xs"
+                            : "border-gray-200 hover:border-gray-300 bg-white"
+                            }`}
+                        >
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-2xl">💳</span>
+                              <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${metodoInscripcion === "tarjeta" ? "border-main-blue bg-main-blue" : "border-gray-300"
+                                }`}>
+                                {metodoInscripcion === "tarjeta" && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                              </span>
+                            </div>
+                            <h4 className="font-extrabold text-sm text-gray-900">
+                              Pagar con Tarjeta
+                            </h4>
+                            <p className="text-[11px] text-gray-500 font-light leading-relaxed">
+                              Asegura tu cupo de inmediato. Habilita opciones de financiamiento en cuotas sin interés y pago seguro Stripe.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* DETALLE DINÁMICO SEGÚN LA DECISIÓN DEL INTERESADO */}
+                      {metodoInscripcion === "interes" && (
+                        <div className="space-y-4 pt-2 animate-fade-in">
+                          <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-4 text-xs text-emerald-900 flex items-start gap-3">
+                            <span className="text-xl shrink-0">🤝</span>
+                            <div className="space-y-1">
+                              <span className="font-bold text-sm block">Reserva Provisional y Asesoría Personalizada</span>
+                              <p className="text-[11px] leading-relaxed">
+                                Al enviar este formulario registras tu interés y apartas temporalmente tu plaza en el Curso Internacional Palermo 2027. No se te solicitará ningún cobro con tarjeta en este momento; nuestro equipo académico te contactará para coordinar tu proceso de admisión y modalidades de pago.
+                              </p>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={handleSubmitSolicitud}
+                            disabled={enviandoSolicitud}
+                            className="w-full bg-emerald-700 hover:bg-emerald-800 disabled:bg-gray-400 text-white font-bold text-xs uppercase tracking-widest py-4 px-6 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
+                          >
+                            {enviandoSolicitud ? (
+                              <>
+                                <CircularProgress size={16} sx={{ color: "white" }} />
+                                <span>Registrando interés...</span>
+                              </>
+                            ) : (
+                              <span>📋 Confirmar Registro de Interés y Apartar Cupo</span>
+                            )}
+                          </button>
+                        </div>
+                      )}
+
+                      {metodoInscripcion === "transferencia" && (
+                        <div className="space-y-4 pt-2 animate-fade-in">
+                          <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-4 text-xs text-amber-900 flex items-start gap-3">
+                            <span className="text-xl shrink-0">🏛️</span>
+                            <div className="space-y-1">
+                              <span className="font-bold text-sm block">Orden de Transferencia Bancaria Oficial</span>
+                              <p className="text-[11px] leading-relaxed">
+                                Al formalizar esta solicitud, recibirás por correo electrónico las instrucciones con las cuentas bancarias oficiales (códigos internacionales SWIFT e IBAN) de <strong>IIRESODH PAYMENTS, LLC (Delaware, EE. UU.)</strong> o <strong>IIRESODH Costa Rica</strong>. Tu cupo se reservará provisionalmente por 5 días naturales para la acreditación de los fondos.
+                              </p>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={handleSubmitSolicitud}
+                            disabled={enviandoSolicitud}
+                            className="w-full bg-amber-700 hover:bg-amber-800 disabled:bg-gray-400 text-white font-bold text-xs uppercase tracking-widest py-4 px-6 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
+                          >
+                            {enviandoSolicitud ? (
+                              <>
+                                <CircularProgress size={16} sx={{ color: "white" }} />
+                                <span>Enviando solicitud bancaria...</span>
+                              </>
+                            ) : (
+                              <span>🏛️ Confirmar Inscripción y Solicitar Cuentas Bancarias</span>
+                            )}
+                          </button>
+                        </div>
+                      )}
+
+                      {metodoInscripcion === "tarjeta" && (
+                        <div className="space-y-6 pt-2 animate-fade-in">
+                          {/* OPCIONES DE FINANCIAMIENTO */}
+                          <div className="space-y-3 pt-2">
+                            <div className="flex items-center justify-between flex-wrap gap-2">
+                              <h4 className="text-xs font-black text-main-blue uppercase tracking-wider">
+                                Opciones de Financiamiento en Cuotas Sin Intereses
+                              </h4>
+                              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                                0% Interés • Pagos Mensuales
+                              </span>
+                            </div>
+                            <SelectorModalidadPago
+                              curso={curso}
+                              landing={landing}
+                              planCuotas={planCuotas}
+                              setPlanCuotas={setPlanCuotas}
+                            />
+                          </div>
+
+                          {/* FORMULARIO DE PAGO STRIPE */}
+                          <div className="pt-2">
+                            <FormularioPagoCurso
+                              curso={curso}
+                              landing={landing}
+                              planCuotas={planCuotas}
+                              setPlanCuotas={setPlanCuotas}
+                              formData={formData}
+                              setFormData={setFormData}
+                              soloPasarelaPago={true}
+                              terminosAceptadosExternos={aceptarPrivacidadTransferencia}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                    </div>
+
                   </div>
-
-                </div>
-
+                )}
               </div>
             )}
 
@@ -2491,6 +2499,13 @@ export default function CursoLanding() {
           </div>
         </div>
       )}
+
+      {/* MODAL DE TÉRMINOS DE CONTRATACIÓN Y CLICKWRAP */}
+      <ModalTerminosClickwrap
+        open={modalTerminosOpen}
+        onClose={() => setModalTerminosOpen(false)}
+        onAceptar={() => setAceptarPrivacidadTransferencia(true)}
+      />
 
       {/* SNACKBAR DE NOTIFICACIONES */}
       <Snackbar

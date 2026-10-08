@@ -91,7 +91,9 @@ function CheckoutFormCurso({
   setPlanCuotas: propSetPlanCuotas,
   formData: propFormData,
   setFormData: propSetFormData,
-  onSwitchToTransferencia
+  onSwitchToTransferencia,
+  soloPasarelaPago = false,
+  terminosAceptadosExternos = false
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -318,8 +320,8 @@ function CheckoutFormCurso({
       return;
     }
 
-    if (!aceptarTerminos) {
-      setErrorPago("Debes aceptar la Política de Privacidad y autorizar el tratamiento de datos para proceder con la inscripción.");
+    if (!aceptarTerminos && !terminosAceptadosExternos) {
+      setErrorPago("Debes aceptar los Términos de Contratación y la Política de Privacidad para proceder con la inscripción.");
       return;
     }
 
@@ -500,11 +502,30 @@ function CheckoutFormCurso({
 
   return (
     <form onSubmit={handleSubmitPago} className="space-y-6">
-      {/* 1. DATOS PERSONALES Y PROFESIONALES */}
-      <div className="space-y-4">
-        <label className="block text-xs font-black text-main-blue uppercase tracking-wider">
-          1. Datos Personales y Profesionales
-        </label>
+      {soloPasarelaPago ? (
+        <div className="bg-sky-50/70 border border-sky-200/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div>
+            <span className="text-[10px] font-bold text-sky-800 uppercase tracking-wider block">
+              Titular de la Inscripción
+            </span>
+            <h5 className="font-extrabold text-main-blue text-sm">
+              {formData.nombres || ""} {formData.apellidos || ""}
+            </h5>
+            <p className="text-gray-500 font-light mt-0.5">
+              {formData.email} • {formData.telefono} • {formData.pais}
+            </p>
+          </div>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white text-emerald-800 font-bold rounded-xl border border-sky-200 text-xs self-start sm:self-auto shadow-2xs">
+            <span>✓</span> Datos verificados
+          </span>
+        </div>
+      ) : (
+        <>
+          {/* 1. DATOS PERSONALES Y PROFESIONALES */}
+          <div className="space-y-4">
+            <label className="block text-xs font-black text-main-blue uppercase tracking-wider">
+              1. Datos Personales y Profesionales
+            </label>
 
         {/* AVISO PASAPORTE */}
         <div className="bg-sky-50/70 border border-sky-200/80 rounded-xl px-3.5 py-2.5 text-xs text-sky-900 flex items-center gap-2">
@@ -756,6 +777,8 @@ function CheckoutFormCurso({
           </div>
         </div>
       </div>
+    </>
+  )}
 
       {/* CÓDIGO DE DESCUENTO O BECA INSTITUCIONAL */}
       <div className="pt-3 border-t border-gray-100">
@@ -884,44 +907,53 @@ function CheckoutFormCurso({
           </p>
         )}
 
-        {/* CLÁUSULA INFORMATIVA DE PROTECCIÓN DE DATOS - LEY N° 8968 (COSTA RICA) (COLAPSABLE, CERRADA POR DEFECTO) */}
-        <details className="group bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-gray-600 leading-relaxed text-left">
-          <summary className="font-bold text-gray-800 flex items-center justify-between cursor-pointer select-none text-xs list-none">
-            <span className="flex items-center gap-1.5">
-              <span>🛡️</span> Protección de Datos Personales (Ley N° 8968 / Costa Rica)
-            </span>
-            <span className="text-gray-400 group-open:rotate-180 transition-transform text-xs">▼</span>
-          </summary>
-          <div className="pt-2.5 space-y-2 border-t border-slate-200/60 mt-2">
-            <p className="text-[11px] leading-relaxed">
-              De conformidad con la Ley N° 8968 (Protección de la Persona frente al Tratamiento de sus Datos Personales), se le informa que sus datos personales y de perfil académico serán incorporados a las bases de datos de la <strong>Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH)</strong>, Cédula de Persona Jurídica 3-002-671392, con la finalidad exclusiva de gestionar su postulación, registro, emisión de acreditaciones de participación y coordinación académica y administrativa del curso.
-            </p>
-            <p className="text-[11px] leading-relaxed text-gray-500">
-              La entrega de sus datos es voluntaria, con la consecuencia de que no facilitarlos imposibilita tramitar su inscripción. Sus datos no serán cedidos a terceros con fines comerciales o publicitarios. Puede ejercer en cualquier momento sus derechos de Acceso, Rectificación, Cancelación y Oposición (ARCO) escribiendo a <a href="mailto:contacto@iiresodh.org" className="text-main-blue font-bold hover:underline">contacto@iiresodh.org</a>.
-            </p>
+        {soloPasarelaPago ? (
+          <div className="flex items-center gap-2 text-xs text-emerald-800 font-medium bg-emerald-50 px-3.5 py-2.5 rounded-xl border border-emerald-200">
+            <span>✓</span>
+            <span>Términos de Contratación y Clickwrap aceptados por el participante.</span>
           </div>
-        </details>
+        ) : (
+          <>
+            {/* CLÁUSULA INFORMATIVA DE PROTECCIÓN DE DATOS - LEY N° 8968 (COSTA RICA) (COLAPSABLE, CERRADA POR DEFECTO) */}
+            <details className="group bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-gray-600 leading-relaxed text-left">
+              <summary className="font-bold text-gray-800 flex items-center justify-between cursor-pointer select-none text-xs list-none">
+                <span className="flex items-center gap-1.5">
+                  <span>🛡️</span> Protección de Datos Personales (Ley N° 8968 / Costa Rica)
+                </span>
+                <span className="text-gray-400 group-open:rotate-180 transition-transform text-xs">▼</span>
+              </summary>
+              <div className="pt-2.5 space-y-2 border-t border-slate-200/60 mt-2">
+                <p className="text-[11px] leading-relaxed">
+                  De conformidad con la Ley N° 8968 (Protección de la Persona frente al Tratamiento de sus Datos Personales), se le informa que sus datos personales y de perfil académico serán incorporados a las bases de datos de la <strong>Asociación Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH)</strong>, Cédula de Persona Jurídica 3-002-671392, con la finalidad exclusiva de gestionar su postulación, registro, emisión de acreditaciones de participación y coordinación académica y administrativa del curso.
+                </p>
+                <p className="text-[11px] leading-relaxed text-gray-500">
+                  La entrega de sus datos es voluntaria, con la consecuencia de que no facilitarlos imposibilita tramitar su inscripción. Sus datos no serán cedidos a terceros con fines comerciales o publicitarios. Puede ejercer en cualquier momento sus derechos de Acceso, Rectificación, Cancelación y Oposición (ARCO) escribiendo a <a href="mailto:contacto@iiresodh.org" className="text-main-blue font-bold hover:underline">contacto@iiresodh.org</a>.
+                </p>
+              </div>
+            </details>
 
-        <label className="flex items-start gap-2.5 pt-1 text-xs text-gray-700 font-medium cursor-pointer select-none text-left">
-          <input
-            type="checkbox"
-            checked={aceptarTerminos}
-            onChange={(e) => setAceptarTerminos(e.target.checked)}
-            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-main-blue focus:ring-main-blue cursor-pointer"
-          />
-          <span className="leading-snug">
-            He leído y acepto la{" "}
-            <a
-              href="/privacidad"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-main-blue font-bold underline hover:text-light-blue"
-            >
-              Política de Privacidad y Protección de Datos Personales
-            </a>{" "}
-            de IIRESODH y autorizo expresamente el tratamiento de mis datos para los fines académicos del curso.
-          </span>
-        </label>
+            <label className="flex items-start gap-2.5 pt-1 text-xs text-gray-700 font-medium cursor-pointer select-none text-left">
+              <input
+                type="checkbox"
+                checked={aceptarTerminos}
+                onChange={(e) => setAceptarTerminos(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-main-blue focus:ring-main-blue cursor-pointer"
+              />
+              <span className="leading-snug">
+                He leído y acepto la{" "}
+                <a
+                  href="/privacidad"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-main-blue font-bold underline hover:text-light-blue"
+                >
+                  Política de Privacidad y Protección de Datos Personales
+                </a>{" "}
+                de IIRESODH y autorizo expresamente el tratamiento de mis datos para los fines académicos del curso.
+              </span>
+            </label>
+          </>
+        )}
       </div>
 
       {/* ALERTA DE ERROR */}
@@ -986,7 +1018,9 @@ export default function FormularioPagoCurso({
   setPlanCuotas,
   formData,
   setFormData,
-  onSwitchToTransferencia
+  onSwitchToTransferencia,
+  soloPasarelaPago = false,
+  terminosAceptadosExternos = false
 }) {
   return (
     <Elements stripe={stripeCursosPromise}>
@@ -997,7 +1031,9 @@ export default function FormularioPagoCurso({
         setPlanCuotas={setPlanCuotas}
         formData={formData}
         setFormData={setFormData}
-        onSwitchToTransferencia={onSwitchToTransferencia} 
+        onSwitchToTransferencia={onSwitchToTransferencia}
+        soloPasarelaPago={soloPasarelaPago}
+        terminosAceptadosExternos={terminosAceptadosExternos}
       />
     </Elements>
   );
