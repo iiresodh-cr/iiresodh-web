@@ -849,88 +849,30 @@ export default function CursoLanding() {
                 </div>
               </div>
 
-              {/* COLUMNA DERECHA: CARROUSEL DE FOTOS DE PALERMO (lg:col-span-7) */}
+              {/* COLUMNA DERECHA: IMAGEN FIJA DEL AULA BUNKER (lg:col-span-7) */}
               <div className="lg:col-span-7">
                 <div
                   className="relative group h-48 sm:h-56 md:h-60 w-full rounded-2xl overflow-hidden border border-white/20 bg-slate-950/60 shadow-xl cursor-pointer"
-                  onClick={() => setModalFotoPalermo(slidePalermoActual)}
-                  title="Haz clic para ver las fotos en grande"
+                  onClick={() => setModalFotoPalermo(1)}
+                  title="Aula Bunker del Maxi-Proceso (clic para ampliar)"
                 >
-                  {/* Slides con transición fade suave */}
-                  {FOTOS_PALERMO.map((foto, idx) => (
-                    <div
-                      key={idx}
-                      className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${slidePalermoActual === idx ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
-                        }`}
-                    >
-                      <img
-                        src={foto.src}
-                        alt={foto.titulo}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                      />
-
-                      {/* Gradiente oscuro inferior para texto */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-
-                      {/* Pie de foto del slide */}
-                      <div className="absolute bottom-3 left-3 sm:left-4 right-20 text-left">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block mb-0.5">
-                          {foto.lugar}
-                        </span>
-                        <h4 className="text-white text-xs sm:text-sm font-bold tracking-tight drop-shadow-md truncate">
-                          {foto.titulo}
-                        </h4>
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Badge en esquina superior derecha indicando clic para ampliar */}
+                  <img
+                    src={palermoFoto2}
+                    alt="Aula Bunker del Maxi-Proceso"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  <div className="absolute bottom-3 left-3 sm:left-4 right-4 text-left">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block mb-0.5">
+                      Palermo, Sicilia
+                    </span>
+                    <h4 className="text-white text-xs sm:text-sm font-bold tracking-tight drop-shadow-md">
+                      Aula Bunker del Maxi-Proceso
+                    </h4>
+                  </div>
                   <div className="absolute top-3 right-3 z-20 bg-black/60 hover:bg-black/80 backdrop-blur-xs text-white text-[11px] font-medium px-2.5 py-1 rounded-lg border border-white/20 flex items-center gap-1.5 transition-colors">
                     <span>🔍</span>
-                    <span className="hidden sm:inline">Ver fotos</span>
-                  </div>
-
-                  {/* Flecha izquierda */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSlidePalermoActual((prev) => (prev - 1 + FOTOS_PALERMO.length) % FOTOS_PALERMO.length);
-                    }}
-                    className="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/55 hover:bg-black/85 text-white flex items-center justify-center transition-all cursor-pointer border border-white/20 active:scale-95 text-sm"
-                    aria-label="Foto anterior"
-                  >
-                    ❮
-                  </button>
-
-                  {/* Flecha derecha */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSlidePalermoActual((prev) => (prev + 1) % FOTOS_PALERMO.length);
-                    }}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/55 hover:bg-black/85 text-white flex items-center justify-center transition-all cursor-pointer border border-white/20 active:scale-95 text-sm"
-                    aria-label="Siguiente foto"
-                  >
-                    ❯
-                  </button>
-
-                  {/* Indicadores / Puntos */}
-                  <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5">
-                    {FOTOS_PALERMO.map((_, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSlidePalermoActual(i);
-                        }}
-                        className={`h-1.5 rounded-full transition-all cursor-pointer ${slidePalermoActual === i ? "w-5 bg-main-red" : "w-1.5 bg-white/60 hover:bg-white"
-                          }`}
-                        aria-label={`Ver foto ${i + 1}`}
-                      />
-                    ))}
+                    <span className="hidden sm:inline">Ampliar</span>
                   </div>
                 </div>
               </div>
@@ -1539,45 +1481,90 @@ export default function CursoLanding() {
                     </div>
                   </div>
 
-                  <div className="lg:col-span-6 space-y-4">
-                    <div className="rounded-2xl overflow-hidden shadow-lg border border-gray-200 relative group">
-                      <img
-                        src={landing.sedeImagenUrl || palermoDefaultImg}
-                        alt="Catedral de Palermo, Sicilia"
-                        className="w-full h-64 md:h-72 object-cover group-hover:scale-103 transition duration-700"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-4">
-                        <div>
-                          <span className="text-[9px] uppercase font-black tracking-widest text-amber-400 bg-black/50 px-2 py-0.5 rounded">
-                            Patrimonio Histórico y Cultural
-                          </span>
-                          <h4 className="text-sm font-bold text-white mt-1">
-                            Catedral de Palermo & Palacio de Justicia
-                          </h4>
-                        </div>
-                      </div>
-                    </div>
+                  {/* COLUMNA DERECHA: CARROUSEL SWIPER DE FOTOS DE PALERMO */}
+                  <div className="lg:col-span-6">
+                    <div
+                      className="relative group h-72 sm:h-80 md:h-96 lg:h-[420px] w-full rounded-2xl overflow-hidden border border-gray-200 bg-slate-950/60 shadow-xl cursor-pointer"
+                      onClick={() => setModalFotoPalermo(slidePalermoActual)}
+                      title="Haz clic para ver las fotos en grande"
+                    >
+                      {/* Slides con transición fade suave */}
+                      {FOTOS_PALERMO.map((foto, idx) => (
+                        <div
+                          key={idx}
+                          className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                            slidePalermoActual === idx ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
+                          }`}
+                        >
+                          <img
+                            src={foto.src}
+                            alt={foto.titulo}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                          />
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="rounded-xl overflow-hidden border border-gray-200 relative group h-28 bg-neutral-900">
-                        <img
-                          src={palermoJusticiaBw}
-                          alt="Palacio de Justicia de Palermo"
-                          className="w-full h-full object-cover filter grayscale contrast-110 group-hover:scale-105 transition"
-                        />
-                        <div className="absolute inset-0 bg-black/50 p-2 flex items-end">
-                          <span className="text-[10px] text-white font-bold">Palacio de Justicia</span>
+                          {/* Gradiente oscuro inferior para texto */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+
+                          {/* Pie de foto del slide */}
+                          <div className="absolute bottom-4 left-4 sm:left-5 right-24 text-left">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block mb-1">
+                              {foto.lugar}
+                            </span>
+                            <h4 className="text-white text-sm sm:text-base font-bold tracking-tight drop-shadow-md">
+                              {foto.titulo}
+                            </h4>
+                          </div>
                         </div>
+                      ))}
+
+                      {/* Badge en esquina superior derecha indicando clic para ampliar */}
+                      <div className="absolute top-3.5 right-3.5 z-20 bg-black/60 hover:bg-black/80 backdrop-blur-xs text-white text-[11px] font-medium px-3 py-1 rounded-lg border border-white/20 flex items-center gap-1.5 transition-colors">
+                        <span>🔍</span>
+                        <span className="hidden sm:inline">Ver fotos ({slidePalermoActual + 1}/{FOTOS_PALERMO.length})</span>
                       </div>
-                      <div className="rounded-xl overflow-hidden border border-gray-200 relative group h-28 bg-neutral-900">
-                        <img
-                          src={palermoAulaBunkerBw}
-                          alt="Aula Búnker de Palermo"
-                          className="w-full h-full object-cover filter grayscale contrast-110 group-hover:scale-105 transition"
-                        />
-                        <div className="absolute inset-0 bg-black/50 p-2 flex items-end">
-                          <span className="text-[10px] text-white font-bold">Aula Búnker del Maxi-Proceso</span>
-                        </div>
+
+                      {/* Flecha izquierda */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSlidePalermoActual((prev) => (prev - 1 + FOTOS_PALERMO.length) % FOTOS_PALERMO.length);
+                        }}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/55 hover:bg-black/85 text-white flex items-center justify-center transition-all cursor-pointer border border-white/20 active:scale-95 text-base"
+                        aria-label="Foto anterior"
+                      >
+                        ❮
+                      </button>
+
+                      {/* Flecha derecha */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSlidePalermoActual((prev) => (prev + 1) % FOTOS_PALERMO.length);
+                        }}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/55 hover:bg-black/85 text-white flex items-center justify-center transition-all cursor-pointer border border-white/20 active:scale-95 text-base"
+                        aria-label="Siguiente foto"
+                      >
+                        ❯
+                      </button>
+
+                      {/* Indicadores / Puntos */}
+                      <div className="absolute bottom-4 right-4 z-20 flex items-center gap-1.5">
+                        {FOTOS_PALERMO.map((_, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSlidePalermoActual(i);
+                            }}
+                            className={`h-2 rounded-full transition-all cursor-pointer ${
+                              slidePalermoActual === i ? "w-6 bg-main-red" : "w-2 bg-white/60 hover:bg-white"
+                            }`}
+                            aria-label={`Ver foto ${i + 1}`}
+                          />
+                        ))}
                       </div>
                     </div>
                   </div>
