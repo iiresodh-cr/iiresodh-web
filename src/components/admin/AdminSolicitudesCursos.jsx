@@ -41,6 +41,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
   );
   const [filtroEstado, setFiltroEstado] = useState("todos");
   const [filtroMetodo, setFiltroMetodo] = useState("todos");
+  const [busqueda, setBusqueda] = useState("");
   const [actualizandoId, setActualizandoId] = useState(null);
   const [sincronizandoStripe, setSincronizandoStripe] = useState(false);
 
@@ -97,6 +98,15 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
     limiteUsos: "",
     descripcion: "",
     activo: true
+  });
+
+  // Consulta de Saldo y Movimientos de Mercury Bank (Solo Lectura)
+  const [modalMercury, setModalMercury] = useState({
+    open: false,
+    cargando: false,
+    data: null,
+    error: null,
+    filtroTx: ""
   });
 
   // Alertas
@@ -676,6 +686,34 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       mostrarToast(err.message || "Error al sincronizar con Stripe.", true);
     } finally {
       setSincronizandoStripe(false);
+    }
+  };
+
+  // Consulta de cuenta Mercury Bank (Solo Lectura - Checking ••6205)
+  const handleConsultarMercury = async () => {
+    setModalMercury(prev => ({ ...prev, open: true, cargando: true, error: null }));
+    try {
+      const getMercuryFn = httpsCallable(functions, "consultarEstadoMercuryCursos");
+      const res = await getMercuryFn();
+      if (res.data?.success) {
+        setModalMercury(prev => ({
+          ...prev,
+          cargando: false,
+          data: res.data,
+          error: null
+        }));
+      } else {
+        throw new Error(res.data?.error || "No se pudo obtener información de la cuenta Mercury.");
+      }
+    } catch (err) {
+      console.error("Error al consultar Mercury:", err);
+      const errMsg = err.message || "Error al conectar con la cuenta bancaria de Mercury.";
+      setModalMercury(prev => ({
+        ...prev,
+        cargando: false,
+        error: errMsg
+      }));
+      mostrarToast(errMsg, true);
     }
   };
 
@@ -1572,6 +1610,27 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
           </Button>
 
           <Button
+            variant="outlined"
+            onClick={handleConsultarMercury}
+            disabled={cargando || modalMercury.cargando}
+            startIcon={modalMercury.cargando ? <CircularProgress size={14} color="inherit" /> : null}
+            sx={{
+              borderColor: "#0284c7",
+              color: "#0369a1",
+              textTransform: "none",
+              fontSize: "13px",
+              py: 1,
+              px: 2,
+              borderRadius: "12px",
+              fontWeight: 700,
+              bgcolor: "#f0f9ff",
+              "&:hover": { borderColor: "#0369a1", color: "#075985", bgcolor: "#e0f2fe" }
+            }}
+          >
+            {modalMercury.cargando ? "Consultando..." : "🏛️ Saldo Mercury (••6205)"}
+          </Button>
+
+          <Button
             variant="contained"
             onClick={exportarCSV}
             disabled={cargando || solicitudesDelCurso.length === 0}
@@ -1633,63 +1692,71 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
 
       {/* TARJETA PRINCIPAL CON MÉTRICAS DEL CURSO SELECCIONADO Y FILTROS */}
       <section className="bg-white rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm border border-gray-200 space-y-6">
-        <div>
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs uppercase font-extrabold tracking-wider px-2.5 py-0.5 rounded-md bg-blue-100 text-main-blue">
-                  {filtroCurso === "todos" ? "Consolidado" : "Datos Aislados"}
-                </span>
-                <span className="text-xs font-semibold text-gray-500">
-                  Total inscritos: <strong className="text-gray-900">{solicitudesDelCurso.length}</strong>
-                </span>
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs uppercase font-extrabold tracking-wider px-2.5 py-0.5 rounded-md bg-blue-100 text-main-blue">
+                {filtroCurso === "todos" ? "Consolidado" : "Datos Aislados"}
+              </span>
+              <span className="text-xs font-semibold text-gray-500">
+                Total inscritos: <strong className="text-gray-900">{solicitudesDelCurso.length}</strong>
+              </span>
+            </div>
+            <p className="text-xs text-gray-500">
+              Control financiero completo de pagos, pasarela Stripe y validación de expedientes.
+            </p>
+          </div>
+
+          {/* CONTADORES Y MÉTRICAS DEL CURSO SELECCIONADO (ANCHO COMPLETO) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 w-full">
+            {/* GRUPO 1: ESTADO DE EXPEDIENTES (3 CARDS) */}
+            <div className="lg:col-span-4 grid grid-cols-3 gap-2">
+              <div className="bg-amber-50/90 border border-amber-200 px-2 sm:px-3 py-2.5 rounded-2xl text-center flex flex-col justify-center shadow-xs">
+                <span className="text-[10px] uppercase font-bold text-amber-800 tracking-wider">Pendientes</span>
+                <span className="text-xl sm:text-2xl font-black text-amber-900 leading-tight mt-0.5">{conteoPendientes}</span>
               </div>
-              <p className="text-xs sm:text-sm text-gray-600 mt-1 max-w-2xl">
-                Control financiero completo de pagos únicos y cuotas de financiamiento, estados de validación, pasaportes y auditoría.
-              </p>
+              <div className="bg-blue-50/90 border border-blue-200 px-2 sm:px-3 py-2.5 rounded-2xl text-center flex flex-col justify-center shadow-xs">
+                <span className="text-[10px] uppercase font-bold text-blue-800 tracking-wider">Contactados</span>
+                <span className="text-xl sm:text-2xl font-black text-blue-900 leading-tight mt-0.5">{conteoContactados}</span>
+              </div>
+              <div className="bg-emerald-50/90 border border-emerald-200 px-2 sm:px-3 py-2.5 rounded-2xl text-center flex flex-col justify-center shadow-xs">
+                <span className="text-[10px] uppercase font-bold text-emerald-800 tracking-wider">Confirmados</span>
+                <span className="text-xl sm:text-2xl font-black text-emerald-900 leading-tight mt-0.5">{conteoConfirmados}</span>
+              </div>
             </div>
 
-            {/* CONTADORES Y MÉTRICAS DEL CURSO SELECCIONADO */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 w-full lg:w-auto">
-              <div className="bg-amber-50 border border-amber-200 px-3 py-2 rounded-2xl text-center">
-                <span className="text-[10px] uppercase font-bold text-amber-800 block">Pendientes</span>
-                <span className="text-xl font-black text-amber-900 leading-tight">{conteoPendientes}</span>
-              </div>
-              <div className="bg-blue-50 border border-blue-200 px-3 py-2 rounded-2xl text-center">
-                <span className="text-[10px] uppercase font-bold text-blue-800 block">Contactados</span>
-                <span className="text-xl font-black text-blue-900 leading-tight">{conteoContactados}</span>
-              </div>
-              <div className="bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-2xl text-center">
-                <span className="text-[10px] uppercase font-bold text-emerald-800 block">Confirmados</span>
-                <span className="text-xl font-black text-emerald-900 leading-tight">{conteoConfirmados}</span>
-              </div>
-              <div className="bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-2xl text-center">
-                <span className="text-[10px] uppercase font-bold text-indigo-800 block">Recaudado (Bruto)</span>
-                <span className="text-base sm:text-lg font-black text-indigo-900 leading-tight">
-                  ${totalRecaudado.toLocaleString()}
+            {/* GRUPO 2: MÉTRICAS FINANCIERAS STRIPE Y BANCO (4 CARDS ESPACIOSAS) */}
+            <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div className="bg-indigo-50/90 border border-indigo-200 px-3 py-2.5 rounded-2xl text-center flex flex-col justify-center shadow-xs">
+                <span className="text-[10px] uppercase font-bold text-indigo-800 tracking-wider">Recaudado Bruto</span>
+                <span className="text-base sm:text-lg xl:text-xl font-black text-indigo-950 leading-tight mt-0.5 whitespace-nowrap">
+                  ${totalRecaudado.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
-                <span className="text-[9px] font-bold text-indigo-600 block">USD</span>
+                <span className="text-[9px] font-bold text-indigo-600 block mt-0.5">USD</span>
               </div>
-              <div className="bg-purple-50 border border-purple-200 px-3 py-2 rounded-2xl text-center">
-                <span className="text-[10px] uppercase font-bold text-purple-800 block">Comisión Stripe</span>
-                <span className="text-base sm:text-lg font-black text-purple-900 leading-tight">
+
+              <div className="bg-purple-50/90 border border-purple-200 px-3 py-2.5 rounded-2xl text-center flex flex-col justify-center shadow-xs">
+                <span className="text-[10px] uppercase font-bold text-purple-800 tracking-wider">Comisión Stripe</span>
+                <span className="text-base sm:text-lg xl:text-xl font-black text-purple-950 leading-tight mt-0.5 whitespace-nowrap">
                   -${totalComisionStripe.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
-                <span className="text-[9px] font-bold text-purple-600 block">USD Descontado</span>
+                <span className="text-[9px] font-bold text-purple-600 block mt-0.5">USD Deducción</span>
               </div>
-              <div className="bg-teal-50 border border-teal-200 px-3 py-2 rounded-2xl text-center">
-                <span className="text-[10px] uppercase font-bold text-teal-800 block">Neto en Banco</span>
-                <span className="text-base sm:text-lg font-black text-teal-900 leading-tight">
+
+              <div className="bg-teal-50/90 border border-teal-200 px-3 py-2.5 rounded-2xl text-center flex flex-col justify-center shadow-xs">
+                <span className="text-[10px] uppercase font-bold text-teal-800 tracking-wider">Neto en Banco</span>
+                <span className="text-base sm:text-lg xl:text-xl font-black text-teal-950 leading-tight mt-0.5 whitespace-nowrap">
                   ${totalNetoBanco.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
-                <span className="text-[9px] font-bold text-teal-600 block">USD Real</span>
+                <span className="text-[9px] font-bold text-teal-600 block mt-0.5">USD Real</span>
               </div>
-              <div className="bg-rose-50 border border-rose-200 px-3 py-2 rounded-2xl text-center col-span-2 sm:col-span-1">
-                <span className="text-[10px] uppercase font-bold text-rose-800 block">Saldo por Cobrar</span>
-                <span className="text-base sm:text-lg font-black text-rose-900 leading-tight">
-                  ${totalPorCobrar.toLocaleString()}
+
+              <div className="bg-rose-50/90 border border-rose-200 px-3 py-2.5 rounded-2xl text-center flex flex-col justify-center shadow-xs">
+                <span className="text-[10px] uppercase font-bold text-rose-800 tracking-wider">Por Cobrar</span>
+                <span className="text-base sm:text-lg xl:text-xl font-black text-rose-950 leading-tight mt-0.5 whitespace-nowrap">
+                  ${totalPorCobrar.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
-                <span className="text-[9px] font-bold text-rose-600 block">USD</span>
+                <span className="text-[9px] font-bold text-rose-600 block mt-0.5">USD Pendiente</span>
               </div>
             </div>
           </div>
@@ -4035,6 +4102,249 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
           >
             Eliminar
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* MODAL DE CONSULTA DE BANCO MERCURY (SOLO LECTURA - CUENTA CURSOS ••6205) */}
+      <Dialog
+        open={modalMercury.open}
+        onClose={() => !modalMercury.cargando && setModalMercury(prev => ({ ...prev, open: false }))}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: "24px", overflow: "hidden" }
+        }}
+      >
+        <div className="bg-gradient-to-r from-slate-900 via-[#1D3557] to-slate-900 px-6 py-5 text-white flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-xl border border-white/20">
+              🏛️
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base sm:text-lg font-black text-white">
+                  {modalMercury.data?.cuenta?.nombre || "IIRESODH CURSOS"}
+                </h3>
+                <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-amber-400 text-slate-950">
+                  Checking ••{modalMercury.data?.cuenta?.ultimosDigitos || "6205"}
+                </span>
+              </div>
+              <p className="text-xs text-blue-200">
+                Conexión bancaria cifrada de solo lectura (Aislada exclusivamente a esta cuenta)
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => !modalMercury.cargando && setModalMercury(prev => ({ ...prev, open: false }))}
+            className="text-white/60 hover:text-white text-lg font-bold p-1 cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+
+        <DialogContent sx={{ p: { xs: 2.5, sm: 4 }, bgcolor: "#f8fafc" }}>
+          {modalMercury.cargando ? (
+            <div className="py-12 flex flex-col items-center justify-center gap-3">
+              <CircularProgress size={36} sx={{ color: "#1D3557" }} />
+              <p className="text-sm font-semibold text-gray-600">
+                Consultando saldo y transferencias en Mercury Bank...
+              </p>
+            </div>
+          ) : modalMercury.error ? (
+            <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-center space-y-2">
+              <p className="text-sm font-bold text-rose-800">No se pudo consultar Mercury Bank</p>
+              <p className="text-xs text-rose-600">{modalMercury.error}</p>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={handleConsultarMercury}
+                sx={{ textTransform: "none", color: "#991b1b", borderColor: "#f87171", mt: 1 }}
+              >
+                Reintentar consulta
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* TARJETAS DE SALDO EN TIEMPO REAL */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="bg-white border-2 border-emerald-500/40 rounded-2xl p-4 shadow-xs">
+                  <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
+                    Saldo Disponible
+                  </span>
+                  <div className="mt-1 flex items-baseline gap-1.5">
+                    <span className="text-2xl sm:text-3xl font-black text-emerald-700">
+                      ${Number(modalMercury.data?.cuenta?.saldoDisponible || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                    <span className="text-xs font-bold text-gray-400">USD</span>
+                  </div>
+                  <span className="text-[10px] text-emerald-600 font-semibold mt-1 block">
+                    ✓ Fondos listos para uso
+                  </span>
+                </div>
+
+                <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-xs">
+                  <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
+                    Saldo Contable Actual
+                  </span>
+                  <div className="mt-1 flex items-baseline gap-1.5">
+                    <span className="text-2xl sm:text-3xl font-black text-gray-900">
+                      ${Number(modalMercury.data?.cuenta?.saldoActual || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                    <span className="text-xs font-bold text-gray-400">USD</span>
+                  </div>
+                  <span className="text-[10px] text-gray-500 font-medium mt-1 block">
+                    Total registrado en banco
+                  </span>
+                </div>
+
+                <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-xs flex flex-col justify-between">
+                  <div>
+                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
+                      Estado & Titular
+                    </span>
+                    <div className="mt-1 flex items-center gap-2">
+                      <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                      <span className="text-sm font-bold text-gray-900 capitalize">
+                        {modalMercury.data?.cuenta?.estado || "Activa"}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-gray-500 mt-2 truncate font-medium">
+                    Titular: <strong className="text-gray-700">{modalMercury.data?.cuenta?.titular}</strong>
+                  </p>
+                </div>
+              </div>
+
+              {/* LISTADO DE TRANSFERENCIAS BANCARIAS */}
+              <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+                  <div>
+                    <h4 className="text-sm font-black text-gray-900 flex items-center gap-2">
+                      <span>📥</span>
+                      <span>Transferencias Recibidas y Movimientos</span>
+                    </h4>
+                    <p className="text-xs text-gray-500">
+                      Útiles para conciliar pagos realizados por Wire/ACH con solicitudes de inscripción.
+                    </p>
+                  </div>
+                  <div className="relative min-w-[200px]">
+                    <input
+                      type="text"
+                      placeholder="Filtrar movimientos..."
+                      value={modalMercury.filtroTx || ""}
+                      onChange={(e) => setModalMercury(prev => ({ ...prev, filtroTx: e.target.value }))}
+                      className="w-full text-xs px-3 py-1.5 rounded-lg border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-main-blue"
+                    />
+                  </div>
+                </div>
+
+                {(() => {
+                  const txs = modalMercury.data?.transacciones || [];
+                  const filtro = (modalMercury.filtroTx || "").toLowerCase().trim();
+                  const txsFiltradas = filtro 
+                    ? txs.filter(t => 
+                        (t.descripcion || "").toLowerCase().includes(filtro) ||
+                        (t.referencia || "").toLowerCase().includes(filtro) ||
+                        String(t.monto).includes(filtro)
+                      )
+                    : txs;
+
+                  if (txsFiltradas.length === 0) {
+                    return (
+                      <div className="py-8 text-center text-gray-400 text-xs">
+                        {txs.length === 0 
+                          ? "No se registran movimientos bancarios aún en esta cuenta de Cursos."
+                          : "No hay movimientos que coincidan con la búsqueda."}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="divide-y divide-gray-100 max-h-80 overflow-y-auto pr-1">
+                      {txsFiltradas.map((tx) => (
+                        <div key={tx.id} className="py-3 flex items-center justify-between gap-3 text-xs">
+                          <div className="flex items-center gap-3">
+                            <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${
+                              tx.tipo === 'ingreso' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-700'
+                            }`}>
+                              {tx.tipo === 'ingreso' ? '↓' : '↑'}
+                            </span>
+                            <div>
+                              <p className="font-bold text-gray-900">{tx.descripcion}</p>
+                              <div className="flex items-center gap-2 text-[11px] text-gray-500">
+                                <span>{tx.fecha ? new Date(tx.fecha).toLocaleDateString() : 'Reciente'}</span>
+                                {tx.referencia && (
+                                  <>
+                                    <span>•</span>
+                                    <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded text-[10px] text-gray-600">
+                                      Ref: {tx.referencia}
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="text-right shrink-0">
+                            <span className={`font-black text-sm ${
+                              tx.tipo === 'ingreso' ? 'text-emerald-700' : 'text-gray-900'
+                            }`}>
+                              {tx.monto > 0 ? `+$${tx.monto.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : `$${tx.monto.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
+                            </span>
+                            <span className="block text-[10px] text-gray-400 capitalize">
+                              {tx.estado || "completado"}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* AVISO DE AISLAMIENTO Y PRIVACIDAD */}
+              <div className="bg-blue-50/70 border border-blue-200/80 rounded-2xl p-3.5 flex items-start gap-2.5">
+                <span className="text-base shrink-0">🔒</span>
+                <p className="text-xs text-blue-900 leading-relaxed">
+                  <strong>Aislamiento estricto de seguridad:</strong> Este panel consulta exclusivamente la cuenta <strong>IIRESODH CURSOS (Checking ••6205)</strong> mediante token de solo lectura. Las demás cuentas de la organización se encuentran 100% aisladas, blindadas e inaccesibles en este sistema.
+                </p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+
+        <DialogActions sx={{ p: 2.5, bgcolor: "white", borderTop: "1px solid #f1f5f9", justifyContent: "space-between" }}>
+          <div>
+            {modalMercury.data?.cuenta?.dashboardLink && (
+              <a
+                href={modalMercury.data.cuenta.dashboardLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-bold text-main-blue hover:underline inline-flex items-center gap-1"
+              >
+                <span>↗ Abrir en Mercury Dashboard</span>
+              </a>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={handleConsultarMercury}
+              disabled={modalMercury.cargando}
+              variant="outlined"
+              size="small"
+              sx={{ textTransform: "none", borderRadius: "10px", borderColor: "#d1d5db", color: "#374151" }}
+            >
+              🔄 Actualizar Datos
+            </Button>
+            <Button
+              onClick={() => setModalMercury(prev => ({ ...prev, open: false }))}
+              variant="contained"
+              size="small"
+              sx={{ textTransform: "none", borderRadius: "10px", bgcolor: "#1D3557", "&:hover": { bgcolor: "#14253d" } }}
+            >
+              Cerrar
+            </Button>
+          </div>
         </DialogActions>
       </Dialog>
 

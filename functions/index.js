@@ -25,6 +25,24 @@ const STRIPE_WEBHOOK_SECRET = defineSecret("STRIPE_WEBHOOK_SECRET");
 const STRIPE_CURSOS_SECRET_KEY = defineSecret("STRIPE_CURSOS_SECRET_KEY");
 const STRIPE_CURSOS_WEBHOOK_SECRET = defineSecret("STRIPE_CURSOS_WEBHOOK_SECRET");
 const PIDA_SERVICE_ACCOUNT = defineSecret("PIDA_SERVICE_ACCOUNT");
+const MERCURY_API_KEY = defineSecret("MERCURY_API_KEY");
+const MERCURY_CURSOS_ACCOUNT_ID = defineSecret("MERCURY_CURSOS_ACCOUNT_ID");
+
+function getMercuryApiKey() {
+  try {
+    const val = MERCURY_API_KEY.value();
+    if (val) return String(val).trim();
+  } catch (_) { }
+  return String(process.env.MERCURY_API_KEY || "").trim();
+}
+
+function getMercuryCursosAccountId() {
+  try {
+    const val = MERCURY_CURSOS_ACCOUNT_ID.value();
+    if (val) return String(val).trim();
+  } catch (_) { }
+  return String(process.env.MERCURY_CURSOS_ACCOUNT_ID || "50886e2e-c27a-11f1-ba78-e3f8be28cc9e").trim();
+}
 
 function getStripeCursosKey() {
   try {
@@ -3209,6 +3227,99 @@ exports.sincronizarComisionesStripeCursos = onCall({
   } catch (error) {
     console.error("Error en sincronizarComisionesStripeCursos:", error);
     throw new HttpsError("internal", error.message || "Error al sincronizar comisiones con Stripe.");
+  }
+});
+
+// ============================================================================
+// CONSULTA AISLADA Y SEGURA DE MERCURY BANK (SOLO LECTURA PARA CURSOS)
+// ============================================================================
+function llamarMercuryApi(apiPath, apiKey) {
+  return new Promise((resolve, reject) => {
+    const https = require("https");
+    const options = {
+      hostname: "api.mercury.com",
+      path: apiPath,
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Accept": "application/json",
+        "User-Agent": "IIRESODH-Cursos-Integration"
+      }
+    };
+    const req = https.request(options, (res) => {
+      let data = "";
+      res.on("data", chunk => data += chunk);
+      res.on("end", () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          try {
+            resolve(JSON.parse(data));
+          } catch (e) {
+            reject(new Error("Error al procesar la respuesta de Mercury."));
+          }
+        } else {
+          reject(new Error(`Error de Mercury API (${res.statusCode}): ${data}`));
+        }
+      });
+    });
+    req.on("error", (err) => reject(err));
+    req.end();
+  });
+}
+
+exports.consultarEstadoMercuryCursos = onCall({
+  secrets: [MERCURY_API_KEY, MERCURY_CURSOS_ACCOUNT_ID],
+  region: "us-central1",
+  cors: true
+}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Debes iniciar sesión para consultar el estado bancario.");
+  }
+
+  const apiKey = getMercuryApiKey();
+  const accountId = getMercuryCursosAccountId();
+
+  if (!apiKey || !accountId) {
+    throw new HttpsError("failed-precondition", "Credenciales de Mercury no configuradas en el servidor.");
+  }
+
+  try {
+    // Consulta directa y estrictamente restringida a la cuenta asignada a Cursos
+    const accountData = await llamarMercuryApi(`/api/v1/account/${accountId}`, apiKey);
+
+    // Consulta de transacciones de la cuenta
+    let transactionsData = { transactions: [], total: 0 };
+    try {
+      transactionsData = await llamarMercuryApi(`/api/v1/account/${accountId}/transactions?limit=50`, apiKey);
+    } catch (txErr) {
+      console.warn("Aviso al consultar transacciones Mercury:", txErr.message);
+    }
+
+    return {
+      success: true,
+      cuenta: {
+        id: accountData.id,
+        nombre: accountData.nickname || accountData.name || "IIRESODH CURSOS",
+        ultimosDigitos: (accountData.accountNumber || "").slice(-4) || "6205",
+        saldoDisponible: accountData.availableBalance !== undefined ? accountData.availableBalance : 0,
+        saldoActual: accountData.currentBalance !== undefined ? accountData.currentBalance : 0,
+        tipo: accountData.kind || "checking",
+        estado: accountData.status || "active",
+        dashboardLink: accountData.dashboardLink || null,
+        titular: accountData.legalBusinessName || "IIRESODH PAYMENTS, LLC"
+      },
+      transacciones: (transactionsData.transactions || []).map(t => ({
+        id: t.id,
+        monto: t.amount,
+        tipo: t.amount > 0 ? "ingreso" : "egreso",
+        descripcion: t.counterpartyName || t.bankDescription || t.note || "Transferencia bancaria",
+        fecha: t.postedAt || t.createdAt,
+        estado: t.status,
+        referencia: t.externalMemo || t.note || null
+      }))
+    };
+  } catch (error) {
+    console.error("Error al consultar cuenta Mercury:", error);
+    throw new HttpsError("internal", error.message || "Error al conectar con la cuenta bancaria de Mercury.");
   }
 });
 
