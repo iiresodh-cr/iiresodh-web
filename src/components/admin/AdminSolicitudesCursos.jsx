@@ -41,8 +41,8 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
   );
   const [filtroEstado, setFiltroEstado] = useState("todos");
   const [filtroMetodo, setFiltroMetodo] = useState("todos");
-  const [busqueda, setBusqueda] = useState("");
   const [actualizandoId, setActualizandoId] = useState(null);
+  const [sincronizandoStripe, setSincronizandoStripe] = useState(false);
 
   // Subida y visor de pasaporte
   const [subiendoPasaporteId, setSubiendoPasaporteId] = useState(null);
@@ -365,8 +365,19 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
   const conteoPendientes = solicitudesDelCurso.filter(s => (s.estado || "pendiente") === "pendiente").length;
   const conteoContactados = solicitudesDelCurso.filter(s => s.estado === "contactado").length;
   const conteoConfirmados = solicitudesDelCurso.filter(s => s.estado === "confirmado").length;
-  const conteoStripe = solicitudesDelCurso.filter(s => s.metodoPago === "stripe").length;
+  const conteoStripe = solicitudesDelCurso.filter(s => s.metodoPago === "stripe" || s.stripePaymentIntentId).length;
   const totalRecaudado = solicitudesDelCurso.reduce((acc, s) => acc + (Number(s.montoPagado) || 0), 0);
+  const totalComisionStripe = solicitudesDelCurso.reduce((acc, s) => {
+    let comision = 0;
+    if (Array.isArray(s.historialPagos) && s.historialPagos.length > 0) {
+      comision = s.historialPagos.reduce((cAcc, p) => cAcc + (Number(p.comisionStripe) || 0), 0);
+    }
+    if (comision === 0 && Number(s.comisionStripe)) {
+      comision = Number(s.comisionStripe) || 0;
+    }
+    return acc + comision;
+  }, 0);
+  const totalNetoBanco = Math.max(0, Number((totalRecaudado - totalComisionStripe).toFixed(2)));
   const totalPorCobrar = solicitudesDelCurso.reduce((acc, s) => {
     const inv = Number(s.montoTotalInversion) || 3350;
     const pag = Number(s.montoPagado) || 0;
@@ -642,6 +653,32 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
     }
   };
 
+  // Sincronización oficial de comisiones Stripe con BalanceTransaction (Opción B)
+  const handleSincronizarStripe = async () => {
+    if (sincronizandoStripe) return;
+    setSincronizandoStripe(true);
+    try {
+      const syncFn = httpsCallable(functions, "sincronizarComisionesStripeCursos");
+      const res = await syncFn({
+        cursoId: filtroCurso !== "todos" ? filtroCurso : null
+      });
+      const data = res.data || {};
+      mostrarToast(`Sincronización con Stripe completada: ${data.actualizados || 0} expediente(s) sincronizados. Total comisiones identificadas: $${(data.comisionesTotal || 0).toLocaleString()} USD.`);
+      await cargarDatos();
+      if (logActividad) {
+        await logActividad(
+          `Sincronizó comisiones oficiales de Stripe para ${data.actualizados || 0} expediente(s) (${cursoActivoObj?.titulo || 'Todos'}).`,
+          { cursoId: filtroCurso, actualizados: data.actualizados, comisionesTotal: data.comisionesTotal }
+        );
+      }
+    } catch (err) {
+      console.error("Error sincronizando comisiones con Stripe:", err);
+      mostrarToast(err.message || "Error al sincronizar con Stripe.", true);
+    } finally {
+      setSincronizandoStripe(false);
+    }
+  };
+
   // ==========================================
   // GESTIÓN DE CUPONES DE DESCUENTO Y BECAS
   // ==========================================
@@ -774,10 +811,52 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         referencia: sol.stripePaymentIntentId || sol.stripeSessionId || "Pago Inicial / Matrícula",
         notas: Number(sol.planCuotas) > 1 ? `Inscripción inicial (Cuota 1 de ${sol.planCuotas})` : "Pago de inscripción en línea",
         registradoPor: "Pasarela Web Directa",
-        esInicial: true
+        esInicial: true,
+        comisionStripe: sol.comisionStripe !== undefined ? Number(sol.comisionStripe) : null,
+        netoRecibido: sol.netoRecibido !== undefined ? Number(sol.netoRecibido) : null,
+        balanceTransactionId: sol.stripeBalanceTransactionId || null
       });
     }
     return lista;
+  };
+
+  // Helper para desglose financiero y comisiones Stripe de una solicitud individual
+  const calcularFinanzasSolicitud = (sol) => {
+    if (!sol) return { montoPagado: 0, comision: 0, neto: 0, tieneStripe: false, comisionConfirmada: false };
+    const montoPagado = Number(sol.montoPagado) || 0;
+    const historial = Array.isArray(sol.historialPagos) ? sol.historialPagos : [];
+    let comision = 0;
+    let hayComisionEnHistorial = false;
+
+    if (historial.length > 0) {
+      historial.forEach(p => {
+        if (p.comisionStripe !== undefined && p.comisionStripe !== null) {
+          comision += Number(p.comisionStripe) || 0;
+          hayComisionEnHistorial = true;
+        }
+      });
+    }
+
+    if (!hayComisionEnHistorial && sol.comisionStripe !== undefined && sol.comisionStripe !== null) {
+      comision = Number(sol.comisionStripe) || 0;
+    }
+
+    const comisionRedondeada = Number(comision.toFixed(2));
+    const netoRedondeado = Math.max(0, Number((montoPagado - comisionRedondeada).toFixed(2)));
+    const tieneStripe = sol.metodoPago === "stripe" || 
+      !!sol.stripePaymentIntentId || 
+      !!sol.stripeSessionId || 
+      historial.some(p => p.metodo === "stripe" || String(p.referencia || "").startsWith("pi_"));
+
+    const comisionConfirmada = (sol.stripeSincronizadoEn !== undefined) || (comisionRedondeada > 0) || hayComisionEnHistorial;
+
+    return {
+      montoPagado,
+      comision: comisionRedondeada,
+      neto: netoRedondeado,
+      tieneStripe,
+      comisionConfirmada
+    };
   };
 
   const abrirGestionPagos = (solicitud) => {
@@ -853,6 +932,8 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         notas: formAbono.notas.trim(),
         registradoPor: auth.currentUser?.email || "Administrador",
         timestamp: new Date().toISOString(),
+        comisionStripe: formAbono.metodo === "stripe" ? null : 0,
+        netoRecibido: formAbono.metodo === "stripe" ? null : montoNum,
         ...comprobanteData
       };
 
@@ -866,11 +947,16 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       const montoPorCuota = totalInv / planCuotas;
       const cuotasPagadasCalc = Math.min(planCuotas, Math.floor((nuevoMontoPagado + 1) / montoPorCuota));
 
+      const totalComisionCalculada = nuevoHistorial.reduce((acc, p) => acc + (Number(p.comisionStripe) || 0), 0);
+      const totalNetoCalculado = Number((nuevoMontoPagado - totalComisionCalculada).toFixed(2));
+
       const updateData = {
         montoPagado: nuevoMontoPagado,
         saldoPendiente: nuevoSaldo,
         cuotasPagadas: cuotasPagadasCalc,
         historialPagos: nuevoHistorial,
+        comisionStripe: totalComisionCalculada,
+        netoRecibido: totalNetoCalculado,
         ultimoPagoFecha: formAbono.fecha,
         ultimoPagoMonto: montoNum
       };
@@ -937,11 +1023,16 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       const montoPorCuota = totalInv / planCuotas;
       const cuotasPagadasCalc = Math.min(planCuotas, Math.floor((nuevoMontoPagado + 1) / montoPorCuota));
 
+      const totalComisionCalculada = nuevoHistorial.reduce((acc, p) => acc + (Number(p.comisionStripe) || 0), 0);
+      const totalNetoCalculado = Number((nuevoMontoPagado - totalComisionCalculada).toFixed(2));
+
       const updateData = {
         montoPagado: nuevoMontoPagado,
         saldoPendiente: nuevoSaldo,
         cuotasPagadas: cuotasPagadasCalc,
-        historialPagos: nuevoHistorial
+        historialPagos: nuevoHistorial,
+        comisionStripe: totalComisionCalculada,
+        netoRecibido: totalNetoCalculado
       };
 
       await updateDoc(doc(db, "solicitudesCursos", solicitud.id), updateData);
@@ -1250,6 +1341,8 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       "Plan Cuotas",
       "Cuotas Pagadas",
       "Monto Pagado USD",
+      "Comisión Stripe USD",
+      "Neto en Banco USD",
       "Monto Total Inversión USD",
       "Saldo Pendiente USD",
       "Historial Abonos (Cantidad)",
@@ -1276,6 +1369,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         : (s.experienciaTemas || "");
 
       const cantAbonos = Array.isArray(s.historialPagos) ? s.historialPagos.length : (Number(s.montoPagado) > 0 ? 1 : 0);
+      const finanzas = calcularFinanzasSolicitud(s);
 
       return [
         `"${fecha}"`,
@@ -1303,6 +1397,8 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         `"${s.planCuotas ? `${s.planCuotas} cuota(s)` : 'Pago único'}"`,
         `"${s.cuotasPagadas || (s.metodoPago === 'stripe' ? 1 : 0)}"`,
         `"${s.montoPagado || (s.metodoPago === 'stripe' ? 3350 : 0)}"`,
+        `"${finanzas.comision > 0 ? finanzas.comision.toFixed(2) : '0.00'}"`,
+        `"${finanzas.neto.toFixed(2)}"`,
         `"${s.montoTotalInversion || 3350}"`,
         `"${s.saldoPendiente !== undefined ? s.saldoPendiente : (s.metodoPago === 'stripe' ? 0 : 3350)}"`,
         `"${cantAbonos}"`,
@@ -1455,6 +1551,27 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
           </Button>
 
           <Button
+            variant="outlined"
+            onClick={handleSincronizarStripe}
+            disabled={cargando || sincronizandoStripe}
+            startIcon={sincronizandoStripe ? <CircularProgress size={14} color="inherit" /> : null}
+            sx={{
+              borderColor: "#6366f1",
+              color: "#4f46e5",
+              textTransform: "none",
+              fontSize: "13px",
+              py: 1,
+              px: 2,
+              borderRadius: "12px",
+              fontWeight: 700,
+              bgcolor: "#eef2ff",
+              "&:hover": { borderColor: "#4338ca", color: "#3730a3", bgcolor: "#e0e7ff" }
+            }}
+          >
+            {sincronizandoStripe ? "Sincronizando..." : "💳 Sincronizar Comisiones Stripe"}
+          </Button>
+
+          <Button
             variant="contained"
             onClick={exportarCSV}
             disabled={cargando || solicitudesDelCurso.length === 0}
@@ -1533,7 +1650,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
             </div>
 
             {/* CONTADORES Y MÉTRICAS DEL CURSO SELECCIONADO */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 w-full lg:w-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 w-full lg:w-auto">
               <div className="bg-amber-50 border border-amber-200 px-3 py-2 rounded-2xl text-center">
                 <span className="text-[10px] uppercase font-bold text-amber-800 block">Pendientes</span>
                 <span className="text-xl font-black text-amber-900 leading-tight">{conteoPendientes}</span>
@@ -1547,15 +1664,29 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                 <span className="text-xl font-black text-emerald-900 leading-tight">{conteoConfirmados}</span>
               </div>
               <div className="bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-2xl text-center">
-                <span className="text-[10px] uppercase font-bold text-indigo-800 block">Total Recaudado</span>
-                <span className="text-lg font-black text-indigo-900 leading-tight">
+                <span className="text-[10px] uppercase font-bold text-indigo-800 block">Recaudado (Bruto)</span>
+                <span className="text-base sm:text-lg font-black text-indigo-900 leading-tight">
                   ${totalRecaudado.toLocaleString()}
                 </span>
                 <span className="text-[9px] font-bold text-indigo-600 block">USD</span>
               </div>
-              <div className="bg-rose-50 border border-rose-200 px-3 py-2 rounded-2xl text-center">
+              <div className="bg-purple-50 border border-purple-200 px-3 py-2 rounded-2xl text-center">
+                <span className="text-[10px] uppercase font-bold text-purple-800 block">Comisión Stripe</span>
+                <span className="text-base sm:text-lg font-black text-purple-900 leading-tight">
+                  -${totalComisionStripe.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+                <span className="text-[9px] font-bold text-purple-600 block">USD Descontado</span>
+              </div>
+              <div className="bg-teal-50 border border-teal-200 px-3 py-2 rounded-2xl text-center">
+                <span className="text-[10px] uppercase font-bold text-teal-800 block">Neto en Banco</span>
+                <span className="text-base sm:text-lg font-black text-teal-900 leading-tight">
+                  ${totalNetoBanco.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+                <span className="text-[9px] font-bold text-teal-600 block">USD Real</span>
+              </div>
+              <div className="bg-rose-50 border border-rose-200 px-3 py-2 rounded-2xl text-center col-span-2 sm:col-span-1">
                 <span className="text-[10px] uppercase font-bold text-rose-800 block">Saldo por Cobrar</span>
-                <span className="text-lg font-black text-rose-900 leading-tight">
+                <span className="text-base sm:text-lg font-black text-rose-900 leading-tight">
                   ${totalPorCobrar.toLocaleString()}
                 </span>
                 <span className="text-[9px] font-bold text-rose-600 block">USD</span>
@@ -1687,9 +1818,10 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
               const badge = getBadgeEstado(solicitud.estado);
               const cleanPhone = (solicitud.telefono || "").replace(/[^0-9+]/g, "");
               const esStripe = solicitud.metodoPago === "stripe";
+              const finanzasSol = calcularFinanzasSolicitud(solicitud);
               const planCuotas = Number(solicitud.planCuotas) || 1;
               const cuotasPagadas = Number(solicitud.cuotasPagadas) || (esStripe ? 1 : 0);
-              const montoPagado = Number(solicitud.montoPagado) || (esStripe ? 3350 : 0);
+              const montoPagado = finanzasSol.montoPagado || (esStripe ? 3350 : 0);
               const montoTotal = Number(solicitud.montoTotalInversion) || 3350;
               const saldoPendiente = solicitud.saldoPendiente !== undefined 
                 ? Number(solicitud.saldoPendiente) 
@@ -2072,6 +2204,30 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
 
                       {/* DETALLE FINANCIERO */}
                       <div className="space-y-1.5 pt-1 border-t border-slate-200 text-xs">
+                        {finanzasSol.tieneStripe && finanzasSol.comision > 0 && (
+                          <div className="flex items-center justify-between text-[11px] bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-200 text-purple-900 font-semibold">
+                            <span className="flex items-center gap-1">
+                              <span>💳</span>
+                              <span>Comisión Stripe:</span>
+                            </span>
+                            <span className="font-bold text-purple-800">
+                              -${finanzasSol.comision.toFixed(2)} USD
+                            </span>
+                          </div>
+                        )}
+
+                        {finanzasSol.tieneStripe && finanzasSol.montoPagado > 0 && (
+                          <div className="flex items-center justify-between text-[11px] bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200 text-teal-900 font-semibold">
+                            <span className="flex items-center gap-1">
+                              <span>🏛️</span>
+                              <span>Neto en Banco:</span>
+                            </span>
+                            <span className="font-black text-teal-800">
+                              ${finanzasSol.neto.toFixed(2)} USD
+                            </span>
+                          </div>
+                        )}
+
                         {Number(solicitud.descuentoMonto) > 0 && (
                           <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2 text-emerald-900 space-y-0.5">
                             <div className="flex items-center justify-between text-[11px] font-bold">
@@ -2184,6 +2340,11 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                                             <span className="text-[9px] uppercase font-bold px-1.5 py-0.2 rounded bg-white border border-gray-200 text-gray-700">
                                               {p.metodo}
                                             </span>
+                                            {p.balanceTransactionId && (
+                                              <span className="text-[8px] font-mono text-slate-400 block truncate" title={`Tx: ${p.balanceTransactionId}`}>
+                                                Tx: {p.balanceTransactionId}
+                                              </span>
+                                            )}
                                           </div>
                                           <span className="text-[10px] text-gray-600 block truncate" title={p.notas || p.referencia}>
                                             {p.notas || p.referencia || "Abono"}
@@ -2193,6 +2354,16 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                                           <span className="font-black text-emerald-700 text-xs block">
                                             +${Number(p.monto).toLocaleString()} USD
                                           </span>
+                                          {Number(p.comisionStripe) > 0 && (
+                                            <span className="text-[10px] font-bold text-purple-700 block">
+                                              Comisión: -${Number(p.comisionStripe).toFixed(2)}
+                                            </span>
+                                          )}
+                                          {p.netoRecibido !== undefined && p.netoRecibido !== null && (
+                                            <span className="text-[10px] font-bold text-teal-700 block">
+                                              Neto: ${Number(p.netoRecibido).toFixed(2)}
+                                            </span>
+                                          )}
                                         </div>
                                       </div>
                                     ))
@@ -2333,31 +2504,51 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="bg-white/10 px-3.5 py-2 rounded-xl text-center border border-white/20">
-                    <span className="text-[10px] uppercase text-blue-200 block font-bold">Total Inversión</span>
-                    <span className="text-base font-black text-white">
-                      ${(Number(modalPagos.solicitud.montoTotalInversion) || 3350).toLocaleString()} USD
-                    </span>
-                  </div>
+              {/* RESUMEN FINANCIERO */}
+              {(() => {
+                const finanzasModal = calcularFinanzasSolicitud(modalPagos.solicitud);
+                return (
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                    <div className="bg-white/10 px-3 py-2 rounded-xl text-center border border-white/20">
+                      <span className="text-[10px] uppercase text-blue-200 block font-bold">Total Inversión</span>
+                      <span className="text-sm sm:text-base font-black text-white">
+                        ${(Number(modalPagos.solicitud.montoTotalInversion) || 3350).toLocaleString()} USD
+                      </span>
+                    </div>
 
-                  <div className="bg-emerald-500/20 px-3.5 py-2 rounded-xl text-center border border-emerald-400/30">
-                    <span className="text-[10px] uppercase text-emerald-200 block font-bold">Abonado</span>
-                    <span className="text-base font-black text-emerald-300">
-                      ${(Number(modalPagos.solicitud.montoPagado) || 0).toLocaleString()} USD
-                    </span>
-                  </div>
+                    <div className="bg-emerald-500/20 px-3 py-2 rounded-xl text-center border border-emerald-400/30">
+                      <span className="text-[10px] uppercase text-emerald-200 block font-bold">Abonado</span>
+                      <span className="text-sm sm:text-base font-black text-emerald-300">
+                        ${(Number(modalPagos.solicitud.montoPagado) || 0).toLocaleString()} USD
+                      </span>
+                    </div>
 
-                  <div className="bg-rose-500/20 px-3.5 py-2 rounded-xl text-center border border-rose-400/30">
-                    <span className="text-[10px] uppercase text-rose-200 block font-bold">Saldo Restante</span>
-                    <span className="text-base font-black text-rose-300">
-                      ${(Number(modalPagos.solicitud.saldoPendiente) !== undefined 
-                        ? Number(modalPagos.solicitud.saldoPendiente) 
-                        : Math.max(0, (Number(modalPagos.solicitud.montoTotalInversion) || 3350) - (Number(modalPagos.solicitud.montoPagado) || 0))
-                      ).toLocaleString()} USD
-                    </span>
+                    <div className="bg-purple-500/20 px-3 py-2 rounded-xl text-center border border-purple-400/30">
+                      <span className="text-[10px] uppercase text-purple-200 block font-bold">Comisión Stripe</span>
+                      <span className="text-sm sm:text-base font-black text-purple-300">
+                        -${finanzasModal.comision.toFixed(2)} USD
+                      </span>
+                    </div>
+
+                    <div className="bg-teal-500/20 px-3 py-2 rounded-xl text-center border border-teal-400/30">
+                      <span className="text-[10px] uppercase text-teal-200 block font-bold">Neto en Banco</span>
+                      <span className="text-sm sm:text-base font-black text-teal-300">
+                        ${finanzasModal.neto.toFixed(2)} USD
+                      </span>
+                    </div>
+
+                    <div className="bg-rose-500/20 px-3 py-2 rounded-xl text-center border border-rose-400/30 col-span-2 sm:col-span-1">
+                      <span className="text-[10px] uppercase text-rose-200 block font-bold">Saldo Restante</span>
+                      <span className="text-sm sm:text-base font-black text-rose-300">
+                        ${(Number(modalPagos.solicitud.saldoPendiente) !== undefined 
+                          ? Number(modalPagos.solicitud.saldoPendiente) 
+                          : Math.max(0, (Number(modalPagos.solicitud.montoTotalInversion) || 3350) - (Number(modalPagos.solicitud.montoPagado) || 0))
+                        ).toLocaleString()} USD
+                      </span>
+                    </div>
                   </div>
-                </div>
+                );
+              })()}
               </div>
 
               {/* BARRA DE PROGRESO DE LIQUIDACIÓN */}
@@ -2414,7 +2605,9 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                         <thead className="bg-slate-100 text-slate-700 font-bold uppercase text-[10px] tracking-wider border-b border-gray-200">
                           <tr>
                             <th className="px-3.5 py-2.5">Fecha</th>
-                            <th className="px-3.5 py-2.5">Monto</th>
+                            <th className="px-3.5 py-2.5">Monto Bruto</th>
+                            <th className="px-3.5 py-2.5">Comisión Stripe</th>
+                            <th className="px-3.5 py-2.5">Neto en Banco</th>
                             <th className="px-3.5 py-2.5">Método</th>
                             <th className="px-3.5 py-2.5">Detalle / Referencia</th>
                             <th className="px-3.5 py-2.5">Registrado Por</th>
@@ -2422,43 +2615,62 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200 bg-white">
-                          {historialModal.map((pago, idx) => (
-                            <tr key={pago.id || idx} className="hover:bg-slate-50 transition-colors">
-                              <td className="px-3.5 py-2.5 font-semibold text-gray-900 whitespace-nowrap">
-                                {pago.fecha || "Sin fecha"}
-                              </td>
-                              <td className="px-3.5 py-2.5 font-black text-emerald-700 whitespace-nowrap">
-                                ${Number(pago.monto).toLocaleString()} USD
-                              </td>
-                              <td className="px-3.5 py-2.5 whitespace-nowrap">
-                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase inline-flex items-center gap-1 ${
-                                  pago.metodo === 'stripe'
-                                    ? 'bg-indigo-100 text-indigo-900 border border-indigo-200'
-                                    : 'bg-amber-100 text-amber-900 border border-amber-200'
-                                }`}>
-                                  {pago.metodo === 'stripe' ? '💳 Stripe' : '🏛️ Banco'}
-                                </span>
-                              </td>
-                              <td className="px-3.5 py-2.5 max-w-[220px]">
-                                <span className="block font-semibold text-gray-800 truncate" title={pago.notas || pago.referencia}>
-                                  {pago.notas || pago.referencia || "Abono"}
-                                </span>
-                                {pago.referencia && pago.referencia !== pago.notas && (
-                                  <span className="block text-[10px] text-gray-500 font-mono truncate" title={pago.referencia}>
-                                    Ref: {pago.referencia}
+                          {historialModal.map((pago, idx) => {
+                            const comisionPago = Number(pago.comisionStripe) || 0;
+                            const netoPago = pago.netoRecibido !== undefined && pago.netoRecibido !== null
+                              ? Number(pago.netoRecibido)
+                              : Math.max(0, Number(pago.monto) - comisionPago);
+                            return (
+                              <tr key={pago.id || idx} className="hover:bg-slate-50 transition-colors">
+                                <td className="px-3.5 py-2.5 font-semibold text-gray-900 whitespace-nowrap">
+                                  {pago.fecha || "Sin fecha"}
+                                </td>
+                                <td className="px-3.5 py-2.5 font-black text-emerald-700 whitespace-nowrap">
+                                  ${Number(pago.monto).toLocaleString()} USD
+                                </td>
+                                <td className="px-3.5 py-2.5 whitespace-nowrap">
+                                  {pago.metodo === 'stripe' || comisionPago > 0 ? (
+                                    <span className="font-bold text-purple-700 text-xs">
+                                      -${comisionPago.toFixed(2)} USD
+                                    </span>
+                                  ) : (
+                                    <span className="text-[10px] text-gray-400 font-semibold">$0.00</span>
+                                  )}
+                                </td>
+                                <td className="px-3.5 py-2.5 whitespace-nowrap">
+                                  <span className="font-bold text-teal-700 text-xs">
+                                    ${netoPago.toFixed(2)} USD
                                   </span>
-                                )}
-                                {pago.comprobanteUrl && (
-                                  <a
-                                    href={pago.comprobanteUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[10px] font-bold text-main-blue hover:underline inline-flex items-center gap-0.5 mt-0.5"
-                                  >
-                                    📎 Ver Comprobante
-                                  </a>
-                                )}
-                              </td>
+                                </td>
+                                <td className="px-3.5 py-2.5 whitespace-nowrap">
+                                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase inline-flex items-center gap-1 ${
+                                    pago.metodo === 'stripe'
+                                      ? 'bg-indigo-100 text-indigo-900 border border-indigo-200'
+                                      : 'bg-amber-100 text-amber-900 border border-amber-200'
+                                  }`}>
+                                    {pago.metodo === 'stripe' ? '💳 Stripe' : '🏛️ Banco'}
+                                  </span>
+                                </td>
+                                <td className="px-3.5 py-2.5 max-w-[220px]">
+                                  <span className="block font-semibold text-gray-800 truncate" title={pago.notas || pago.referencia}>
+                                    {pago.notas || pago.referencia || "Abono"}
+                                  </span>
+                                  {pago.referencia && pago.referencia !== pago.notas && (
+                                    <span className="block text-[10px] text-gray-500 font-mono truncate" title={pago.referencia}>
+                                      Ref: {pago.referencia}
+                                    </span>
+                                  )}
+                                  {pago.comprobanteUrl && (
+                                    <a
+                                      href={pago.comprobanteUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-[10px] font-bold text-main-blue hover:underline inline-flex items-center gap-0.5 mt-0.5"
+                                    >
+                                      📎 Ver Comprobante
+                                    </a>
+                                  )}
+                                </td>
                               <td className="px-3.5 py-2.5 text-[10px] text-gray-500 truncate max-w-[140px]" title={pago.registradoPor}>
                                 {pago.registradoPor || "Admin"}
                               </td>
@@ -2479,7 +2691,8 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                                 )}
                               </td>
                             </tr>
-                          ))}
+                          );
+                        })}
                         </tbody>
                       </table>
                     </div>

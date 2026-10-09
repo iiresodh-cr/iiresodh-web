@@ -1774,6 +1774,35 @@ exports.stripeWebhookCursos = onRequest({
         }
       }
 
+      // Consultar balance_transaction oficial de Stripe (Opción B)
+      let comisionStripe = 0;
+      let netoRecibido = montoTotal;
+      let balanceTransactionId = null;
+
+      if (session.payment_intent) {
+        try {
+          const pi = await stripe.paymentIntents.retrieve(session.payment_intent, {
+            expand: ['latest_charge.balance_transaction']
+          });
+          let bt = pi.latest_charge?.balance_transaction;
+          if (typeof bt === 'string') {
+            bt = await stripe.balanceTransactions.retrieve(bt);
+          } else if (!bt && pi.latest_charge) {
+            const chId = typeof pi.latest_charge === 'string' ? pi.latest_charge : pi.latest_charge.id;
+            const ch = await stripe.charges.retrieve(chId, { expand: ['balance_transaction'] });
+            bt = ch.balance_transaction;
+            if (typeof bt === 'string') bt = await stripe.balanceTransactions.retrieve(bt);
+          }
+          if (bt && bt.fee !== undefined) {
+            comisionStripe = Number((bt.fee / 100).toFixed(2));
+            netoRecibido = Number((bt.net / 100).toFixed(2));
+            balanceTransactionId = bt.id;
+          }
+        } catch (errFee) {
+          console.warn("No se pudo obtener balance_transaction en checkout.session.completed:", errFee.message);
+        }
+      }
+
       const nuevoPagoItem = {
         id: session.id,
         monto: montoTotal,
@@ -1782,7 +1811,10 @@ exports.stripeWebhookCursos = onRequest({
         referencia: session.payment_intent || session.id,
         notas: metadata.concepto || "Abono mediante enlace de pago Stripe",
         registradoPor: "Stripe Checkout (Automático)",
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        comisionStripe: comisionStripe,
+        netoRecibido: netoRecibido,
+        balanceTransactionId: balanceTransactionId
       };
 
       let saldoPendienteFinal = 0;
@@ -1815,6 +1847,9 @@ exports.stripeWebhookCursos = onRequest({
           ? currentData.enlacesPago.map(ep => ep.id === session.id ? { ...ep, estado: "pagado", fechaPago: new Date().toISOString() } : ep)
           : [];
 
+        const totalComisionCalculada = nuevoHistorial.reduce((acc, p) => acc + (Number(p.comisionStripe) || 0), 0);
+        const totalNetoCalculado = Number((nuevoMontoPagado - totalComisionCalculada).toFixed(2));
+
         const updateData = {
           metodoPago: "stripe",
           montoPagado: nuevoMontoPagado,
@@ -1823,6 +1858,10 @@ exports.stripeWebhookCursos = onRequest({
           enlacesPago: enlacesActualizados,
           stripeSessionId: session.id,
           stripePaymentIntentId: session.payment_intent || null,
+          stripeBalanceTransactionId: balanceTransactionId || currentData.stripeBalanceTransactionId || null,
+          comisionStripe: totalComisionCalculada,
+          netoRecibido: totalNetoCalculado,
+          stripeSincronizadoEn: admin.firestore.FieldValue.serverTimestamp(),
           ultimoPagoFecha: new Date().toISOString().slice(0, 10),
           ultimoPagoMonto: montoTotal,
           fechaPago: admin.firestore.FieldValue.serverTimestamp()
@@ -1835,7 +1874,7 @@ exports.stripeWebhookCursos = onRequest({
         }
 
         await db.collection("solicitudesCursos").doc(docId).update(updateData);
-        console.log(`Solicitud ${docId} actualizada con abono Stripe de ${montoTotal} USD. Saldo pendiente: ${nuevoSaldo}.`);
+        console.log(`Solicitud ${docId} actualizada con abono Stripe de ${montoTotal} USD (Comisión: ${comisionStripe}, Neto: ${netoRecibido}). Saldo pendiente: ${nuevoSaldo}.`);
       } else {
         await db.collection("solicitudesCursos").add({
           cursoId: cursoId,
@@ -1854,13 +1893,17 @@ exports.stripeWebhookCursos = onRequest({
           montoPagado: montoTotal,
           saldoPendiente: 0,
           historialPagos: [nuevoPagoItem],
+          comisionStripe: comisionStripe,
+          netoRecibido: netoRecibido,
+          stripeBalanceTransactionId: balanceTransactionId,
+          stripeSincronizadoEn: admin.firestore.FieldValue.serverTimestamp(),
           moneda: moneda,
           stripeSessionId: session.id,
           stripePaymentIntentId: session.payment_intent || null,
           fechaSolicitud: admin.firestore.FieldValue.serverTimestamp(),
           fechaPago: admin.firestore.FieldValue.serverTimestamp()
         });
-        console.log(`Nueva inscripción creada en solicitudesCursos para ${email}.`);
+        console.log(`Nueva inscripción creada en solicitudesCursos para ${email} (Comisión: ${comisionStripe}, Neto: ${netoRecibido}).`);
       }
 
       // Enviar correo de confirmación de inscripción al participante
@@ -1962,6 +2005,33 @@ exports.stripeWebhookCursos = onRequest({
       const totalInversion = Number(metadata.montoTotal) || montoTotal;
       const saldoPendiente = Number(metadata.saldoPendiente) || 0;
 
+      // Consultar balance_transaction oficial de Stripe (Opción B)
+      let comisionStripe = 0;
+      let netoRecibido = montoTotal;
+      let balanceTransactionId = null;
+
+      try {
+        const piFull = await stripe.paymentIntents.retrieve(paymentIntent.id, {
+          expand: ['latest_charge.balance_transaction']
+        });
+        let bt = piFull.latest_charge?.balance_transaction;
+        if (typeof bt === 'string') {
+          bt = await stripe.balanceTransactions.retrieve(bt);
+        } else if (!bt && piFull.latest_charge) {
+          const chId = typeof piFull.latest_charge === 'string' ? piFull.latest_charge : piFull.latest_charge.id;
+          const ch = await stripe.charges.retrieve(chId, { expand: ['balance_transaction'] });
+          bt = ch.balance_transaction;
+          if (typeof bt === 'string') bt = await stripe.balanceTransactions.retrieve(bt);
+        }
+        if (bt && bt.fee !== undefined) {
+          comisionStripe = Number((bt.fee / 100).toFixed(2));
+          netoRecibido = Number((bt.net / 100).toFixed(2));
+          balanceTransactionId = bt.id;
+        }
+      } catch (errFee) {
+        console.warn("No se pudo obtener balance_transaction en payment_intent.succeeded:", errFee.message);
+      }
+
       // Verificar si ya existía una solicitud con este email y curso
       const checkPrev = await db.collection("solicitudesCursos")
         .where("email", "==", email)
@@ -1975,6 +2045,26 @@ exports.stripeWebhookCursos = onRequest({
         const nuevaCuota = (current.cuotasPagadas || 0) + 1;
         const totalAbonado = (current.montoPagado || 0) + montoTotal;
         const saldoRestante = Math.max(0, (current.montoTotalInversion || totalInversion) - totalAbonado);
+
+        const nuevoPagoItem = {
+          id: paymentIntent.id,
+          monto: montoTotal,
+          fecha: new Date().toISOString().slice(0, 10),
+          metodo: "stripe",
+          referencia: paymentIntent.id,
+          notas: planCuotas > 1 ? `Cuota ${nuevaCuota} de ${planCuotas}` : "Pago en línea con tarjeta vía Stripe",
+          registradoPor: "Stripe Elements (Automático)",
+          timestamp: new Date().toISOString(),
+          comisionStripe: comisionStripe,
+          netoRecibido: netoRecibido,
+          balanceTransactionId: balanceTransactionId
+        };
+
+        const historialPrevio = Array.isArray(current.historialPagos) ? current.historialPagos : [];
+        const yaEstaEnHistorial = historialPrevio.some(p => p.id === paymentIntent.id || p.referencia === paymentIntent.id);
+        const nuevoHistorial = yaEstaEnHistorial ? historialPrevio : [...historialPrevio, nuevoPagoItem];
+        const totalComisionCalculada = nuevoHistorial.reduce((acc, p) => acc + (Number(p.comisionStripe) || 0), 0);
+        const totalNetoCalculado = Number((totalAbonado - totalComisionCalculada).toFixed(2));
 
         let proximaFechaCobro = null;
         if (saldoRestante > 0 && nuevaCuota < planCuotas) {
@@ -1995,6 +2085,11 @@ exports.stripeWebhookCursos = onRequest({
           montoPagado: totalAbonado,
           montoTotalInversion: totalInversion,
           saldoPendiente: saldoRestante,
+          historialPagos: nuevoHistorial,
+          comisionStripe: totalComisionCalculada,
+          netoRecibido: totalNetoCalculado,
+          stripeBalanceTransactionId: balanceTransactionId || current.stripeBalanceTransactionId || null,
+          stripeSincronizadoEn: admin.firestore.FieldValue.serverTimestamp(),
           stripePaymentIntentId: paymentIntent.id,
           stripeCustomerId: paymentIntent.customer || current.stripeCustomerId || null,
           fechaPago: admin.firestore.FieldValue.serverTimestamp(),
@@ -2012,7 +2107,7 @@ exports.stripeWebhookCursos = onRequest({
           constanciaPrivacidad: "Consentimiento informado otorgado conforme a la Ley N° 8968 de Costa Rica.",
           comentarios: `Pago procesado con Stripe (${moneda} ${montoTotal}). Cuota ${nuevaCuota}/${planCuotas}. Saldo pendiente: ${saldoRestante}.`
         });
-        console.log(`Solicitud ${docId} actualizada con pago Stripe para ${email}.`);
+        console.log(`Solicitud ${docId} actualizada con pago Stripe para ${email} (Comisión: ${comisionStripe}, Neto: ${netoRecibido}).`);
 
         // Enviar correo de confirmación de cuota/inscripción
         await enviarCorreoConfirmacionCurso({
@@ -2887,4 +2982,234 @@ exports.validarCuponDescuento = onCall({
     throw new HttpsError("internal", "No se pudo verificar el cupón en este momento.");
   }
 });
+
+// ============================================================================
+// 18. SINCRONIZACIÓN OFICIAL DE COMISIONES Y NETOS DE STRIPE (OPCIÓN B)
+// ============================================================================
+async function resolverBalanceTransactionStripe(stripe, { paymentIntentId, sessionId, chargeId, balanceTxId }) {
+  try {
+    if (balanceTxId) {
+      const bt = await stripe.balanceTransactions.retrieve(balanceTxId);
+      if (bt && bt.fee !== undefined) {
+        return {
+          fee: Number((bt.fee / 100).toFixed(2)),
+          net: Number((bt.net / 100).toFixed(2)),
+          btId: bt.id
+        };
+      }
+    }
+
+    if (paymentIntentId) {
+      const pi = await stripe.paymentIntents.retrieve(paymentIntentId, {
+        expand: ['latest_charge.balance_transaction']
+      });
+      let bt = pi.latest_charge?.balance_transaction;
+      if (typeof bt === 'string') {
+        bt = await stripe.balanceTransactions.retrieve(bt);
+      } else if (!bt && pi.latest_charge) {
+        const chId = typeof pi.latest_charge === 'string' ? pi.latest_charge : pi.latest_charge.id;
+        const ch = await stripe.charges.retrieve(chId, { expand: ['balance_transaction'] });
+        bt = ch.balance_transaction;
+        if (typeof bt === 'string') bt = await stripe.balanceTransactions.retrieve(bt);
+      }
+      if (bt && bt.fee !== undefined) {
+        return {
+          fee: Number((bt.fee / 100).toFixed(2)),
+          net: Number((bt.net / 100).toFixed(2)),
+          btId: bt.id
+        };
+      }
+    }
+
+    if (sessionId) {
+      const sess = await stripe.checkout.sessions.retrieve(sessionId, {
+        expand: ['payment_intent.latest_charge.balance_transaction']
+      });
+      let bt = sess.payment_intent?.latest_charge?.balance_transaction;
+      if (typeof bt === 'string') {
+        bt = await stripe.balanceTransactions.retrieve(bt);
+      } else if (!bt && sess.payment_intent?.latest_charge) {
+        const chId = typeof sess.payment_intent.latest_charge === 'string' ? sess.payment_intent.latest_charge : sess.payment_intent.latest_charge.id;
+        const ch = await stripe.charges.retrieve(chId, { expand: ['balance_transaction'] });
+        bt = ch.balance_transaction;
+        if (typeof bt === 'string') bt = await stripe.balanceTransactions.retrieve(bt);
+      }
+      if (bt && bt.fee !== undefined) {
+        return {
+          fee: Number((bt.fee / 100).toFixed(2)),
+          net: Number((bt.net / 100).toFixed(2)),
+          btId: bt.id
+        };
+      }
+    }
+
+    if (chargeId) {
+      const ch = await stripe.charges.retrieve(chargeId, { expand: ['balance_transaction'] });
+      let bt = ch.balance_transaction;
+      if (typeof bt === 'string') bt = await stripe.balanceTransactions.retrieve(bt);
+      if (bt && bt.fee !== undefined) {
+        return {
+          fee: Number((bt.fee / 100).toFixed(2)),
+          net: Number((bt.net / 100).toFixed(2)),
+          btId: bt.id
+        };
+      }
+    }
+  } catch (err) {
+    console.warn(`Aviso: No se pudo resolver balance_transaction en Stripe para [pi:${paymentIntentId}, cs:${sessionId}]: ${err.message}`);
+  }
+
+  return { fee: null, net: null, btId: null };
+}
+
+exports.sincronizarComisionesStripeCursos = onCall({
+  secrets: [STRIPE_CURSOS_SECRET_KEY],
+  region: "us-central1",
+  cors: true
+}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Debes estar autenticado para sincronizar comisiones de Stripe.");
+  }
+
+  const { cursoId = null, solicitudId = null } = request.data || {};
+  const stripeKey = getStripeCursosKey();
+  if (!stripeKey) {
+    throw new HttpsError("failed-precondition", "No se encontró la clave de API STRIPE_CURSOS_SECRET_KEY configurada.");
+  }
+
+  const stripe = new Stripe(stripeKey);
+  const db = admin.firestore();
+
+  try {
+    let docsParaProcesar = [];
+
+    if (solicitudId) {
+      const docSnap = await db.collection("solicitudesCursos").doc(solicitudId).get();
+      if (!docSnap.exists) {
+        throw new HttpsError("not-found", "La solicitud especificada no existe.");
+      }
+      docsParaProcesar = [docSnap];
+    } else {
+      const snap = await db.collection("solicitudesCursos").get();
+      docsParaProcesar = snap.docs;
+
+      if (cursoId && cursoId !== "todos") {
+        const cNorm = String(cursoId).toLowerCase().trim();
+        docsParaProcesar = docsParaProcesar.filter(d => {
+          const data = d.data();
+          const cid = String(data.cursoId || "").toLowerCase();
+          const ctit = String(data.cursoTitulo || "").toLowerCase();
+          return cid === cNorm || ctit.includes(cNorm) || (cNorm.includes("palermo") && (cid.includes("palermo") || ctit.includes("palermo")));
+        });
+      }
+    }
+
+    let actualizados = 0;
+    let totalComisiones = 0;
+
+    for (const docSnap of docsParaProcesar) {
+      const data = docSnap.data();
+      const historial = Array.isArray(data.historialPagos) ? [...data.historialPagos] : [];
+      let principalBtId = data.stripeBalanceTransactionId || null;
+
+      // 1. Sincronizar abonos dentro de historialPagos
+      const nuevoHistorial = [];
+      for (const p of historial) {
+        const pCopia = { ...p };
+        const refStr = String(pCopia.referencia || "");
+        const idStr = String(pCopia.id || "");
+        const esStripe = pCopia.metodo === "stripe" || 
+          refStr.startsWith("pi_") || 
+          refStr.startsWith("cs_") ||
+          refStr.startsWith("ch_") ||
+          idStr.startsWith("cs_") ||
+          idStr.startsWith("pi_");
+
+        if (esStripe) {
+          const piId = refStr.startsWith("pi_") ? refStr : (idStr.startsWith("pi_") ? idStr : null);
+          const csId = refStr.startsWith("cs_") ? refStr : (idStr.startsWith("cs_") ? idStr : null);
+          const chId = refStr.startsWith("ch_") ? refStr : (idStr.startsWith("ch_") ? idStr : null);
+          const btId = pCopia.balanceTransactionId || null;
+
+          const resBt = await resolverBalanceTransactionStripe(stripe, {
+            paymentIntentId: piId,
+            sessionId: csId,
+            chargeId: chId,
+            balanceTxId: btId
+          });
+
+          if (resBt.fee !== null) {
+            pCopia.comisionStripe = resBt.fee;
+            pCopia.netoRecibido = resBt.net;
+            pCopia.balanceTransactionId = resBt.btId;
+            if (!principalBtId) principalBtId = resBt.btId;
+          } else if (pCopia.comisionStripe === undefined) {
+            pCopia.comisionStripe = null;
+            pCopia.netoRecibido = Number(pCopia.monto) || 0;
+          }
+        } else {
+          // Transferencia bancaria o efectivo: sin comisión pasarela
+          pCopia.comisionStripe = 0;
+          pCopia.netoRecibido = Number(pCopia.monto) || 0;
+        }
+        nuevoHistorial.push(pCopia);
+      }
+
+      // 2. Si el doc tiene stripePaymentIntentId o stripeSessionId a nivel raíz
+      let rootFee = null;
+      let rootNet = null;
+      if (data.stripePaymentIntentId || data.stripeSessionId) {
+        const resRoot = await resolverBalanceTransactionStripe(stripe, {
+          paymentIntentId: data.stripePaymentIntentId,
+          sessionId: data.stripeSessionId,
+          balanceTxId: data.stripeBalanceTransactionId
+        });
+        if (resRoot.fee !== null) {
+          rootFee = resRoot.fee;
+          rootNet = resRoot.net;
+          if (!principalBtId) principalBtId = resRoot.btId;
+        }
+      }
+
+      // 3. Totales de la solicitud
+      const montoPagado = Number(data.montoPagado) || 0;
+      let comisionCalculada = 0;
+
+      if (nuevoHistorial.length > 0) {
+        comisionCalculada = nuevoHistorial.reduce((acc, p) => acc + (Number(p.comisionStripe) || 0), 0);
+      }
+
+      if (comisionCalculada === 0 && rootFee !== null) {
+        comisionCalculada = rootFee;
+      } else if (comisionCalculada === 0 && Number(data.comisionStripe) > 0) {
+        comisionCalculada = Number(data.comisionStripe);
+      }
+
+      const netoCalculado = Number((montoPagado - comisionCalculada).toFixed(2));
+      totalComisiones += comisionCalculada;
+
+      const updatePayload = {
+        comisionStripe: Number(comisionCalculada.toFixed(2)),
+        netoRecibido: Math.max(0, netoCalculado),
+        historialPagos: nuevoHistorial,
+        stripeBalanceTransactionId: principalBtId,
+        stripeSincronizadoEn: admin.firestore.FieldValue.serverTimestamp()
+      };
+
+      await docSnap.ref.update(updatePayload);
+      actualizados++;
+    }
+
+    return {
+      success: true,
+      actualizados,
+      totalProcesados: docsParaProcesar.length,
+      comisionesTotal: Number(totalComisiones.toFixed(2))
+    };
+  } catch (error) {
+    console.error("Error en sincronizarComisionesStripeCursos:", error);
+    throw new HttpsError("internal", error.message || "Error al sincronizar comisiones con Stripe.");
+  }
+});
+
 
