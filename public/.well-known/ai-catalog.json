@@ -1,5 +1,4 @@
 {
-  "$schema": "https://agenticresourcediscovery.org/schemas/v1/ai-catalog.json",
   "version": "1.0",
   "publisher": {
     "name": "IIRESODH",
