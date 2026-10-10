@@ -242,10 +242,13 @@ exports.noticiaMeta = onRequest({ region: "us-central1" }, async (req, res) => {
 
     // Inyectar directamente al inicio de <head> para que WhatsApp y redes lo lean en los primeros bytes
     if (html.includes("<head>")) {
-      html = html.replace("<head>", `<head>${metaTags}`);
+      html = html.replace("<head>", `<head>\n${metaTags}`);
     } else {
-      html = html.replace(/<head[^>]*>/i, (match) => `${match}${metaTags}`);
+      html = html.replace(/<head[^>]*>/i, (match) => `${match}\n${metaTags}`);
     }
+
+    // Colapsar saltos de línea múltiples consecutivos para evitar huecos vacíos en el HTML
+    html = html.replace(/(?:\r?\n\s*){2,}/g, '\n');
 
     res.set("Cache-Control", "public, max-age=300, s-maxage=600");
     res.status(200).send(html);
