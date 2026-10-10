@@ -258,7 +258,7 @@ function CheckoutFormCurso({
     {
       cuotas: 3,
       titulo: "3 Pagos Sin Intereses",
-      badge: "0% Interés • Recomendado",
+      badge: "0% Interés",
       badgeColor: "bg-sky-100 text-sky-800 border-sky-300 font-bold",
       montoPorCuota: calcularMontoCuota(3),
       descripcion: `1ª cuota hoy y 2 cuotas mensuales. Liquidación: ${calcularFechaCuota(hoy, 2).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}.`,
@@ -269,7 +269,7 @@ function CheckoutFormCurso({
     {
       cuotas: 4,
       titulo: "4 Pagos Sin Intereses",
-      badge: "0% Interés • Flexible",
+      badge: "0% Interés",
       badgeColor: "bg-sky-50 text-sky-700 border-sky-200 font-medium",
       montoPorCuota: calcularMontoCuota(4),
       descripcion: `1ª cuota hoy y 3 cuotas mensuales. Liquidación: ${calcularFechaCuota(hoy, 3).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}.`,
