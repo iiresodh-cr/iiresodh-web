@@ -205,29 +205,47 @@ exports.noticiaMeta = onRequest({ region: "us-central1" }, async (req, res) => {
     const imagen = noticiaData.imagenPrincipalUrl || `${appUrl}/logo.png`;
     const urlCompleta = `${appUrl}${req.originalUrl}`;
 
+    let imageType = "image/jpeg";
+    if (imagen.includes(".webp") || imagen.includes("image%2Fwebp")) {
+      imageType = "image/webp";
+    } else if (imagen.includes(".png") || imagen.includes("image%2Fpng")) {
+      imageType = "image/png";
+    }
+
     const response = await fetch(`${appUrl}/index.html`);
     let html = await response.text();
 
     html = html.replace(/<title>.*?<\/title>/gi, '');
-    html = html.replace(/<meta[^>]*property="og:[^>]*>/gi, '');
-    html = html.replace(/<meta[^>]*name="twitter:[^>]*>/gi, '');
-    html = html.replace(/<meta[^>]*name="description"[^>]*>/gi, '');
+    html = html.replace(/<meta[^>]*property=["']og:[^"']*["'][^>]*>/gi, '');
+    html = html.replace(/<meta[^>]*name=["'](?:twitter:[^"']*|description)["'][^>]*>/gi, '');
 
     const metaTags = `
-      <title>${titulo} | IIRESODH</title>
-      <meta name="description" content="${descripcion}" />
-      <meta property="og:title" content="${titulo}" />
-      <meta property="og:description" content="${descripcion}" />
-      <meta property="og:image" content="${imagen}" />
-      <meta property="og:url" content="${urlCompleta}" />
-      <meta property="og:type" content="article" />
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content="${titulo}" />
-      <meta name="twitter:description" content="${descripcion}" />
-      <meta name="twitter:image" content="${imagen}" />
-    </head>`;
+  <title>${titulo} | IIRESODH</title>
+  <meta name="description" content="${descripcion}" />
+  <meta property="og:site_name" content="IIRESODH" />
+  <meta property="og:title" content="${titulo}" />
+  <meta property="og:description" content="${descripcion}" />
+  <meta property="og:url" content="${urlCompleta}" />
+  <meta property="og:type" content="article" />
+  <meta property="og:locale" content="es_CR" />
+  <meta property="og:image" content="${imagen}" />
+  <meta property="og:image:secure_url" content="${imagen}" />
+  <meta property="og:image:type" content="${imageType}" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="${titulo}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@IIRESODH1" />
+  <meta name="twitter:title" content="${titulo}" />
+  <meta name="twitter:description" content="${descripcion}" />
+  <meta name="twitter:image" content="${imagen}" />`;
 
-    html = html.replace("</head>", metaTags);
+    // Inyectar directamente al inicio de <head> para que WhatsApp y redes lo lean en los primeros bytes
+    if (html.includes("<head>")) {
+      html = html.replace("<head>", `<head>${metaTags}`);
+    } else {
+      html = html.replace(/<head[^>]*>/i, (match) => `${match}${metaTags}`);
+    }
 
     res.set("Cache-Control", "public, max-age=300, s-maxage=600");
     res.status(200).send(html);
