@@ -23,7 +23,6 @@ const Home2 = lazy(() => import("./pages/Home2"));
 const QuienesSomos = lazy(() => import("./pages/QuienesSomos"));
 const LitigioEstrategico = lazy(() => import("./pages/LitigioEstrategico"));
 const Noticias = lazy(() => import("./pages/Noticias"));
-const Donaciones = lazy(() => import("./pages/Donaciones"));
 const NoticiaDetalle = lazy(() => import("./pages/NoticiaDetalle"));
 const ResultadosBusqueda = lazy(() => import("./pages/ResultadosBusqueda"));
 const Privacidad = lazy(() => import("./pages/Privacidad"));
@@ -155,7 +154,6 @@ function App() {
           
           <Route path="/cursos" element={<Cursos />} />
           <Route path="/cursos/:slug" element={<CursoLanding />} />
-          <Route path="/donaciones" element={<Donaciones />} />
           <Route path="/noticias" element={<Noticias />} />
           <Route path="/noticias/:id" element={<NoticiaDetalle />} />
           <Route path="/buscar" element={<ResultadosBusqueda />} />

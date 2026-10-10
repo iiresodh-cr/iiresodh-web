@@ -84,13 +84,6 @@ export default function ResultadosBusqueda() {
       ruta: '/cooperacion-internacional', 
       descripcion: t('busqueda.p_cooperacion_desc', 'Proyectos y alianzas de cooperación a nivel internacional.'), 
       palabrasClave: ['cooperacion', 'internacional', 'alianzas', 'proyectos', 'global', 'cooperation', 'international'] 
-    },
-    { 
-      id: 'p6', 
-      titulo: t('busqueda.p_donaciones_tit', 'Donaciones'), 
-      ruta: '/donaciones', 
-      descripcion: t('busqueda.p_donaciones_desc', 'Apoya nuestra causa y contribuye a la defensa de los derechos humanos.'), 
-      palabrasClave: ['donar', 'donaciones', 'apoyo', 'colaborar', 'aportar', 'ayuda', 'donate', 'donations', 'dons'] 
     }
   ];
 
