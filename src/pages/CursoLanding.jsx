@@ -2054,10 +2054,14 @@ export default function CursoLanding() {
                         onClick={() => {
                           setSolicitudExitosa(false);
                           setMostrarSeccionPago(false);
+                          irASeccion("legado");
                         }}
-                        className="bg-green-700 hover:bg-green-800 text-white font-bold text-xs uppercase tracking-wider py-3 px-6 rounded-xl transition cursor-pointer shadow-sm active:scale-95"
+                        className="bg-green-700 hover:bg-green-800 text-white font-bold text-xs uppercase tracking-wider py-3 px-6 rounded-xl transition cursor-pointer shadow-sm active:scale-95 inline-flex items-center gap-2"
                       >
-                        Completar otra solicitud
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        <span>Entendido</span>
                       </button>
                     </div>
                   </div>
@@ -2405,11 +2409,10 @@ export default function CursoLanding() {
                         </div>
 
                         {/* BOTÓN 2: PAGAR E INSCRIBIRSE DE UNA VEZ */}
-                        <div className={`flex flex-col justify-between p-5 sm:p-6 rounded-2xl border-2 transition-all shadow-xs space-y-4 ${
-                          mostrarSeccionPago
-                            ? "border-main-red bg-red-50/30 ring-2 ring-main-red/20 shadow-md"
-                            : "border-red-200 hover:border-main-red bg-red-50/15 hover:bg-red-50/30"
-                        }`}>
+                        <div className={`flex flex-col justify-between p-5 sm:p-6 rounded-2xl border-2 transition-all shadow-xs space-y-4 ${mostrarSeccionPago
+                          ? "border-main-red bg-red-50/30 ring-2 ring-main-red/20 shadow-md"
+                          : "border-red-200 hover:border-main-red bg-red-50/15 hover:bg-red-50/30"
+                          }`}>
                           <div className="space-y-2">
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2.5">
@@ -2433,11 +2436,10 @@ export default function CursoLanding() {
                             <button
                               type="button"
                               onClick={handleBotonPagar}
-                              className={`w-full text-white font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation ${
-                                mostrarSeccionPago
-                                  ? "bg-[#8b1515] ring-2 ring-red-300"
-                                  : "bg-main-red hover:bg-[#8b1515]"
-                              }`}
+                              className={`w-full text-white font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation ${mostrarSeccionPago
+                                ? "bg-[#8b1515] ring-2 ring-red-300"
+                                : "bg-main-red hover:bg-[#8b1515]"
+                                }`}
                             >
                               <span>💳 Pagar e Inscribirme de una vez</span>
                               <span className="text-base">{mostrarSeccionPago ? "↓" : "→"}</span>
@@ -2484,9 +2486,8 @@ export default function CursoLanding() {
                         {/* 1. TÉRMINOS DE CONTRATACIÓN Y CONSENTIMIENTO INFORMADO (CLICKWRAP) */}
                         <div id="paso-terminos-contratacion" className="space-y-3.5">
                           <div className="flex items-center gap-3 pb-2.5 border-b border-gray-100">
-                            <span className={`w-7 h-7 rounded-full font-bold text-xs flex items-center justify-center shrink-0 shadow-xs transition-colors ${
-                              aceptarPrivacidadTransferencia ? "bg-emerald-600 text-white" : "bg-main-blue text-white"
-                            }`}>
+                            <span className={`w-7 h-7 rounded-full font-bold text-xs flex items-center justify-center shrink-0 shadow-xs transition-colors ${aceptarPrivacidadTransferencia ? "bg-emerald-600 text-white" : "bg-main-blue text-white"
+                              }`}>
                               {aceptarPrivacidadTransferencia ? "✓" : "A"}
                             </span>
                             <div>
@@ -2506,11 +2507,10 @@ export default function CursoLanding() {
                             </div>
                           </div>
 
-                          <div className={`rounded-2xl p-4 sm:p-5 space-y-3 border transition-all ${
-                            aceptarPrivacidadTransferencia
-                              ? "bg-emerald-50/50 border-emerald-300 shadow-xs"
-                              : "bg-slate-50 border-slate-200"
-                          }`}>
+                          <div className={`rounded-2xl p-4 sm:p-5 space-y-3 border transition-all ${aceptarPrivacidadTransferencia
+                            ? "bg-emerald-50/50 border-emerald-300 shadow-xs"
+                            : "bg-slate-50 border-slate-200"
+                            }`}>
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200/80">
                               <span className="text-xs font-bold text-gray-800 flex items-center gap-2">
                                 <span>📜</span> Contrato de Servicios Académicos — Palermo 2027
@@ -2611,18 +2611,16 @@ export default function CursoLanding() {
                             {/* Pagar con Tarjeta */}
                             <div
                               onClick={() => setMetodoInscripcion("tarjeta")}
-                              className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
-                                metodoInscripcion === "tarjeta"
-                                  ? "border-main-blue bg-blue-50/60 shadow-xs"
-                                  : "border-gray-200 hover:border-gray-300 bg-white"
-                              }`}
+                              className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${metodoInscripcion === "tarjeta"
+                                ? "border-main-blue bg-blue-50/60 shadow-xs"
+                                : "border-gray-200 hover:border-gray-300 bg-white"
+                                }`}
                             >
                               <div className="space-y-1.5">
                                 <div className="flex items-center justify-between">
                                   <span className="text-2xl">💳</span>
-                                  <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                                    metodoInscripcion === "tarjeta" ? "border-main-blue bg-main-blue" : "border-gray-300"
-                                  }`}>
+                                  <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${metodoInscripcion === "tarjeta" ? "border-main-blue bg-main-blue" : "border-gray-300"
+                                    }`}>
                                     {metodoInscripcion === "tarjeta" && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
                                   </span>
                                 </div>
@@ -2638,18 +2636,16 @@ export default function CursoLanding() {
                             {/* Transferencia Bancaria */}
                             <div
                               onClick={() => setMetodoInscripcion("transferencia")}
-                              className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
-                                metodoInscripcion === "transferencia"
-                                  ? "border-amber-600 bg-amber-50/60 shadow-xs"
-                                  : "border-gray-200 hover:border-gray-300 bg-white"
-                              }`}
+                              className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${metodoInscripcion === "transferencia"
+                                ? "border-amber-600 bg-amber-50/60 shadow-xs"
+                                : "border-gray-200 hover:border-gray-300 bg-white"
+                                }`}
                             >
                               <div className="space-y-1.5">
                                 <div className="flex items-center justify-between">
                                   <span className="text-2xl">🏛️</span>
-                                  <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                                    metodoInscripcion === "transferencia" ? "border-amber-600 bg-amber-600" : "border-gray-300"
-                                  }`}>
+                                  <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${metodoInscripcion === "transferencia" ? "border-amber-600 bg-amber-600" : "border-gray-300"
+                                    }`}>
                                     {metodoInscripcion === "transferencia" && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
                                   </span>
                                 </div>
