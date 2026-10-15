@@ -239,7 +239,9 @@ export default function AdminAnunciosEmergentes({ onVolver, logActividad }) {
         const nombreLimpio = imagenArchivo.name.replace(/[^a-zA-Z0-9._-]/g, "_");
         const rutaImagen = `noticias/anuncios/imagenes/${Date.now()}_${nombreLimpio}`;
         const storageRefImg = ref(storage, rutaImagen);
-        await uploadBytes(storageRefImg, imagenArchivo);
+        await uploadBytes(storageRefImg, imagenArchivo, {
+          cacheControl: 'public, max-age=31536000, immutable'
+        });
         finalImagenUrl = await getDownloadURL(storageRefImg);
       }
 
@@ -248,7 +250,9 @@ export default function AdminAnunciosEmergentes({ onVolver, logActividad }) {
         const nombreLimpio = pdfArchivo.name.replace(/[^a-zA-Z0-9._-]/g, "_");
         const rutaPdf = `noticias/anuncios/documentos/${Date.now()}_${nombreLimpio}`;
         const storageRefPdf = ref(storage, rutaPdf);
-        await uploadBytes(storageRefPdf, pdfArchivo);
+        await uploadBytes(storageRefPdf, pdfArchivo, {
+          cacheControl: 'public, max-age=86400'
+        });
         finalPdfUrl = await getDownloadURL(storageRefPdf);
         finalPdfNombre = pdfArchivo.name;
       }

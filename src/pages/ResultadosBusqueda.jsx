@@ -84,13 +84,6 @@ export default function ResultadosBusqueda() {
       ruta: '/cooperacion-internacional', 
       descripcion: t('busqueda.p_cooperacion_desc', 'Proyectos y alianzas de cooperación a nivel internacional.'), 
       palabrasClave: ['cooperacion', 'internacional', 'alianzas', 'proyectos', 'global', 'cooperation', 'international'] 
-    },
-    { 
-      id: 'p6', 
-      titulo: t('busqueda.p_donaciones_tit', 'Donaciones'), 
-      ruta: '/donaciones', 
-      descripcion: t('busqueda.p_donaciones_desc', 'Apoya nuestra causa y contribuye a la defensa de los derechos humanos.'), 
-      palabrasClave: ['donar', 'donaciones', 'apoyo', 'colaborar', 'aportar', 'ayuda', 'donate', 'donations', 'dons'] 
     }
   ];
 
@@ -214,7 +207,7 @@ export default function ResultadosBusqueda() {
   const totalResultados = resultadosPaginas.length + resultadosNoticias.length + resultadosArticulos.length + resultadosCursos.length + resultadosIncidencia.length;
 
   return (
-    <main className="bg-white min-h-screen flex flex-col font-sans">
+    <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] min-h-screen flex flex-col font-sans">
       
       <PageHeader 
         titulo={t('busqueda.header_titulo', 'Resultados de Búsqueda')} 

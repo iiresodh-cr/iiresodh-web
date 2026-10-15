@@ -37,7 +37,7 @@ export default function Privacidad() {
   const legalTextClass = "space-y-6 text-base md:text-lg font-light text-gray-700 leading-relaxed text-justify animate-fade-in-up";
 
   return (
-    <main id="main-content" className="bg-white flex flex-col min-h-screen font-sans">
+    <main id="main-content" className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] flex flex-col min-h-screen font-sans">
       
       {/* ENCABEZADO Estandarizado */}
       <PageHeader 

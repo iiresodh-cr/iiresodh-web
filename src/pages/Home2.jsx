@@ -1,0 +1,578 @@
+// src/pages/Home2.jsx
+// Propuesta Home v1 (Versión previa conservada para evaluación)
+import { useEffect, useState } from "react";
+import { collection, query, orderBy, limit, getDocs, where, doc, getDoc } from "firebase/firestore";
+import { db, functions } from "../firebase/config";
+import { httpsCallable } from "firebase/functions";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+
+// Swiper
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, EffectFade, Navigation } from 'swiper/modules'; 
+import 'swiper/css';
+import 'swiper/css/effect-fade';
+
+// Iconos Lucide React (Grosor de línea unificado para coherencia)
+import { Scale, Earth, GraduationCap } from "lucide-react";
+
+// Imágenes y Recursos
+import isotipoFondo from "../assets/Isotipo-color-512.webp"; 
+
+// UI Propia
+import AdminTextField from "../components/ui/AdminTextField";
+import ToastAlert from "../components/ui/ToastAlert";
+import AnuncioEmergenteModal from "../components/AnuncioEmergenteModal";
+
+// UI Externa
+import { Button, Paper, CircularProgress, FormControlLabel, Checkbox } from "@mui/material";
+
+// IMPORTACIONES PARA i18n Y TRADUCCIÓN DINÁMICA
+import { useTranslation } from 'react-i18next';
+import { obtenerTextoTraducido } from "../utils/traductorDinamico";
+
+export const formatearTextoConLinksYHashtags = (texto, idiomaActual = 'es') => {
+  if (!texto) return "";
+
+  const lang = (idiomaActual || 'es').substring(0, 2).toLowerCase();
+  const labelClic = lang === 'en' ? 'Click here' : (lang === 'fr' ? 'Cliquez ici' : 'Clic aquí');
+
+  // Decodificar entidades de comillas y apóstrofes generadas por traductores automáticos o editores
+  let procesado = String(texto)
+    .replace(/&(?:#39|#039|#x27|apos);/gi, "'")
+    .replace(/&(?:quot|#34|#034);/gi, '"')
+    .replace(/&amp;#39;/gi, "'")
+    .replace(/&amp;apos;/gi, "'")
+    .replace(/&amp;quot;/gi, '"');
+
+  const esHtml = /<\/?(p|div|h[1-6]|strong|b|em|i|blockquote|ul|ol|li|br|span|a|iframe|video|img|font)[^>]*>/i.test(procesado);
+
+  if (!esHtml) {
+    procesado = procesado.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  } else {
+    procesado = procesado
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+      .replace(/\bon\w+\s*=\s*(['"]).*?\1/gi, "")
+      .replace(/\bon\w+\s*=\s*[^>\s]+/gi, "")
+      .replace(/javascript:/gi, "");
+  }
+
+  const tokens = [];
+
+  // 1. Procesar y proteger enlaces <a> existentes completos
+  procesado = procesado.replace(/<a\s+([^>]*?)>([\s\S]*?)<\/a>/gi, (match, attrs, innerText) => {
+    const textOnly = innerText.replace(/<[^>]+>/g, '').trim().toLowerCase();
+    const isUrl = /^https?:\/\//i.test(textOnly);
+    const isClicGeneric = ['clic aquí', 'clic aqui', 'click here', 'cliquez ici'].includes(textOnly);
+
+    let newInner = innerText;
+    if (isUrl || isClicGeneric) {
+      newInner = labelClic;
+    }
+
+    const hrefMatch = attrs.match(/href=(["'])(.*?)\1/i);
+    const href = hrefMatch ? hrefMatch[2] : '#';
+
+    const formatted = `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline wrap-break-words">${newInner}</a>`;
+    tokens.push(formatted);
+    return `\uE000${tokens.length - 1}\uE001`;
+  });
+
+  // 2. Proteger todas las demás etiquetas HTML (img, div, b, span, etc.)
+  procesado = procesado.replace(/<[^>]+>/g, (match) => {
+    tokens.push(match);
+    return `\uE000${tokens.length - 1}\uE001`;
+  });
+
+  // 3. Procesar Markdown: [Texto visible](URL)
+  procesado = procesado.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, label, url) => {
+    const link = `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline wrap-break-words">${label}</a>`;
+    tokens.push(link);
+    return `\uE000${tokens.length - 1}\uE001`;
+  });
+
+  // 4. Procesar URLs crudas pegadas en el texto
+  procesado = procesado.replace(/(https?:\/\/[^\s<>"'`\uE000\uE001]+)/g, (match, url) => {
+    let cleanUrl = url;
+    let suffix = '';
+    const trailingPunct = /[.,;:)!]+$/;
+    const punctMatch = cleanUrl.match(trailingPunct);
+    if (punctMatch) {
+      suffix = punctMatch[0];
+      cleanUrl = cleanUrl.slice(0, -punctMatch[0].length);
+    }
+    const link = `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="text-main-red font-bold underline wrap-break-words">${labelClic}</a>${suffix}`;
+    tokens.push(link);
+    return `\uE000${tokens.length - 1}\uE001`;
+  });
+
+  // 5. Procesar Hashtags (debe comenzar con letra y nunca estar precedido por & ni letras/números)
+  procesado = procesado.replace(/(^|[^\w&])#([a-zA-ZáéíóúÁÉÍÓÚñÑ][a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]*)/g, (match, prefix, term) => {
+    const link = `<a href="/buscar?q=${term}" class="text-light-blue hover:text-main-red font-bold">#${term}</a>`;
+    tokens.push(link);
+    return `${prefix}\uE000${tokens.length - 1}\uE001`;
+  });
+
+  // 6. Restaurar todos los tokens protegidos
+  procesado = procesado.replace(/\uE000(\d+)\uE001/g, (_, index) => tokens[Number(index)]);
+
+  // 7. Si no era HTML originalmente, convertir saltos de línea a párrafos
+  if (!esHtml) {
+    const parrafos = procesado.split(/\n\s*\n/);
+    return parrafos.map(p => `<p>${p.replace(/\n/g, '<br />')}</p>`).join('');
+  }
+
+  return procesado;
+};
+
+
+// Funciones de caché para optimizar carga del Hero (TTL de 10 minutos)
+const CACHE_TTL_MINUTES = 10;
+const getCachedData = (key) => {
+  try {
+    const cached = localStorage.getItem(key);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Date.now() - parsed.timestamp < CACHE_TTL_MINUTES * 60 * 1000) {
+        return parsed.data;
+      }
+    }
+  } catch (e) { console.error('Cache read error', e); }
+  return null;
+};
+const setCachedData = (key, data) => {
+  try {
+    localStorage.setItem(key, JSON.stringify({ timestamp: Date.now(), data }));
+  } catch (e) { console.error('Cache write error', e); }
+};
+
+export default function Home2() {
+  const { t, i18n } = useTranslation(); 
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Inicializar estado sincrónicamente desde caché para renderizado inmediato
+  const cachedNoticias = getCachedData('home_noticias');
+  const [noticias, setNoticias] = useState(cachedNoticias || []);
+  const [loading, setLoading] = useState(!cachedNoticias);
+  
+  const [contacto, setContacto] = useState({ nombre: "", correo: "", mensaje: "" });
+  const [aceptaPrivacidad, setAceptaPrivacidad] = useState(false);
+  const [estadoEnvio, setEstadoEnvio] = useState("idle");
+
+  const [tituloHome, setTituloHome] = useState(() => {
+    return getCachedData('home_titulo') || {
+      tituloPrincipal: "",
+      tituloPrincipal_en: "",
+      tituloPrincipal_fr: ""
+    };
+  });
+
+  useEffect(() => {
+    if (location.hash) {
+      setTimeout(() => {
+        const id = location.hash.replace('#', '');
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 300);
+    }
+  }, [location]);
+
+  useEffect(() => {
+    const fetchConfiguracionVisual = async () => {
+      try {
+        const docRef = doc(db, "configuracion", "home_visual");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setTituloHome(data);
+          setCachedData('home_titulo', data);
+        }
+      } catch (e) {
+        console.error("Error fetching configuracion", e);
+      }
+    };
+
+    const fetchNoticias = async () => {
+      try {
+        const qPersistentes = query(collection(db, "noticias"), where("persistente", "==", true));
+        const snapPersistentes = await getDocs(qPersistentes);
+        let noticiasFijas = snapPersistentes.docs.map(doc => ({ id: doc.id, ...doc.data() })).slice(0, 3);
+        
+        let noticiasRecientes = [];
+        const faltantes = 3 - noticiasFijas.length;
+        if (faltantes > 0) {
+          const qRecientes = query(collection(db, "noticias"), orderBy("fechaPublicacion", "desc"), limit(10));
+          const snapRecientes = await getDocs(qRecientes);
+          const idsFijas = noticiasFijas.map(n => n.id);
+          noticiasRecientes = snapRecientes.docs
+            .map(doc => ({ id: doc.id, ...doc.data() }))
+            .filter(n => !idsFijas.includes(n.id))
+            .slice(0, faltantes);
+        }
+        
+        const finalNoticias = [...noticiasFijas, ...noticiasRecientes];
+        setNoticias(finalNoticias);
+        setCachedData('home_noticias', finalNoticias);
+
+        // Preload para la imagen principal
+        const firstNews = noticiasFijas.length > 0 ? noticiasFijas[0] : noticiasRecientes[0];
+        if (firstNews && firstNews.imagenPrincipalUrl) {
+          const preloadLink = document.createElement("link");
+          preloadLink.href = firstNews.imagenPrincipalUrl;
+          preloadLink.rel = "preload";
+          preloadLink.as = "image";
+          preloadLink.fetchPriority = "high";
+          document.head.appendChild(preloadLink);
+        }
+      } catch (e) { console.error(e); }
+      finally { setLoading(false); }
+    };
+
+    // Actualizamos en background aunque haya caché
+    fetchNoticias();
+    fetchConfiguracionVisual();
+  }, []);
+
+  const handleEnviarContacto = async (e) => {
+    e.preventDefault();
+    if (!aceptaPrivacidad) return;
+
+    setEstadoEnvio("enviando");
+    try {
+      const enviarCorreo = httpsCallable(functions, 'enviarFormularioContacto');
+      await enviarCorreo({
+        ...contacto,
+        consentimientoPrivacidad: true,
+        fechaConsentimiento: new Date().toISOString(),
+        marcoLegal: "Ley N° 8968 - Costa Rica"
+      });
+      setEstadoEnvio("exito");
+      setContacto({ nombre: "", correo: "", mensaje: "" });
+      setAceptaPrivacidad(false);
+      setTimeout(() => setEstadoEnvio("idle"), 5000);
+    } catch (error) {
+      console.error("Error sending email:", error);
+      setEstadoEnvio("error");
+      setTimeout(() => setEstadoEnvio("idle"), 5000);
+    }
+  };
+
+  return (
+    <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] flex flex-col min-h-screen font-sans overflow-x-hidden">
+      <div className="relative grow pb-20">
+        <div className="bg-watermark" aria-hidden="true"></div>
+
+        <div className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-4 md:pt-12 pb-16 flex flex-col gap-16 md:gap-20">
+          
+          {/* =========================================
+              BLOQUE 1: HERO SECTION
+          ========================================= */}
+          <section className="relative pt-2 pb-4 lg:pt-6 lg:pb-8 overflow-visible animate-fade-in-up">
+            <div className="absolute top-0 right-20 -mt-16 opacity-10 pointer-events-none hidden md:block">
+              <img src={isotipoFondo} alt="" fetchPriority="high" className="w-200 object-cover" />
+            </div>
+
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center text-left">
+              <div className="lg:col-span-8 max-w-4xl">
+                <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-black text-[#0B1E40] leading-[1.05] mb-6 tracking-tighter max-w-3xl whitespace-pre-wrap">
+                  {obtenerTextoTraducido(tituloHome, 'tituloPrincipal', i18n.language) || (
+                    <>
+                      {t('home.hero_titulo_1', 'Defendiendo la')}
+                      {' '}
+                      {t('home.hero_titulo_2', 'dignidad y los')}
+                      {' '}
+                      {t('home.hero_titulo_3', 'Derechos Humanos')}
+                    </>
+                  )}
+                </h1>
+                
+                <p className="text-lg md:text-xl text-gray-600 font-light mb-10 leading-relaxed max-w-2xl">
+                  {t('home.hero_subtitulo', 'Fomentamos el cumplimiento de estándares internacionales mediante la participación ciudadana y gubernamental.')}
+                </p>
+                
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Link to="/incidencia-internacional" className="bg-[#B91C1C] text-white font-bold py-3.5 px-8 rounded-lg hover:bg-red-800 transition-all text-center uppercase tracking-widest text-xs shadow-md">
+                    {t('home.btn_incidencia', 'Incidencia Internacional')}
+                  </Link>
+                  <Link to="/noticias" className="bg-white text-main-blue border border-gray-200 font-bold py-3.5 px-8 rounded-lg hover:border-main-red hover:text-main-red transition-all text-center uppercase tracking-widest text-xs flex items-center justify-center gap-2 shadow-sm">
+                    {t('home.btn_noticias', 'Noticias')} &rarr;
+                  </Link>
+                </div>
+              </div>
+
+              {/* Noticia Destacada / Portada */}
+              <div className="hidden lg:flex lg:col-span-4 justify-end relative z-20 mt-8 lg:mt-0">
+                {noticias.length > 0 ? (
+                  <Link 
+                    to={`/noticias/${noticias[0].slug || noticias[0].id}`} 
+                    state={{ noticiaPreCargada: noticias[0] }}
+                    className="group relative block w-full max-w-sm mx-auto lg:ml-auto lg:mr-0 rounded-3xl overflow-hidden shadow-xl hover:shadow-main-red/20 transition-all duration-500 transform-gpu z-0"
+                  >
+                    <div 
+                      className="w-full aspect-3/4 bg-gray-100 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                      style={{ backgroundImage: `url(${noticias[0].imagenPrincipalUrl})` }}
+                      role="img"
+                      aria-label={obtenerTextoTraducido(noticias[0], 'titulo', i18n.language) || "Noticia destacada"}
+                    />
+                    {/* Overlay sutil sin bordes extra */}
+                    <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500 pointer-events-none z-10"></div>
+                  </Link>
+                ) : (
+                  <div className="w-full max-w-sm mx-auto lg:ml-auto lg:mr-0 aspect-3/4 bg-gray-100 rounded-3xl animate-pulse shadow-xl"></div>
+                )}
+              </div>
+            </div>
+          </section>
+
+          <div className="w-16 h-1 bg-main-red mx-auto rounded-full"></div>
+
+          {/* =========================================
+              BLOQUE 2: CARRUSEL DE NOTICIAS
+          ========================================= */}
+          <section id="noticias-recientes" className="scroll-mt-24 relative">
+            <div className="flex items-end justify-between mb-8">
+              <div>
+                <h2 className="text-3xl md:text-4xl font-black text-main-blue tracking-tight">
+                  {t('home.seccion_actualidad', 'Actualidad')}
+                </h2>
+                <div className="w-16 h-1 bg-main-red mt-4 rounded-full"></div>
+              </div>
+              <Link to="/noticias" className="hidden md:flex text-xs font-black text-gray-600 hover:text-main-red transition-colors uppercase tracking-[0.2em] items-center gap-2">
+                {t('home.archivo_noticias', 'Archivo de Noticias')} <span aria-hidden="true" className="text-lg">&rarr;</span>
+              </Link>
+            </div>
+            
+            {loading ? (
+              <div className="w-[90%] mx-auto h-112.5 md:h-135 lg:h-144 rounded-[2.5rem] bg-gray-100 animate-pulse flex flex-col justify-end p-6 md:p-10 lg:p-12 shadow-inner">
+                <div className="w-1/4 h-4 bg-gray-300 rounded mb-4"></div>
+                <div className="w-3/4 h-10 bg-gray-300 rounded mb-4"></div>
+                <div className="w-full h-6 bg-gray-200 rounded mb-2"></div>
+                <div className="w-5/6 h-6 bg-gray-200 rounded"></div>
+              </div>
+            ) : noticias.length > 0 ? (
+              <div className="relative group w-[90%] mx-auto">
+                <Swiper 
+                  modules={[Autoplay, EffectFade, Navigation]} 
+                  effect="fade"
+                  fadeEffect={{ crossFade: true }}
+                  autoplay={{ delay: 7000, disableOnInteraction: false, pauseOnMouseEnter: true }} 
+                  loop={true}
+                  speed={1200}
+                  navigation={{
+                    prevEl: '.swiper-btn-prev',
+                    nextEl: '.swiper-btn-next',
+                  }}
+                  className="w-full rounded-[2.5rem] overflow-hidden shadow-xl border border-gray-100"
+                >
+                  {noticias.map((noticia) => {
+                    const tituloTraducido = obtenerTextoTraducido(noticia, 'titulo', i18n.language);
+                    const resumenTraducido = obtenerTextoTraducido(noticia, 'resumen', i18n.language);
+
+                    return (
+                      <SwiperSlide key={noticia.id}>
+                        <article className="group/slide relative w-full h-112.5 md:h-135 lg:h-144 overflow-hidden bg-main-blue cursor-pointer" onClick={() => navigate(`/noticias/${noticia.slug || noticia.id}`, { state: { noticiaPreCargada: noticia } })}>
+                          <div 
+                            className="absolute inset-0 w-full h-full bg-cover bg-top bg-no-repeat transition-transform duration-4000 group-hover/slide:scale-105 bg-gray-200"
+                            style={{ backgroundImage: `url(${noticia.imagenPrincipalUrl})` }}
+                            role="img"
+                            aria-label={tituloTraducido || "Imagen de la noticia"}
+                          />
+                          <div className="absolute inset-0 bg-black/20 group-hover/slide:bg-black/10 transition-colors duration-1000"></div>
+                          
+                          <div className="absolute bottom-4 left-4 right-4 md:bottom-10 md:left-10 md:right-auto w-[90%] md:w-[75%] lg:w-[65%] h-auto min-h-80 md:min-h-96 lg:min-h-112 p-6 md:p-10 lg:p-12 bg-white/70 backdrop-blur-md shadow-2xl rounded-3xl border border-white/80 z-10 flex flex-col justify-end transform transition-all duration-500 group-hover/slide:-translate-y-2 group-hover/slide:shadow-main-blue/10">
+                            <div className="flex flex-wrap gap-2 mb-4 md:mb-6">
+                              {noticia.tags?.map(tag => (
+                                <span key={tag} className="bg-main-blue/5 border border-main-blue/10 text-main-blue text-[10px] md:text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-widest">{tag}</span>
+                              ))}
+                            </div>
+                            <h3 className="text-2xl md:text-4xl lg:text-5xl font-black text-main-blue mb-4 pb-1 leading-tight tracking-tight group-hover/slide:text-main-red transition-colors line-clamp-4">
+                              {tituloTraducido}
+                            </h3>
+                            <p className="text-gray-700 line-clamp-2 md:line-clamp-3 mb-6 md:mb-8 text-sm md:text-lg font-medium leading-relaxed drop-shadow-sm">
+                              {resumenTraducido}
+                            </p>
+                            
+                            <div className="inline-flex items-center justify-center gap-2 self-start px-5 py-2.5 text-xs font-bold text-main-red uppercase tracking-widest border-2 border-main-red/20 rounded-lg group-hover/slide:bg-main-red group-hover/slide:text-white group-hover/slide:border-main-red transition-all duration-300">
+                              {t('home.leer_articulo', 'Leer artículo')} <span aria-hidden="true" className="text-sm leading-none">&rarr;</span>
+                            </div>
+                          </div>
+                        </article>
+                      </SwiperSlide>
+                    );
+                  })}
+                </Swiper>
+
+                <button className="swiper-btn-prev absolute top-1/2 left-4 md:left-8 z-20 -translate-y-1/2 w-12 h-12 bg-white/90 backdrop-blur-sm shadow-md border border-gray-100 rounded-full text-main-blue hover:bg-main-red hover:text-white hover:border-main-red transition-colors duration-300 outline-none flex items-center justify-center cursor-pointer" aria-label="Ver noticia anterior">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <button className="swiper-btn-next absolute top-1/2 right-4 md:right-8 z-20 -translate-y-1/2 w-12 h-12 bg-white/90 backdrop-blur-sm shadow-md border border-gray-100 rounded-full text-main-blue hover:bg-main-red hover:text-white hover:border-main-red transition-colors duration-300 outline-none flex items-center justify-center cursor-pointer" aria-label="Ver siguiente noticia">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                </button>
+              </div>
+            ) : null}
+          </section>
+
+          <div className="w-16 h-1 bg-main-red mx-auto rounded-full"></div>
+
+          {/* =========================================
+              BLOQUE 3: NUESTRA LABOR Y CONTACTO
+          ========================================= */}
+          <section id="contacto" className="bg-white">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
+              
+              {/* COLUMNA IZQUIERDA: SERVICIOS */}
+              <div className="lg:col-span-7 flex flex-col">
+                <div className="mb-8">
+                  <span className="text-main-red font-black tracking-[0.3em] uppercase text-xs mb-3 block">{t('home.nuestra_labor', 'Nuestra Labor')}</span>
+                  <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-main-blue tracking-tighter mb-4 leading-tight">
+                    {t('home.que_hacemos_titulo', '¿Qué hacemos en IIRESODH?')}
+                  </h2>
+                  <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed">
+                    {t('home.que_hacemos_subtitulo', 'Combinamos acción jurídica, cooperación técnica y formación académica para generar un impacto real en la sociedad.')}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 grow">
+                  {/* Tarjeta 1: Litigio con Lucide */}
+                  <Link to="/litigio-estrategico" className="group">
+                    <article className="flex flex-col h-full bg-white p-8 border border-gray-100 rounded-3xl hover:border-main-red/30 hover:shadow-lg transition-all duration-300">
+                      <div className="w-14 h-14 bg-main-red text-white rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-105 transition-transform">
+                        <Scale className="w-7 h-7" strokeWidth={1.75} />
+                      </div>
+                      <h3 className="text-2xl font-bold text-main-blue mb-3">{t('home.litigio_titulo', 'Litigio Estratégico')}</h3>
+                      <p className="text-gray-600 font-light text-base leading-relaxed grow">{t('home.litigio_desc', 'Defensa jurídica ante tribunals internacionales para sentar precedentes en la protección de derechos.')}</p>
+                    </article>
+                  </Link>
+
+                  {/* Tarjeta 2: Incidencia con Lucide */}
+                  <Link to="/incidencia-internacional" className="group">
+                    <article className="flex flex-col h-full bg-white p-8 border border-gray-100 rounded-3xl hover:border-main-red/30 hover:shadow-lg transition-all duration-300">
+                      <div className="w-14 h-14 bg-[#3B82F6] text-white rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-105 transition-transform">
+                        <Earth className="w-7 h-7" strokeWidth={1.75} />
+                      </div>
+                      <h3 className="text-2xl font-bold text-main-blue mb-3">{t('home.incidencia_titulo', 'Incidencia Internacional')}</h3>
+                      <p className="text-gray-600 font-light text-base leading-relaxed grow">{t('home.incidencia_desc', 'Investigaciones, informes de impacto y documentos de litigio estratégico.')}</p>
+                    </article>
+                  </Link>
+
+                  {/* Tarjeta 3: Formación con Lucide */}
+                  <Link to="/cursos" className="group sm:col-span-2">
+                    <article className="flex flex-col sm:flex-row items-start sm:items-center h-full bg-white p-8 border border-gray-100 rounded-3xl hover:border-main-red/30 hover:shadow-lg transition-all duration-300 gap-6">
+                      <div className="w-14 h-14 bg-light-blue text-white rounded-xl flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                        <GraduationCap className="w-7 h-7" strokeWidth={1.75} />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-main-blue mb-2">{t('home.formacion_titulo', 'Formación Especializada')}</h3>
+                        <p className="text-gray-600 font-light text-base leading-relaxed">{t('home.formacion_desc', 'Certificaciones y programas académicos diseñados para los líderes del cambio social.')}</p>
+                      </div>
+                    </article>
+                  </Link>
+                </div>
+              </div>
+
+              {/* COLUMNA DERECHA: CONTACTO */}
+              <div className="lg:col-span-5 flex flex-col h-full">
+                <article className="bg-gray-50/50 p-8 md:p-10 border border-gray-100 rounded-3xl flex flex-col h-full shadow-sm">
+                  <h3 className="text-2xl md:text-3xl font-black text-main-blue mb-2">{t('home.contacto_titulo', '¿Hablamos?')}</h3>
+                  <p className="text-gray-600 font-light mb-8 text-sm md:text-base leading-relaxed">
+                    {t('home.contacto_subtitulo', 'Estamos aquí para colaborar y responder tus dudas.')}
+                  </p>
+                  
+                  <ToastAlert open={estadoEnvio === "exito"} message={t('home.msg_exito', '¡Mensaje enviado con éxito!')} isError={false} onClose={() => setEstadoEnvio("idle")} />
+                  <ToastAlert open={estadoEnvio === "error"} message={t('home.msg_error', 'Ocurrió un error al enviar el mensaje.')} isError={true} onClose={() => setEstadoEnvio("idle")} />
+                  
+                  <form onSubmit={handleEnviarContacto} className="flex flex-col gap-6 grow">
+                    <AdminTextField 
+                      label={t('home.form_nombre', 'Nombre')} 
+                      required 
+                      value={contacto.nombre} 
+                      onChange={(e) => setContacto({...contacto, nombre: e.target.value})} 
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                    />
+                    <AdminTextField 
+                      label={t('home.form_email', 'Email')} 
+                      type="email" 
+                      required 
+                      value={contacto.correo} 
+                      onChange={(e) => setContacto({...contacto, correo: e.target.value})} 
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                    />
+                    
+                    <div className="grow flex flex-col">
+                      <AdminTextField 
+                        label={t('home.form_mensaje', 'Mensaje')} 
+                        required 
+                        multiline 
+                        rows={5} 
+                        value={contacto.mensaje} 
+                        onChange={(e) => setContacto({...contacto, mensaje: e.target.value})} 
+                        sx={{ flexGrow: 1, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                      />
+                    </div>
+                    
+                    <div className="bg-white p-3 rounded-xl border border-gray-200">
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={aceptaPrivacidad}
+                            onChange={(e) => setAceptaPrivacidad(e.target.checked)}
+                            sx={{
+                              color: '#D1D5DB',
+                              '&.Mui-checked': { color: '#1D3557' },
+                            }}
+                          />
+                        }
+                        label={
+                          <span className="text-xs font-medium text-gray-700 leading-snug">
+                            {t('home.acepto_privacidad_1', 'He leído y autorizo el tratamiento de mis datos de conformidad con la')} <a href="/privacidad" target="_blank" rel="noopener noreferrer" className="text-main-blue font-bold hover:underline">{t('home.acepto_privacidad_link', 'Política de Privacidad')}</a>.
+                          </span>
+                        }
+                        sx={{ m: 0, alignItems: 'flex-start', '& .MuiFormControlLabel-label': { mt: '2px' } }}
+                      />
+                    </div>
+
+                    <Button 
+                      type="submit" 
+                      variant="contained" 
+                      color="secondary" 
+                      disabled={estadoEnvio === "enviando" || !aceptaPrivacidad} 
+                      sx={{ 
+                        py: 1.5, 
+                        width: '100%', 
+                        borderRadius: '12px', 
+                        fontWeight: 'bold', 
+                        textTransform: 'uppercase', 
+                        tracking: '0.1em', 
+                        mt: 'auto',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 1.5
+                      }}
+                    >
+                      {estadoEnvio === "enviando" ? (
+                        <>
+                          <CircularProgress size={18} thickness={5} sx={{ color: 'inherit' }} />
+                          {t('home.btn_enviando', 'Enviando...')}
+                        </>
+                      ) : (
+                        t('home.btn_enviar', 'Enviar Mensaje')
+                      )}
+                    </Button>
+                  </form>
+                </article>
+              </div>
+
+            </div>
+          </section>
+
+        </div>
+      </div>
+
+      {/* Ventana Emergente para comunicados y documentos PDF oficiales */}
+      <AnuncioEmergenteModal />
+    </main>
+  );
+}

@@ -39,7 +39,7 @@ export default function Colombia() {
   }, []);
 
   return (
-    <main className="bg-white min-h-screen font-sans">
+    <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] min-h-screen font-sans">
       {/* HERO ESPECÍFICO DE COLOMBIA */}
       <section className="bg-main-blue py-16 md:py-24 px-6">
         <div className="max-w-7xl mx-auto">

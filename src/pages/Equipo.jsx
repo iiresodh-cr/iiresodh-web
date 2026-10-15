@@ -108,7 +108,7 @@ export default function Equipo() {
   };
 
   return (
-    <main className="bg-white min-h-screen flex flex-col font-sans">
+    <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] min-h-screen flex flex-col font-sans">
       
       <PageHeader 
         titulo={t('equipo.header_titulo', 'Equipo de Trabajo')} 

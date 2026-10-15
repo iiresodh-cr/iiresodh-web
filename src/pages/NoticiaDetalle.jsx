@@ -136,6 +136,55 @@ export const formatearTextoConLinksYHashtags = (texto, idiomaActual = 'es') => {
   return procesado;
 };
 
+// Extraer documentos adjuntos enlazados dentro del contenido HTML o Markdown
+export const extraerDocumentosDeContenido = (contenido) => {
+  if (!contenido) return [];
+  const docs = [];
+  const urlsVistas = new Set();
+
+  const regexA = /<a\s+[^>]*?href=["']([^"']+)["'][^>]*?>([\s\S]*?)<\/a>/gi;
+  let match;
+  while ((match = regexA.exec(contenido)) !== null) {
+    const href = match[1];
+    const texto = match[2].replace(/<[^>]+>/g, '').trim();
+    const esDoc = /\/documentos\//i.test(href) || 
+                  /\.(pdf|docx?|xlsx?)(?:\?|$)/i.test(href) ||
+                  /firebasestorage\.googleapis\.com\/.*?(?:documentos|noticias|anuncios|informes)/i.test(href);
+
+    if (esDoc && !urlsVistas.has(href)) {
+      urlsVistas.add(href);
+      let nombre = texto;
+      if (!nombre || nombre.toLowerCase() === 'aquí' || nombre.toLowerCase() === 'aqui' || nombre.toLowerCase() === 'clic aquí' || nombre.length > 80) {
+        const filenameMatch = href.match(/\/([^\/?#]+\.(?:pdf|docx?|xlsx?))/i);
+        nombre = filenameMatch ? decodeURIComponent(filenameMatch[1]) : (texto || "Documento Anexo");
+      }
+      docs.push({
+        nombre: nombre.replace(/^[📄\s]+/, ''),
+        url: href
+      });
+    }
+  }
+
+  const regexMd = /\[([^\]]+)\]\(((?:https?:\/\/|\/)[^\s)]+)\)/gi;
+  while ((match = regexMd.exec(contenido)) !== null) {
+    const texto = match[1].trim();
+    const href = match[2].trim();
+    const esDoc = /\/documentos\//i.test(href) || 
+                  /\.(pdf|docx?|xlsx?)(?:\?|$)/i.test(href) ||
+                  /firebasestorage\.googleapis\.com\/.*?(?:documentos|noticias|anuncios|informes)/i.test(href);
+
+    if (esDoc && !urlsVistas.has(href)) {
+      urlsVistas.add(href);
+      docs.push({
+        nombre: texto.replace(/^[📄\s]+/, '') || "Documento Anexo",
+        url: href
+      });
+    }
+  }
+
+  return docs;
+};
+
 export default function NoticiaDetalle() {
   const { t, i18n } = useTranslation(); 
   const { id } = useParams(); 
@@ -150,11 +199,6 @@ export default function NoticiaDetalle() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    
-    // Si ya viene precargada con sus traducciones completas, no volvemos a consultar
-    if (noticiaInicial && (noticiaInicial.titulo_en || noticiaInicial.contenido_en)) {
-      return; 
-    }
 
     const fetchNoticia = async () => {
       try {
@@ -181,7 +225,7 @@ export default function NoticiaDetalle() {
     };
     
     fetchNoticia();
-  }, [id, noticiaInicial]);
+  }, [id]);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(currentUrl)
@@ -195,6 +239,35 @@ export default function NoticiaDetalle() {
   const tituloTraducido = obtenerTextoTraducido(noticia, 'titulo', i18n.language);
   const contenidoTraducido = obtenerTextoTraducido(noticia, 'contenido', i18n.language);
   const embedVideoUrl = noticia?.videoUrl ? convertirUrlAVideoEmbed(noticia.videoUrl) : null;
+
+  // Unificar archivos adjuntos: de Firestore, campo legado, o extraídos del contenido
+  const adjuntosFirestore = Array.isArray(noticia?.archivosAdjuntos) ? noticia.archivosAdjuntos : [];
+  const pdfLegado = noticia?.archivoPdfUrl ? [{ nombre: noticia.archivoPdfNombre || "Documento Anexo", url: noticia.archivoPdfUrl }] : [];
+  const docsContenido = extraerDocumentosDeContenido(noticia?.contenido);
+
+  const mapaUrls = new Set();
+  const documentosAnexos = [];
+  [...adjuntosFirestore, ...pdfLegado, ...docsContenido].forEach(docItem => {
+    if (docItem && docItem.url && !mapaUrls.has(docItem.url)) {
+      mapaUrls.add(docItem.url);
+      documentosAnexos.push(docItem);
+    }
+  });
+
+  const obtenerUrlDocumentoNoticia = (archivo, index) => {
+    if (!archivo || !archivo.url) return "#";
+    if (archivo.url.startsWith("/documentos/") || archivo.url.includes("iiresodh.org/documentos/")) {
+      return archivo.url;
+    }
+    const slugDoc = (archivo.nombre || `documento-${index + 1}`)
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .replace(/-pdf$/, "");
+    return `/documentos/noticias/${noticia?.id || id}/doc-${index}-${slugDoc}.pdf`;
+  };
 
   useEffect(() => {
     if (tituloTraducido) {
@@ -236,7 +309,7 @@ export default function NoticiaDetalle() {
   };
 
   return (
-    <main className="bg-white min-h-screen flex flex-col font-sans">
+    <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] min-h-screen flex flex-col font-sans">
       <header className="bg-main-blue text-white py-14 px-6 text-center relative z-20">
         <span className="text-xs font-black text-main-red uppercase tracking-[0.3em] mb-4 block">
           {noticia.fechaPublicacion?.toDate ? 
@@ -303,9 +376,9 @@ export default function NoticiaDetalle() {
                     modules={[Pagination, Autoplay, EffectFade]} 
                     effect="fade"
                     fadeEffect={{ crossFade: true }}
-                    pagination={{ clickable: true }}
-                    autoplay={{ delay: 5000, disableOnInteraction: false }}
-                    loop={true}
+                    pagination={todasLasImagenes.length > 1 ? { clickable: true } : false}
+                    autoplay={todasLasImagenes.length > 1 ? { delay: 5000, disableOnInteraction: false } : false}
+                    loop={todasLasImagenes.length > 1}
                     speed={800}
                     className="w-full swiper-custom-pagination pb-8 md:pb-12"
                     aria-label="Galería de imágenes de la noticia"
@@ -326,6 +399,45 @@ export default function NoticiaDetalle() {
                   className="noticia-content z-10 text-left [&>p]:text-left"
                   dangerouslySetInnerHTML={{ __html: formatearTextoConLinksYHashtags(contenidoTraducido, i18n.language) }}
                 />
+
+                {/* DOCUMENTOS ANEXOS */}
+                {documentosAnexos.length > 0 && (
+                  <aside className="mt-8 p-5 sm:p-6 bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs clear-both" aria-label="Documentos anexos a la noticia">
+                    <h2 className="text-sm sm:text-base font-bold text-main-blue flex items-center gap-2 mb-3.5">
+                      <svg className="w-5 h-5 text-main-red shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      {t('noticia_detalle.documentos_anexos', 'Documentos Anexos:')}
+                    </h2>
+                    <ul className="space-y-2.5">
+                      {documentosAnexos.map((archivo, index) => {
+                        const urlProxy = obtenerUrlDocumentoNoticia(archivo, index);
+                        return (
+                          <li 
+                            key={index} 
+                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-white border border-slate-200/70 hover:border-slate-300 transition-colors shadow-xs"
+                          >
+                            <span className="text-xs sm:text-sm font-semibold text-gray-800 flex items-center gap-2.5 min-w-0">
+                              <span className="w-2 h-2 rounded-full bg-main-red shrink-0"></span>
+                              <span className="truncate">{archivo.nombre || `Documento ${index + 1}`}</span>
+                            </span>
+                            <a 
+                              href={urlProxy} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-main-blue/10 hover:bg-main-blue hover:text-white text-main-blue text-xs font-bold transition-all shrink-0 self-start sm:self-auto"
+                            >
+                              <span>{t('noticia_detalle.ver_o_descargar', 'Ver o Descargar aquí')}</span>
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                            </a>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </aside>
+                )}
                 
                 <footer className="mt-12 pt-8 border-t border-gray-100 clear-both">
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 text-center lg:text-left">

@@ -113,14 +113,6 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- Donaciones -->
-  <url>
-    <loc>https://iiresodh.org/donaciones</loc>
-    <lastmod>2026-09-12</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
   <!-- Legal / Privacidad y Términos -->
   <url>
     <loc>https://iiresodh.org/privacidad</loc>

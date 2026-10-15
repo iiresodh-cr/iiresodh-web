@@ -72,6 +72,14 @@ service cloud.firestore {
       allow write: if esAdmin();
     }
 
+    // Solicitudes de inscripción y datos bancarios para cursos
+    match /solicitudesCursos/{docId=**} {
+      // Cualquier persona interesada puede registrar su solicitud
+      allow create: if true;
+      // Solo administradores autorizados pueden ver, actualizar o borrar solicitudes
+      allow read, update, delete: if esAdmin();
+    }
+
     match /incidencia/{docId=**} {
       allow read: if true;
       allow write: if esAdmin();

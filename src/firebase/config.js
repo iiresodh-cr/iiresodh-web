@@ -3,8 +3,8 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { 
   initializeFirestore, 
-  persistentLocalCache, 
-  persistentMultipleTabManager 
+  memoryLocalCache,
+  setLogLevel
 } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getFunctions } from "firebase/functions";
@@ -36,9 +36,10 @@ isSupported().then((supported) => {
   }
 });
 
-// Inicializar Firestore con Caché Persistente habilitado para múltiples pestañas
+// Silenciar avisos internos no críticos de Firestore
+setLogLevel('error');
+
+// Inicializar Firestore con Caché en Memoria (elimina bloqueos de locks en IndexedDB entre pestañas)
 export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager()
-  })
+  localCache: memoryLocalCache()
 });

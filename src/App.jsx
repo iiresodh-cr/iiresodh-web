@@ -19,10 +19,10 @@ import CookieConsentBanner, { COOKIE_CONSENT_KEY } from "./components/CookieCons
 // ==========================================
 const Login = lazy(() => import("./components/Login"));
 const Home = lazy(() => import("./pages/Home"));
+const Home2 = lazy(() => import("./pages/Home2"));
 const QuienesSomos = lazy(() => import("./pages/QuienesSomos"));
 const LitigioEstrategico = lazy(() => import("./pages/LitigioEstrategico"));
 const Noticias = lazy(() => import("./pages/Noticias"));
-const Donaciones = lazy(() => import("./pages/Donaciones"));
 const NoticiaDetalle = lazy(() => import("./pages/NoticiaDetalle"));
 const ResultadosBusqueda = lazy(() => import("./pages/ResultadosBusqueda"));
 const Privacidad = lazy(() => import("./pages/Privacidad"));
@@ -95,7 +95,7 @@ const FallbackLoader = () => (
 
 function PublicLayout() {
   return (
-    <div className="flex flex-col min-h-screen relative">
+    <div className="flex flex-col min-h-screen relative bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD]">
       {/* Enlace accesible para saltar directamente al contenido principal (WCAG 2.4.1) */}
       <a 
         href="#main-content" 
@@ -129,6 +129,17 @@ function App() {
         {/* RUTAS PÚBLICAS (Con Navbar, Footer y PidaChat) */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
+          
+          {/* HOME PREVIA / RESPALDO V1 (SOLO ACCESO ADMIN) */}
+          <Route 
+            path="/home2" 
+            element={
+              <ProtectedRoute>
+                <Home2 />
+              </ProtectedRoute>
+            } 
+          />
+          
           <Route path="/quienes-somos" element={<QuienesSomos />} />
           <Route path="/informes-anuales" element={<InformesAnuales />} />
           <Route path="/equipo" element={<Equipo />} />
@@ -143,7 +154,6 @@ function App() {
           
           <Route path="/cursos" element={<Cursos />} />
           <Route path="/cursos/:slug" element={<CursoLanding />} />
-          <Route path="/donaciones" element={<Donaciones />} />
           <Route path="/noticias" element={<Noticias />} />
           <Route path="/noticias/:id" element={<NoticiaDetalle />} />
           <Route path="/buscar" element={<ResultadosBusqueda />} />

@@ -6,9 +6,93 @@ import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db, auth } from "../firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
 
+import { Calendar } from "lucide-react";
+
 // IMPORTACIONES PARA i18n Y TRADUCCIÓN DINÁMICA
 import { useTranslation } from 'react-i18next';
 import { obtenerTextoTraducido } from "../utils/traductorDinamico";
+
+const obtenerRangoFechasCurso = (curso, idioma = 'es', t) => {
+  if (!curso) return null;
+  let fechaInicio = curso.fechaInicio;
+  let fechaFin = curso.fechaFin;
+
+  const esPalermo = curso.id === 'palermo-2027' || 
+                    curso.slug?.includes('palermo') || 
+                    curso.titulo?.toLowerCase().includes('palermo');
+  
+  if (!fechaInicio && !fechaFin && esPalermo) {
+    fechaInicio = "2027-05-17";
+    fechaFin = "2027-05-23";
+  }
+
+  if (!fechaInicio && !fechaFin && curso.landingPage?.ubicacionFechas?.includes('|')) {
+    const parteFechas = curso.landingPage.ubicacionFechas.split('|')[1].trim();
+    if (parteFechas) return parteFechas;
+  }
+
+  if (!fechaInicio && !fechaFin) return null;
+
+  const parsear = (str) => {
+    if (!str) return null;
+    const partes = String(str).split('-');
+    if (partes.length === 3) {
+      return new Date(parseInt(partes[0], 10), parseInt(partes[1], 10) - 1, parseInt(partes[2], 10));
+    }
+    const d = new Date(str);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
+  const dInicio = parsear(fechaInicio);
+  const dFin = parsear(fechaFin);
+
+  const lang = (idioma || 'es').substring(0, 2).toLowerCase();
+  const locale = lang === 'en' ? 'en-US' : (lang === 'fr' ? 'fr-FR' : 'es-ES');
+
+  if (dInicio && dFin) {
+    if (dInicio.getTime() === dFin.getTime()) {
+      return dInicio.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    if (dInicio.getMonth() === dFin.getMonth() && dInicio.getFullYear() === dFin.getFullYear()) {
+      const mesLargo = dInicio.toLocaleDateString(locale, { month: 'long' });
+      const año = dInicio.getFullYear();
+      if (lang === 'en') {
+        return `${mesLargo} ${dInicio.getDate()} – ${dFin.getDate()}, ${año}`;
+      }
+      if (lang === 'fr') {
+        return `${dInicio.getDate()} – ${dFin.getDate()} ${mesLargo} ${año}`;
+      }
+      return `${dInicio.getDate()} – ${dFin.getDate()} de ${mesLargo} de ${año}`;
+    }
+
+    if (dInicio.getFullYear() === dFin.getFullYear()) {
+      const mesInicio = dInicio.toLocaleDateString(locale, { month: 'short' });
+      const mesFin = dFin.toLocaleDateString(locale, { month: 'short' });
+      const año = dInicio.getFullYear();
+      if (lang === 'en') {
+        return `${mesInicio} ${dInicio.getDate()} – ${mesFin} ${dFin.getDate()}, ${año}`;
+      }
+      return `${dInicio.getDate()} ${mesInicio} – ${dFin.getDate()} ${mesFin} ${año}`;
+    }
+
+    const f1 = dInicio.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+    const f2 = dFin.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+    return `${f1} – ${f2}`;
+  }
+
+  if (dInicio) {
+    const f1 = dInicio.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+    return t ? t('cursos.fecha_inicio', { fecha: f1, defaultValue: `Inicio: ${f1}` }) : `Inicio: ${f1}`;
+  }
+
+  if (dFin) {
+    const f2 = dFin.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+    return t ? t('cursos.fecha_fin', { fecha: f2, defaultValue: `Finalización: ${f2}` }) : `Finalización: ${f2}`;
+  }
+
+  return null;
+};
 
 export default function Cursos() {
   const { t, i18n } = useTranslation(); 
@@ -84,7 +168,7 @@ export default function Cursos() {
   }
 
   return (
-    <main className="bg-white min-h-screen flex flex-col font-sans">
+    <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] min-h-screen flex flex-col font-sans">
       <PageHeader 
         titulo={t('cursos.header_titulo', 'Oferta Académica y Cursos')} 
         subtitulo={t('cursos.header_subtitulo', 'Formación especializada en Derechos Humanos y Litigio Estratégico.')} 
@@ -123,6 +207,7 @@ export default function Cursos() {
                 // ==========================================
                 const tituloTraducido = obtenerTextoTraducido(curso, 'titulo', i18n.language);
                 const resumenTraducido = obtenerTextoTraducido(curso, 'resumen', i18n.language);
+                const rangoFechas = obtenerRangoFechasCurso(curso, i18n.language, t);
 
                 const estado = curso.estadoInscripcion || (curso.cursoActivo ? 'abierta' : 'cerrada');
                 
@@ -164,6 +249,14 @@ export default function Cursos() {
                       <h3 className={`text-xl md:text-2xl font-bold mb-3 tracking-tight transition-colors leading-snug ${isActiveStyle ? 'text-gray-800 group-hover:text-main-blue' : 'text-gray-500'}`}>
                         {tituloTraducido}
                       </h3>
+
+                      {rangoFechas && (
+                        <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 bg-slate-100/90 border border-slate-200/60 rounded-md px-2.5 py-1 mb-3.5 w-fit shadow-xs">
+                          <Calendar className="w-3.5 h-3.5 text-main-blue shrink-0" />
+                          <span>{rangoFechas}</span>
+                        </div>
+                      )}
+
                       <p className="text-gray-500 font-light leading-relaxed text-sm mb-8 grow line-clamp-3">
                         {resumenTraducido}
                       </p>

@@ -383,7 +383,7 @@ export default function Tienda() {
 
   if (!slug) {
     return (
-      <main className="bg-white min-h-screen flex flex-col font-sans">
+      <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] min-h-screen flex flex-col font-sans">
         <PageHeader titulo={t('tienda.header_titulo', "Tienda IIRESODH")} subtitulo={t('tienda.header_subtitulo', "Adquiere nuestras publicaciones y merchandising oficiales.")} />
         
         <div className="relative overflow-hidden grow pb-20">
@@ -461,7 +461,7 @@ export default function Tienda() {
   const monedaFinal = esMXNLibro ? "MXN" : "USD";
 
   return (
-    <main className="bg-white min-h-screen flex flex-col font-sans">
+    <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] min-h-screen flex flex-col font-sans">
       <PageHeader titulo={t('tienda.header_compra_titulo', "Finalizar Compra")} subtitulo={t('tienda.header_compra_subtitulo', "Estás adquiriendo una publicación oficial de IIRESODH.")} />
       <div className="relative overflow-hidden grow pb-20">
         <div className="bg-watermark" aria-hidden="true"></div>

@@ -4,120 +4,388 @@ import { useParams, Link, useSearchParams } from "react-router-dom";
 import { collection, query, where, getDocs, doc, getDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import { db, auth } from "../firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
-import { CircularProgress, Alert, Snackbar } from "@mui/material";
+import { CircularProgress, Alert, Snackbar, Button } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
-// Assets locales predeterminados
+// // Assets locales predeterminados
 import falconeDefaultImg from "../assets/cursos/falcone_borsellino.jpg";
+import falconeRecorte from "../assets/cursos/falcone_recorte.jpg";
 import palermoDefaultImg from "../assets/cursos/palermo_catedral.jpg";
+import palermoJusticiaBw from "../assets/cursos/palermo_justicia_bw.jpg";
+import palermoAulaBunkerBw from "../assets/cursos/palermo_aula_bunker_bw.jpg";
+import palermoCollageHeroBw from "../assets/cursos/palermo_collage_hero_bw.jpg";
+import logoUnlp from "../assets/cursos/logo_unlp_ddhh.png";
+import brochureP1 from "../assets/cursos/brochure_palermo_p2.jpg";
+import brochureP2 from "../assets/cursos/brochure_palermo_p1.jpg";
+import palermoFoto1 from "../assets/palermo/palermo_1.jpg";
+import palermoFoto2 from "../assets/palermo/palermo_2.jpg";
+import palermoFoto3 from "../assets/palermo/palermo_3.jpg";
+import palermoFoto4 from "../assets/palermo/palermo_4.jpg";
+import palermoFoto5 from "../assets/palermo/palermo_5.jpg";
 import logoIiresodh from "../assets/logo.webp";
+import logoIiresodhColor from "../assets/logo-color.png";
+import FormularioPagoCurso from "../components/cursos/FormularioPagoCurso";
+import SelectorModalidadPago from "../components/cursos/SelectorModalidadPago";
+import ModalTerminosClickwrap from "../components/cursos/ModalTerminosClickwrap";
+import { PAISES_LATINOAMERICA } from "../data/paisesLatinoamerica";
+import { Scale, ShieldCheck, Search, GraduationCap, Globe } from "lucide-react";
 
-// Datos por defecto para el Curso Internacional 2027 en Palermo (Fallback y Semilla visual)
+export const FOTOS_PALERMO = [
+  {
+    src: palermoFoto1,
+    titulo: "Palacio de Justicia",
+    lugar: "Palermo, Sicilia"
+  },
+  {
+    src: palermoFoto2,
+    titulo: "Aula Bunker del Maxi-Proceso",
+    lugar: "Palermo, Sicilia"
+  },
+  {
+    src: palermoFoto3,
+    titulo: "Teatro Massimo",
+    lugar: "Palermo, Sicilia"
+  },
+  {
+    src: palermoFoto4,
+    titulo: "Palazzo Steri",
+    lugar: "Palermo, Sicilia"
+  },
+  {
+    src: palermoFoto5,
+    titulo: "Puerto de Palermo y Monte Pellegrino",
+    lugar: "Palermo, Sicilia"
+  }
+];
+
+const obtenerIconoPerfil = (item, idx) => {
+  const ico = String(item?.icono || "");
+  const perfil = String(item?.perfil || "").toLowerCase();
+
+  if (ico === "Scale" || ico.includes("⚖") || perfil.includes("jueces") || perfil.includes("fiscales") || idx === 0) {
+    return Scale;
+  }
+  if (ico === "ShieldCheck" || ico.includes("🛡") || perfil.includes("abogados") || perfil.includes("defensores") || idx === 1) {
+    return ShieldCheck;
+  }
+  if (ico === "Search" || ico.includes("🔍") || perfil.includes("seguridad") || perfil.includes("inteligencia") || idx === 2) {
+    return Search;
+  }
+  if (ico === "GraduationCap" || ico.includes("🎓") || perfil.includes("academia") || perfil.includes("criminología") || idx === 3) {
+    return GraduationCap;
+  }
+  if (ico === "Globe" || ico.includes("🌐") || perfil.includes("diplomátic") || perfil.includes("organismos") || idx === 4) {
+    return Globe;
+  }
+  return Scale;
+};
+
+export const normalizarPrecio = (precioStr) => {
+  if (!precioStr) return "3,350 USD";
+  let s = String(precioStr).trim();
+  s = s.replace(/\.00/g, "").replace(/,00/g, "");
+  s = s.replace("3.350", "3,350");
+  if (!s.toUpperCase().includes("USD") && !s.includes("$")) {
+    s = `${s} USD`;
+  }
+  return s;
+};
+
+// Datos por defecto para el Curso Internacional 2027 en Palermo (Brochure Oficial & Co-organización UNLP)
 export const DATOS_PALERMO_2027 = {
   id: "palermo-2027",
   slug: "curso-internacional-palermo-2027",
-  titulo: "Curso Internacional 2027 - Palermo, Sicilia, Italia. Del 17 al 23 de mayo de 2027",
+  titulo: "Curso Internacional: Aplicación de las Convenciones de Palermo contra el Crimen Organizado",
+  subtitulo: "Investigación Criminal, Cooperación Internacional y Derechos Humanos en la Lucha contra la Criminalidad Organizada y la Trata de Personas",
+  coorganizacion: "Curso Internacional organizado conjuntamente por el Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH) y el Instituto de Derechos Humanos de la Universidad Nacional de La Plata (Argentina).",
   resumen: "Programa de alta especialización judicial sobre la aplicación de las Convenciones de Palermo contra el Crimen Organizado Transnacional.",
   estadoInscripcion: "proximamente",
+  fechaInicio: "2027-05-17",
+  fechaFin: "2027-05-23",
   imagenPrincipalUrl: falconeDefaultImg,
   landingPage: {
     habilitada: true,
     publicada: false, // Por defecto no pública como solicitó el usuario
     lema: "APLICACIÓN DE LAS CONVENCIONES DE PALERMO CONTRA EL CRIMEN ORGANIZADO",
-    ubicacionFechas: "Palermo, Sicilia, Italia | Del 17 al 23 de mayo de 2027",
-    precioInversion: "5.000 €",
-    inversionDetalle: "Por persona. Incluye sesiones magistrales, visitas de campo, materiales exclusivos y certificación internacional.",
+    subtitulo: "Investigación Criminal, Cooperación Internacional y Derechos Humanos en la Lucha contra la Criminalidad Organizada y la Trata de Personas",
+    ubicacionFechas: "Palermo, Sicilia, Italia | 17 – 23 de mayo de 2027",
+    precioInversion: "3,350 USD",
+    inversionDetalle: "Por participante. Incluye clases magistrales, simulación de caso transnacional, visitas guiadas a lugares emblemáticos, compendio digital, certificado oficial, alojamiento en hotel 4 estrellas, traslados internos y coffee breaks.",
+    cuposTexto: "Cupos Estrictamente Limitados",
+    fechaLimitePago: "2027-04-30",
+    fechaLimiteTexto: "30 de abril de 2027",
     enlaceStripe: "",
     heroImagenUrl: falconeDefaultImg,
-    heroCita: "«La mafia è un fenomeno umano e come tutti i fenomeni umani ha un principio, una sua evoluzione e avrà quindi anche una fine.»",
+    heroCita: "«La mafia è un fenomeno umano e como tutti i fenomeni umani ha un principio, una sua evoluzione e avrà quindi anche una fine.»",
     heroCitaAutor: "Giovanni Falcone (1939 – 1992)",
-    
+
+    // Co-organización institucional
+    coorganizadores: [
+      {
+        nombre: "IIRESODH",
+        detalle: "Instituto Internacional de Responsabilidad Social y Derechos Humanos",
+        pais: "Costa Rica / Internacional",
+        logo: logoIiresodh
+      },
+      {
+        nombre: "Instituto de Derechos Humanos - UNLP",
+        detalle: "Facultad de Ciencias Jurídicas y Sociales • Universidad Nacional de La Plata",
+        pais: "Argentina",
+        logo: logoUnlp
+      }
+    ],
+
+    // Contacto Directo
+    contacto: {
+      whatsapp: "+506 4081 6188",
+      whatsappUrl: "https://wa.me/50640816188?text=Hola,%20solicito%20informaci%C3%B3n%20sobre%20el%20Curso%20Internacional%20Palermo%202027",
+      email: "cursos@iiresodh.org",
+    },
+
+    // Docentes Destacados
+    docentesDestacados: [
+      {
+        nombre: "Víctor Rodríguez Rescia",
+        cargo: "Presidente de IIRESODH",
+        rol: "Director Académico",
+        descripcion: "Experto Independiente de varios Comités, Subcomité y Mecanismos de Derechos Humanos de la Organización de las Naciones Unidas (ONU).",
+        origen: "Costa Rica / Internacional"
+      },
+      {
+        nombre: "Fabián Salvioli",
+        cargo: "Director del Instituto de Derechos Humanos - UNLP",
+        rol: "Director Académico Coorganizador",
+        descripcion: "Expresidente del Comité de Derechos Humanos de la ONU y Ex Relator Especial de Naciones Unidas. Catedrático de la Universidad Nacional de La Plata.",
+        origen: "Argentina / ONU"
+      },
+      {
+        nombre: "Ottavio Sferlazza",
+        cargo: "Ex Procurador Antimafia de Italia",
+        rol: "Docente Principal",
+        descripcion: "Magistrado histórico italiano de la lucha judicial antimafia en Sicilia. Coordinador de investigaciones de máxima complejidad sobre Cosa Nostra.",
+        origen: "Italia"
+      },
+      {
+        nombre: "+ Más de 20 Expertos Italianos e Internacionales",
+        cargo: "Cuerpo Docente de Élite",
+        rol: "Magistrados, Fiscales y Catedráticos",
+        descripcion: "Fiscales jefe, catedráticos universitarios especializados en derecho antimafia, e investigadores de la UNODC (Oficina contra la Droga y el Delito) y la OIM.",
+        origen: "Italia / Europa / ONU"
+      }
+    ],
+
+    // ¿A quién está dirigido?
+    aQuienDirigido: [
+      {
+        perfil: "Jueces, juezas, fiscales y operadores de justicia.",
+        icono: "Scale"
+      },
+      {
+        perfil: "Abogados, abogadas y defensores de derechos humanos.",
+        icono: "ShieldCheck"
+      },
+      {
+        perfil: "Integrantes de las fuerzas de seguridad, unidades de inteligencia financiera y otras áreas de la gestión pública.",
+        icono: "Search"
+      },
+      {
+        perfil: "Personas de la academia e investigadoras especializadas en derecho penal y criminología.",
+        icono: "GraduationCap"
+      },
+      {
+        perfil: "Diplomáticas, diplomáticos, funcionarias y funcionarios de organismos internacionales.",
+        icono: "Globe"
+      }
+    ],
+
+    // ¿Qué está incluido?
+    queEstaIncluido: [
+      {
+        titulo: "Clases magistrales con expertos internacionales",
+        descripcion: "Sesiones presenciales intensivas de análisis normativo y procesal con magistrados y fiscales en activo.",
+        icono: "👨‍🏫"
+      },
+      {
+        titulo: "Simulación de caso transnacional",
+        descripcion: "Talleres prácticos con expedientes reales, técnicas de litigio y audiencia simulada final.",
+        icono: "📁"
+      },
+      {
+        titulo: "Visitas guiadas a lugares emblemáticos",
+        descripcion: "Acceso con acreditación al Palacio de Justicia de Palermo, Aula Búnker, Palazzo Steri, Teatro Massimo y Bien Confiscado.",
+        icono: "🏛️"
+      },
+      {
+        titulo: "Compendio digital de material didáctico",
+        descripcion: "Biblioteca documental exhaustiva con jurisprudencia internacional, convenios y guías prácticas.",
+        icono: "📚"
+      },
+      {
+        titulo: "Certificado de participación internacional",
+        descripcion: "Acreditación académica de alta especialización emitida conjuntamente por IIRESODH y el Instituto de Derechos Humanos de la UNLP (Argentina).",
+        icono: "📜"
+      },
+      {
+        titulo: "Alojamiento en hotel 4 estrellas",
+        descripcion: "Estancia completa de calidad superior en Palermo durante los días del programa, incluyento desayunos y coffe breaks.",
+        icono: "🏨"
+      },
+      {
+        titulo: "Logística y traslados internos",
+        descripcion: "Transporte para las visitas oficiales del itinerario en Palermo (no incluye aéreos hasta y desde Palermo).",
+        icono: "🚌"
+      },
+      {
+        titulo: "Espacios diarios de Networking",
+        descripcion: "Espacios diarios de networking para intercambio entre los participantes y docentes.",
+        icono: "☕"
+      }
+    ],
+
+    // ¿Qué no está incluido?
+    queNoEstaIncluido: [
+      {
+        titulo: "Traslados desde y hacia su país de origen",
+        descripcion: "Boletos aéreos internacionales de ida y vuelta a Palermo, ni traslados previos o posteriores al itinerario oficial.",
+        icono: "✈️"
+      },
+      {
+        titulo: "Póliza de gastos médicos",
+        descripcion: "Seguro médico internacional de viaje, cobertura hospitalaria o seguros privados de salud individuales.",
+        icono: "🏥"
+      },
+      {
+        titulo: "Visas y trámites migratorios requeridos",
+        descripcion: "Gestión y tasas consulares para visado de ingreso a Italia o espacio Schengen, pasaportes ni permisos migratorios.",
+        icono: "🛂"
+      }
+    ],
+
+    // ¿Qué aprenderás?
+    queAprenderas: [
+      "Aplicar los principios del debido proceso y las garantías procesales en la investigación de delitos complejos y criminalidad organizada.",
+      "Interpretar el marco normativo de la Convención de Palermo y su Protocolo para su correcta aplicación jurisdiccional.",
+      "Integrar los estándares internacionales del control de convencionalidad en la argumentación y resolución de casos penales.",
+      "Evaluar modelos comparados de protección de testigos y mecanismos estratégicos de recuperación de activos en la lucha contra la delincuencia transnacional."
+    ],
+
     // Sección Legado y Visión
-    legadoTitulo: "Nuestro Legado y Visión",
-    legadoTexto: "El legado histórico de los magistrados Giovanni Falcone y Paolo Borsellino sentó las bases de la lucha contemporánea contra el crimen organizado y la macrocriminalidad financiera. En el año 2000, Palermo fue la sede donde la comunidad internacional aprobó la histórica Convención de las Naciones Unidas contra la Delincuencia Organizada Transnacional. Este curso internacional conecta ese precedente histórico con los desafíos judiciales de vanguardia, el decomiso de activos ilícitos y la cooperación penal transfronteriza.",
+    legadoTitulo: "Legado y Visión",
+    legadoTexto: "El legado histórico de los magistrados Giovanni Falcone y Paolo Borsellino sentó las bases de la lucha contemporánea contra el crimen organizado y la macrocriminalidad financiera. En el año 2000, Palermo fue la sede donde la comunidad internacional aprobó la histórica Convención de las Naciones Unidas contra la Delincuencia Organizada Transnacional. Este curso internacional conecta ese precedente histórico con los desafíos judiciales de vanguardia, el decomiso de activos ilícitos y la cooperación penal transfronteriza, organizado en conjunto por IIRESODH y el Instituto de Derechos Humanos de la Universidad Nacional de La Plata.",
     pilares: [
       {
-        titulo: "Instrumentos Internacionales y Jurisprudencia",
-        descripcion: "Análisis dogmático y procesal de la Convención de Palermo y protocolos complementarios.",
+        titulo: "Marco Jurídico Internacional y DDHH",
+        descripcion: "Análisis dogmático y procesal de la Convención de Palermo, sus protocolos y control de convencionalidad.",
         icono: "balanza"
       },
       {
-        titulo: "Investigaciones Financieras y Recuperación de Activos",
-        descripcion: "Técnicas probatorias de seguimiento patrimonial ('Follow the Money') y extinción de dominio.",
+        titulo: "'Follow the Money' y Recuperación de Activos",
+        descripcion: "Técnicas probatorias de seguimiento financiero, extinción de dominio y decomiso de bienes a las mafias.",
         icono: "dinero"
       },
       {
-        titulo: "Protección Integral a Testigos y Operadores",
-        descripcion: "Protocolos de seguridad, reserva de identidad y garantías procesales para fiscales y jueces.",
+        titulo: "Protección a Actores Judiciales y Testigos",
+        descripcion: "Protocolos de seguridad, reserva probatoria y garantías para jueces, fiscales y declarantes amenazados.",
         icono: "escudo"
       },
       {
-        titulo: "Cooperación Judicial y Extradición",
-        descripcion: "Mecanismos de asistencia mutua, equipos conjuntos de investigación y tratados multilaterales.",
+        titulo: "Cooperación Judicial y Casos Transnacionales",
+        descripcion: "Equipos conjuntos de investigación, trata de personas y modelos comparados Europa–Latinoamérica.",
         icono: "mundo"
       }
     ],
 
-    // Estructura del Programa
+    // Estructura del Programa (7 Días en Palermo - Mayo 2027)
     programa: [
       {
         dia: "DÍA 1",
-        fecha: "Lunes 17 de mayo",
-        titulo: "Instrumentos Internacionales y Evolución Dogmática",
-        horario: "09:00 - 13:00 / 15:00 - 18:00",
-        descripcion: "Apertura institucional y análisis exegético de la Convención de Palermo (UNTOC). Tipologías penales transnacionales, estándar probatorio internacional y armonización de legislaciones internas.",
+        fecha: "Lunes 17 de mayo de 2027",
+        titulo: "Marco jurídico internacional del crimen organizado",
+        horario: "09:00–13:00 y 15:00–18:00",
+        descripcion: "Apertura institucional del curso y análisis exegético de la Convención de Palermo. Apertura de actividades.",
+        lugarEmblematico: "Aula Búnker del Palacio de Justicia de Palermo",
         temas: [
-          "Génesis y alcance de la Convención de las Naciones Unidas de 2000",
-          "Delito de asociación ilícita y crimen corporativo",
-          "Obligaciones de tipificación penal en los Estados parte"
+          "Génesis y alcance de la Convención de las Naciones Unidas de 2000 (UNTOC)",
+          "Delito de asociación mafiosa y estándares penales internacionales",
+          "Apertura solemne en sede judicial y visita histórica guiada al Aula Búnker"
         ]
       },
       {
         dia: "DÍA 2",
-        fecha: "Martes 18 de mayo",
-        titulo: "Investigaciones Financieras y Lavado de Dinero",
-        horario: "09:00 - 13:00 / 15:00 - 18:00",
-        descripcion: "El método Falcone: 'Seguir el rastro del dinero'. Investigaciones patrimoniales complejas, rastreo de activos en paraísos fiscales, decomiso sin condena y extinción de dominio.",
+        fecha: "Martes 18 de mayo de 2027",
+        titulo: "Investigación y protección de actores judiciales",
+        horario: "09:00–13:00 y 15:00–18:00",
+        descripcion: "Seguridad y garantías procesales para magistrados, fiscales y defensores en investigaciones de alta peligrosidad. Taller práctico exhaustivo sobre un expediente real de mafia.",
+        lugarEmblematico: "Centro de Formación Judicial",
         temas: [
-          "El método Falcone: de la contabilidad forense a la imputación penal",
-          "Criptoactivos, lavado transfronterizo y estructuras corporativas fiduciarias",
-          "Taller práctico: Análisis de balances bancarios sospechosos"
+          "Sistemas y protocolos de seguridad integral para operadores de justicia",
+          "Metodología investigativa en estructuras criminales cerradas",
+          "Taller sobre expediente de mafia: análisis documental y valoración de riesgo procesal"
         ]
       },
       {
         dia: "DÍA 3",
-        fecha: "Miércoles 19 de mayo",
-        titulo: "Protección de Testigos y Técnicas Especiales de Investigación",
-        horario: "09:00 - 13:00 / 15:00 - 18:00",
-        descripcion: "Mecanismos de inmunidad y delación premiada ('collaboratori di giustizia'). Protección integral de testigos amenazados, agentes encubiertos e interceptaciones telemáticas conforme al estándar de DDHH.",
+        fecha: "Miércoles 19 de mayo de 2027",
+        titulo: "«Follow the money»: lavado de activos y recuperación de bienes",
+        horario: "09:00–13:00 y 15:00–18:00",
+        descripcion: "El principio fundamental de Giovanni Falcone: seguir la ruta del dinero ilícito. Técnicas forenses de decomiso y visita a un lugar emblemático.",
+        lugarEmblematico: "Sede de Bien Confiscado gestionado para uso social",
         temas: [
-          "El estatuto de los colaboradores de justicia y valoración de credibilidad",
-          "Agentes encubiertos y entregas vigiladas internacionales",
-          "Límites éticos y de DDHH en la recolección de evidencia digital"
+          "Doctrina Falcone: de la contabilidad forense a la imputación patrimonial",
+          "Extinción de dominio, decomiso sin condena y reutilización social de bienes",
+          "Visita técnica a un Bien Confiscado administrado por el Estado italiano"
         ]
       },
       {
         dia: "DÍA 4",
-        fecha: "Jueves 20 de mayo",
-        titulo: "Cooperación Judicial Internacional y Extradición",
-        horario: "09:00 - 13:00 / 15:00 - 18:00",
-        descripcion: "Exhortos consulares, comisiones rogatorias, órdenes europeas de investigación y equipos conjuntos de investigación (ECI) entre Europa e Iberoamérica.",
+        fecha: "Jueves 20 de mayo de 2027",
+        titulo: "Protocolo de Palermo: trata de personas",
+        horario: "09:00–13:00 y 15:00–18:00",
+        descripcion: "Dogmática y aplicación judicial del Protocolo de Palermo contra la trata de personas. Inicio de la simulación de caso transnacional.",
+        lugarEmblematico: "Sede Académica Internacional",
         temas: [
-          "Equipos Conjuntos de Investigación (ECI): marco operativo y buenas prácticas",
-          "Procedimientos de extradición y garantías del debido proceso",
-          "Simulación de un requerimiento urgente de cooperación transfronteriza"
+          "Diferenciación típica entre trata de personas y tráfico ilícito de personas migrantes",
+          "Enfoque de derechos humanos y protección judicial integral a víctimas",
+          "Simulación de caso transnacional: apertura de expediente y medidas cautelares"
         ]
       },
       {
-        dia: "DÍA 5 Y CLAUSURA",
-        fecha: "Viernes 21 al 23 de mayo",
-        titulo: "Visita Institucional al Aula Búnker y Ceremonia de Graduación",
-        horario: "10:00 - 14:00",
-        descripcion: "Recorrido conmemorativo en el Palacio de Justicia de Palermo (Aula Búnker del Maxi-Proceso), conferencia magistral de cierre por magistrados de la Corte de Casación de Italia y entrega de diplomas.",
+        dia: "DÍA 5",
+        fecha: "Viernes 21 de mayo de 2027",
+        titulo: "Niñez y estrategias comparadas Latam–Italia",
+        horario: "09:00–13:00 y 15:00–18:00",
+        descripcion: "Protección reforzada de la niñez frente a la criminalidad organizada. Análisis procesal comparado entre América Latina e Italia. Audiencia simulada final y solemne acto de entrega de certificados.",
+        lugarEmblematico: "Aula Magna Universitaria",
         temas: [
-          "Visita al Aula Búnker de Palermo: lecciones históricas del Maxi-Proceso",
-          "Conferencia magistral de clausura: el futuro de la justicia global",
-          "Solemne entrega de diplomas y cóctel de clausura"
+          "Niñez y adolescencia: mecanismos de prevención y tutela judicial efectiva",
+          "Modelos comparados de persecución y garantías penales Latam–Italia",
+          "Audiencia simulada final con tribunal de expertos y entrega de certificados conjuntos"
+        ]
+      },
+      {
+        dia: "DÍA 6",
+        fecha: "Sábado 22 de mayo de 2027",
+        titulo: "Palazzo Steri y centro histórico de Palermo",
+        horario: "09:00–13:00 y 15:00–18:00",
+        descripcion: "Jornada cultural y académica en el emblemático Palazzo Steri y los sitios más trascendentes del centro histórico de Palermo (incluyendo el Teatro Massimo).",
+        lugarEmblematico: "Palazzo Steri & Teatro Massimo",
+        temas: [
+          "Palazzo Steri: memoria histórica, justicia y derechos humanos en Sicilia",
+          "Visita guiada al Teatro Massimo y centro neurálgico de Palermo",
+          "Espacio de networking y cofradía jurídica internacional"
+        ]
+      },
+      {
+        dia: "DÍA 7",
+        fecha: "Domingo 23 de mayo de 2027",
+        titulo: "Cierre simbólico: conmemoración del atentado de Capaci",
+        horario: "Jornada Conmemorativa Especial",
+        descripcion: "Cierre solemne conmemorando el aniversario del atentado de Capaci, en homenaje imperecedero a Giovanni Falcone, Francesca Morvillo y sus escoltas, reafirmando el compromiso por la justicia y el Estado de Derecho.",
+        lugarEmblematico: "Memorial de Capaci & Sede Falcone-Morvillo",
+        temas: [
+          "Acto de memoria y homenaje cívico en el lugar del atentado de Capaci",
+          "El valor ético de los jueces y fiscales frente a la criminalidad organizada",
+          "Clausura oficial del curso internacional y clausura del contingente"
         ]
       }
     ],
@@ -125,35 +393,41 @@ export const DATOS_PALERMO_2027 = {
     // Destacados del Curso
     destacados: [
       {
+        titulo: "Doble Respaldo Académico Internacional",
+        descripcion: "Co-organizado y certificado conjuntamente por IIRESODH y el Instituto de Derechos Humanos de la Universidad Nacional de La Plata (Argentina).",
+        icono: "certificado"
+      },
+      {
         titulo: "Ponentes de Élite Mundial",
-        descripcion: "Magistrados del Tribunal Supremo de Italia, fiscales antimafia y relatores de organismos internacionales.",
+        descripcion: "Víctor Rodríguez Rescia, Fabián Salvioli, Ottavio Sferlazza y más de 20 fiscales jefe y catedráticos antimafia italianos.",
         icono: "juez"
       },
       {
-        titulo: "Acceso a Casos Prácticos Reales",
-        descripcion: "Estudio de expedientes desclasificados, pruebas periciales forenses y resolución de casos en talleres de simulación.",
+        titulo: "Acceso a Lugares Emblemáticos Reales",
+        descripcion: "Visitas con credencial oficial al Palacio de Justicia, Aula Búnker del Maxi-Proceso, Palazzo Steri y Bien Confiscado.",
         icono: "carpeta"
       },
       {
-        titulo: "Networking Judicial Internacional",
-        descripcion: "Intercambio directo y estrecha vinculación con jueces, fiscales y defensores de más de 12 países.",
+        titulo: "Servicio Integral: Alojamiento 4★ y Traslados",
+        descripcion: "Incluye hospedaje en hotel 4 estrellas en Palermo, traslados internos de logística académica y coffee breaks.",
         icono: "red"
       },
       {
-        titulo: "Acreditación Internacional Oficial",
-        descripcion: "Diploma oficial de alta especialización emitido por IIRESODH con validez curricular internacional.",
-        icono: "certificado"
+        titulo: "Grupo Exclusivo con Cupos Limitados",
+        descripcion: "Aforo estrictamente restringido por normativas de seguridad institucional en las sedes judiciales italianas.",
+        icono: "candado"
       }
     ],
 
     // Sede Palermo
     sedeNombre: "Palermo, Sicilia (Italia)",
-    sedeLugar: "Catedral de Palermo & Sede Judicial Histórica",
+    sedeLugar: "Palacio de Justicia, Aula Búnker, Teatro Massimo & Palazzo Steri",
     sedeImagenUrl: palermoDefaultImg,
-    sedeTexto: "Palermo no es solo una joya arquitectónica del Mediterráneo donde confluyen las culturas normanda, árabe y barroca; es el epicentro mundial de la legislación contra el crimen organizado. En sus tribunales se forjó la doctrina más avanzada del derecho penal moderno y en su suelo se rubricó la Convención de la ONU en el año 2000. Los participantes disfrutarán de una experiencia académica inmersiva en un entorno de incalculable riqueza histórica y cultural.",
+    sedeTexto: "Palermo es la cuna histórica de la Convención de las Naciones Unidas contra el Crimen Organizado del año 2000 y el epicentro de la resistencia judicial encarnada por Giovanni Falcone y Paolo Borsellino. Durante 7 intensos días, los participantes recorrerán sus sedes judiciales más veneradas, el Aula Búnker del Maxi-Proceso, bienes decomisados a la mafia y monumentos icónicos como el Teatro Massimo y el Palazzo Steri.",
     sedeLogistica: [
-      "Traducción simultánea disponible en español e italiano en todas las sesiones.",
-      "Sede céntrica con acceso preferente a hoteles concertados con tarifa especial.",
+      "Traducción y facilitación en español e italiano durante todas las sesiones académicas.",
+      "Alojamiento incluido en hotel de 4 estrellas con ubicación estratégica en Palermo.",
+      "Traslados internos garantizados para todas las visitas institucionales del itinerario.",
       "Clima primaveral idóneo en mayo (22°C - 26°C) en la costa siciliana."
     ],
 
@@ -162,7 +436,7 @@ export const DATOS_PALERMO_2027 = {
       beneficiario: "Instituto Internacional de Responsabilidad Social y Derechos Humanos (IIRESODH)",
       banco: "Banco Internacional / IBAN / SWIFT",
       pais: "Costa Rica / Internacional",
-      moneda: "Euros (€) y Dólares (USD)",
+      moneda: "Dólares Americanos (USD)",
       nota: "Una vez solicitado el cupo, el departamento académico emitirá una factura proforma oficial con los códigos bancarios y número de reserva para su trámite institucional o personal."
     }
   }
@@ -181,22 +455,79 @@ export default function CursoLanding() {
 
   // Estados del formulario interactivo de registro / solicitud bancaria
   const [formData, setFormData] = useState({
+    nombres: "",
+    apellidos: "",
     nombre: "",
+    documentoIdentidad: "",
     institucion: "",
     email: "",
     telefono: "",
     pais: "Costa Rica",
-    comentarios: ""
+    comentarios: "",
+    profesion: "",
+    experienciaTemas: [],
+    experienciaOtro: "",
+    motivoParticipacion: "",
+    cursosPrevios: "no",
+    detalleCursosPrevios: "",
+    alumnoIiresodh: "no"
   });
   const [enviandoSolicitud, setEnviandoSolicitud] = useState(false);
   const [solicitudExitosa, setSolicitudExitosa] = useState(false);
+  const [aceptarPrivacidadTransferencia, setAceptarPrivacidadTransferencia] = useState(false);
   const [alerta, setAlerta] = useState({ open: false, mensaje: "", tipo: "success" });
 
   // Tab activo principal del Hub Interactivo del Curso
-  const [seccionActiva, setSeccionActiva] = useState("legado"); // 'legado' | 'programa' | 'destacados' | 'sede' | 'inscripcion'
+  const [seccionActiva, setSeccionActiva] = useState("legado"); // 'legado' | 'programa' | 'docentes' | 'incluido' | 'brochure' | 'sede' | 'inscripcion'
+  const [metodoInscripcion, setMetodoInscripcion] = useState("interes"); // 'interes' | 'tarjeta' | 'transferencia'
+  const [planCuotas, setPlanCuotas] = useState(1); // 1 = Pago único, 2 = 2 pagos, 3 = 3 pagos, 4 = 4 pagos
+  const [modalBrochure, setModalBrochure] = useState(null); // null | 1 | 2
+  const [modalTerminosOpen, setModalTerminosOpen] = useState(false);
+  const [clientIp, setClientIp] = useState("");
+
+  // Obtener IP pública del cliente para constancia y registro del clickwrap
+  useEffect(() => {
+    fetch("https://api.ipify.org?format=json")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.ip) setClientIp(data.ip);
+      })
+      .catch(() => { });
+  }, []);
+
+  // Carrousel de fotos de Palermo y Modal Lightbox
+  const [slidePalermoActual, setSlidePalermoActual] = useState(0);
+  const [modalFotoPalermo, setModalFotoPalermo] = useState(null); // null | índice de foto
 
   // Tab activo en la estructura del programa (Días)
   const [diaActivo, setDiaActivo] = useState(0);
+
+  // Estado para copiar enlace del curso
+  const [enlaceCopiado, setEnlaceCopiado] = useState(false);
+
+  // Auto-play del carrousel de fotos de Palermo
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSlidePalermoActual((prev) => (prev + 1) % FOTOS_PALERMO.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Navegación por teclado para el modal de fotos
+  useEffect(() => {
+    if (modalFotoPalermo === null) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setModalFotoPalermo(null);
+      if (e.key === "ArrowLeft") {
+        setModalFotoPalermo((prev) => (prev - 1 + FOTOS_PALERMO.length) % FOTOS_PALERMO.length);
+      }
+      if (e.key === "ArrowRight") {
+        setModalFotoPalermo((prev) => (prev + 1) % FOTOS_PALERMO.length);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [modalFotoPalermo]);
 
   // Escuchar estado de autenticación para administradores
   useEffect(() => {
@@ -263,43 +594,97 @@ export default function CursoLanding() {
   }, [slug]);
 
   const handleSubmitSolicitud = async (e) => {
-    e.preventDefault();
-    if (!formData.nombre.trim() || !formData.email.trim()) {
-      setAlerta({ open: true, mensaje: "Por favor completa tu nombre y correo electrónico.", tipo: "warning" });
+    if (e && e.preventDefault) e.preventDefault();
+    if (!formData.nombres.trim() || !formData.apellidos.trim() || !formData.documentoIdentidad.trim() || !formData.email.trim() || !formData.telefono.trim()) {
+      setAlerta({ open: true, mensaje: "Por favor completa tus nombres, apellidos, documento de identidad, correo electrónico y teléfono de contacto.", tipo: "warning" });
       return;
     }
 
+    if (!formData.motivoParticipacion.trim()) {
+      setAlerta({ open: true, mensaje: "Por favor indícanos brevemente por qué deseas participar en el curso.", tipo: "warning" });
+      return;
+    }
+
+    if (!aceptarPrivacidadTransferencia) {
+      setAlerta({
+        open: true,
+        mensaje: "Debes aceptar los Términos de Contratación y la Política de Privacidad en el Paso 2 para poder formalizar tu solicitud.",
+        tipo: "warning"
+      });
+      const paso2Elem = document.getElementById("paso-terminos-contratacion");
+      if (paso2Elem) {
+        paso2Elem.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return;
+    }
+
+    const esInteres = metodoInscripcion === "interes";
     setEnviandoSolicitud(true);
     try {
+      const temasFinales = formData.experienciaTemas.includes("Otro") && formData.experienciaOtro.trim()
+        ? [...formData.experienciaTemas.filter(t => t !== "Otro"), `Otro: ${formData.experienciaOtro.trim()}`]
+        : formData.experienciaTemas;
+
+      const cursosPreviosFinal = formData.cursosPrevios === "si"
+        ? (formData.detalleCursosPrevios.trim() ? `Sí (${formData.detalleCursosPrevios.trim()})` : "Sí")
+        : "No";
+
+      const nombreCompleto = `${formData.nombres.trim()} ${formData.apellidos.trim()}`;
+
       await addDoc(collection(db, "solicitudesCursos"), {
         cursoId: curso?.id || "palermo-2027",
         cursoTitulo: curso?.titulo || "Curso Internacional 2027 - Palermo",
-        ...formData,
+        nombre: nombreCompleto,
+        nombres: formData.nombres.trim(),
+        apellidos: formData.apellidos.trim(),
+        documentoIdentidad: formData.documentoIdentidad.trim(),
+        institucion: formData.institucion.trim(),
+        email: formData.email.trim(),
+        telefono: formData.telefono.trim(),
+        pais: formData.pais,
+        profesion: formData.profesion.trim(),
+        experienciaTemas: temasFinales,
+        motivoParticipacion: formData.motivoParticipacion.trim(),
+        cursosPrevios: cursosPreviosFinal,
+        alumnoIiresodh: formData.alumnoIiresodh,
+        comentarios: formData.comentarios.trim(),
+        modalidadSolicitud: esInteres ? "registro_interes" : "transferencia_bancaria",
+        metodoPago: esInteres ? "contacto_posterior" : "transferencia_bancaria",
+        tipoRegistro: metodoInscripcion,
+        montoTotalInversion: 3350,
+        moneda: "USD",
+        // TÉRMINOS DE CONTRATACIÓN Y CLICKWRAP
+        terminosContratacionAceptados: true,
+        clickwrapAceptado: true,
+        versionTerminos: "TerminosContratacion-Palermo-2027-v1",
+        terminosTitulo: "Inscripción y Términos de Contratación — Curso Internacional Palermo 2027",
+        fechaAceptacionTerminos: serverTimestamp(),
+        fechaAceptacionISO: new Date().toISOString(),
+        clientIp: clientIp || "no_disponible",
+        userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
+        aceptaPoliticaPrivacidad: true,
+        fechaAceptacionPrivacidad: serverTimestamp(),
+        versionPoliticaPrivacidad: "2026-09-12",
+        constanciaPrivacidad: "Consentimiento informado otorgado conforme a la Ley N° 8968 de Costa Rica.",
         fechaSolicitud: serverTimestamp(),
         estado: "pendiente"
       });
 
       setSolicitudExitosa(true);
+      setAceptarPrivacidadTransferencia(false);
       setAlerta({
         open: true,
-        mensaje: "¡Solicitud recibida con éxito! Nuestro departamento académico te contactará a la brevedad con la información solicitada.",
+        mensaje: esInteres
+          ? "¡Interés y reserva registrados con éxito! Nuestro departamento académico te contactará a la brevedad para coordinar los detalles."
+          : "¡Solicitud recibida con éxito! Nuestro departamento académico te contactará a la brevedad con la información bancaria oficial.",
         tipo: "success"
       });
-      setFormData({
-        nombre: "",
-        institucion: "",
-        email: "",
-        telefono: "",
-        pais: "Costa Rica",
-        comentarios: ""
-      });
-    } catch (error) {
-      console.error("Error al enviar solicitud:", error);
-      setSolicitudExitosa(true);
+    } catch (err) {
+      console.error("Error al enviar solicitud:", err);
       setAlerta({
         open: true,
-        mensaje: "Tu solicitud ha sido pre-registrada con éxito. Nuestro equipo te enviará los datos a tu correo.",
-        tipo: "success"
+        mensaje: "Ocurrió un error al enviar la solicitud. Por favor intenta de nuevo o escríbenos directamente a formacion@iiresodh.org.",
+        tipo: "error"
       });
     } finally {
       setEnviandoSolicitud(false);
@@ -307,6 +692,17 @@ export default function CursoLanding() {
   };
 
   const irASeccion = (seccion) => {
+    if (seccion === "incluido") {
+      setSeccionActiva("legado");
+      setTimeout(() => {
+        const elem = document.getElementById("seccion-que-esta-incluido") || document.getElementById("hub-interactivo");
+        if (elem) {
+          elem.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 60);
+      return;
+    }
+
     setSeccionActiva(seccion);
     const elem = document.getElementById("hub-interactivo");
     if (elem) {
@@ -327,8 +723,8 @@ export default function CursoLanding() {
 
   const landing = curso?.landingPage || DATOS_PALERMO_2027.landingPage;
   const esPublica = landing.publicada === true;
-  // Acceso permitido únicamente si la página está publicada o si el usuario es administrador autenticado
-  const tieneAcceso = esPublica || esAdmin;
+  // Acceso permitido únicamente si la página está publicada, si es admin o si se especifica ?preview=true
+  const tieneAcceso = esPublica || esAdmin || isPreviewParam;
 
   if (!tieneAcceso) {
     return (
@@ -367,18 +763,52 @@ export default function CursoLanding() {
   const programa = landing.programa && landing.programa.length > 0 ? landing.programa : DATOS_PALERMO_2027.landingPage.programa;
   const pilares = landing.pilares && landing.pilares.length > 0 ? landing.pilares : DATOS_PALERMO_2027.landingPage.pilares;
   const destacados = landing.destacados && landing.destacados.length > 0 ? landing.destacados : DATOS_PALERMO_2027.landingPage.destacados;
+  const docentes = landing.docentesDestacados || DATOS_PALERMO_2027.landingPage.docentesDestacados;
+  const aQuienDirigido = landing.aQuienDirigido || DATOS_PALERMO_2027.landingPage.aQuienDirigido;
+  const esPalermo2027 = slug === "palermo-2027" || curso?.slug === "palermo-2027" || curso?.id === "palermo-2027";
+  const queEstaIncluido = (esPalermo2027 && DATOS_PALERMO_2027.landingPage.queEstaIncluido) || landing.queEstaIncluido || DATOS_PALERMO_2027.landingPage.queEstaIncluido;
+  const queNoEstaIncluido = (esPalermo2027 && DATOS_PALERMO_2027.landingPage.queNoEstaIncluido) || landing.queNoEstaIncluido || DATOS_PALERMO_2027.landingPage.queNoEstaIncluido;
+  const queAprenderas = landing.queAprenderas || DATOS_PALERMO_2027.landingPage.queAprenderas;
+  const contacto = landing.contacto || DATOS_PALERMO_2027.landingPage.contacto;
+
+  // Compartir información del curso
+  const urlActual = typeof window !== "undefined" ? window.location.href : "";
+  const tituloCompartir = landing?.titulo || "Curso Internacional Palermo 2027";
+  const shareUrlsCurso = {
+    whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(tituloCompartir + " - " + urlActual)}`,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(urlActual)}`,
+    twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(urlActual)}&text=${encodeURIComponent(tituloCompartir)}`
+  };
+
+  const handleCopiarEnlaceCurso = () => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        setEnlaceCopiado(true);
+        setAlerta({
+          open: true,
+          mensaje: "¡Enlace del curso copiado al portapapeles!",
+          tipo: "success"
+        });
+        setTimeout(() => setEnlaceCopiado(false), 3000);
+      })
+      .catch((err) => {
+        console.error("Error al copiar enlace: ", err);
+      });
+  };
 
   const PESTANAS = [
     { id: "legado", label: "Sobre el Curso", icono: "🏛️" },
-    { id: "programa", label: "Programa (5 Días)", icono: "📅" },
-    { id: "destacados", label: "Ponentes & Valor", icono: "⭐" },
+    { id: "programa", label: `Programa (${programa.length} Días)`, icono: "📅" },
+    { id: "docentes", label: "Docentes Destacados", icono: "👨‍⚖️" },
+    { id: "brochure", label: "Brochure Oficial", icono: "📄" },
     { id: "sede", label: "Sede Palermo", icono: "📍" },
     { id: "inscripcion", label: "Inscripción & Pago", icono: "💳" }
   ];
 
   return (
-    <main className="min-h-screen bg-slate-50/60 font-sans text-gray-800 antialiased selection:bg-main-blue selection:text-white">
-      
+    <main className="min-h-screen bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] flex flex-col font-sans text-gray-800 antialiased selection:bg-main-blue selection:text-white overflow-x-hidden">
+
       {/* BANNER DE VISTA PREVIA (BORRADOR NO PÚBLICO) */}
       {!esPublica && (
         <div className="bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white px-4 py-2 text-xs font-bold tracking-wider flex items-center justify-between shadow-md sticky top-0 z-50">
@@ -393,15 +823,15 @@ export default function CursoLanding() {
             </div>
             <div className="flex items-center gap-2">
               {esAdmin && (
-                <Link 
-                  to="/admin" 
+                <Link
+                  to="/admin"
                   className="bg-white text-orange-900 px-3 py-0.5 rounded text-[11px] font-bold hover:bg-orange-50 transition shadow-xs"
                 >
                   ⚙️ Admin
                 </Link>
               )}
-              <Link 
-                to="/cursos" 
+              <Link
+                to="/cursos"
                 className="bg-black/20 hover:bg-black/40 text-white px-2.5 py-0.5 rounded text-[11px] transition"
               >
                 ← Salir a Cursos
@@ -411,558 +841,1139 @@ export default function CursoLanding() {
         </div>
       )}
 
-      {/* HERO INSTITUCIONAL COMPACTO */}
-      <section className="relative bg-[#0f1d30] text-white py-10 md:py-14 overflow-hidden border-b border-white/10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(69,123,157,0.2),transparent_50%)] pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(185,47,50,0.15),transparent_50%)] pointer-events-none" />
+      {/* HERO INSTITUCIONAL CON COLLAGE FOTOGRÁFICO EN BLANCO Y NEGRO (NÍTIDO, CINEMATOGRÁFICO Y SOLEMNE) */}
+      <section className="relative text-white pt-8 pb-6 md:pt-12 md:pb-8 overflow-hidden border-b border-slate-800 bg-[#0a1526]">
+        {/* COLLAGE FOTOGRÁFICO DE FONDO EN BLANCO Y NEGRO (NÍTIDO, CLARO Y TOTALMENTE VISIBLE) */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <img
+            src={palermoCollageHeroBw}
+            alt="Collage Conmemorativo Palermo: Falcone, Borsellino, Palacio de Justicia y Aula Búnker"
+            className="w-full h-full object-cover object-center filter contrast-105 brightness-95 opacity-85 sm:opacity-90"
+          />
+          {/* Velo blanco acentuado para aclarar la foto e iluminar el fondo */}
+          <div className="absolute inset-0 bg-white/70" />
+          {/* Overlay con degradado para legibilidad */}
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/45 via-transparent to-slate-950/70" />
+        </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            
-            {/* RETRATO FALCONE & BORSELLINO */}
-            <div className="lg:col-span-4 flex flex-col items-center">
-              <div className="relative group w-full max-w-sm">
-                <div className="relative bg-[#162740] p-1.5 rounded-2xl border border-white/15 shadow-xl overflow-hidden">
-                  <img
-                    src={landing.heroImagenUrl || falconeDefaultImg}
-                    alt="Magistrados Giovanni Falcone y Paolo Borsellino"
-                    className="w-full h-56 sm:h-64 object-cover rounded-xl filter contrast-105"
-                  />
-                  <div className="p-3 bg-gradient-to-t from-black/95 via-black/70 to-transparent rounded-b-xl -mt-12 relative z-10 text-center">
-                    <p className="text-[11px] italic text-gray-200 font-light leading-snug line-clamp-2">
-                      {landing.heroCita || "«La mafia è un fenomeno umano...»"}
-                    </p>
-                    <p className="text-[10px] font-bold text-amber-400 mt-0.5 uppercase tracking-wider">
-                      {landing.heroCitaAutor || "Giovanni Falcone"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 md:px-8 space-y-7">
 
-            {/* CONTENIDO PRINCIPAL */}
-            <div className="lg:col-span-8 space-y-4 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest text-amber-300 font-semibold backdrop-blur-xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-                Alta Especialización Internacional
-              </div>
+          {/* CONTENIDO PRINCIPAL: TÍTULOS Y DETALLES DEL CURSO */}
+          <div className="space-y-4 text-center lg:text-left">
 
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight leading-tight uppercase font-sans text-white">
-                {curso?.titulo || "CURSO INTERNACIONAL 2027"}
+            {/* TÍTULO PRINCIPAL OFICIAL CON ALTO CONTRASTE TIPOGRÁFICO (SIN CAJA, MÁXIMA NITIDEZ) */}
+            <div className="space-y-2">
+              <span className="text-sm sm:text-base md:text-lg font-black uppercase tracking-[0.2em] text-white block text-left [text-shadow:_0_2px_4px_rgba(0,0,0,0.9),_0_1px_2px_rgba(0,0,0,1)]">
+                Curso Internacional
+              </span>
+              <h1 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight leading-tight uppercase font-sans text-white text-center [text-shadow:_0_2px_4px_rgba(0,0,0,0.95),_0_4px_16px_rgba(0,0,0,0.9),_0_1px_2px_rgba(0,0,0,1)]">
+                Aplicación de las Convenciones de Palermo contra el Crimen Organizado
               </h1>
+            </div>
 
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs md:text-sm font-medium text-pale-blue">
-                <span className="flex items-center gap-1.5 bg-white/5 px-3 py-1 rounded-lg border border-white/10">
-                  <svg className="w-4 h-4 text-main-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  {landing.ubicacionFechas || "Palermo, Sicilia, Italia | Del 17 al 23 de mayo de 2027"}
+            {/* UBICACIÓN Y FECHAS */}
+            <div className="flex flex-wrap items-center gap-3 text-xs md:text-sm font-medium text-slate-200">
+              <span className="flex items-center gap-2 bg-slate-950/70 px-3.5 py-1.5 rounded-lg border border-white/20 backdrop-blur-md drop-shadow-xs">
+                <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>Palermo, Sicilia, Italia</span>
+                <span className="text-white/40">•</span>
+                <span>17 – 23 de Mayo de 2027</span>
+              </span>
+            </div>
+
+            {/* SUBTÍTULO DEL CURSO (SIN FONDO AZUL, CENTRADO Y CON ALTO CONTRASTE) */}
+            <div className="max-w-4xl mx-auto text-center !mt-8">
+              <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-white leading-relaxed [text-shadow:_0_2px_4px_rgba(0,0,0,0.95),_0_4px_14px_rgba(0,0,0,0.85),_0_1px_2px_rgba(0,0,0,1)]">
+                {landing.subtitulo || "Investigación Criminal, Cooperación Internacional y Derechos Humanos en la Lucha contra la Criminalidad Organizada y la Trata de Personas"}
+              </h2>
+            </div>
+
+          </div>
+
+          {/* TARJETA DE ADMISIÓN E INVERSIÓN ACADÉMICA (SOBRIA, ELEGANTE Y PROPORCIONADA) */}
+          <div className="bg-slate-900/90 border border-white/15 border-l-4 border-l-main-red p-6 md:p-8 rounded-r-2xl rounded-l-none backdrop-blur-md shadow-2xl space-y-6">
+
+            {/* FILA SUPERIOR: PRECIO, DETALLE Y BENEFICIOS INCLUIDOS DISTRIBUIDOS */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-4 items-center">
+
+              {/* COLUMNA IZQUIERDA: PRECIO Y ESPECIFICACIÓN GENERAL (lg:col-span-5) */}
+              <div className="lg:col-span-5 space-y-2.5 text-left pl-2 sm:pl-6 lg:pl-8 pr-0 sm:pr-2">
+                <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-black italic uppercase tracking-[0.15em] text-red-500 block [text-shadow:_0_2px_4px_rgba(0,0,0,0.9),_0_1px_2px_rgba(0,0,0,1)]">
+                  ¡Cupos Limitados!
                 </span>
-              </div>
-
-              <p className="text-sm md:text-base font-semibold text-gray-200 border-l-2 border-main-red pl-3">
-                {landing.lema || "APLICACIÓN DE LAS CONVENCIONES DE PALERMO CONTRA EL CRIMEN ORGANIZADO"}
-              </p>
-
-              {/* TARJETA COMPACTA DE INVERSIÓN Y ACCIÓN RÁPIDA */}
-              <div className="bg-white/10 border border-white/15 p-4 sm:p-5 rounded-2xl backdrop-blur-sm shadow-xl flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-                <div className="space-y-1.5 flex-1 min-w-0 text-left">
-                  <div className="flex items-baseline gap-2.5 flex-wrap">
-                    <span className="text-2xl sm:text-3xl font-black text-amber-400 tracking-tight">
-                      {landing.precioInversion || "5.000 €"}
-                    </span>
-                    <span className="text-[10px] sm:text-xs uppercase font-bold tracking-widest text-amber-200/90 bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-400/20">
-                      Inversión Académica
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-200/90 font-light leading-relaxed">
-                    {landing.inversionDetalle || "Inversión por persona con certificación internacional."}
-                  </p>
+                <span className="text-white font-light text-sm sm:text-base block">
+                  Inversión:
+                </span>
+                <div>
+                  <span className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight font-sans">
+                    {normalizarPrecio(landing.precioInversion)}
+                  </span>
                 </div>
 
-                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 w-full xl:w-auto shrink-0 pt-1 xl:pt-0">
-                  <button
-                    onClick={() => irASeccion("inscripcion")}
-                    className="flex-1 sm:flex-initial bg-main-red hover:bg-red-800 text-white font-bold text-xs uppercase tracking-widest py-3 px-5 rounded-xl shadow-md hover:shadow-red-900/30 transition-all active:scale-95 text-center cursor-pointer whitespace-nowrap"
-                  >
-                    Inscríbete Ahora
-                  </button>
-                  <button
-                    onClick={() => irASeccion("programa")}
-                    className="flex-1 sm:flex-initial bg-white/15 hover:bg-white/25 text-white font-semibold text-xs uppercase tracking-wider py-3 px-4 rounded-xl border border-white/25 transition-all text-center cursor-pointer whitespace-nowrap"
-                  >
-                    Ver Programa
-                  </button>
+                <div className="pt-0.5">
+                  <span className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-white">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+                    Facilidades de pago en cuotas disponible
+                  </span>
+                </div>
+              </div>
+
+              {/* COLUMNA DERECHA: IMAGEN FIJA DEL AULA BUNKER (lg:col-span-7) */}
+              <div className="lg:col-span-7">
+                <div className="relative h-48 sm:h-56 md:h-60 w-full rounded-2xl overflow-hidden border border-white/20 bg-slate-950/60 shadow-xl">
+                  <img
+                    src={palermoFoto2}
+                    alt="Aula Bunker del Maxi-Proceso"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  <div className="absolute bottom-3 left-3 sm:left-4 right-4 text-left">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block mb-0.5">
+                      Palermo, Sicilia
+                    </span>
+                    <h4 className="text-white text-xs sm:text-sm font-bold tracking-tight drop-shadow-md">
+                      Aula Bunker del Maxi-Proceso
+                    </h4>
+                  </div>
                 </div>
               </div>
 
             </div>
+
+            {/* SEPARADOR HORIZONTAL SUTIL */}
+            <div className="border-t border-white/10" />
+
+            {/* FILA INFERIOR: BOTONES DE ACCIÓN */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
+              <button
+                onClick={() => irASeccion("inscripcion")}
+                className="bg-main-red hover:bg-[#8b1515] text-white font-bold text-xs uppercase tracking-wider py-3.5 px-7 rounded-xl shadow-lg transition-all active:scale-95 text-center cursor-pointer whitespace-nowrap"
+              >
+                Inscríbete Ahora
+              </button>
+              <a
+                href={contacto?.whatsappUrl || "https://wa.me/50640816188"}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Solicita más información por WhatsApp"
+                aria-label="Solicita más información por WhatsApp"
+                className="bg-white/10 hover:bg-[#25D366]/20 border border-white/20 hover:border-[#25D366]/50 py-3.5 px-5 rounded-xl transition-all flex items-center justify-center gap-2.5 cursor-pointer shadow-md active:scale-95 text-white hover:text-emerald-300 font-bold text-xs uppercase tracking-wider whitespace-nowrap sm:ml-auto"
+              >
+                <svg className="w-5 h-5 fill-[#25D366] shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z" />
+                </svg>
+                <span>Solicita más información</span>
+              </a>
+            </div>
+
           </div>
+
+          {/* OPCIONES DE COMPARTIR INFORMACIÓN DEL CURSO */}
+          <div className="pt-2 text-center lg:text-left">
+            <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-4 text-center lg:text-left">
+              Compartir información del curso
+            </p>
+            <nav className="flex flex-wrap justify-center lg:justify-start gap-3" aria-label="Compartir información del curso">
+              <Button
+                component="a"
+                href={shareUrlsCurso.whatsapp}
+                target="_blank"
+                rel="noreferrer"
+                variant="outlined"
+                startIcon={<svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z" /></svg>}
+                aria-label="Compartir en WhatsApp"
+                sx={{
+                  borderRadius: 50,
+                  px: 2.5,
+                  py: 1,
+                  color: '#6B7280',
+                  bgcolor: '#F9FAFB',
+                  borderColor: 'transparent',
+                  fontWeight: 'bold',
+                  letterSpacing: '0.05em',
+                  textTransform: 'none',
+                  boxShadow: 'none',
+                  '&:hover': {
+                    bgcolor: '#F0FDF4',
+                    color: '#16A34A',
+                    borderColor: '#BBF7D0',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
+                  }
+                }}
+              >
+                WhatsApp
+              </Button>
+
+              <Button
+                component="a"
+                href={shareUrlsCurso.facebook}
+                target="_blank"
+                rel="noreferrer"
+                variant="outlined"
+                startIcon={<svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>}
+                aria-label="Compartir en Facebook"
+                sx={{
+                  borderRadius: 50,
+                  px: 2.5,
+                  py: 1,
+                  color: '#6B7280',
+                  bgcolor: '#F9FAFB',
+                  borderColor: 'transparent',
+                  fontWeight: 'bold',
+                  letterSpacing: '0.05em',
+                  textTransform: 'none',
+                  boxShadow: 'none',
+                  '&:hover': {
+                    bgcolor: '#EFF6FF',
+                    color: '#1D4ED8',
+                    borderColor: '#BFDBFE',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
+                  }
+                }}
+              >
+                Facebook
+              </Button>
+
+              <Button
+                component="a"
+                href={shareUrlsCurso.twitter}
+                target="_blank"
+                rel="noreferrer"
+                variant="outlined"
+                startIcon={<svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>}
+                aria-label="Compartir en Twitter (X)"
+                sx={{
+                  borderRadius: 50,
+                  px: 2.5,
+                  py: 1,
+                  color: '#6B7280',
+                  bgcolor: '#F9FAFB',
+                  borderColor: 'transparent',
+                  fontWeight: 'bold',
+                  letterSpacing: '0.05em',
+                  textTransform: 'none',
+                  boxShadow: 'none',
+                  '&:hover': {
+                    bgcolor: '#000000',
+                    color: '#FFFFFF',
+                    borderColor: '#000000',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }
+                }}
+              >
+                X (Twitter)
+              </Button>
+
+              <Button
+                onClick={handleCopiarEnlaceCurso}
+                variant="outlined"
+                startIcon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>}
+                aria-label="Copiar enlace del curso"
+                sx={{
+                  borderRadius: 50,
+                  px: 2.5,
+                  py: 1,
+                  color: '#6B7280',
+                  bgcolor: '#F9FAFB',
+                  borderColor: 'transparent',
+                  fontWeight: 'bold',
+                  letterSpacing: '0.05em',
+                  textTransform: 'none',
+                  boxShadow: 'none',
+                  '&:hover': {
+                    bgcolor: '#F3F4F6',
+                    color: '#374151',
+                    borderColor: '#E5E7EB',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
+                  }
+                }}
+              >
+                {enlaceCopiado ? "¡Enlace Copiado!" : "Copiar Enlace"}
+              </Button>
+            </nav>
+          </div>
+
         </div>
       </section>
 
-      {/* HUB INTERACTIVO DEL CURSO (REDUCCIÓN VERTICAL DRÁSTICA) */}
-      <div id="hub-interactivo" className="max-w-7xl mx-auto px-4 md:px-8 py-8">
-        
-        {/* BARRA DE PESTAÑAS PRINCIPAL */}
-        <div className="sticky top-2 z-30 bg-white/95 backdrop-blur-md p-2 rounded-2xl shadow-lg border border-gray-200 mb-8 flex flex-wrap items-center justify-center gap-1.5 md:gap-2">
-          {PESTANAS.map((tab) => {
-            const esActivo = seccionActiva === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setSeccionActiva(tab.id)}
-                className={`flex items-center gap-2 py-2.5 px-4 md:px-5 rounded-xl text-xs md:text-sm font-bold tracking-wide transition-all cursor-pointer ${
-                  esActivo
-                    ? "bg-main-blue text-white shadow-md shadow-main-blue/25 scale-102"
+      {/* HUB INTERACTIVO DEL CURSO (ESTILO PLANO DEL SITIO WEB: SIN SOMBRAS NI BORDES REDONDEADOS EN EL FONDO) */}
+      <div id="hub-interactivo" className="relative overflow-hidden grow pb-20">
+        <div className="bg-watermark" aria-hidden="true"></div>
+
+        <section className="relative z-10 max-w-7xl mx-auto bg-white px-6 md:px-12 pt-8 pb-16">
+
+          {/* BARRA DE PESTAÑAS PRINCIPAL */}
+          <div className="sticky top-2 z-30 bg-white/95 backdrop-blur-md p-2 rounded-xl border border-gray-200 shadow-xs mb-8 flex flex-wrap items-center justify-center gap-1.5 md:gap-2">
+            {PESTANAS.map((tab) => {
+              const esActivo = seccionActiva === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setSeccionActiva(tab.id)}
+                  className={`flex items-center gap-2 py-2.5 px-3.5 md:px-4 rounded-lg text-xs md:text-sm font-bold tracking-wide transition-all cursor-pointer ${esActivo
+                    ? "bg-main-blue text-white shadow-xs"
                     : "text-gray-600 hover:text-main-blue hover:bg-gray-100/80"
-                }`}
-              >
-                <span>{tab.icono}</span>
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* CONTENEDOR DE CONTENIDO SEGÚN LA PESTAÑA ACTIVA */}
-        <div className="bg-white rounded-3xl border border-gray-200 shadow-md p-6 md:p-10 min-h-[500px]">
-          
-          {/* ==========================================
-              PESTAÑA 1: SOBRE EL CURSO / LEGADO
-             ========================================== */}
-          {seccionActiva === "legado" && (
-            <div className="space-y-8 animate-fade-in">
-              <div className="max-w-3xl">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
-                  Perspectiva Histórica y Jurídica
-                </span>
-                <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
-                  {landing.legadoTitulo || "Nuestro Legado y Visión"}
-                </h2>
-                <div className="w-12 h-1 bg-main-red my-3 rounded-full" />
-                <p className="text-gray-700 font-light text-base leading-relaxed text-justify">
-                  {landing.legadoTexto || DATOS_PALERMO_2027.landingPage.legadoTexto}
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-xs font-black uppercase tracking-wider text-gray-400 mb-4">
-                  Cuatro Pilares Dogmáticos del Programa
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {pilares.map((pilar, idx) => (
-                    <div 
-                      key={idx}
-                      className="bg-slate-50 p-5 rounded-2xl border border-gray-100 hover:border-main-blue/30 hover:bg-white hover:shadow-md transition flex flex-col justify-between"
-                    >
-                      <div>
-                        <span className="text-xl mb-3 block">
-                          {idx === 0 ? "⚖️" : idx === 1 ? "🔍" : idx === 2 ? "🛡️" : "🌐"}
-                        </span>
-                        <h4 className="text-sm font-bold text-main-blue mb-2 leading-snug">
-                          {pilar.titulo}
-                        </h4>
-                        <p className="text-xs text-gray-600 font-light leading-relaxed">
-                          {pilar.descripcion}
-                        </p>
-                      </div>
-                      <div className="w-6 h-0.5 bg-main-red/40 rounded-full mt-4" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="pt-4 flex justify-end">
-                <button
-                  onClick={() => irASeccion("programa")}
-                  className="bg-main-blue hover:bg-light-blue text-white text-xs font-bold uppercase tracking-wider py-2.5 px-5 rounded-xl transition flex items-center gap-2 cursor-pointer shadow-sm"
+                    }`}
                 >
-                  <span>Explorar Programa Académico (5 Días)</span>
-                  <span>→</span>
+                  <span>{tab.icono}</span>
+                  <span>{tab.label}</span>
                 </button>
-              </div>
-            </div>
-          )}
+              );
+            })}
+          </div>
 
-          {/* ==========================================
-              PESTAÑA 2: PROGRAMA ACADÉMICO (COMPACTO TIMELINE)
+          {/* CONTENEDOR DE CONTENIDO SEGÚN LA PESTAÑA ACTIVA (FONDO PLANO, SIN TARJETA FLOTANTE) */}
+          <div className="min-h-[500px]">
+
+            {/* ==========================================
+              PESTAÑA 1: SOBRE EL CURSO / LEGADO / OBJETIVOS
              ========================================== */}
-          {seccionActiva === "programa" && (
-            <div className="space-y-6 animate-fade-in">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-gray-100">
-                <div>
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block">
-                    Plan de Estudios
-                  </span>
-                  <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
-                    Estructura del Programa Día a Día
-                  </h2>
-                </div>
-                <span className="text-xs text-gray-500 font-light">
-                  Selecciona una jornada para consultar su contenido detallado
-                </span>
-              </div>
+            {seccionActiva === "legado" && (
+              <div className="space-y-10 animate-fade-in">
 
-              {/* LAYOUT EN 2 COLUMNAS: SELECTOR VERTICAL DE DÍAS A LA IZQUIERDA + DETALLE A LA DERECHA */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                
-                {/* SELECTOR VERTICAL DE DÍAS */}
-                <div className="lg:col-span-4 flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
-                  {programa.map((item, index) => {
-                    const activo = diaActivo === index;
-                    return (
-                      <button
-                        key={index}
-                        onClick={() => setDiaActivo(index)}
-                        className={`text-left p-3.5 rounded-xl border transition cursor-pointer shrink-0 lg:shrink w-auto lg:w-full ${
-                          activo
-                            ? "bg-main-blue text-white border-main-blue shadow-md"
-                            : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className={`text-[10px] font-black uppercase tracking-wider ${activo ? "text-amber-300" : "text-main-red"}`}>
-                            {item.dia}
-                          </span>
-                          <span className="text-[10px] opacity-75">
-                            {item.horario?.split('/')[0] || "Intensivo"}
-                          </span>
-                        </div>
-                        <h4 className="font-bold text-xs line-clamp-1 mt-1">
-                          {item.titulo}
-                        </h4>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* DETALLE DEL DÍA SELECCIONADO */}
-                <div className="lg:col-span-8 bg-slate-50/80 p-6 md:p-8 rounded-2xl border border-gray-200 shadow-inner">
-                  {programa[diaActivo] && (
-                    <div className="space-y-5 animate-fade-in">
-                      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-gray-200">
-                        <div>
-                          <span className="bg-main-red/10 text-main-red font-black text-[10px] uppercase tracking-widest px-2.5 py-0.5 rounded">
-                            {programa[diaActivo].dia} • {programa[diaActivo].fecha}
-                          </span>
-                          <h3 className="text-xl md:text-2xl font-black text-main-blue mt-2">
-                            {programa[diaActivo].titulo}
-                          </h3>
-                        </div>
-                        <span className="text-xs font-semibold text-gray-500 bg-white px-3 py-1.5 rounded-lg border border-gray-200">
-                          ⏱️ {programa[diaActivo].horario}
-                        </span>
-                      </div>
-
-                      <div>
-                        <h4 className="text-[11px] font-black uppercase tracking-wider text-gray-400 mb-1.5">
-                          Enfoque Metodológico
-                        </h4>
-                        <p className="text-sm text-gray-700 font-light leading-relaxed">
-                          {programa[diaActivo].descripcion}
-                        </p>
-                      </div>
-
-                      {programa[diaActivo].temas && (
-                        <div>
-                          <h4 className="text-[11px] font-black uppercase tracking-wider text-gray-400 mb-2">
-                            Ejes Temáticos y Casos Forenses
-                          </h4>
-                          <div className="grid grid-cols-1 gap-2">
-                            {programa[diaActivo].temas.map((tema, i) => (
-                              <div key={i} className="flex items-start gap-2 text-xs text-gray-700 font-light bg-white p-2.5 rounded-lg border border-gray-100">
-                                <span className="text-light-blue font-bold">✓</span>
-                                <span>{tema}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-              </div>
-
-              <div className="pt-2 flex justify-between items-center">
-                <button
-                  onClick={() => irASeccion("legado")}
-                  className="text-gray-500 hover:text-main-blue text-xs font-bold transition cursor-pointer"
-                >
-                  ← Volver a Visión
-                </button>
-                <button
-                  onClick={() => irASeccion("destacados")}
-                  className="bg-main-blue hover:bg-light-blue text-white text-xs font-bold uppercase tracking-wider py-2.5 px-5 rounded-xl transition flex items-center gap-2 cursor-pointer shadow-sm"
-                >
-                  <span>Ver Ponentes y Destacados</span>
-                  <span>→</span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ==========================================
-              PESTAÑA 3: DESTACADOS Y PONENTES
-             ========================================== */}
-          {seccionActiva === "destacados" && (
-            <div className="space-y-6 animate-fade-in">
-              <div className="max-w-2xl">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
-                  Excelencia Académica
-                </span>
-                <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
-                  Destacados del Curso
-                </h2>
-                <div className="w-12 h-1 bg-main-red my-3 rounded-full" />
-                <p className="text-gray-600 font-light text-sm">
-                  Metodología de vanguardia basada en casos desclasificados y vinculación con la judicatura europea.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {destacados.map((item, index) => (
-                  <div 
-                    key={index}
-                    className="p-5 rounded-2xl border border-gray-100 bg-slate-50/70 hover:bg-white hover:border-main-blue/30 hover:shadow-md transition flex items-start gap-4"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-main-blue/10 text-main-blue flex items-center justify-center shrink-0 text-xl shadow-xs">
-                      {index === 0 ? "🎓" : index === 1 ? "📁" : index === 2 ? "🤝" : "📜"}
+                {/* BLOQUE INSTITUCIONAL CO-ORGANIZADORES */}
+                <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl flex flex-col lg:flex-row items-center justify-between gap-6 shadow-xs">
+                  <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
+                    <div className="flex items-center gap-4 sm:gap-5 bg-white px-5 sm:px-6 py-3 rounded-2xl border border-slate-200 shadow-xs shrink-0">
+                      <img src={logoIiresodhColor} alt="IIRESODH" className="h-8 sm:h-9 w-auto object-contain" />
+                      <div className="h-8 w-px bg-slate-200" />
+                      <img src={logoUnlp} alt="Instituto de Derechos Humanos UNLP" className="h-12 sm:h-14 w-auto object-contain" />
                     </div>
                     <div>
-                      <h4 className="text-base font-bold text-main-blue mb-1">
-                        {item.titulo}
-                      </h4>
-                      <p className="text-xs text-gray-600 font-light leading-relaxed">
-                        {item.descripcion}
-                      </p>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-main-red block">
+                        Organización Conjunta
+                      </span>
+                      <h3 className="text-sm sm:text-base font-bold text-main-blue">
+                        IIRESODH & Instituto de Derechos Humanos de la Universidad Nacional de la Plata (UNLP - Argentina)
+                      </h3>
                     </div>
                   </div>
-                ))}
-              </div>
 
-              <div className="pt-4 flex justify-between items-center">
-                <button
-                  onClick={() => irASeccion("programa")}
-                  className="text-gray-500 hover:text-main-blue text-xs font-bold transition cursor-pointer"
-                >
-                  ← Ver Programa
-                </button>
-                <button
-                  onClick={() => irASeccion("sede")}
-                  className="bg-main-blue hover:bg-light-blue text-white text-xs font-bold uppercase tracking-wider py-2.5 px-5 rounded-xl transition flex items-center gap-2 cursor-pointer shadow-sm"
-                >
-                  <span>Conocer la Sede en Palermo</span>
-                  <span>→</span>
-                </button>
-              </div>
-            </div>
-          )}
+                </div>
 
-          {/* ==========================================
-              PESTAÑA 4: SEDE PALERMO
-             ========================================== */}
-          {seccionActiva === "sede" && (
-            <div className="space-y-6 animate-fade-in">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                
-                <div className="lg:col-span-6 space-y-4">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600 block">
-                    Cuna de la Convención de la ONU
+                {/* PERSPECTIVA HISTÓRICA */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                  <div className="lg:col-span-7 xl:col-span-7">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
+                      Perspectiva Histórica y Jurídica
+                    </span>
+                    <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
+                      {landing.legadoTitulo || "Legado y Visión"}
+                    </h2>
+                    <div className="w-12 h-1 bg-main-red my-3 rounded-full" />
+                    <p className="text-gray-700 font-light text-base leading-relaxed text-justify">
+                      {landing.legadoTexto || DATOS_PALERMO_2027.landingPage.legadoTexto}
+                    </p>
+                  </div>
+                  <div className="lg:col-span-5 xl:col-span-5 flex items-center justify-center lg:justify-end">
+                    <img
+                      src={falconeRecorte}
+                      alt="Giovanni Falcone y Paolo Borsellino"
+                      className="w-full max-w-md lg:max-w-full h-auto object-contain"
+                    />
+                  </div>
+                </div>
+
+                {/* ¿A QUIÉN ESTÁ DIRIGIDO? (DEL BROCHURE) */}
+                <div className="pt-2">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
+                    Perfil de Convocatoria
                   </span>
-                  <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
-                    Conoce {landing.sedeNombre || "Palermo, Sicilia"}
-                  </h2>
-                  <div className="w-12 h-1 bg-main-red rounded-full" />
-                  
-                  <p className="text-gray-700 font-light text-sm leading-relaxed text-justify">
-                    {landing.sedeTexto || DATOS_PALERMO_2027.landingPage.sedeTexto}
-                  </p>
+                  <h3 className="text-xl md:text-2xl font-black text-main-blue tracking-tight mb-4">
+                    ¿A quién está dirigido?
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                    {aQuienDirigido.map((item, idx) => {
+                      const Icono = obtenerIconoPerfil(item, idx);
+                      return (
+                        <div
+                          key={idx}
+                          className="bg-white p-3.5 rounded-r-2xl rounded-l-none border border-gray-200/80 border-l-4 border-l-main-blue flex items-center gap-3.5 hover:border-main-red/40 hover:border-l-main-blue hover:shadow-xs transition-all duration-200 group"
+                        >
+                          <div className="shrink-0 flex items-center justify-center text-main-red group-hover:scale-110 transition-transform">
+                            <Icono className="w-6 h-6 text-main-red" strokeWidth={2} />
+                          </div>
+                          <p className="text-xs md:text-[13px] text-gray-800 font-bold leading-snug">
+                            {item.perfil}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
 
-                  <div className="space-y-2 pt-1">
-                    {(landing.sedeLogistica || DATOS_PALERMO_2027.landingPage.sedeLogistica).map((log, i) => (
-                      <div key={i} className="flex items-start gap-2.5 bg-slate-50 p-2.5 rounded-lg border border-gray-200 text-xs text-gray-700 font-light">
-                        <span className="text-main-blue font-bold">✦</span>
-                        <span>{log}</span>
+                {/* ¿QUÉ APRENDERÁS? (DEL BROCHURE) */}
+                <div className="bg-slate-900 text-white p-6 sm:p-8 rounded-r-3xl rounded-l-none border-l-4 border-l-main-red relative overflow-hidden">
+                  <div className="relative z-10">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400 block mb-1">
+                      Resultados de Formación
+                    </span>
+                    <h3 className="text-xl md:text-2xl font-black text-white tracking-tight mb-4">
+                      ¿Qué aprenderás en este curso internacional?
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {queAprenderas.map((resultado, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-white/10 border border-white/15 p-4 rounded-xl flex items-start gap-3 backdrop-blur-xs"
+                        >
+                          <span className="w-6 h-6 rounded-full bg-amber-400 text-neutral-950 font-black text-xs flex items-center justify-center shrink-0 mt-0.5">
+                            {idx + 1}
+                          </span>
+                          <p className="text-xs text-neutral-200 font-light leading-relaxed">
+                            {resultado}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* ¿QUÉ ESTÁ INCLUIDO Y QUÉ NO? (DEL BROCHURE) */}
+                <div id="seccion-que-esta-incluido" className="pt-2 scroll-mt-24">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
+                    Logística y Servicios Integrales
+                  </span>
+                  <h3 className="text-xl md:text-2xl font-black text-main-blue tracking-tight mb-4">
+                    ¿Qué está incluido en la matrícula?
+                  </h3>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                    {/* COLUMNA 1: LO QUE INCLUYE (8 cols on lg) */}
+                    <div className="lg:col-span-8 bg-slate-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 space-y-3.5">
+                      <div className="flex items-center justify-between pb-2.5 border-b border-emerald-100">
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 font-extrabold text-xs flex items-center justify-center shrink-0">
+                            ✓
+                          </span>
+                          <h4 className="text-sm md:text-base font-extrabold text-main-blue tracking-tight">
+                            Servicios y Beneficios Incluidos
+                          </h4>
+                        </div>
+                        <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/80 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                          Cubierto 100%
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {queEstaIncluido.map((item, index) => (
+                          <div
+                            key={index}
+                            className="p-3.5 rounded-xl border border-gray-200/80 bg-white hover:border-emerald-400/60 hover:shadow-xs transition flex flex-col justify-start"
+                          >
+                            <div className="flex items-start gap-2 mb-1">
+                              <span className="text-emerald-600 font-black text-sm shrink-0 leading-tight">
+                                ✓
+                              </span>
+                              <h5 className="text-xs md:text-[13px] font-bold text-main-blue leading-snug">
+                                {item.titulo}
+                              </h5>
+                            </div>
+                            <p className="text-[11px] text-gray-600 font-light leading-relaxed pl-5">
+                              {item.descripcion}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* COLUMNA 2: LO QUE NO INCLUYE (4 cols on lg) */}
+                    <div className="lg:col-span-4 bg-slate-50/70 border border-red-200/80 rounded-2xl p-4 sm:p-5 space-y-3.5">
+                      <div className="flex items-center justify-between pb-2.5 border-b border-red-100">
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-full bg-red-100 text-main-red font-extrabold text-xs flex items-center justify-center shrink-0">
+                            ✕
+                          </span>
+                          <h4 className="text-sm md:text-base font-extrabold text-main-blue tracking-tight">
+                            No Incluido en la Matrícula
+                          </h4>
+                        </div>
+                        <span className="text-[10px] font-bold text-main-red bg-red-100/80 px-2.5 py-0.5 rounded-full border border-red-200">
+                          Cuenta del participante
+                        </span>
+                      </div>
+
+                      <div className="space-y-3">
+                        {queNoEstaIncluido.map((item, index) => (
+                          <div
+                            key={index}
+                            className="p-3.5 rounded-xl border border-red-200/70 bg-white hover:border-red-400/60 hover:shadow-xs transition flex flex-col justify-start"
+                          >
+                            <div className="flex items-start gap-2 mb-1">
+                              <span className="text-main-red font-black text-sm shrink-0 leading-tight">
+                                ✕
+                              </span>
+                              <h5 className="text-xs md:text-[13px] font-bold text-gray-900 leading-snug">
+                                {item.titulo}
+                              </h5>
+                            </div>
+                            <p className="text-[11px] text-gray-600 font-light leading-relaxed pl-5">
+                              {item.descripcion}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 flex justify-between items-center flex-wrap gap-3">
+                  <a
+                    href={contacto?.whatsappUrl || "https://wa.me/50640816188"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-700 hover:text-emerald-800 text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <span>💬 Contactar Coordinación por WhatsApp</span>
+                  </a>
+                  <button
+                    onClick={() => irASeccion("programa")}
+                    className="bg-main-blue hover:bg-light-blue text-white text-xs font-bold uppercase tracking-wider py-2.5 px-5 rounded-xl transition flex items-center gap-2 cursor-pointer shadow-sm"
+                  >
+                    <span>Explorar Programa Académico ({programa.length} Días)</span>
+                    <span>→</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ==========================================
+              PESTAÑA 2: PROGRAMA ACADÉMICO (7 DÍAS EN PALERMO)
+             ========================================== */}
+            {seccionActiva === "programa" && (
+              <div className="space-y-6 animate-fade-in">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-gray-100">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block">
+                      7 Días en Palermo • Mayo 2027
+                    </span>
+                    <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
+                      Estructura del Programa Día a Día
+                    </h2>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-lg font-bold border border-slate-200">
+                      ⏱️ Sesiones: 9:00–13:00 y 15:00–18:00
+                    </span>
+                  </div>
+                </div>
+
+                {/* CUATRO PILARES DOGMÁTICOS */}
+                <div>
+                  <h3 className="text-xs font-black uppercase tracking-wider text-gray-400 mb-3">
+                    Cuatro Pilares Dogmáticos del Programa
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {pilares.map((pilar, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-slate-50 p-3.5 rounded-xl border border-gray-100 hover:border-main-blue/30 hover:bg-white hover:shadow-xs transition flex flex-col justify-start"
+                      >
+                        <h4 className="text-xs md:text-[13px] font-bold text-main-blue mb-1 leading-snug">
+                          {pilar.titulo}
+                        </h4>
+                        <p className="text-[11px] text-gray-600 font-light leading-relaxed">
+                          {pilar.descripcion}
+                        </p>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="lg:col-span-6">
-                  <div className="rounded-2xl overflow-hidden shadow-lg border border-gray-200 relative group">
-                    <img
-                      src={landing.sedeImagenUrl || palermoDefaultImg}
-                      alt="Catedral de Palermo, Sicilia"
-                      className="w-full h-64 md:h-80 object-cover group-hover:scale-103 transition duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-4">
-                      <div>
-                        <span className="text-[9px] uppercase font-black tracking-widest text-amber-400 bg-black/50 px-2 py-0.5 rounded">
-                          Patrimonio Histórico
-                        </span>
-                        <h4 className="text-sm font-bold text-white mt-1">
-                          Catedral de Palermo & Palacio de Justicia
-                        </h4>
-                      </div>
-                    </div>
+                {/* LAYOUT EN 2 COLUMNAS: SELECTOR VERTICAL DE DÍAS A LA IZQUIERDA + DETALLE A LA DERECHA */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+                  {/* SELECTOR VERTICAL DE DÍAS */}
+                  <div className="lg:col-span-5 flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
+                    {programa.map((item, index) => {
+                      const activo = diaActivo === index;
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => setDiaActivo(index)}
+                          className={`group relative text-left p-3.5 pl-4.5 rounded-r-xl rounded-l-none border transition-all cursor-pointer shrink-0 lg:shrink w-auto lg:w-full overflow-hidden ${activo
+                            ? "bg-main-blue text-white border-main-blue shadow-md"
+                            : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                            }`}
+                        >
+                          {/* Franja izquierda indicadora */}
+                          <div className="absolute left-0 inset-y-0 w-1.5 bg-gray-300 overflow-hidden">
+                            <div
+                              className={`absolute inset-0 transition-transform duration-300 ease-out ${activo
+                                ? "bg-main-red scale-y-100"
+                                : "bg-main-blue transform origin-top scale-y-0 group-hover:scale-y-100"
+                                }`}
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <span className={`text-[10px] font-black uppercase tracking-wider ${activo ? "text-amber-300" : "text-main-red"}`}>
+                              {item.dia} • {item.fecha?.split("de")[0] || ""}
+                            </span>
+                            <span className="text-[10px] opacity-75">
+                              {index === 6 ? "Conmemoración" : "Intensivo"}
+                            </span>
+                          </div>
+                          <h4 className="font-bold text-xs line-clamp-1 mt-1">
+                            {item.titulo}
+                          </h4>
+                          {item.lugarEmblematico && (
+                            <span className={`text-[10px] block mt-0.5 line-clamp-1 ${activo ? "text-blue-100" : "text-gray-500"}`}>
+                              📍 {item.lugarEmblematico}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
-                </div>
 
-              </div>
+                  {/* DETALLE DEL DÍA SELECCIONADO */}
+                  <div className="lg:col-span-7 bg-slate-50/80 p-6 md:p-8 rounded-2xl border border-gray-200 shadow-inner">
+                    {programa[diaActivo] && (
+                      <div className="space-y-5 animate-fade-in">
+                        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-gray-200">
+                          <div>
+                            <span className="bg-main-red/10 text-main-red font-black text-[10px] uppercase tracking-widest px-2.5 py-0.5 rounded">
+                              {programa[diaActivo].dia} • {programa[diaActivo].fecha}
+                            </span>
+                            <h3 className="text-xl md:text-2xl font-black text-main-blue mt-2">
+                              {programa[diaActivo].titulo}
+                            </h3>
+                          </div>
+                          <span className="text-xs font-semibold text-gray-500 bg-white px-3 py-1.5 rounded-lg border border-gray-200">
+                            ⏱️ {programa[diaActivo].horario}
+                          </span>
+                        </div>
 
-              <div className="pt-4 flex justify-between items-center">
-                <button
-                  onClick={() => irASeccion("destacados")}
-                  className="text-gray-500 hover:text-main-blue text-xs font-bold transition cursor-pointer"
-                >
-                  ← Ver Destacados
-                </button>
-                <button
-                  onClick={() => irASeccion("inscripcion")}
-                  className="bg-main-red hover:bg-red-800 text-white text-xs font-bold uppercase tracking-wider py-2.5 px-6 rounded-xl transition flex items-center gap-2 cursor-pointer shadow-md"
-                >
-                  <span>Ir a Opciones de Inscripción y Pago</span>
-                  <span>→</span>
-                </button>
-              </div>
-            </div>
-          )}
+                        {programa[diaActivo].lugarEmblematico && (
+                          <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl flex items-center gap-2.5 text-xs text-amber-900 font-medium">
+                            <span className="text-base">🏛️</span>
+                            <span><strong>Lugar Emblemático:</strong> {programa[diaActivo].lugarEmblematico}</span>
+                          </div>
+                        )}
 
-          {/* ==========================================
-              PESTAÑA 5: INSCRIPCIÓN Y PAGO (FORMULARIO)
-             ========================================== */}
-          {seccionActiva === "inscripcion" && (
-            <div className="space-y-6 animate-fade-in">
-              <div className="text-center max-w-2xl mx-auto mb-6">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
-                  Reserva Oficial
-                </span>
-                <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
-                  Opciones de Inscripción y Pago
-                </h2>
-                <div className="w-12 h-1 bg-main-red mx-auto my-2 rounded-full" />
-                <p className="text-xs text-gray-500 font-light">
-                  Cupo limitado a 35 participantes. Admisión mediante acreditación profesional o institucional.
-                </p>
-              </div>
+                        <div>
+                          <h4 className="text-[11px] font-black uppercase tracking-wider text-gray-400 mb-1.5">
+                            Enfoque Metodológico
+                          </h4>
+                          <p className="text-sm text-gray-700 font-light leading-relaxed">
+                            {programa[diaActivo].descripcion}
+                          </p>
+                        </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                
-                {/* COLUMNA PAGOS */}
-                <div className="lg:col-span-5 space-y-4">
-                  <div className="bg-slate-50 border border-gray-200 p-5 rounded-2xl shadow-xs">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="bg-main-blue text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded">
-                        Inscripción Directa
-                      </span>
-                      <span className="text-xl font-black text-main-blue">
-                        {landing.precioInversion || "5.000 €"}
-                      </span>
-                    </div>
-
-                    <h4 className="text-sm font-bold text-gray-900 mb-1">
-                      Pago con Tarjeta (Stripe)
-                    </h4>
-                    <p className="text-xs text-gray-500 font-light mb-4">
-                      Confirmación instantánea con cifrado SSL bancario.
-                    </p>
-
-                    <div className="flex items-center gap-2 mb-4 bg-white p-2 rounded-lg border border-gray-200 text-[10px] font-bold">
-                      <span className="bg-blue-900 text-white px-1.5 py-0.5 rounded">VISA</span>
-                      <span className="bg-red-600 text-white px-1.5 py-0.5 rounded">Mastercard</span>
-                      <span className="bg-blue-500 text-white px-1.5 py-0.5 rounded">AMEX</span>
-                      <span className="bg-purple-700 text-white px-1.5 py-0.5 rounded">Stripe</span>
-                    </div>
-
-                    {landing.enlaceStripe ? (
-                      <a
-                        href={landing.enlaceStripe}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block w-full text-center bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs uppercase tracking-widest py-3 px-4 rounded-xl shadow-xs transition active:scale-95"
-                      >
-                        Inscribirse vía Stripe
-                      </a>
-                    ) : (
-                      <div className="bg-gray-100 text-gray-500 text-center py-2.5 px-3 rounded-lg text-[11px] font-medium">
-                        Pasarela en línea disponible próximamente
+                        {programa[diaActivo].temas && (
+                          <div>
+                            <h4 className="text-[11px] font-black uppercase tracking-wider text-gray-400 mb-2">
+                              Ejes Temáticos y Casos Forenses
+                            </h4>
+                            <div className="grid grid-cols-1 gap-2">
+                              {programa[diaActivo].temas.map((tema, i) => (
+                                <div key={i} className="flex items-start gap-2 text-xs text-gray-700 font-light bg-white p-2.5 rounded-lg border border-gray-100">
+                                  <span className="text-light-blue font-bold">✓</span>
+                                  <span>{tema}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
 
-                  <div className="bg-amber-50/50 border border-amber-200 p-5 rounded-2xl text-xs space-y-2">
-                    <div className="flex items-center gap-2 text-amber-900 font-bold">
-                      <span>🏛️</span>
-                      <span>Transferencia Bancaria Institucional</span>
+                </div>
+
+                <div className="pt-2 flex justify-between items-center">
+                  <button
+                    onClick={() => irASeccion("legado")}
+                    className="text-gray-500 hover:text-main-blue text-xs font-bold transition cursor-pointer"
+                  >
+                    ← Volver a Visión
+                  </button>
+                  <button
+                    onClick={() => irASeccion("docentes")}
+                    className="bg-main-blue hover:bg-light-blue text-white text-xs font-bold uppercase tracking-wider py-2.5 px-5 rounded-xl transition flex items-center gap-2 cursor-pointer shadow-sm"
+                  >
+                    <span>Ver Docentes Destacados</span>
+                    <span>→</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ==========================================
+              PESTAÑA 3: DOCENTES DESTACADOS
+             ========================================== */}
+            {seccionActiva === "docentes" && (
+              <div className="space-y-6 animate-fade-in">
+                <div className="max-w-2xl">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
+                    Cuerpo Docente Internacional
+                  </span>
+                  <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
+                    Docentes Destacados
+                  </h2>
+                  <div className="w-12 h-1 bg-main-red my-3 rounded-full" />
+                  <p className="text-gray-600 font-light text-sm">
+                    Magistrados antimafia, relatores internacionales de derechos humanos y catedráticos especializados de Europa e Iberoamérica.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {docentes.map((docente, index) => (
+                    <div
+                      key={index}
+                      className="p-6 rounded-2xl border border-gray-200 bg-slate-50/70 hover:bg-white hover:border-main-blue/30 hover:shadow-md transition flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[10px] font-black uppercase tracking-wider bg-main-blue/10 text-main-blue px-2.5 py-0.5 rounded-full">
+                            {docente.origen || "Internacional"}
+                          </span>
+                          <span className="text-xs text-gray-500 font-medium">
+                            {docente.rol || "Docente"}
+                          </span>
+                        </div>
+                        <h4 className="text-lg font-black text-main-blue">
+                          {docente.nombre}
+                        </h4>
+                        <p className="text-xs font-bold text-main-red mt-0.5 mb-2">
+                          {docente.cargo}
+                        </p>
+                        <p className="text-xs text-gray-600 font-light leading-relaxed">
+                          {docente.descripcion}
+                        </p>
+                      </div>
+
+                      <div className="mt-4 pt-3 border-t border-gray-200 flex items-center justify-between text-[11px] text-gray-500">
+                        <span>✓ Sesiones Magistrales & Talleres</span>
+                        <span className="font-bold text-main-blue">Palermo 2027</span>
+                      </div>
                     </div>
-                    <p className="text-gray-600 font-light text-[11px] leading-relaxed">
-                      Para tramitar pagos a través de Poder Judicial, Fiscalía, Universidades o Despachos, emitimos factura proforma oficial y certificado bancario SWIFT/IBAN.
-                    </p>
+                  ))}
+                </div>
+
+                {/* CO-ORGANIZACIÓN NOTA */}
+                <div className="bg-amber-50/70 border border-amber-200 p-4 rounded-xl text-xs text-amber-950 flex items-center gap-3">
+                  <span className="text-xl">🤝</span>
+                  <span>
+                    <strong>+ Más de 20 expertos italianos e internacionales:</strong> Fiscales jefe de tribunales de Italia, catedráticos antimafia, e investigadores especializados de la UNODC y la OIM participarán activamente en las mesas redondas y simulaciones.
+                  </span>
+                </div>
+
+                <div className="pt-4 flex justify-between items-center">
+                  <button
+                    onClick={() => irASeccion("programa")}
+                    className="text-gray-500 hover:text-main-blue text-xs font-bold transition cursor-pointer"
+                  >
+                    ← Ver Programa
+                  </button>
+                  <button
+                    onClick={() => irASeccion("brochure")}
+                    className="bg-main-blue hover:bg-light-blue text-white text-xs font-bold uppercase tracking-wider py-2.5 px-5 rounded-xl transition flex items-center gap-2 cursor-pointer shadow-sm"
+                  >
+                    <span>Ver Brochure Oficial</span>
+                    <span>→</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ==========================================
+              PESTAÑA 5: BROCHURE OFICIAL (VISUALIZADOR)
+             ========================================== */}
+            {seccionActiva === "brochure" && (
+              <div className="space-y-6 animate-fade-in">
+                <div className="pb-3 border-b border-gray-100">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block">
+                      Material Informativo
+                    </span>
+                    <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
+                      Brochure Oficial del Evento
+                    </h2>
                   </div>
                 </div>
 
-                {/* COLUMNA FORMULARIO DE SOLICITUD */}
-                <div className="lg:col-span-7 bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-md">
-                  <h4 className="text-lg font-black text-main-blue tracking-tight mb-1">
-                    Solicitud de Datos de Transferencia y Reserva
-                  </h4>
-                  <p className="text-xs text-gray-500 font-light mb-5">
-                    Recibe en tu correo la orden bancaria y expediente académico completo.
-                  </p>
+                <p className="text-xs text-gray-600 font-light">
+                  Haz clic en cualquiera de las páginas para ampliarla en alta definición o descárgala para compartirla con tu institución académica o judicial.
+                </p>
 
-                  {solicitudExitosa ? (
-                    <div className="p-6 bg-green-50 rounded-xl border border-green-200 text-center space-y-3">
-                      <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto text-xl">
-                        ✓
+                {/* GRID CON LAS 2 PÁGINAS DEL BROCHURE */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                  {/* PÁGINA 1 */}
+                  <div className="bg-slate-50 border border-gray-200 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+                    <div
+                      onClick={() => setModalBrochure(1)}
+                      className="cursor-pointer group relative overflow-hidden rounded-xl border border-gray-300 shadow-md bg-neutral-900"
+                    >
+                      <img
+                        src={brochureP1}
+                        alt="Brochure Oficial Palermo 2027 - Página 1"
+                        className="w-full h-auto object-cover group-hover:scale-102 transition duration-500"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                        <span className="bg-white text-main-blue font-black text-xs uppercase tracking-wider py-2 px-4 rounded-xl shadow-lg">
+                          🔍 Clic para Ampliar
+                        </span>
                       </div>
-                      <h4 className="text-base font-bold text-green-900">
-                        ¡Solicitud Registrada con Éxito!
-                      </h4>
-                      <p className="text-xs text-green-800 font-light max-w-sm mx-auto">
-                        En menos de 24 horas hábiles recibirás en tu correo los datos bancarios y el expediente del curso.
-                      </p>
-                      <button
-                        onClick={() => setSolicitudExitosa(false)}
-                        className="bg-green-700 hover:bg-green-800 text-white font-bold text-xs uppercase tracking-wider py-2 px-4 rounded-lg transition"
+                    </div>
+                    <div className="mt-3 flex items-center justify-between text-xs">
+                      <span className="font-bold text-gray-700">Página 1: Convocatoria & Ejes</span>
+                      <a
+                        href={brochureP1}
+                        download="Brochure_Palermo_2027_P1.jpg"
+                        className="text-main-blue hover:underline font-bold text-[11px]"
                       >
-                        Enviar otra solicitud
+                        Descargar JPG ↓
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* PÁGINA 2 */}
+                  <div className="bg-slate-50 border border-gray-200 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+                    <div
+                      onClick={() => setModalBrochure(2)}
+                      className="cursor-pointer group relative overflow-hidden rounded-xl border border-gray-300 shadow-md bg-neutral-900"
+                    >
+                      <img
+                        src={brochureP2}
+                        alt="Brochure Oficial Palermo 2027 - Página 2"
+                        className="w-full h-auto object-cover group-hover:scale-102 transition duration-500"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                        <span className="bg-white text-main-blue font-black text-xs uppercase tracking-wider py-2 px-4 rounded-xl shadow-lg">
+                          🔍 Clic para Ampliar
+                        </span>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between text-xs">
+                      <span className="font-bold text-gray-700">Página 2: Itinerario 7 Días & Docentes</span>
+                      <a
+                        href={brochureP2}
+                        download="Brochure_Palermo_2027_P2.jpg"
+                        className="text-main-blue hover:underline font-bold text-[11px]"
+                      >
+                        Descargar JPG ↓
+                      </a>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* CARD DE CONTACTO OFICIAL */}
+                <div className="bg-slate-900 text-white p-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div>
+                    <span className="text-amber-400 font-bold text-xs uppercase tracking-wider">
+                      Atención Directa de Admisiones
+                    </span>
+                    <h4 className="text-base font-bold text-white mt-0.5">
+                      ¿Tienes dudas o necesitas orden de facturación institucional?
+                    </h4>
+                    <p className="text-xs text-neutral-300 font-light mt-0.5">
+                      Escríbenos a <a href="mailto:cursos@iiresodh.org" className="underline text-amber-300">cursos@iiresodh.org</a>
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => irASeccion("inscripcion")}
+                    className="bg-main-red hover:bg-red-800 text-white font-bold text-xs uppercase tracking-wider py-3 px-6 rounded-xl shadow-md transition whitespace-nowrap"
+                  >
+                    Reservar Cupo Ahora
+                  </button>
+                </div>
+
+                <div className="pt-4 flex justify-between items-center">
+                  <button
+                    onClick={() => irASeccion("docentes")}
+                    className="text-gray-500 hover:text-main-blue text-xs font-bold transition cursor-pointer"
+                  >
+                    ← Ver Docentes Destacados
+                  </button>
+                  <button
+                    onClick={() => irASeccion("sede")}
+                    className="bg-main-blue hover:bg-light-blue text-white text-xs font-bold uppercase tracking-wider py-2.5 px-5 rounded-xl transition flex items-center gap-2 cursor-pointer shadow-sm"
+                  >
+                    <span>Conocer la Sede en Palermo</span>
+                    <span>→</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ==========================================
+              PESTAÑA 6: SEDE PALERMO
+             ========================================== */}
+            {seccionActiva === "sede" && (
+              <div className="space-y-6 animate-fade-in">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+
+                  <div className="lg:col-span-6 space-y-4">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600 block">
+                      Cuna de la Convención de la ONU
+                    </span>
+                    <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
+                      Conoce {landing.sedeNombre || "Palermo, Sicilia"}
+                    </h2>
+                    <div className="w-12 h-1 bg-main-red rounded-full" />
+
+                    <p className="text-gray-700 font-light text-sm leading-relaxed text-justify">
+                      {landing.sedeTexto || DATOS_PALERMO_2027.landingPage.sedeTexto}
+                    </p>
+
+                    <div className="space-y-2 pt-1">
+                      {(landing.sedeLogistica || DATOS_PALERMO_2027.landingPage.sedeLogistica).map((log, i) => (
+                        <div key={i} className="flex items-start gap-2.5 bg-slate-50 p-2.5 rounded-lg border border-gray-200 text-xs text-gray-700 font-light">
+                          <span className="text-main-blue font-bold">✦</span>
+                          <span>{log}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* COLUMNA DERECHA: CARROUSEL SWIPER DE FOTOS DE PALERMO */}
+                  <div className="lg:col-span-6">
+                    <div
+                      className="relative group h-72 sm:h-80 md:h-96 lg:h-[420px] w-full rounded-2xl overflow-hidden border border-gray-200 bg-slate-950/60 shadow-xl cursor-pointer"
+                      onClick={() => setModalFotoPalermo(slidePalermoActual)}
+                      title="Haz clic para ver las fotos en grande"
+                    >
+                      {/* Slides con transición fade suave */}
+                      {FOTOS_PALERMO.map((foto, idx) => (
+                        <div
+                          key={idx}
+                          className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${slidePalermoActual === idx ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
+                            }`}
+                        >
+                          <img
+                            src={foto.src}
+                            alt={foto.titulo}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                          />
+
+                          {/* Gradiente oscuro inferior para texto */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+
+                          {/* Pie de foto del slide */}
+                          <div className="absolute bottom-4 left-4 sm:left-5 right-24 text-left">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block mb-1">
+                              {foto.lugar}
+                            </span>
+                            <h4 className="text-white text-sm sm:text-base font-bold tracking-tight drop-shadow-md">
+                              {foto.titulo}
+                            </h4>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Badge en esquina superior derecha indicando clic para ampliar */}
+                      <div className="absolute top-3.5 right-3.5 z-20 bg-black/60 hover:bg-black/80 backdrop-blur-xs text-white text-[11px] font-medium px-3 py-1 rounded-lg border border-white/20 flex items-center gap-1.5 transition-colors">
+                        <span>🔍</span>
+                        <span className="hidden sm:inline">Ver fotos ({slidePalermoActual + 1}/{FOTOS_PALERMO.length})</span>
+                      </div>
+
+                      {/* Flecha izquierda */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSlidePalermoActual((prev) => (prev - 1 + FOTOS_PALERMO.length) % FOTOS_PALERMO.length);
+                        }}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/55 hover:bg-black/85 text-white flex items-center justify-center transition-all cursor-pointer border border-white/20 active:scale-95 text-base"
+                        aria-label="Foto anterior"
+                      >
+                        ❮
+                      </button>
+
+                      {/* Flecha derecha */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSlidePalermoActual((prev) => (prev + 1) % FOTOS_PALERMO.length);
+                        }}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/55 hover:bg-black/85 text-white flex items-center justify-center transition-all cursor-pointer border border-white/20 active:scale-95 text-base"
+                        aria-label="Siguiente foto"
+                      >
+                        ❯
+                      </button>
+
+                      {/* Indicadores / Puntos */}
+                      <div className="absolute bottom-4 right-4 z-20 flex items-center gap-1.5">
+                        {FOTOS_PALERMO.map((_, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSlidePalermoActual(i);
+                            }}
+                            className={`h-2 rounded-full transition-all cursor-pointer ${slidePalermoActual === i ? "w-6 bg-main-red" : "w-2 bg-white/60 hover:bg-white"
+                              }`}
+                            aria-label={`Ver foto ${i + 1}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                <div className="pt-4 flex justify-between items-center">
+                  <button
+                    onClick={() => irASeccion("brochure")}
+                    className="text-gray-500 hover:text-main-blue text-xs font-bold transition cursor-pointer"
+                  >
+                    ← Ver Brochure
+                  </button>
+                  <button
+                    onClick={() => irASeccion("inscripcion")}
+                    className="bg-main-red hover:bg-red-800 text-white text-xs font-bold uppercase tracking-wider py-2.5 px-6 rounded-xl transition flex items-center gap-2 cursor-pointer shadow-md"
+                  >
+                    <span>Ir a Opciones de Inscripción y Pago</span>
+                    <span>→</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ==========================================
+              PESTAÑA 5: INSCRIPCIÓN Y PAGO (FORMULARIO)
+             ========================================== */}
+            {seccionActiva === "inscripcion" && (
+              <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
+                <div className="text-center max-w-2xl mx-auto mb-2">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
+                    Proceso Oficial de Admisión
+                  </span>
+                  <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
+                    Inscripción y Admisión Académica
+                  </h2>
+                  <div className="w-12 h-1 bg-main-red mx-auto my-2 rounded-full" />
+                  <p className="text-xs sm:text-sm text-gray-500 font-light mt-1">
+                    Completa tus datos oficiales a continuación. Una vez registrados, podrás decidir si deseas únicamente manifestar interés o proceder con el pago (en cuotas con tarjeta o mediante transferencia bancaria).
+                  </p>
+                </div>
+
+                {solicitudExitosa ? (
+                  <div className="p-8 bg-green-50 rounded-3xl border border-green-200 text-center space-y-4 animate-fade-in shadow-sm">
+                    <div className="w-16 h-16 bg-green-100 text-green-700 rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
+                      ✓
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-emerald-800 bg-emerald-100/80 px-3 py-1 rounded-full border border-emerald-200 inline-block mb-1">
+                        {metodoInscripcion === "interes" ? "Interés Registrado" : "Reserva Provisional"}
+                      </span>
+                      <h4 className="text-xl font-black text-green-950">
+                        {metodoInscripcion === "interes"
+                          ? "¡Interés y Reserva Registrados con Éxito!"
+                          : "¡Solicitud Registrada con Éxito!"}
+                      </h4>
+                    </div>
+                    <p className="text-xs sm:text-sm text-green-900 font-light max-w-lg mx-auto leading-relaxed">
+                      {metodoInscripcion === "interes"
+                        ? "Hemos recibido tus datos correctamente. Nuestro departamento académico te contactará a la brevedad vía correo electrónico o WhatsApp para coordinar tu participación, resolver consultas y brindarte atención personalizada."
+                        : "Hemos registrado tu solicitud y generado tu reserva provisional de cupo por 5 días naturales. En menos de 24 horas hábiles recibirás en tu correo los datos bancarios oficiales (códigos SWIFT e IBAN) de IIRESODH PAYMENTS, LLC (EE. UU.) o IIRESODH Costa Rica."}
+                    </p>
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setSolicitudExitosa(false)}
+                        className="bg-green-700 hover:bg-green-800 text-white font-bold text-xs uppercase tracking-wider py-3 px-6 rounded-xl transition cursor-pointer shadow-sm active:scale-95"
+                      >
+                        Completar otra inscripción o solicitud
                       </button>
                     </div>
-                  ) : (
-                    <form onSubmit={handleSubmitSolicitud} className="space-y-3">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  </div>
+                ) : (
+                  <div className="bg-white p-6 sm:p-10 rounded-3xl border border-gray-200 shadow-md space-y-8">
+
+                    {/* PASO 1: FORMULARIO DE DATOS OFICIALES */}
+                    <div className="space-y-5">
+                      <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
+                        <span className="w-7 h-7 rounded-full bg-main-blue text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+                          1
+                        </span>
+                        <div>
+                          <h3 className="text-base font-extrabold text-main-blue tracking-tight">
+                            Datos del Participante y Perfil Académico
+                          </h3>
+                          <p className="text-[11px] text-gray-500 font-light">
+                            Conforme a tu documento oficial de identidad o pasaporte
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* AVISO PASAPORTE */}
+                      <div className="bg-sky-50/70 border border-sky-200/80 rounded-xl px-3.5 py-2.5 text-xs text-sky-900 flex items-center gap-2">
+                        <span className="text-base">🛂</span>
+                        <span className="text-[11px] font-medium leading-tight">
+                          Ingresa tus nombres y apellidos <strong>exactamente conforme aparecen en tu pasaporte</strong> para la emisión de certificaciones oficiales, reservas y acreditación internacional.
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                         <div>
                           <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                            Nombre Completo *
+                            Nombres * <span className="text-gray-400 font-normal lowercase">(según pasaporte)</span>
                           </label>
                           <input
                             type="text"
                             required
-                            value={formData.nombre}
-                            onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                            placeholder="Lic. Carlos Mendoza"
-                            className="w-full text-xs px-3 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-main-blue focus:border-main-blue"
+                            value={formData.nombres}
+                            onChange={(e) => setFormData({ ...formData, nombres: e.target.value })}
+                            placeholder="Ej: Carlos Alberto"
+                            className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
                           />
                         </div>
 
                         <div>
                           <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                            Institución u Organización
+                            Apellidos * <span className="text-gray-400 font-normal lowercase">(según pasaporte)</span>
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={formData.apellidos}
+                            onChange={(e) => setFormData({ ...formData, apellidos: e.target.value })}
+                            placeholder="Ej: Mendoza Alvarado"
+                            className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                          <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                            Profesión / Cargo Actual <span className="text-gray-400 font-normal lowercase">(opcional)</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.profesion}
+                            onChange={(e) => setFormData({ ...formData, profesion: e.target.value })}
+                            placeholder="Ej: Juez Penal / Fiscal / Abogado Litigante"
+                            className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                            Institución / Despacho / Universidad
                           </label>
                           <input
                             type="text"
                             value={formData.institucion}
                             onChange={(e) => setFormData({ ...formData, institucion: e.target.value })}
-                            placeholder="Poder Judicial / Fiscalía"
-                            className="w-full text-xs px-3 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-main-blue focus:border-main-blue"
+                            placeholder="Poder Judicial / Fiscalía / Bufete"
+                            className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
                           />
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                         <div>
                           <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
                             Correo Electrónico *
@@ -973,104 +1984,698 @@ export default function CursoLanding() {
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             placeholder="tu.correo@institucion.org"
-                            className="w-full text-xs px-3 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-main-blue focus:border-main-blue"
+                            className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
                           />
                         </div>
 
                         <div>
                           <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                            Teléfono o WhatsApp
+                            Teléfono / WhatsApp *
                           </label>
                           <input
                             type="tel"
+                            required
                             value={formData.telefono}
                             onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
                             placeholder="+506 8888-8888"
-                            className="w-full text-xs px-3 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-main-blue focus:border-main-blue"
+                            className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
                           />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                          <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                            Documento de Identidad * <span className="text-gray-400 font-normal lowercase">(DNI / Cédula / Pasaporte)</span>
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={formData.documentoIdentidad}
+                            onChange={(e) => setFormData({ ...formData, documentoIdentidad: e.target.value })}
+                            placeholder="Ej: Pasaporte o Cédula Nacional"
+                            className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                            País de Residencia *
+                          </label>
+                          <select
+                            value={formData.pais}
+                            onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
+                            className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue bg-white"
+                          >
+                            {PAISES_LATINOAMERICA.map((p) => (
+                              <option key={p} value={p}>{p}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* EXPERIENCIA EN TEMAS */}
+                      <div className="pt-1">
+                        <span className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                          Experiencia o vinculación en estos temas:
+                        </span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {["Crimen organizado", "Trata de personas", "Lavado de activos", "Litigio estratégico", "Otro"].map((tema) => {
+                            const checked = formData.experienciaTemas.includes(tema);
+                            return (
+                              <label
+                                key={tema}
+                                className={`flex items-center gap-2 p-2 rounded-xl border text-xs cursor-pointer select-none transition-all ${checked
+                                  ? "bg-blue-50/70 border-main-blue text-main-blue font-bold shadow-xs"
+                                  : "bg-white border-gray-200 text-gray-700 hover:border-gray-300"
+                                  }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() => {
+                                    const existe = formData.experienciaTemas.includes(tema);
+                                    setFormData({
+                                      ...formData,
+                                      experienciaTemas: existe
+                                        ? formData.experienciaTemas.filter((t) => t !== tema)
+                                        : [...formData.experienciaTemas, tema]
+                                    });
+                                  }}
+                                  className="w-4 h-4 rounded border-gray-300 text-main-blue focus:ring-main-blue cursor-pointer"
+                                />
+                                <span>{tema}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+
+                        {formData.experienciaTemas.includes("Otro") && (
+                          <div className="mt-2 animate-fade-in">
+                            <input
+                              type="text"
+                              value={formData.experienciaOtro}
+                              onChange={(e) => setFormData({ ...formData, experienciaOtro: e.target.value })}
+                              placeholder="Especifica el área..."
+                              className="w-full text-xs px-3 py-1.5 rounded-lg border border-blue-200 bg-blue-50/30 focus:outline-none focus:ring-1 focus:ring-main-blue"
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* MOTIVACIÓN */}
+                      <div>
+                        <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                          ¿Por qué deseas participar en el curso? *
+                        </label>
+                        <textarea
+                          rows={3}
+                          required
+                          value={formData.motivoParticipacion}
+                          onChange={(e) => setFormData({ ...formData, motivoParticipacion: e.target.value })}
+                          placeholder="Describe tus expectativas, objetivos profesionales o aplicación práctica en tus labores..."
+                          className="w-full text-base sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue/30 focus:border-main-blue resize-none bg-white"
+                        />
+                      </div>
+
+                      {/* PREGUNTAS ACADÉMICAS CONDICIONALES */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-2xl border border-gray-200 text-xs">
+                        <div className="space-y-1.5">
+                          <span className="block font-bold text-gray-800 leading-tight">
+                            ¿Cursos internacionales previos en estos temas?
+                          </span>
+                          <div className="flex items-center gap-3">
+                            <label className="flex items-center gap-1 cursor-pointer font-medium text-gray-700">
+                              <input
+                                type="radio"
+                                name="cursosPreviosLanding"
+                                value="si"
+                                checked={formData.cursosPrevios === "si"}
+                                onChange={() => setFormData({ ...formData, cursosPrevios: "si" })}
+                              />
+                              <span>Sí</span>
+                            </label>
+                            <label className="flex items-center gap-1 cursor-pointer font-medium text-gray-700">
+                              <input
+                                type="radio"
+                                name="cursosPreviosLanding"
+                                value="no"
+                                checked={formData.cursosPrevios === "no"}
+                                onChange={() => setFormData({ ...formData, cursosPrevios: "no", detalleCursosPrevios: "" })}
+                              />
+                              <span>No</span>
+                            </label>
+                          </div>
+                          {formData.cursosPrevios === "si" && (
+                            <input
+                              type="text"
+                              value={formData.detalleCursosPrevios}
+                              onChange={(e) => setFormData({ ...formData, detalleCursosPrevios: e.target.value })}
+                              placeholder="¿Cuáles cursos?"
+                              className="w-full text-xs px-2.5 py-1 rounded border border-gray-300 bg-white"
+                            />
+                          )}
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <span className="block font-bold text-gray-800 leading-tight">
+                            ¿Has sido alumno(a) de IIRESODH?
+                          </span>
+                          <div className="flex items-center gap-3 pt-1">
+                            <label className="flex items-center gap-1 cursor-pointer font-bold text-emerald-700">
+                              <input
+                                type="radio"
+                                name="alumnoIiresodhLanding"
+                                value="si"
+                                checked={formData.alumnoIiresodh === "si"}
+                                onChange={() => setFormData({ ...formData, alumnoIiresodh: "si" })}
+                              />
+                              <span>Sí</span>
+                            </label>
+                            <label className="flex items-center gap-1 cursor-pointer font-medium text-gray-700">
+                              <input
+                                type="radio"
+                                name="alumnoIiresodhLanding"
+                                value="no"
+                                checked={formData.alumnoIiresodh === "no"}
+                                onChange={() => setFormData({ ...formData, alumnoIiresodh: "no" })}
+                              />
+                              <span>No</span>
+                            </label>
+                          </div>
                         </div>
                       </div>
 
                       <div>
                         <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                          País de Residencia
-                        </label>
-                        <select
-                          value={formData.pais}
-                          onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
-                          className="w-full text-xs px-3 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-main-blue bg-white"
-                        >
-                          <option value="Costa Rica">Costa Rica</option>
-                          <option value="Colombia">Colombia</option>
-                          <option value="México">México</option>
-                          <option value="Guatemala">Guatemala</option>
-                          <option value="Canadá">Canadá</option>
-                          <option value="España">España</option>
-                          <option value="Italia">Italia</option>
-                          <option value="Argentina">Argentina</option>
-                          <option value="Chile">Chile</option>
-                          <option value="Perú">Perú</option>
-                          <option value="Ecuador">Ecuador</option>
-                          <option value="Panamá">Panamá</option>
-                          <option value="Estados Unidos">Estados Unidos</option>
-                          <option value="Otro">Otro país</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                          Comentarios o Requerimientos Especiales
+                          Comentarios, consultas previas o requerimientos (opcional)
                         </label>
                         <textarea
                           rows={2}
                           value={formData.comentarios}
                           onChange={(e) => setFormData({ ...formData, comentarios: e.target.value })}
-                          placeholder="Requerimientos de facturación institucional, consulta de hospedaje, etc."
-                          className="w-full text-xs px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-main-blue resize-none"
+                          placeholder="Dudas sobre fechas, hospedaje, requerimientos de facturación institucional o facilidades de pago..."
+                          className="w-full text-base sm:text-sm px-3.5 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-1 focus:ring-main-blue resize-none bg-white"
                         />
                       </div>
+                    </div>
 
-                      <button
-                        type="submit"
-                        disabled={enviandoSolicitud}
-                        className="w-full bg-main-blue hover:bg-light-blue text-white font-bold text-xs uppercase tracking-widest py-3 px-5 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
-                      >
-                        {enviandoSolicitud ? (
-                          <>
-                            <CircularProgress size={14} sx={{ color: "white" }} />
-                            <span>Procesando...</span>
-                          </>
-                        ) : (
-                          <span>Enviar Solicitud de Datos Bancarios</span>
-                        )}
-                      </button>
-                    </form>
-                  )}
-                </div>
+                    {/* PASO 2: TÉRMINOS DE CONTRATACIÓN Y CLICKWRAP */}
+                    <div id="paso-terminos-contratacion" className="space-y-4">
+                      <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
+                        <span className={`w-7 h-7 rounded-full font-bold text-xs flex items-center justify-center shrink-0 shadow-xs transition-colors ${aceptarPrivacidadTransferencia ? "bg-emerald-600 text-white" : "bg-main-blue text-white"
+                          }`}>
+                          {aceptarPrivacidadTransferencia ? "✓" : "2"}
+                        </span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-base font-extrabold text-main-blue tracking-tight">
+                              Términos de Contratación y Consentimiento Informado
+                            </h3>
+                            {aceptarPrivacidadTransferencia && (
+                              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                                Aceptado
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-gray-500 font-light">
+                            Condiciones contractuales, canales de pago y política de privacidad (Requisito obligatorio para las 3 opciones)
+                          </p>
+                        </div>
+                      </div>
 
+                      <div className={`rounded-2xl p-4 sm:p-5 space-y-3 border transition-all ${aceptarPrivacidadTransferencia
+                        ? "bg-emerald-50/50 border-emerald-300 shadow-xs"
+                        : "bg-slate-50 border-slate-200"
+                        }`}>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200/80">
+                          <span className="text-xs font-bold text-gray-800 flex items-center gap-2">
+                            <span>📜</span> Contrato de Servicios Académicos — Palermo 2027
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setModalTerminosOpen(true)}
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-main-blue hover:text-main-red underline cursor-pointer self-start sm:self-auto"
+                          >
+                            <span>Ver Términos de Contratación</span>
+                            <span>↗</span>
+                          </button>
+                        </div>
+
+                        <label className="flex items-start gap-2.5 text-xs text-gray-700 font-medium cursor-pointer select-none text-left">
+                          <input
+                            type="checkbox"
+                            checked={aceptarPrivacidadTransferencia}
+                            onChange={(e) => setAceptarPrivacidadTransferencia(e.target.checked)}
+                            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-main-blue focus:ring-main-blue cursor-pointer"
+                          />
+                          <span className="leading-relaxed">
+                            He leído y acepto los{" "}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setModalTerminosOpen(true);
+                              }}
+                              className="text-main-blue font-bold underline hover:text-main-red cursor-pointer"
+                            >
+                              Términos de Contratación
+                            </button>{" "}
+                            del Curso Internacional Palermo 2027 y la{" "}
+                            <a
+                              href="/privacidad"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-main-blue font-bold underline hover:text-light-blue"
+                            >
+                              Política de Privacidad
+                            </a>{" "}
+                            de IIRESODH. Manifiesto mi voluntad libre e informada de contratar y registrarme bajo estas condiciones.
+                          </span>
+                        </label>
+                        <p className="text-[10px] text-gray-400 font-light">
+                          * Tu fecha, hora, dirección IP y datos de registro quedarán archivados electrónicamente como constancia y evidencia formal de tu aceptación contractual.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* PASO 3: DECISIÓN DE INSCRIPCIÓN Y MEDIO DE PAGO */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
+                        <span className="w-7 h-7 rounded-full bg-main-blue text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+                          3
+                        </span>
+                        <div>
+                          <h3 className="text-base font-extrabold text-main-blue tracking-tight">
+                            ¿Cómo deseas proceder con tu inscripción?
+                          </h3>
+                          <p className="text-[11px] text-gray-500 font-light">
+                            Selecciona si deseas manifestar interés, solicitar transferencia bancaria o pagar en línea con tarjeta
+                          </p>
+                        </div>
+                      </div>
+
+                      {!aceptarPrivacidadTransferencia && (
+                        <div className="bg-amber-50/90 border border-amber-300/80 rounded-2xl p-3.5 text-xs text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
+                          <div className="flex items-start sm:items-center gap-2.5">
+                            <span className="text-base shrink-0">⚠️</span>
+                            <span className="text-[11px] font-medium leading-snug">
+                              <strong>Requisito contractual obligatorio:</strong> Debes marcar la casilla de aceptación de los Términos de Contratación en el <strong>Paso 2</strong> para habilitar cualquiera de las 3 opciones (Manifestar Interés, Transferencia Bancaria o Pago con Tarjeta).
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const p2 = document.getElementById("paso-terminos-contratacion");
+                              if (p2) p2.scrollIntoView({ behavior: "smooth", block: "center" });
+                            }}
+                            className="shrink-0 inline-flex items-center gap-1 text-[11px] font-bold text-amber-900 hover:text-amber-950 underline cursor-pointer self-start sm:self-auto"
+                          >
+                            <span>Ir al Paso 2</span>
+                            <span>↑</span>
+                          </button>
+                        </div>
+                      )}
+
+                      {/* SELECTOR DE 3 OPCIONES */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        {/* Opción 1: Manifestar Interés */}
+                        <div
+                          onClick={() => setMetodoInscripcion("interes")}
+                          className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${metodoInscripcion === "interes"
+                            ? "border-emerald-600 bg-emerald-50/60 shadow-xs"
+                            : "border-gray-200 hover:border-gray-300 bg-white"
+                            }`}
+                        >
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-2xl">📋</span>
+                              <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${metodoInscripcion === "interes" ? "border-emerald-600 bg-emerald-600" : "border-gray-300"
+                                }`}>
+                                {metodoInscripcion === "interes" && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                              </span>
+                            </div>
+                            <h4 className="font-extrabold text-sm text-gray-900">
+                              Manifestar Interés
+                            </h4>
+                            <p className="text-[11px] text-gray-500 font-light leading-relaxed">
+                              Reserva provisional sin pago inmediato. Te contactaremos para brindarte asesoría y coordinar tu proceso.
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Opción 2: Transferencia Bancaria */}
+                        <div
+                          onClick={() => setMetodoInscripcion("transferencia")}
+                          className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${metodoInscripcion === "transferencia"
+                            ? "border-amber-600 bg-amber-50/60 shadow-xs"
+                            : "border-gray-200 hover:border-gray-300 bg-white"
+                            }`}
+                        >
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-2xl">🏛️</span>
+                              <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${metodoInscripcion === "transferencia" ? "border-amber-600 bg-amber-600" : "border-gray-300"
+                                }`}>
+                                {metodoInscripcion === "transferencia" && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                              </span>
+                            </div>
+                            <h4 className="font-extrabold text-sm text-gray-900">
+                              Transferencia Bancaria
+                            </h4>
+                            <p className="text-[11px] text-gray-500 font-light leading-relaxed">
+                              Solicita cuentas bancarias autorizadas. Reserva provisional por 5 días.
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Opción 3: Pagar con Tarjeta */}
+                        <div
+                          onClick={() => setMetodoInscripcion("tarjeta")}
+                          className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${metodoInscripcion === "tarjeta"
+                            ? "border-main-blue bg-blue-50/60 shadow-xs"
+                            : "border-gray-200 hover:border-gray-300 bg-white"
+                            }`}
+                        >
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-2xl">💳</span>
+                              <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${metodoInscripcion === "tarjeta" ? "border-main-blue bg-main-blue" : "border-gray-300"
+                                }`}>
+                                {metodoInscripcion === "tarjeta" && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                              </span>
+                            </div>
+                            <h4 className="font-extrabold text-sm text-gray-900">
+                              Pagar con Tarjeta
+                            </h4>
+                            <p className="text-[11px] text-gray-500 font-light leading-relaxed">
+                              Asegura tu cupo de inmediato. Habilita opciones de financiamiento en cuotas sin interés y pago seguro Stripe.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* DETALLE DINÁMICO SEGÚN LA DECISIÓN DEL INTERESADO */}
+                      {metodoInscripcion === "interes" && (
+                        <div className="space-y-4 pt-2 animate-fade-in">
+                          <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-4 text-xs text-emerald-900 flex items-start gap-3">
+                            <span className="text-xl shrink-0">🤝</span>
+                            <div className="space-y-1">
+                              <span className="font-bold text-sm block">Reserva Provisional y Asesoría Personalizada</span>
+                              <p className="text-[11px] leading-relaxed">
+                                Al enviar este formulario registras tu interés y apartas temporalmente tu plaza en el Curso Internacional Palermo 2027. No se te solicitará ningún cobro con tarjeta en este momento; nuestro equipo académico te contactará para coordinar tu proceso de admisión y modalidades de pago.
+                              </p>
+                            </div>
+                          </div>
+
+                          {aceptarPrivacidadTransferencia ? (
+                            <div className="flex items-center gap-2 text-xs text-emerald-800 font-medium bg-emerald-50 px-3.5 py-2.5 rounded-xl border border-emerald-200 animate-fade-in">
+                              <span>✓</span>
+                              <span>Términos de Contratación y Clickwrap aceptados en el Paso 2.</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-start gap-2.5 text-xs text-amber-900 font-medium bg-amber-50/90 px-3.5 py-2.5 rounded-xl border border-amber-300 animate-fade-in">
+                              <span className="text-base shrink-0">⚠️</span>
+                              <div className="space-y-0.5">
+                                <span className="font-bold block">Aceptación de Términos Requerida</span>
+                                <span className="text-[11px] text-amber-800 leading-tight block">
+                                  Debes marcar la casilla de aceptación de los Términos de Contratación en el <strong>Paso 2</strong> para habilitar y formalizar tu registro de interés.
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={handleSubmitSolicitud}
+                            disabled={enviandoSolicitud || !aceptarPrivacidadTransferencia}
+                            className="w-full bg-emerald-700 hover:bg-emerald-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-widest py-4 px-6 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
+                          >
+                            {enviandoSolicitud ? (
+                              <>
+                                <CircularProgress size={16} sx={{ color: "white" }} />
+                                <span>Registrando interés...</span>
+                              </>
+                            ) : (
+                              <span>📋 Confirmar Registro de Interés y Apartar Cupo</span>
+                            )}
+                          </button>
+                        </div>
+                      )}
+
+                      {metodoInscripcion === "transferencia" && (
+                        <div className="space-y-4 pt-2 animate-fade-in">
+                          <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-4 text-xs text-amber-900 flex items-start gap-3">
+                            <span className="text-xl shrink-0">🏛️</span>
+                            <div className="space-y-1">
+                              <span className="font-bold text-sm block">Orden de Transferencia Bancaria Oficial</span>
+                              <p className="text-[11px] leading-relaxed">
+                                Al formalizar esta solicitud, recibirás por correo electrónico las instrucciones con las cuentas bancarias oficiales. Tu cupo se reservará provisionalmente por 5 días naturales para la acreditación de los fondos.
+                              </p>
+                            </div>
+                          </div>
+
+                          {aceptarPrivacidadTransferencia ? (
+                            <div className="flex items-center gap-2 text-xs text-emerald-800 font-medium bg-emerald-50 px-3.5 py-2.5 rounded-xl border border-emerald-200 animate-fade-in">
+                              <span>✓</span>
+                              <span>Términos de Contratación y Clickwrap aceptados en el Paso 2.</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-start gap-2.5 text-xs text-amber-900 font-medium bg-amber-50/90 px-3.5 py-2.5 rounded-xl border border-amber-300 animate-fade-in">
+                              <span className="text-base shrink-0">⚠️</span>
+                              <div className="space-y-0.5">
+                                <span className="font-bold block">Aceptación de Términos Requerida</span>
+                                <span className="text-[11px] text-amber-800 leading-tight block">
+                                  Debes marcar la casilla de aceptación de los Términos de Contratación en el <strong>Paso 2</strong> para habilitar y solicitar las cuentas bancarias autorizadas.
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={handleSubmitSolicitud}
+                            disabled={enviandoSolicitud || !aceptarPrivacidadTransferencia}
+                            className="w-full bg-amber-700 hover:bg-amber-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-widest py-4 px-6 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
+                          >
+                            {enviandoSolicitud ? (
+                              <>
+                                <CircularProgress size={16} sx={{ color: "white" }} />
+                                <span>Enviando solicitud bancaria...</span>
+                              </>
+                            ) : (
+                              <span>🏛️ Confirmar Inscripción y Solicitar Cuentas Bancarias</span>
+                            )}
+                          </button>
+                        </div>
+                      )}
+
+                      {metodoInscripcion === "tarjeta" && (
+                        <div className="space-y-6 pt-2 animate-fade-in">
+                          {/* OPCIONES DE FINANCIAMIENTO */}
+                          <div className="space-y-3 pt-2">
+                            <div className="flex items-center justify-between flex-wrap gap-2">
+                              <h4 className="text-xs font-black text-main-blue uppercase tracking-wider">
+                                Opciones de Financiamiento en Cuotas Sin Intereses
+                              </h4>
+                              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                                0% Interés • Pagos Mensuales
+                              </span>
+                            </div>
+                            <SelectorModalidadPago
+                              curso={curso}
+                              landing={landing}
+                              planCuotas={planCuotas}
+                              setPlanCuotas={setPlanCuotas}
+                            />
+                          </div>
+
+                          {/* FORMULARIO DE PAGO STRIPE */}
+                          <div className="pt-2">
+                            <FormularioPagoCurso
+                              curso={curso}
+                              landing={landing}
+                              planCuotas={planCuotas}
+                              setPlanCuotas={setPlanCuotas}
+                              formData={formData}
+                              setFormData={setFormData}
+                              soloPasarelaPago={true}
+                              terminosAceptadosExternos={aceptarPrivacidadTransferencia}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                    </div>
+
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            )}
 
-        </div>
+          </div>
+
+        </section>
 
       </div>
 
-      {/* FOOTER INSTITUCIONAL COMPACTO */}
-      <footer className="py-8 bg-gray-100 border-t border-gray-200 text-xs text-gray-600">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <span className="font-bold text-main-blue">IIRESODH</span>
-            <span>•</span>
-            <span>UNODC Framework</span>
-            <span>•</span>
-            <span>Palermo 2027</span>
-          </div>
-          <div>
-            <span>Admisiones: formacion@iiresodh.org • Derechos Reservados 2024 – 2027</span>
+
+
+      {/* MODAL VISOR DE BROCHURE EN ALTA DEFINICIÓN */}
+      {modalBrochure !== null && (
+        <div
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fade-in"
+          onClick={() => setModalBrochure(null)}
+        >
+          <div
+            className="relative max-w-4xl w-full max-h-[95vh] bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-700 shadow-2xl flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* ENCABEZADO DEL MODAL */}
+            <div className="bg-neutral-950 px-4 py-3 border-b border-neutral-800 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
+                  Brochure Oficial Palermo 2027 • Página {modalBrochure} de 2
+                </span>
+                <div className="hidden sm:inline-flex items-center gap-1.5 bg-neutral-800 px-2 py-0.5 rounded text-[11px] text-neutral-300 font-medium">
+                  <span>IIRESODH & Instituto DDHH UNLP</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setModalBrochure(modalBrochure === 1 ? 2 : 1)}
+                  className="bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-neutral-700 transition"
+                >
+                  {modalBrochure === 1 ? "Ver Página 2 →" : "← Ver Página 1"}
+                </button>
+                <a
+                  href={modalBrochure === 1 ? brochureP1 : brochureP2}
+                  download={`Brochure_Palermo_2027_P${modalBrochure}.jpg`}
+                  className="bg-main-blue hover:bg-light-blue text-white text-xs font-bold px-3 py-1.5 rounded-lg transition hidden sm:inline-block"
+                >
+                  Descargar ↓
+                </a>
+                <button
+                  onClick={() => setModalBrochure(null)}
+                  className="w-8 h-8 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white flex items-center justify-center font-bold text-sm transition"
+                  title="Cerrar visor"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* CONTENEDOR DE IMAGEN CON SCROLL */}
+            <div className="overflow-auto max-h-[82vh] p-2 sm:p-4 bg-neutral-950 flex items-center justify-center">
+              <img
+                src={modalBrochure === 1 ? brochureP1 : brochureP2}
+                alt={`Brochure Oficial Página ${modalBrochure}`}
+                className="max-h-[80vh] w-auto object-contain rounded-lg shadow-lg border border-neutral-800"
+              />
+            </div>
+
+            {/* PIE DEL MODAL CON ACCIÓN RÁPIDA */}
+            <div className="bg-neutral-950 px-4 py-2.5 border-t border-neutral-800 flex items-center justify-between text-xs text-neutral-400">
+              <span className="hidden sm:inline">
+                Haz clic fuera o en el botón ✕ para cerrar
+              </span>
+              <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                <a
+                  href={contacto?.whatsappUrl || "https://wa.me/50640816188"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1.5"
+                >
+                  <span>💬 Consultar dudas por WhatsApp</span>
+                </a>
+                <button
+                  onClick={() => {
+                    setModalBrochure(null);
+                    irASeccion("inscripcion");
+                  }}
+                  className="bg-main-red hover:bg-red-800 text-white font-bold text-xs uppercase px-3.5 py-1.5 rounded-lg transition"
+                >
+                  Inscribirme
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </footer>
+      )}
+
+      {/* MODAL VISOR LIGHTBOX DE FOTOS DE PALERMO */}
+      {modalFotoPalermo !== null && (
+        <div
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fade-in select-none"
+          onClick={() => setModalFotoPalermo(null)}
+        >
+          {/* Botón cerrar */}
+          <button
+            onClick={() => setModalFotoPalermo(null)}
+            className="absolute top-4 right-4 z-50 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white text-xl flex items-center justify-center transition-colors cursor-pointer border border-white/20 shadow-xl"
+            title="Cerrar visor (Esc)"
+            aria-label="Cerrar visor"
+          >
+            ✕
+          </button>
+
+          {/* Flecha anterior */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setModalFotoPalermo((prev) => (prev - 1 + FOTOS_PALERMO.length) % FOTOS_PALERMO.length);
+            }}
+            className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-black/60 hover:bg-black/90 text-white text-2xl flex items-center justify-center transition-all cursor-pointer border border-white/20 shadow-2xl active:scale-95"
+            title="Foto anterior (←)"
+            aria-label="Foto anterior"
+          >
+            ❮
+          </button>
+
+          {/* Flecha siguiente */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setModalFotoPalermo((prev) => (prev + 1) % FOTOS_PALERMO.length);
+            }}
+            className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-black/60 hover:bg-black/90 text-white text-2xl flex items-center justify-center transition-all cursor-pointer border border-white/20 shadow-2xl active:scale-95"
+            title="Siguiente foto (→)"
+            aria-label="Siguiente foto"
+          >
+            ❯
+          </button>
+
+          {/* Contenedor de la foto principal */}
+          <div
+            className="relative max-w-5xl max-h-[90vh] flex flex-col items-center justify-center px-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={FOTOS_PALERMO[modalFotoPalermo].src}
+              alt={FOTOS_PALERMO[modalFotoPalermo].titulo}
+              className="max-w-full max-h-[78vh] w-auto h-auto object-contain rounded-2xl shadow-2xl border border-white/15"
+            />
+
+            {/* Pie de foto con título, lugar y contador */}
+            <div className="mt-3 text-center">
+              <h4 className="text-white text-base sm:text-lg font-bold tracking-tight">
+                {FOTOS_PALERMO[modalFotoPalermo].titulo}
+              </h4>
+              <p className="text-slate-300 text-xs sm:text-sm font-light mt-0.5">
+                {FOTOS_PALERMO[modalFotoPalermo].lugar} • {modalFotoPalermo + 1} de {FOTOS_PALERMO.length}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE TÉRMINOS DE CONTRATACIÓN Y CLICKWRAP */}
+      <ModalTerminosClickwrap
+        open={modalTerminosOpen}
+        onClose={() => setModalTerminosOpen(false)}
+        onAceptar={() => setAceptarPrivacidadTransferencia(true)}
+      />
 
       {/* SNACKBAR DE NOTIFICACIONES */}
       <Snackbar

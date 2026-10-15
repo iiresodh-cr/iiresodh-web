@@ -232,7 +232,7 @@ export default function ArticuloDetalle() {
   };
 
   return (
-    <main className="bg-white min-h-screen flex flex-col font-sans">
+    <main className="bg-gradient-to-b from-white via-[#FAFBFD] to-[#FAFBFD] min-h-screen flex flex-col font-sans">
       
       {/* CABECERA AZUL */}
       <header className="bg-main-blue text-white py-14 px-6 text-center relative z-20">
