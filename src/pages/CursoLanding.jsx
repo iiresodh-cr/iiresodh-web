@@ -863,7 +863,7 @@ export default function CursoLanding() {
 
             {/* TÍTULO PRINCIPAL OFICIAL CON ALTO CONTRASTE TIPOGRÁFICO (SIN CAJA, MÁXIMA NITIDEZ) */}
             <div className="space-y-2">
-              <span className="text-sm sm:text-base md:text-lg font-black uppercase tracking-[0.2em] text-red-500 block text-left [text-shadow:_0_2px_4px_rgba(0,0,0,0.9),_0_1px_2px_rgba(0,0,0,1)]">
+              <span className="text-sm sm:text-base md:text-lg font-black uppercase tracking-[0.2em] text-white block text-left [text-shadow:_0_2px_4px_rgba(0,0,0,0.9),_0_1px_2px_rgba(0,0,0,1)]">
                 Curso Internacional
               </span>
               <h1 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight leading-tight uppercase font-sans text-white text-center [text-shadow:_0_2px_4px_rgba(0,0,0,0.95),_0_4px_16px_rgba(0,0,0,0.9),_0_1px_2px_rgba(0,0,0,1)]">
