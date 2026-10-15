@@ -485,6 +485,7 @@ export default function CursoLanding() {
   const [modalBrochure, setModalBrochure] = useState(null); // null | 1 | 2
   const [modalTerminosOpen, setModalTerminosOpen] = useState(false);
   const [clientIp, setClientIp] = useState("");
+  const [mostrarSeccionPago, setMostrarSeccionPago] = useState(false);
 
   // Obtener IP pública del cliente para constancia y registro del clickwrap
   useEffect(() => {
@@ -594,33 +595,44 @@ export default function CursoLanding() {
     fetchCurso();
   }, [slug]);
 
-  const handleSubmitSolicitud = async (e) => {
-    if (e && e.preventDefault) e.preventDefault();
+  const validarDatosParticipante = () => {
     if (!formData.nombres.trim() || !formData.apellidos.trim() || !formData.documentoIdentidad.trim() || !formData.email.trim() || !formData.telefono.trim()) {
-      setAlerta({ open: true, mensaje: "Por favor completa tus nombres, apellidos, documento de identidad, correo electrónico y teléfono de contacto.", tipo: "warning" });
-      return;
-    }
-
-    if (!formData.motivoParticipacion.trim()) {
-      setAlerta({ open: true, mensaje: "Por favor indícanos brevemente por qué deseas participar en el curso.", tipo: "warning" });
-      return;
-    }
-
-    if (!aceptarPrivacidadTransferencia) {
       setAlerta({
         open: true,
-        mensaje: "Debes aceptar los Términos de Contratación y la Política de Privacidad en el Paso 2 para poder formalizar tu solicitud.",
+        mensaje: "Por favor completa tus nombres, apellidos, documento de identidad, correo electrónico y teléfono de contacto.",
         tipo: "warning"
       });
-      const paso2Elem = document.getElementById("paso-terminos-contratacion");
-      if (paso2Elem) {
-        paso2Elem.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-      return;
+      return false;
     }
+    if (!formData.motivoParticipacion.trim()) {
+      setAlerta({
+        open: true,
+        mensaje: "Por favor indícanos brevemente por qué deseas participar en el curso.",
+        tipo: "warning"
+      });
+      return false;
+    }
+    return true;
+  };
 
-    const esInteres = metodoInscripcion === "interes";
+  const handleBotonPagar = () => {
+    if (!validarDatosParticipante()) return;
+    setMostrarSeccionPago(true);
+    setMetodoInscripcion("tarjeta");
+    setTimeout(() => {
+      const pagoElem = document.getElementById("seccion-pago-admision");
+      if (pagoElem) {
+        pagoElem.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 60);
+  };
+
+  const handleManifestarInteres = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!validarDatosParticipante()) return;
+
     setEnviandoSolicitud(true);
+    setMetodoInscripcion("interes");
     try {
       const temasFinales = formData.experienciaTemas.includes("Otro") && formData.experienciaOtro.trim()
         ? [...formData.experienciaTemas.filter(t => t !== "Otro"), `Otro: ${formData.experienciaOtro.trim()}`]
@@ -649,12 +661,88 @@ export default function CursoLanding() {
         cursosPrevios: cursosPreviosFinal,
         alumnoIiresodh: formData.alumnoIiresodh,
         comentarios: formData.comentarios.trim(),
-        modalidadSolicitud: esInteres ? "registro_interes" : "transferencia_bancaria",
-        metodoPago: esInteres ? "contacto_posterior" : "transferencia_bancaria",
-        tipoRegistro: metodoInscripcion,
+        modalidadSolicitud: "registro_interes",
+        metodoPago: "contacto_posterior",
+        tipoRegistro: "interes",
         montoTotalInversion: 3350,
         moneda: "USD",
-        // TÉRMINOS DE CONTRATACIÓN Y CLICKWRAP
+        terminosContratacionAceptados: false,
+        clickwrapAceptado: false,
+        clientIp: clientIp || "no_disponible",
+        userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
+        aceptaPoliticaPrivacidad: true,
+        fechaSolicitud: serverTimestamp(),
+        estado: "pendiente"
+      });
+
+      setSolicitudExitosa(true);
+      setAlerta({
+        open: true,
+        mensaje: "¡Interés y datos registrados con éxito! Nuestro departamento académico te contactará a la brevedad para coordinar los detalles.",
+        tipo: "success"
+      });
+    } catch (err) {
+      console.error("Error al registrar interés:", err);
+      setAlerta({
+        open: true,
+        mensaje: "Ocurrió un error al enviar tu registro de interés. Por favor intenta de nuevo o escríbenos a formacion@iiresodh.org.",
+        tipo: "error"
+      });
+    } finally {
+      setEnviandoSolicitud(false);
+    }
+  };
+
+  const handleSubmitTransferencia = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!validarDatosParticipante()) return;
+    if (!aceptarPrivacidadTransferencia) {
+      setAlerta({
+        open: true,
+        mensaje: "Debes marcar la casilla de aceptación de los Términos de Contratación y la Política de Privacidad para continuar con la solicitud bancaria.",
+        tipo: "warning"
+      });
+      const termElem = document.getElementById("paso-terminos-contratacion");
+      if (termElem) termElem.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
+    setEnviandoSolicitud(true);
+    setMetodoInscripcion("transferencia");
+    try {
+      const temasFinales = formData.experienciaTemas.includes("Otro") && formData.experienciaOtro.trim()
+        ? [...formData.experienciaTemas.filter(t => t !== "Otro"), `Otro: ${formData.experienciaOtro.trim()}`]
+        : formData.experienciaTemas;
+
+      const cursosPreviosFinal = formData.cursosPrevios === "si"
+        ? (formData.detalleCursosPrevios.trim() ? `Sí (${formData.detalleCursosPrevios.trim()})` : "Sí")
+        : "No";
+
+      const nombreCompleto = `${formData.nombres.trim()} ${formData.apellidos.trim()}`;
+
+      await addDoc(collection(db, "solicitudesCursos"), {
+        cursoId: curso?.id || "palermo-2027",
+        cursoTitulo: curso?.titulo || "Curso Internacional 2027 - Palermo",
+        nombre: nombreCompleto,
+        nombres: formData.nombres.trim(),
+        apellidos: formData.apellidos.trim(),
+        documentoIdentidad: formData.documentoIdentidad.trim(),
+        institucion: formData.institucion.trim(),
+        email: formData.email.trim(),
+        telefono: formData.telefono.trim(),
+        pais: formData.pais,
+        profesion: formData.profesion.trim(),
+        experienciaTemas: temasFinales,
+        motivoParticipacion: formData.motivoParticipacion.trim(),
+        cursosPrevios: cursosPreviosFinal,
+        alumnoIiresodh: formData.alumnoIiresodh,
+        comentarios: formData.comentarios.trim(),
+        modalidadSolicitud: "transferencia_bancaria",
+        metodoPago: "transferencia_bancaria",
+        tipoRegistro: "transferencia",
+        planCuotasSeleccionado: planCuotas,
+        montoTotalInversion: 3350,
+        moneda: "USD",
         terminosContratacionAceptados: true,
         clickwrapAceptado: true,
         versionTerminos: "TerminosContratacion-Palermo-2027-v1",
@@ -675,22 +763,22 @@ export default function CursoLanding() {
       setAceptarPrivacidadTransferencia(false);
       setAlerta({
         open: true,
-        mensaje: esInteres
-          ? "¡Interés y reserva registrados con éxito! Nuestro departamento académico te contactará a la brevedad para coordinar los detalles."
-          : "¡Solicitud recibida con éxito! Nuestro departamento académico te contactará a la brevedad con la información bancaria oficial.",
+        mensaje: "¡Solicitud registrada con éxito! Nuestro departamento académico te contactará a la brevedad con la información bancaria oficial.",
         tipo: "success"
       });
     } catch (err) {
-      console.error("Error al enviar solicitud:", err);
+      console.error("Error al registrar solicitud por transferencia:", err);
       setAlerta({
         open: true,
-        mensaje: "Ocurrió un error al enviar la solicitud. Por favor intenta de nuevo o escríbenos directamente a formacion@iiresodh.org.",
+        mensaje: "Ocurrió un error al enviar la solicitud bancaria. Por favor intenta de nuevo o escríbenos a formacion@iiresodh.org.",
         tipo: "error"
       });
     } finally {
       setEnviandoSolicitud(false);
     }
   };
+
+  const handleSubmitSolicitud = handleManifestarInteres;
 
   const irASeccion = (seccion) => {
     if (seccion === "incluido") {
@@ -804,7 +892,7 @@ export default function CursoLanding() {
     { id: "docentes", label: "Docentes Destacados", icono: "👨‍⚖️" },
     { id: "brochure", label: "Brochure Oficial", icono: "📄" },
     { id: "sede", label: "Sede Palermo", icono: "📍" },
-    { id: "inscripcion", label: "Inscripción & Pago", icono: "💳" }
+    { id: "inscripcion", label: "Admisión & Reserva", icono: "💳" }
   ];
 
   return (
@@ -1861,19 +1949,18 @@ export default function CursoLanding() {
             )}
 
             {/* ==========================================
-              PESTAÑA 5: INSCRIPCIÓN Y PAGO (FORMULARIO)
+              PESTAÑA 5: ADMISIÓN Y RESERVA DE MATRÍCULA
              ========================================== */}
             {seccionActiva === "inscripcion" && (
-              <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
+              <div className="space-y-6 animate-fade-in max-w-5xl mx-auto">
                 <div className="text-center max-w-2xl mx-auto mb-2">
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
                     Proceso Oficial de Admisión
                   </span>
                   <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
-                    Inscripción y Admisión Académica
+                    Admisión y Reserva de Matrícula
                   </h2>
                   <div className="w-12 h-1 bg-main-red mx-auto my-2 rounded-full" />
-
                 </div>
 
                 {solicitudExitosa ? (
@@ -1887,7 +1974,7 @@ export default function CursoLanding() {
                       </span>
                       <h4 className="text-xl font-black text-green-950">
                         {metodoInscripcion === "interes"
-                          ? "¡Interés y Reserva Registrados con Éxito!"
+                          ? "¡Interés y Datos Registrados con Éxito!"
                           : "¡Solicitud Registrada con Éxito!"}
                       </h4>
                     </div>
@@ -1899,10 +1986,13 @@ export default function CursoLanding() {
                     <div className="pt-2">
                       <button
                         type="button"
-                        onClick={() => setSolicitudExitosa(false)}
+                        onClick={() => {
+                          setSolicitudExitosa(false);
+                          setMostrarSeccionPago(false);
+                        }}
                         className="bg-green-700 hover:bg-green-800 text-white font-bold text-xs uppercase tracking-wider py-3 px-6 rounded-xl transition cursor-pointer shadow-sm active:scale-95"
                       >
-                        Completar otra inscripción o solicitud
+                        Completar otra solicitud
                       </button>
                     </div>
                   </div>
@@ -2190,333 +2280,373 @@ export default function CursoLanding() {
                       </div>
                     </div>
 
-                    {/* PASO 2: TÉRMINOS DE CONTRATACIÓN Y CLICKWRAP */}
-                    <div id="paso-terminos-contratacion" className="space-y-4">
-                      <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
-                        <span className={`w-7 h-7 rounded-full font-bold text-xs flex items-center justify-center shrink-0 shadow-xs transition-colors ${aceptarPrivacidadTransferencia ? "bg-emerald-600 text-white" : "bg-main-blue text-white"
-                          }`}>
-                          {aceptarPrivacidadTransferencia ? "✓" : "2"}
+                    {/* =======================================================
+                        BOTONES DE DECISIÓN DE ACCIÓN TRAS COMPLETAR LA PARTE 1
+                       ======================================================= */}
+                    <div className="pt-6 border-t border-gray-200/80 space-y-4">
+                      <div className="text-center sm:text-left">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
+                          Paso siguiente
                         </span>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-base font-extrabold text-main-blue tracking-tight">
-                              Términos de Contratación y Consentimiento Informado
-                            </h3>
-                            {aceptarPrivacidadTransferencia && (
-                              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
-                                Aceptado
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-gray-500 font-light">
-                            Condiciones contractuales, canales de pago y política de privacidad (Requisito obligatorio para las 3 opciones)
-                          </p>
-                        </div>
+                        <h3 className="text-base sm:text-lg font-extrabold text-main-blue tracking-tight">
+                          ¿Cómo deseas continuar tu proceso de admisión?
+                        </h3>
+                        <p className="text-xs text-gray-500 font-light mt-0.5">
+                          Elige si prefieres manifestar interés para ser contactado por la coordinación académica, o proceder directamente con el pago para asegurar tu plaza oficial.
+                        </p>
                       </div>
 
-                      <div className={`rounded-2xl p-4 sm:p-5 space-y-3 border transition-all ${aceptarPrivacidadTransferencia
-                        ? "bg-emerald-50/50 border-emerald-300 shadow-xs"
-                        : "bg-slate-50 border-slate-200"
-                        }`}>
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200/80">
-                          <span className="text-xs font-bold text-gray-800 flex items-center gap-2">
-                            <span>📜</span> Contrato de Servicios Académicos — Palermo 2027
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setModalTerminosOpen(true)}
-                            className="inline-flex items-center gap-1.5 text-xs font-bold text-main-blue hover:text-main-red underline cursor-pointer self-start sm:self-auto"
-                          >
-                            <span>Ver Términos de Contratación</span>
-                            <span>↗</span>
-                          </button>
-                        </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                        {/* BOTÓN 1: MANIFESTAR INTERÉS */}
+                        <div className="flex flex-col justify-between p-5 sm:p-6 rounded-2xl border-2 border-slate-200 hover:border-main-blue/60 bg-slate-50/70 hover:bg-blue-50/20 transition-all shadow-xs space-y-4">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2.5">
+                              <span className="w-8 h-8 rounded-xl bg-blue-100 text-main-blue flex items-center justify-center text-sm font-black shadow-xs shrink-0">
+                                📋
+                              </span>
+                              <h4 className="font-extrabold text-sm sm:text-base text-main-blue tracking-tight">
+                                Manifestar Interés
+                              </h4>
+                            </div>
+                            <p className="text-xs text-gray-600 font-light leading-relaxed">
+                              Envía tus datos y perfil académico para iniciar tu postulación preliminar sin requerir ningún pago en este momento.
+                            </p>
+                          </div>
 
-                        <label className="flex items-start gap-2.5 text-xs text-gray-700 font-medium cursor-pointer select-none text-left">
-                          <input
-                            type="checkbox"
-                            checked={aceptarPrivacidadTransferencia}
-                            onChange={(e) => setAceptarPrivacidadTransferencia(e.target.checked)}
-                            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-main-blue focus:ring-main-blue cursor-pointer"
-                          />
-                          <span className="leading-relaxed">
-                            He leído y acepto los{" "}
+                          <div className="space-y-2.5 pt-1">
                             <button
                               type="button"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setModalTerminosOpen(true);
-                              }}
-                              className="text-main-blue font-bold underline hover:text-main-red cursor-pointer"
+                              onClick={handleManifestarInteres}
+                              disabled={enviandoSolicitud}
+                              className="w-full bg-main-blue hover:bg-light-blue disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
                             >
-                              Términos de Contratación
-                            </button>{" "}
-                            del Curso Internacional Palermo 2027 y la{" "}
-                            <a
-                              href="/privacidad"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-main-blue font-bold underline hover:text-light-blue"
+                              {enviandoSolicitud && metodoInscripcion === "interes" ? (
+                                <>
+                                  <CircularProgress size={16} sx={{ color: "white" }} />
+                                  <span>Registrando interés...</span>
+                                </>
+                              ) : (
+                                <span>📋 Iniciar Proceso / Manifestar Interés</span>
+                              )}
+                            </button>
+
+                            <p className="text-[11px] text-gray-500 font-light leading-snug text-center sm:text-left flex items-start gap-1.5">
+                              <span className="shrink-0 text-xs">ℹ️</span>
+                              <span>
+                                Te contactaremos posteriormente por correo electrónico o WhatsApp para coordinar tu proceso de admisión y opciones disponibles.
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* BOTÓN 2: PAGAR E INSCRIBIRSE DE UNA VEZ */}
+                        <div className={`flex flex-col justify-between p-5 sm:p-6 rounded-2xl border-2 transition-all shadow-xs space-y-4 ${
+                          mostrarSeccionPago
+                            ? "border-main-red bg-red-50/30 ring-2 ring-main-red/20 shadow-md"
+                            : "border-red-200 hover:border-main-red bg-red-50/15 hover:bg-red-50/30"
+                        }`}>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2.5">
+                                <span className="w-8 h-8 rounded-xl bg-red-100 text-main-red flex items-center justify-center text-sm font-black shadow-xs shrink-0">
+                                  💳
+                                </span>
+                                <h4 className="font-extrabold text-sm sm:text-base text-main-red tracking-tight">
+                                  Pagar e Inscribirme Ahora
+                                </h4>
+                              </div>
+                              <span className="bg-emerald-600 text-white text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider shadow-xs shrink-0">
+                                Garantiza Cupo
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-700 font-light leading-relaxed">
+                              Despliega las opciones de financiamiento en cuotas sin interés y formaliza tu matrícula para asegurar tu plaza oficial de forma inmediata.
+                            </p>
+                          </div>
+
+                          <div className="space-y-2.5 pt-1">
+                            <button
+                              type="button"
+                              onClick={handleBotonPagar}
+                              className={`w-full text-white font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation ${
+                                mostrarSeccionPago
+                                  ? "bg-[#8b1515] ring-2 ring-red-300"
+                                  : "bg-main-red hover:bg-[#8b1515]"
+                              }`}
                             >
-                              Política de Privacidad
-                            </a>{" "}
-                            de IIRESODH. Manifiesto mi voluntad libre e informada de contratar y registrarme bajo estas condiciones.
-                          </span>
-                        </label>
-                        <p className="text-[10px] text-gray-400 font-light">
-                          * Tu fecha, hora, dirección IP y datos de registro quedarán archivados electrónicamente como constancia y evidencia formal de tu aceptación contractual.
-                        </p>
+                              <span>💳 Pagar e Inscribirme de una vez</span>
+                              <span className="text-base">{mostrarSeccionPago ? "↓" : "→"}</span>
+                            </button>
+
+                            <p className="text-[11px] text-red-900/80 font-medium leading-snug text-center sm:text-left flex items-start gap-1.5">
+                              <span className="shrink-0 text-xs">⚡</span>
+                              <span>
+                                Al realizar el pago en este momento garantizas tu cupo oficial de forma inmediata y definitiva en el programa.
+                              </span>
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    {/* PASO 3: DECISIÓN DE INSCRIPCIÓN Y MEDIO DE PAGO */}
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
-                        <span className="w-7 h-7 rounded-full bg-main-blue text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
-                          3
-                        </span>
-                        <div>
-                          <h3 className="text-base font-extrabold text-main-blue tracking-tight">
-                            ¿Cómo deseas proceder con tu inscripción?
-                          </h3>
-                          <p className="text-[11px] text-gray-500 font-light">
-                            Selecciona si deseas manifestar interés, solicitar transferencia bancaria o pagar en línea con tarjeta
-                          </p>
-                        </div>
-                      </div>
-
-                      {!aceptarPrivacidadTransferencia && (
-                        <div className="bg-amber-50/90 border border-amber-300/80 rounded-2xl p-3.5 text-xs text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
-                          <div className="flex items-start sm:items-center gap-2.5">
-                            <span className="text-base shrink-0">⚠️</span>
-                            <span className="text-[11px] font-medium leading-snug">
-                              <strong>Requisito contractual obligatorio:</strong> Debes marcar la casilla de aceptación de los Términos de Contratación en el <strong>Paso 2</strong> para habilitar cualquiera de las 3 opciones (Manifestar Interés, Transferencia Bancaria o Pago con Tarjeta).
+                    {/* =======================================================
+                        SECCIÓN DE PAGO, FINANCIAMIENTO Y CLICKWRAP
+                        (Se despliega únicamente tras presionar "Pagar e Inscribirme Ahora")
+                       ======================================================= */}
+                    {mostrarSeccionPago && (
+                      <div id="seccion-pago-admision" className="pt-8 border-t-2 border-slate-200/90 space-y-8 animate-fade-in">
+                        {/* ENCABEZADO DE LA SECCIÓN DE PAGO */}
+                        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-main-blue text-white p-5 sm:p-6 rounded-2xl shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400 block">
+                              Paso 2: Formalización y Pago
+                            </span>
+                            <h3 className="text-lg sm:text-xl font-black tracking-tight text-white">
+                              Financiamiento, Términos y Pasarela de Pago
+                            </h3>
+                            <p className="text-xs text-slate-300 font-light">
+                              Selecciona tu plan de cuotas, acepta los términos de contratación y asegura tu cupo oficial.
+                            </p>
+                          </div>
+                          <div className="shrink-0 flex items-center gap-2">
+                            <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                              Cupo Garantizado al Pagar
                             </span>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const p2 = document.getElementById("paso-terminos-contratacion");
-                              if (p2) p2.scrollIntoView({ behavior: "smooth", block: "center" });
-                            }}
-                            className="shrink-0 inline-flex items-center gap-1 text-[11px] font-bold text-amber-900 hover:text-amber-950 underline cursor-pointer self-start sm:self-auto"
-                          >
-                            <span>Ir al Paso 2</span>
-                            <span>↑</span>
-                          </button>
-                        </div>
-                      )}
-
-                      {/* SELECTOR DE 3 OPCIONES */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        {/* Opción 1: Manifestar Interés */}
-                        <div
-                          onClick={() => setMetodoInscripcion("interes")}
-                          className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${metodoInscripcion === "interes"
-                            ? "border-emerald-600 bg-emerald-50/60 shadow-xs"
-                            : "border-gray-200 hover:border-gray-300 bg-white"
-                            }`}
-                        >
-                          <div className="space-y-1.5">
-                            <div className="flex items-center justify-between">
-                              <span className="text-2xl">📋</span>
-                              <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${metodoInscripcion === "interes" ? "border-emerald-600 bg-emerald-600" : "border-gray-300"
-                                }`}>
-                                {metodoInscripcion === "interes" && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
-                              </span>
-                            </div>
-                            <h4 className="font-extrabold text-sm text-gray-900">
-                              Manifestar Interés
-                            </h4>
-                            <p className="text-[11px] text-gray-500 font-light leading-relaxed">
-                              Reserva provisional sin pago inmediato. Te contactaremos para brindarte asesoría y coordinar tu proceso.
-                            </p>
-                          </div>
                         </div>
 
-                        {/* Opción 2: Transferencia Bancaria */}
-                        <div
-                          onClick={() => setMetodoInscripcion("transferencia")}
-                          className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${metodoInscripcion === "transferencia"
-                            ? "border-amber-600 bg-amber-50/60 shadow-xs"
-                            : "border-gray-200 hover:border-gray-300 bg-white"
-                            }`}
-                        >
-                          <div className="space-y-1.5">
-                            <div className="flex items-center justify-between">
-                              <span className="text-2xl">🏛️</span>
-                              <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${metodoInscripcion === "transferencia" ? "border-amber-600 bg-amber-600" : "border-gray-300"
-                                }`}>
-                                {metodoInscripcion === "transferencia" && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
-                              </span>
-                            </div>
-                            <h4 className="font-extrabold text-sm text-gray-900">
-                              Transferencia Bancaria
-                            </h4>
-                            <p className="text-[11px] text-gray-500 font-light leading-relaxed">
-                              Solicita cuentas bancarias autorizadas. Reserva provisional por 5 días.
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Opción 3: Pagar con Tarjeta */}
-                        <div
-                          onClick={() => setMetodoInscripcion("tarjeta")}
-                          className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${metodoInscripcion === "tarjeta"
-                            ? "border-main-blue bg-blue-50/60 shadow-xs"
-                            : "border-gray-200 hover:border-gray-300 bg-white"
-                            }`}
-                        >
-                          <div className="space-y-1.5">
-                            <div className="flex items-center justify-between">
-                              <span className="text-2xl">💳</span>
-                              <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${metodoInscripcion === "tarjeta" ? "border-main-blue bg-main-blue" : "border-gray-300"
-                                }`}>
-                                {metodoInscripcion === "tarjeta" && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
-                              </span>
-                            </div>
-                            <h4 className="font-extrabold text-sm text-gray-900">
-                              Pagar con Tarjeta
-                            </h4>
-                            <p className="text-[11px] text-gray-500 font-light leading-relaxed">
-                              Asegura tu cupo de inmediato. Habilita opciones de financiamiento en cuotas sin interés y pago seguro Stripe.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* DETALLE DINÁMICO SEGÚN LA DECISIÓN DEL INTERESADO */}
-                      {metodoInscripcion === "interes" && (
-                        <div className="space-y-4 pt-2 animate-fade-in">
-                          <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-4 text-xs text-emerald-900 flex items-start gap-3">
-                            <span className="text-xl shrink-0">🤝</span>
-                            <div className="space-y-1">
-                              <span className="font-bold text-sm block">Reserva Provisional y Asesoría Personalizada</span>
-                              <p className="text-[11px] leading-relaxed">
-                                Al enviar este formulario registras tu interés y apartas temporalmente tu plaza en el Curso Internacional Palermo 2027. No se te solicitará ningún cobro con tarjeta en este momento; nuestro equipo académico te contactará para coordinar tu proceso de admisión y modalidades de pago.
+                        {/* 1. TÉRMINOS DE CONTRATACIÓN Y CONSENTIMIENTO INFORMADO (CLICKWRAP) */}
+                        <div id="paso-terminos-contratacion" className="space-y-3.5">
+                          <div className="flex items-center gap-3 pb-2.5 border-b border-gray-100">
+                            <span className={`w-7 h-7 rounded-full font-bold text-xs flex items-center justify-center shrink-0 shadow-xs transition-colors ${
+                              aceptarPrivacidadTransferencia ? "bg-emerald-600 text-white" : "bg-main-blue text-white"
+                            }`}>
+                              {aceptarPrivacidadTransferencia ? "✓" : "A"}
+                            </span>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h4 className="text-base font-extrabold text-main-blue tracking-tight">
+                                  Términos de Contratación y Consentimiento Informado
+                                </h4>
+                                {aceptarPrivacidadTransferencia && (
+                                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                                    Aceptado
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-[11px] text-gray-500 font-light">
+                                Condiciones contractuales, canales de pago y política de privacidad (Requisito legal para formalizar el pago)
                               </p>
                             </div>
                           </div>
 
-                          {aceptarPrivacidadTransferencia ? (
-                            <div className="flex items-center gap-2 text-xs text-emerald-800 font-medium bg-emerald-50 px-3.5 py-2.5 rounded-xl border border-emerald-200 animate-fade-in">
-                              <span>✓</span>
-                              <span>Términos de Contratación y Clickwrap aceptados en el Paso 2.</span>
+                          <div className={`rounded-2xl p-4 sm:p-5 space-y-3 border transition-all ${
+                            aceptarPrivacidadTransferencia
+                              ? "bg-emerald-50/50 border-emerald-300 shadow-xs"
+                              : "bg-slate-50 border-slate-200"
+                          }`}>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200/80">
+                              <span className="text-xs font-bold text-gray-800 flex items-center gap-2">
+                                <span>📜</span> Contrato de Servicios Académicos — Palermo 2027
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => setModalTerminosOpen(true)}
+                                className="inline-flex items-center gap-1.5 text-xs font-bold text-main-blue hover:text-main-red underline cursor-pointer self-start sm:self-auto"
+                              >
+                                <span>Ver Términos de Contratación</span>
+                                <span>↗</span>
+                              </button>
                             </div>
-                          ) : (
-                            <div className="flex items-start gap-2.5 text-xs text-amber-900 font-medium bg-amber-50/90 px-3.5 py-2.5 rounded-xl border border-amber-300 animate-fade-in">
-                              <span className="text-base shrink-0">⚠️</span>
-                              <div className="space-y-0.5">
-                                <span className="font-bold block">Aceptación de Términos Requerida</span>
-                                <span className="text-[11px] text-amber-800 leading-tight block">
-                                  Debes marcar la casilla de aceptación de los Términos de Contratación en el <strong>Paso 2</strong> para habilitar y formalizar tu registro de interés.
-                                </span>
-                              </div>
-                            </div>
-                          )}
 
-                          <button
-                            type="button"
-                            onClick={handleSubmitSolicitud}
-                            disabled={enviandoSolicitud || !aceptarPrivacidadTransferencia}
-                            className="w-full bg-emerald-700 hover:bg-emerald-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-widest py-4 px-6 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
-                          >
-                            {enviandoSolicitud ? (
-                              <>
-                                <CircularProgress size={16} sx={{ color: "white" }} />
-                                <span>Registrando interés...</span>
-                              </>
-                            ) : (
-                              <span>📋 Confirmar Registro de Interés y Apartar Cupo</span>
-                            )}
-                          </button>
-                        </div>
-                      )}
-
-                      {metodoInscripcion === "transferencia" && (
-                        <div className="space-y-4 pt-2 animate-fade-in">
-                          <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-4 text-xs text-amber-900 flex items-start gap-3">
-                            <span className="text-xl shrink-0">🏛️</span>
-                            <div className="space-y-1">
-                              <span className="font-bold text-sm block">Orden de Transferencia Bancaria Oficial</span>
-                              <p className="text-[11px] leading-relaxed">
-                                Al formalizar esta solicitud, recibirás por correo electrónico las instrucciones con las cuentas bancarias oficiales. Tu cupo se reservará provisionalmente por 5 días naturales para la acreditación de los fondos.
-                              </p>
-                            </div>
+                            <label className="flex items-start gap-2.5 text-xs text-gray-700 font-medium cursor-pointer select-none text-left">
+                              <input
+                                type="checkbox"
+                                checked={aceptarPrivacidadTransferencia}
+                                onChange={(e) => setAceptarPrivacidadTransferencia(e.target.checked)}
+                                className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-main-blue focus:ring-main-blue cursor-pointer"
+                              />
+                              <span className="leading-relaxed">
+                                He leído y acepto los{" "}
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setModalTerminosOpen(true);
+                                  }}
+                                  className="text-main-blue font-bold underline hover:text-main-red cursor-pointer"
+                                >
+                                  Términos de Contratación
+                                </button>{" "}
+                                del Curso Internacional Palermo 2027 y la{" "}
+                                <a
+                                  href="/privacidad"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-main-blue font-bold underline hover:text-light-blue"
+                                >
+                                  Política de Privacidad
+                                </a>{" "}
+                                de IIRESODH. Manifiesto mi voluntad libre e informada de contratar y registrarme bajo estas condiciones.
+                              </span>
+                            </label>
+                            <p className="text-[10px] text-gray-400 font-light">
+                              * Tu fecha, hora, dirección IP y datos de registro quedarán archivados electrónicamente como constancia y evidencia formal de tu aceptación contractual.
+                            </p>
                           </div>
-
-                          {aceptarPrivacidadTransferencia ? (
-                            <div className="flex items-center gap-2 text-xs text-emerald-800 font-medium bg-emerald-50 px-3.5 py-2.5 rounded-xl border border-emerald-200 animate-fade-in">
-                              <span>✓</span>
-                              <span>Términos de Contratación y Clickwrap aceptados en el Paso 2.</span>
-                            </div>
-                          ) : (
-                            <div className="flex items-start gap-2.5 text-xs text-amber-900 font-medium bg-amber-50/90 px-3.5 py-2.5 rounded-xl border border-amber-300 animate-fade-in">
-                              <span className="text-base shrink-0">⚠️</span>
-                              <div className="space-y-0.5">
-                                <span className="font-bold block">Aceptación de Términos Requerida</span>
-                                <span className="text-[11px] text-amber-800 leading-tight block">
-                                  Debes marcar la casilla de aceptación de los Términos de Contratación en el <strong>Paso 2</strong> para habilitar y solicitar las cuentas bancarias autorizadas.
-                                </span>
-                              </div>
-                            </div>
-                          )}
-
-                          <button
-                            type="button"
-                            onClick={handleSubmitSolicitud}
-                            disabled={enviandoSolicitud || !aceptarPrivacidadTransferencia}
-                            className="w-full bg-amber-700 hover:bg-amber-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-widest py-4 px-6 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
-                          >
-                            {enviandoSolicitud ? (
-                              <>
-                                <CircularProgress size={16} sx={{ color: "white" }} />
-                                <span>Enviando solicitud bancaria...</span>
-                              </>
-                            ) : (
-                              <span>🏛️ Confirmar Inscripción y Solicitar Cuentas Bancarias</span>
-                            )}
-                          </button>
                         </div>
-                      )}
 
-                      {metodoInscripcion === "tarjeta" && (
-                        <div className="space-y-6 pt-2 animate-fade-in">
-                          {/* OPCIONES DE FINANCIAMIENTO */}
-                          <div className="space-y-3 pt-2">
-                            <div className="flex items-center justify-between flex-wrap gap-2">
-                              <h4 className="text-xs font-black text-main-blue uppercase tracking-wider">
-                                Opciones de Financiamiento en Cuotas Sin Intereses
-                              </h4>
+                        {/* 2. OPCIONES DE FINANCIAMIENTO EN CUOTAS */}
+                        <div className="space-y-3.5">
+                          <div className="flex items-center gap-3 pb-2.5 border-b border-gray-100">
+                            <span className="w-7 h-7 rounded-full bg-main-blue text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+                              B
+                            </span>
+                            <div className="flex items-center justify-between flex-wrap gap-2 w-full">
+                              <div>
+                                <h4 className="text-base font-extrabold text-main-blue tracking-tight">
+                                  Modalidad de Inversión y Cuotas de Financiamiento
+                                </h4>
+                                <p className="text-[11px] text-gray-500 font-light">
+                                  Elige abonar el importe total en un solo pago o financiar en cuotas mensuales sin intereses
+                                </p>
+                              </div>
                               <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                                 0% Interés • Pagos Mensuales
                               </span>
                             </div>
-                            <SelectorModalidadPago
-                              curso={curso}
-                              landing={landing}
-                              planCuotas={planCuotas}
-                              setPlanCuotas={setPlanCuotas}
-                            />
                           </div>
 
-                          {/* FORMULARIO DE PAGO STRIPE */}
-                          <div className="pt-2">
-                            <FormularioPagoCurso
-                              curso={curso}
-                              landing={landing}
-                              planCuotas={planCuotas}
-                              setPlanCuotas={setPlanCuotas}
-                              formData={formData}
-                              setFormData={setFormData}
-                              soloPasarelaPago={true}
-                              terminosAceptadosExternos={aceptarPrivacidadTransferencia}
-                            />
-                          </div>
+                          <SelectorModalidadPago
+                            curso={curso}
+                            landing={landing}
+                            planCuotas={planCuotas}
+                            setPlanCuotas={setPlanCuotas}
+                          />
                         </div>
-                      )}
 
-                    </div>
+                        {/* 3. CANAL DE PAGO: TARJETA DE CRÉDITO/DÉBITO O TRANSFERENCIA BANCARIA */}
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3 pb-2.5 border-b border-gray-100">
+                            <span className="w-7 h-7 rounded-full bg-main-blue text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+                              C
+                            </span>
+                            <div>
+                              <h4 className="text-base font-extrabold text-main-blue tracking-tight">
+                                Canal de Pago
+                              </h4>
+                              <p className="text-[11px] text-gray-500 font-light">
+                                Elige pagar en línea con tarjeta o solicitar datos para transferencia bancaria oficial
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {/* Pagar con Tarjeta */}
+                            <div
+                              onClick={() => setMetodoInscripcion("tarjeta")}
+                              className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
+                                metodoInscripcion === "tarjeta"
+                                  ? "border-main-blue bg-blue-50/60 shadow-xs"
+                                  : "border-gray-200 hover:border-gray-300 bg-white"
+                              }`}
+                            >
+                              <div className="space-y-1.5">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-2xl">💳</span>
+                                  <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                    metodoInscripcion === "tarjeta" ? "border-main-blue bg-main-blue" : "border-gray-300"
+                                  }`}>
+                                    {metodoInscripcion === "tarjeta" && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                  </span>
+                                </div>
+                                <h5 className="font-extrabold text-sm text-gray-900">
+                                  Pagar con Tarjeta (En línea)
+                                </h5>
+                                <p className="text-[11px] text-gray-500 font-light leading-relaxed">
+                                  Procesamiento seguro inmediato vía Stripe. Acepta Visa, Mastercard y American Express.
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Transferencia Bancaria */}
+                            <div
+                              onClick={() => setMetodoInscripcion("transferencia")}
+                              className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
+                                metodoInscripcion === "transferencia"
+                                  ? "border-amber-600 bg-amber-50/60 shadow-xs"
+                                  : "border-gray-200 hover:border-gray-300 bg-white"
+                              }`}
+                            >
+                              <div className="space-y-1.5">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-2xl">🏛️</span>
+                                  <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                    metodoInscripcion === "transferencia" ? "border-amber-600 bg-amber-600" : "border-gray-300"
+                                  }`}>
+                                    {metodoInscripcion === "transferencia" && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                  </span>
+                                </div>
+                                <h5 className="font-extrabold text-sm text-gray-900">
+                                  Transferencia Bancaria
+                                </h5>
+                                <p className="text-[11px] text-gray-500 font-light leading-relaxed">
+                                  Solicita cuentas bancarias autorizadas (SWIFT / IBAN). Reserva provisional por 5 días.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* PAGO CON TARJETA (STRIPE) */}
+                          {metodoInscripcion === "tarjeta" && (
+                            <div className="pt-2 animate-fade-in">
+                              <FormularioPagoCurso
+                                curso={curso}
+                                landing={landing}
+                                planCuotas={planCuotas}
+                                setPlanCuotas={setPlanCuotas}
+                                formData={formData}
+                                setFormData={setFormData}
+                                soloPasarelaPago={true}
+                                terminosAceptadosExternos={aceptarPrivacidadTransferencia}
+                              />
+                            </div>
+                          )}
+
+                          {/* TRANSFERENCIA BANCARIA */}
+                          {metodoInscripcion === "transferencia" && (
+                            <div className="space-y-4 pt-2 animate-fade-in">
+                              <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-4 text-xs text-amber-900 flex items-start gap-3">
+                                <span className="text-xl shrink-0">🏛️</span>
+                                <div className="space-y-1">
+                                  <span className="font-bold text-sm block">Orden de Transferencia Bancaria Oficial</span>
+                                  <p className="text-[11px] leading-relaxed">
+                                    Al confirmar esta solicitud, recibirás por correo electrónico las instrucciones con las cuentas bancarias oficiales de IIRESODH PAYMENTS, LLC (EE. UU.) o IIRESODH Costa Rica. Tu cupo se reservará provisionalmente por 5 días naturales para la acreditación de los fondos.
+                                  </p>
+                                </div>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={handleSubmitTransferencia}
+                                disabled={enviandoSolicitud || !aceptarPrivacidadTransferencia}
+                                className="w-full bg-amber-700 hover:bg-amber-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-widest py-4 px-6 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
+                              >
+                                {enviandoSolicitud ? (
+                                  <>
+                                    <CircularProgress size={16} sx={{ color: "white" }} />
+                                    <span>Enviando solicitud bancaria...</span>
+                                  </>
+                                ) : (
+                                  <span>🏛️ Confirmar Inscripción y Solicitar Cuentas Bancarias</span>
+                                )}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                   </div>
                 )}
