@@ -15,8 +15,9 @@ import palermoJusticiaBw from "../assets/cursos/palermo_justicia_bw.jpg";
 import palermoAulaBunkerBw from "../assets/cursos/palermo_aula_bunker_bw.jpg";
 import palermoCollageHeroBw from "../assets/cursos/palermo_collage_hero_bw.jpg";
 import logoUnlp from "../assets/cursos/logo_unlp_ddhh.png";
-import brochureP1 from "../assets/cursos/brochure_palermo_p2.jpg";
-import brochureP2 from "../assets/cursos/brochure_palermo_p1.jpg";
+import brochureP1 from "../assets/cursos/brochure_palermo_p1.jpg";
+import brochureP2 from "../assets/cursos/brochure_palermo_p2.jpg";
+import brochurePdf from "../assets/cursos/Curso_Palermo-Brochure.pdf";
 import palermoFoto1 from "../assets/palermo/palermo_1.jpg";
 import palermoFoto2 from "../assets/palermo/palermo_2.jpg";
 import palermoFoto3 from "../assets/palermo/palermo_3.jpg";
@@ -1587,7 +1588,7 @@ export default function CursoLanding() {
              ========================================== */}
             {seccionActiva === "brochure" && (
               <div className="space-y-6 animate-fade-in">
-                <div className="pb-3 border-b border-gray-100">
+                <div className="pb-3 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block">
                       Material Informativo
@@ -1596,10 +1597,29 @@ export default function CursoLanding() {
                       Brochure Oficial del Evento
                     </h2>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={brochurePdf}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold uppercase tracking-wider py-2.5 px-4 rounded-xl transition inline-flex items-center gap-1.5"
+                    >
+                      <span>Abrir PDF</span>
+                      <span>↗</span>
+                    </a>
+                    <a
+                      href={brochurePdf}
+                      download="Curso_Palermo-Brochure.pdf"
+                      className="bg-main-red hover:bg-red-800 text-white text-xs font-bold uppercase tracking-wider py-2.5 px-5 rounded-xl shadow-md transition inline-flex items-center gap-2"
+                    >
+                      <span>Descargar PDF</span>
+                      <span>↓</span>
+                    </a>
+                  </div>
                 </div>
 
                 <p className="text-xs text-gray-600 font-light">
-                  Haz clic en cualquiera de las páginas para ampliarla en alta definición o descárgala para compartirla con tu institución académica o judicial.
+                  Haz clic en cualquiera de las páginas para ampliarla en alta definición o descarga el documento PDF oficial para compartirlo con tu institución académica o judicial.
                 </p>
 
                 {/* GRID CON LAS 2 PÁGINAS DEL BROCHURE */}
@@ -1625,11 +1645,11 @@ export default function CursoLanding() {
                     <div className="mt-3 flex items-center justify-between text-xs">
                       <span className="font-bold text-gray-700">Página 1: Convocatoria & Ejes</span>
                       <a
-                        href={brochureP1}
-                        download="Brochure_Palermo_2027_P1.jpg"
+                        href={brochurePdf}
+                        download="Curso_Palermo-Brochure.pdf"
                         className="text-main-blue hover:underline font-bold text-[11px]"
                       >
-                        Descargar JPG ↓
+                        Descargar PDF ↓
                       </a>
                     </div>
                   </div>
@@ -1654,11 +1674,11 @@ export default function CursoLanding() {
                     <div className="mt-3 flex items-center justify-between text-xs">
                       <span className="font-bold text-gray-700">Página 2: Itinerario 7 Días & Docentes</span>
                       <a
-                        href={brochureP2}
-                        download="Brochure_Palermo_2027_P2.jpg"
+                        href={brochurePdf}
+                        download="Curso_Palermo-Brochure.pdf"
                         className="text-main-blue hover:underline font-bold text-[11px]"
                       >
-                        Descargar JPG ↓
+                        Descargar PDF ↓
                       </a>
                     </div>
                   </div>
@@ -2550,11 +2570,19 @@ export default function CursoLanding() {
                   {modalBrochure === 1 ? "Ver Página 2 →" : "← Ver Página 1"}
                 </button>
                 <a
-                  href={modalBrochure === 1 ? brochureP1 : brochureP2}
-                  download={`Brochure_Palermo_2027_P${modalBrochure}.jpg`}
+                  href={brochurePdf}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-neutral-700 transition hidden sm:inline-flex items-center gap-1"
+                >
+                  Abrir PDF ↗
+                </a>
+                <a
+                  href={brochurePdf}
+                  download="Curso_Palermo-Brochure.pdf"
                   className="bg-main-blue hover:bg-light-blue text-white text-xs font-bold px-3 py-1.5 rounded-lg transition hidden sm:inline-block"
                 >
-                  Descargar ↓
+                  Descargar PDF ↓
                 </a>
                 <button
                   onClick={() => setModalBrochure(null)}
