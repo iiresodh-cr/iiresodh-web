@@ -1,5 +1,5 @@
 // src/pages/CursoLanding.jsx
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import { collection, query, where, getDocs, doc, getDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import { db, auth } from "../firebase/config";
@@ -30,7 +30,6 @@ import SelectorModalidadPago from "../components/cursos/SelectorModalidadPago";
 import ModalTerminosClickwrap from "../components/cursos/ModalTerminosClickwrap";
 import { PAISES_LATINOAMERICA } from "../data/paisesLatinoamerica";
 import { Scale, ShieldCheck, Search, GraduationCap, Globe } from "lucide-react";
-import { obtenerInfoVideo } from "../utils/mediaUtils";
 
 export const FOTOS_PALERMO = [
   {
@@ -501,19 +500,6 @@ export default function CursoLanding() {
   const [slidePalermoActual, setSlidePalermoActual] = useState(0);
   const [modalFotoPalermo, setModalFotoPalermo] = useState(null); // null | índice de foto
 
-  // Galería inferior de fotos y videos
-  const [modalMediaIndex, setModalMediaIndex] = useState(null);
-  const galeriaHorizontalRef = useRef(null);
-
-  const scrollGaleria = (direccion) => {
-    if (galeriaHorizontalRef.current) {
-      galeriaHorizontalRef.current.scrollBy({
-        left: direccion === "left" ? -350 : 350,
-        behavior: "smooth"
-      });
-    }
-  };
-
   // Tab activo en la estructura del programa (Días)
   const [diaActivo, setDiaActivo] = useState(0);
 
@@ -543,57 +529,6 @@ export default function CursoLanding() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [modalFotoPalermo]);
-
-  // Ítems de la galería multimedia inferior (Fotos y Videos)
-  const itemsGaleriaRaw = (curso?.galeriaMedia && curso.galeriaMedia.length > 0)
-    ? curso.galeriaMedia
-    : (curso?.imagenesCarruselUrls && curso.imagenesCarruselUrls.length > 0)
-      ? curso.imagenesCarruselUrls
-      : FOTOS_PALERMO;
-
-  const listaGaleria = itemsGaleriaRaw.map((item, idx) => {
-    if (typeof item === "string") {
-      const vInfo = obtenerInfoVideo(item);
-      return {
-        id: `media-${idx}`,
-        tipo: vInfo.esVideo ? "video" : "imagen",
-        videoInfo: vInfo,
-        url: item,
-        src: item,
-        miniaturaUrl: vInfo.miniatura || item,
-        titulo: vInfo.esVideo ? `Video del Programa ${idx + 1}` : `Fotografía de Palermo ${idx + 1}`,
-        lugar: "Palermo, Sicilia"
-      };
-    }
-    const vInfo = obtenerInfoVideo(item.url || item.src);
-    const esVideo = item.tipo === "video" || vInfo.esVideo;
-    return {
-      id: item.id || `media-${idx}`,
-      tipo: esVideo ? "video" : "imagen",
-      videoInfo: vInfo,
-      url: item.url || item.src,
-      src: item.src || item.url,
-      miniaturaUrl: item.miniaturaUrl || item.poster || vInfo.miniatura || item.src || item.url,
-      titulo: item.titulo || (esVideo ? `Video del Programa ${idx + 1}` : `Palermo ${idx + 1}`),
-      lugar: item.lugar || "Palermo, Sicilia"
-    };
-  });
-
-  // Navegación con teclado en el modal de la galería inferior
-  useEffect(() => {
-    if (modalMediaIndex === null) return;
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") setModalMediaIndex(null);
-      if (e.key === "ArrowLeft") {
-        setModalMediaIndex((prev) => (prev - 1 + listaGaleria.length) % listaGaleria.length);
-      }
-      if (e.key === "ArrowRight") {
-        setModalMediaIndex((prev) => (prev + 1) % listaGaleria.length);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [modalMediaIndex, listaGaleria.length]);
 
   // Escuchar estado de autenticación para administradores
   useEffect(() => {
@@ -1938,9 +1873,7 @@ export default function CursoLanding() {
                     Inscripción y Admisión Académica
                   </h2>
                   <div className="w-12 h-1 bg-main-red mx-auto my-2 rounded-full" />
-                  <p className="text-xs sm:text-sm text-gray-500 font-light mt-1">
-                    Completa tus datos oficiales a continuación. Una vez registrados, podrás decidir si deseas únicamente manifestar interés o proceder con el pago (en cuotas con tarjeta o mediante transferencia bancaria).
-                  </p>
+
                 </div>
 
                 {solicitudExitosa ? (
@@ -1990,14 +1923,6 @@ export default function CursoLanding() {
                             Conforme a tu documento oficial de identidad o pasaporte
                           </p>
                         </div>
-                      </div>
-
-                      {/* AVISO PASAPORTE */}
-                      <div className="bg-sky-50/70 border border-sky-200/80 rounded-xl px-3.5 py-2.5 text-xs text-sky-900 flex items-center gap-2">
-                        <span className="text-base">🛂</span>
-                        <span className="text-[11px] font-medium leading-tight">
-                          Ingresa tus nombres y apellidos <strong>exactamente conforme aparecen en tu pasaporte</strong> para la emisión de certificaciones oficiales, reservas y acreditación internacional.
-                        </span>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -2600,162 +2525,6 @@ export default function CursoLanding() {
 
           </div>
 
-          {/* ========================================================
-              GALERÍA MULTIMEDIA HORIZONTAL INFERIOR (FOTOS Y VIDEOS)
-              Ubicada al pie de la landing, justo antes del footer
-             ======================================================== */}
-          {listaGaleria && listaGaleria.length > 0 && (
-            <div className="mt-16 pt-10 border-t border-slate-200">
-              {/* Encabezado de la galería con controles de navegación */}
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
-                <div>
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="w-2 h-2 rounded-full bg-main-red"></span>
-                    <span className="text-xs font-black uppercase tracking-[0.2em] text-main-red">
-                      Galería Multimedia
-                    </span>
-                  </div>
-                  <h3 className="text-xl sm:text-2xl font-black text-main-blue tracking-tight">
-                    Fotografías y Videos del Programa
-                  </h3>
-                  <p className="text-xs sm:text-sm text-slate-500 font-light mt-0.5">
-                    Explora fotografías y videos de las sedes históricas, el Aula Búnker y actividades del curso.
-                  </p>
-                </div>
-
-                {/* Botones de navegación horizontal */}
-                <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => scrollGaleria("left")}
-                    className="w-10 h-10 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 flex items-center justify-center transition shadow-xs hover:border-main-blue active:scale-95 cursor-pointer"
-                    aria-label="Desplazar galería a la izquierda"
-                    title="Anterior"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => scrollGaleria("right")}
-                    className="w-10 h-10 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 flex items-center justify-center transition shadow-xs hover:border-main-blue active:scale-95 cursor-pointer"
-                    aria-label="Desplazar galería a la derecha"
-                    title="Siguiente"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              {/* Tira horizontal de miniaturas con scroll suave */}
-              <div
-                ref={galeriaHorizontalRef}
-                className="flex items-stretch gap-4 overflow-x-auto pb-4 pt-1 scroll-smooth snap-x snap-mandatory"
-                style={{ scrollbarWidth: "thin" }}
-              >
-                {listaGaleria.map((item, idx) => {
-                  const esVideo = item.tipo === "video";
-                  return (
-                    <div
-                      key={item.id || idx}
-                      onClick={() => setModalMediaIndex(idx)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          setModalMediaIndex(idx);
-                        }
-                      }}
-                      className="group relative w-64 sm:w-72 shrink-0 snap-start bg-slate-900 rounded-2xl overflow-hidden shadow-md hover:shadow-2xl border border-slate-200 hover:border-main-blue transition-all duration-300 cursor-pointer flex flex-col focus:outline-none focus:ring-2 focus:ring-main-blue focus:ring-offset-2"
-                      title={`Ver ${esVideo ? "video" : "fotografía"}: ${item.titulo}`}
-                    >
-                      {/* Contenedor visual del elemento */}
-                      <div className="relative aspect-video w-full overflow-hidden bg-slate-950">
-                        {esVideo && !item.miniaturaUrl ? (
-                          <video
-                            src={item.url}
-                            className="w-full h-full object-cover pointer-events-none opacity-85 group-hover:scale-105 transition-transform duration-500"
-                            muted
-                            preload="metadata"
-                          />
-                        ) : (
-                          <img
-                            src={item.miniaturaUrl || item.src}
-                            alt={item.titulo}
-                            loading="lazy"
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                        )}
-
-                        {/* Overlay con degradado para legibilidad */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-
-                        {/* Badge indicador: Video o Foto */}
-                        <div className="absolute top-2.5 left-2.5 z-10">
-                          {esVideo ? (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-600/90 text-white shadow-md backdrop-blur-xs">
-                              <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
-                                <path d="M8 5v14l11-7z" />
-                              </svg>
-                              Video
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-black/60 text-white shadow-md backdrop-blur-xs border border-white/20">
-                              <svg className="w-3 h-3 fill-none stroke-current" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                              </svg>
-                              Foto
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Botón de reproducción centrado si es video */}
-                        {esVideo && (
-                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <div className="w-12 h-12 rounded-full bg-red-600/90 group-hover:bg-red-600 group-hover:scale-110 text-white flex items-center justify-center shadow-xl transition-all duration-300">
-                              <svg className="w-5 h-5 fill-current ml-0.5" viewBox="0 0 24 24">
-                                <path d="M8 5v14l11-7z" />
-                              </svg>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Lupa sutil si es foto */}
-                        {!esVideo && (
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                            <div className="w-10 h-10 rounded-full bg-black/60 text-white flex items-center justify-center shadow-lg border border-white/30 backdrop-blur-xs">
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                              </svg>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Pie de la miniatura */}
-                      <div className="p-3 bg-white border-t border-slate-100 flex flex-col justify-between grow text-left">
-                        <h4 className="text-xs font-bold text-gray-900 group-hover:text-main-blue transition-colors line-clamp-1 leading-snug">
-                          {item.titulo}
-                        </h4>
-                        <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1 font-light">
-                          <span className="truncate">{item.lugar}</span>
-                          <span className="text-main-blue font-semibold text-[10px] uppercase tracking-wider shrink-0 ml-2">
-                            Ampliar ↗
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
         </section>
 
       </div>
@@ -2918,114 +2687,6 @@ export default function CursoLanding() {
           </div>
         </div>
       )}
-
-      {/* MODAL VISOR LIGHTBOX PARA GALERÍA MULTIMEDIA (FOTOS Y VIDEOS) */}
-      {modalMediaIndex !== null && listaGaleria[modalMediaIndex] && (() => {
-        const itemActivo = listaGaleria[modalMediaIndex];
-        const esVideo = itemActivo.tipo === "video";
-        const vInfo = itemActivo.videoInfo || obtenerInfoVideo(itemActivo.url || itemActivo.src);
-
-        return (
-          <div
-            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fade-in"
-            onClick={() => setModalMediaIndex(null)}
-          >
-            {/* Botón cerrar */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setModalMediaIndex(null);
-              }}
-              className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50 w-11 h-11 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition-all cursor-pointer border border-white/20 shadow-2xl hover:scale-105"
-              title="Cerrar visor (Esc)"
-              aria-label="Cerrar visor"
-            >
-              ✕
-            </button>
-
-            {/* Botón anterior */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setModalMediaIndex((prev) => (prev - 1 + listaGaleria.length) % listaGaleria.length);
-              }}
-              className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-black/60 hover:bg-black/90 text-white text-2xl flex items-center justify-center transition-all cursor-pointer border border-white/20 shadow-2xl active:scale-95 hover:scale-105"
-              title="Elemento anterior (←)"
-              aria-label="Elemento anterior"
-            >
-              ❮
-            </button>
-
-            {/* Botón siguiente */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setModalMediaIndex((prev) => (prev + 1) % listaGaleria.length);
-              }}
-              className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-black/60 hover:bg-black/90 text-white text-2xl flex items-center justify-center transition-all cursor-pointer border border-white/20 shadow-2xl active:scale-95 hover:scale-105"
-              title="Elemento siguiente (→)"
-              aria-label="Elemento siguiente"
-            >
-              ❯
-            </button>
-
-            {/* Contenedor central del contenido multimedia */}
-            <div
-              className="relative max-w-5xl w-full max-h-[92vh] flex flex-col items-center justify-center px-2 sm:px-4"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="relative w-full flex items-center justify-center overflow-hidden rounded-2xl bg-black/40 shadow-2xl border border-white/15">
-                {esVideo ? (
-                  vInfo.embedUrl ? (
-                    <div className="w-full aspect-video max-h-[78vh]">
-                      <iframe
-                        src={vInfo.embedUrl}
-                        title={itemActivo.titulo}
-                        className="w-full h-full border-0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowFullScreen
-                      />
-                    </div>
-                  ) : (
-                    <video
-                      src={itemActivo.url || itemActivo.src}
-                      controls
-                      autoPlay
-                      className="max-w-full max-h-[78vh] w-auto h-auto rounded-2xl shadow-2xl"
-                    />
-                  )
-                ) : (
-                  <img
-                    src={itemActivo.src || itemActivo.url}
-                    alt={itemActivo.titulo}
-                    className="max-w-full max-h-[78vh] w-auto h-auto object-contain rounded-2xl shadow-2xl"
-                  />
-                )}
-              </div>
-
-              {/* Pie de foto / video con título, lugar y contador */}
-              <div className="mt-3.5 text-center px-4 max-w-2xl">
-                <div className="flex items-center justify-center gap-2 mb-1">
-                  <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${esVideo ? "bg-red-600 text-white" : "bg-neutral-800 text-neutral-300 border border-neutral-700"}`}>
-                    {esVideo ? "▶ Video" : "📷 Fotografía"}
-                  </span>
-                  <span className="text-slate-400 text-xs font-light">
-                    • {modalMediaIndex + 1} de {listaGaleria.length}
-                  </span>
-                </div>
-                <h4 className="text-white text-base sm:text-lg font-bold tracking-tight">
-                  {itemActivo.titulo}
-                </h4>
-                {itemActivo.lugar && (
-                  <p className="text-slate-300 text-xs sm:text-sm font-light mt-0.5">
-                    {itemActivo.lugar}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-      })()}
 
       {/* MODAL DE TÉRMINOS DE CONTRATACIÓN Y CLICKWRAP */}
       <ModalTerminosClickwrap
