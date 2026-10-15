@@ -544,6 +544,57 @@ export default function CursoLanding() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [modalFotoPalermo]);
 
+  // Ítems de la galería multimedia inferior (Fotos y Videos)
+  const itemsGaleriaRaw = (curso?.galeriaMedia && curso.galeriaMedia.length > 0)
+    ? curso.galeriaMedia
+    : (curso?.imagenesCarruselUrls && curso.imagenesCarruselUrls.length > 0)
+      ? curso.imagenesCarruselUrls
+      : FOTOS_PALERMO;
+
+  const listaGaleria = itemsGaleriaRaw.map((item, idx) => {
+    if (typeof item === "string") {
+      const vInfo = obtenerInfoVideo(item);
+      return {
+        id: `media-${idx}`,
+        tipo: vInfo.esVideo ? "video" : "imagen",
+        videoInfo: vInfo,
+        url: item,
+        src: item,
+        miniaturaUrl: vInfo.miniatura || item,
+        titulo: vInfo.esVideo ? `Video del Programa ${idx + 1}` : `Fotografía de Palermo ${idx + 1}`,
+        lugar: "Palermo, Sicilia"
+      };
+    }
+    const vInfo = obtenerInfoVideo(item.url || item.src);
+    const esVideo = item.tipo === "video" || vInfo.esVideo;
+    return {
+      id: item.id || `media-${idx}`,
+      tipo: esVideo ? "video" : "imagen",
+      videoInfo: vInfo,
+      url: item.url || item.src,
+      src: item.src || item.url,
+      miniaturaUrl: item.miniaturaUrl || item.poster || vInfo.miniatura || item.src || item.url,
+      titulo: item.titulo || (esVideo ? `Video del Programa ${idx + 1}` : `Palermo ${idx + 1}`),
+      lugar: item.lugar || "Palermo, Sicilia"
+    };
+  });
+
+  // Navegación con teclado en el modal de la galería inferior
+  useEffect(() => {
+    if (modalMediaIndex === null) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setModalMediaIndex(null);
+      if (e.key === "ArrowLeft") {
+        setModalMediaIndex((prev) => (prev - 1 + listaGaleria.length) % listaGaleria.length);
+      }
+      if (e.key === "ArrowRight") {
+        setModalMediaIndex((prev) => (prev + 1) % listaGaleria.length);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [modalMediaIndex, listaGaleria.length]);
+
   // Escuchar estado de autenticación para administradores
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -785,57 +836,6 @@ export default function CursoLanding() {
   const queNoEstaIncluido = (esPalermo2027 && DATOS_PALERMO_2027.landingPage.queNoEstaIncluido) || landing.queNoEstaIncluido || DATOS_PALERMO_2027.landingPage.queNoEstaIncluido;
   const queAprenderas = landing.queAprenderas || DATOS_PALERMO_2027.landingPage.queAprenderas;
   const contacto = landing.contacto || DATOS_PALERMO_2027.landingPage.contacto;
-
-  // Galería multimedia inferior (Fotos y Videos)
-  const itemsGaleriaRaw = (curso?.galeriaMedia && curso.galeriaMedia.length > 0)
-    ? curso.galeriaMedia
-    : (curso?.imagenesCarruselUrls && curso.imagenesCarruselUrls.length > 0)
-      ? curso.imagenesCarruselUrls
-      : FOTOS_PALERMO;
-
-  const listaGaleria = itemsGaleriaRaw.map((item, idx) => {
-    if (typeof item === "string") {
-      const vInfo = obtenerInfoVideo(item);
-      return {
-        id: `media-${idx}`,
-        tipo: vInfo.esVideo ? "video" : "imagen",
-        videoInfo: vInfo,
-        url: item,
-        src: item,
-        miniaturaUrl: vInfo.miniatura || item,
-        titulo: vInfo.esVideo ? `Video del Programa ${idx + 1}` : `Fotografía de Palermo ${idx + 1}`,
-        lugar: "Palermo, Sicilia"
-      };
-    }
-    const vInfo = obtenerInfoVideo(item.url || item.src);
-    const esVideo = item.tipo === "video" || vInfo.esVideo;
-    return {
-      id: item.id || `media-${idx}`,
-      tipo: esVideo ? "video" : "imagen",
-      videoInfo: vInfo,
-      url: item.url || item.src,
-      src: item.src || item.url,
-      miniaturaUrl: item.miniaturaUrl || item.poster || vInfo.miniatura || item.src || item.url,
-      titulo: item.titulo || (esVideo ? `Video del Programa ${idx + 1}` : `Palermo ${idx + 1}`),
-      lugar: item.lugar || "Palermo, Sicilia"
-    };
-  });
-
-  // Navegación con teclado en el modal de la galería inferior
-  useEffect(() => {
-    if (modalMediaIndex === null) return;
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") setModalMediaIndex(null);
-      if (e.key === "ArrowLeft") {
-        setModalMediaIndex((prev) => (prev - 1 + listaGaleria.length) % listaGaleria.length);
-      }
-      if (e.key === "ArrowRight") {
-        setModalMediaIndex((prev) => (prev + 1) % listaGaleria.length);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [modalMediaIndex, listaGaleria.length]);
 
   // Compartir información del curso
   const urlActual = typeof window !== "undefined" ? window.location.href : "";
