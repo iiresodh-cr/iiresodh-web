@@ -561,20 +561,21 @@ export default function CursoLanding() {
         videoInfo: vInfo,
         url: item,
         src: item,
-        miniaturaUrl: vInfo.miniatura || item,
+        miniaturaUrl: vInfo.miniatura || (vInfo.esVideo ? null : item),
         titulo: vInfo.esVideo ? `Video del Programa ${idx + 1}` : `Fotografía de Palermo ${idx + 1}`,
         lugar: "Palermo, Sicilia"
       };
     }
     const vInfo = obtenerInfoVideo(item.url || item.src);
     const esVideo = item.tipo === "video" || vInfo.esVideo;
+    const tienePosterImagen = item.miniaturaUrl && !item.miniaturaUrl.includes(".mp4") && !item.miniaturaUrl.includes(".webm") && !item.miniaturaUrl.includes(".mov");
     return {
       id: item.id || `media-${idx}`,
       tipo: esVideo ? "video" : "imagen",
       videoInfo: vInfo,
       url: item.url || item.src,
       src: item.src || item.url,
-      miniaturaUrl: item.miniaturaUrl || item.poster || vInfo.miniatura || item.src || item.url,
+      miniaturaUrl: (tienePosterImagen ? item.miniaturaUrl : null) || item.poster || vInfo.miniatura || (esVideo ? null : (item.src || item.url)),
       titulo: item.titulo || (esVideo ? `Video del Programa ${idx + 1}` : `Palermo ${idx + 1}`),
       lugar: item.lugar || "Palermo, Sicilia"
     };
@@ -2825,13 +2826,14 @@ export default function CursoLanding() {
                       title={`Ver ${esVideo ? "video" : "fotografía"}: ${item.titulo}`}
                     >
                       {/* Contenedor visual del elemento */}
-                      <div className="relative aspect-video w-full overflow-hidden bg-slate-950">
-                        {esVideo && !item.miniaturaUrl ? (
+                      <div className="relative aspect-video w-full overflow-hidden bg-slate-950 flex items-center justify-center">
+                        {esVideo && (!item.miniaturaUrl || item.miniaturaUrl.includes(".mp4") || item.miniaturaUrl.includes(".webm") || item.miniaturaUrl.includes(".mov")) ? (
                           <video
-                            src={item.url}
-                            className="w-full h-full object-cover pointer-events-none opacity-85 group-hover:scale-105 transition-transform duration-500"
-                            muted
+                            src={`${item.url}#t=0.5`}
                             preload="metadata"
+                            muted
+                            playsInline
+                            className="w-full h-full object-cover pointer-events-none opacity-85 group-hover:scale-105 transition-transform duration-500"
                           />
                         ) : (
                           <img
