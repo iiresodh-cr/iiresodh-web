@@ -258,7 +258,9 @@ export default function AdminPanel() {
   const [imagenPrincipalAnterior, setImagenPrincipalAnterior] = useState(null);
   const [carruselExistente, setCarruselExistente] = useState([]);
   const [nuevoVideoUrl, setNuevoVideoUrl] = useState("");
+  const [nuevoVideoTitulo, setNuevoVideoTitulo] = useState("");
   const [mostrarInputVideo, setMostrarInputVideo] = useState(false);
+  const [titulosNuevos, setTitulosNuevos] = useState({});
 
   const [archivosAdjuntos, setArchivosAdjuntos] = useState([]);
   const [subiendoArchivo, setSubiendoArchivo] = useState(false);
@@ -923,7 +925,24 @@ export default function AdminPanel() {
         setEstadoInscripcion(item.estadoInscripcion || (item.cursoActivo ? "abierta" : "cerrada"));
         setFechaInicio(item.fechaInicio || "");
         setFechaFin(item.fechaFin || "");
-        setCarruselExistente(item.galeriaMedia || item.imagenesCarruselUrls || []);
+        const rawGaleria = item.galeriaMedia || item.imagenesCarruselUrls || [];
+        const galeriaNormalizada = rawGaleria.map((el) => {
+          if (typeof el === "string") {
+            const vInfo = obtenerInfoVideo(el);
+            return {
+              url: el,
+              titulo: "",
+              tipo: vInfo.esVideo ? "video" : "imagen"
+            };
+          }
+          return {
+            url: el.url || el.src || "",
+            titulo: el.titulo || "",
+            tipo: el.tipo || (obtenerInfoVideo(el.url || el.src).esVideo ? "video" : "imagen")
+          };
+        });
+        setCarruselExistente(galeriaNormalizada);
+        setTitulosNuevos({});
 
         const lp = item.landingPage || {};
         setLandingHabilitada(!!lp.habilitada);
@@ -985,6 +1004,10 @@ export default function AdminPanel() {
     setImagenPrincipalAnterior(null);
     setCarruselExistente([]);
     setImagenesCarrusel([]);
+    setTitulosNuevos({});
+    setNuevoVideoUrl("");
+    setNuevoVideoTitulo("");
+    setMostrarInputVideo(false);
     setArchivosAdjuntos([]);
     setPrecio("");
     setPrecioMXN("");
@@ -1107,6 +1130,23 @@ export default function AdminPanel() {
     }
   };
 
+  const handleCambiarTituloGaleria = (indice, nuevoTitulo) => {
+    setCarruselExistente((prev) =>
+      prev.map((item, idx) => {
+        if (idx !== indice) return item;
+        if (typeof item === "string") {
+          const vInfo = obtenerInfoVideo(item);
+          return {
+            url: item,
+            titulo: nuevoTitulo,
+            tipo: vInfo.esVideo ? "video" : "imagen"
+          };
+        }
+        return { ...item, titulo: nuevoTitulo };
+      })
+    );
+  };
+
   const handleAgregarVideoUrl = () => {
     const urlLimpia = (nuevoVideoUrl || "").trim();
     if (!urlLimpia) return;
@@ -1116,7 +1156,21 @@ export default function AdminPanel() {
       setTimeout(() => setMensaje(""), 4000);
       return;
     }
-    setCarruselExistente((prev) => [...prev, urlLimpia]);
+    const vInfo = obtenerInfoVideo(urlLimpia);
+    const tituloLimpio = (nuevoVideoTitulo || "").trim();
+    if (vistaActiva === "cursos") {
+      setCarruselExistente((prev) => [
+        ...prev,
+        {
+          url: urlLimpia,
+          titulo: tituloLimpio,
+          tipo: vInfo.esVideo ? "video" : "imagen"
+        }
+      ]);
+      setNuevoVideoTitulo("");
+    } else {
+      setCarruselExistente((prev) => [...prev, urlLimpia]);
+    }
     setNuevoVideoUrl("");
     setMostrarInputVideo(false);
     setMensaje("Video agregado correctamente a la galería.");
@@ -1258,7 +1312,8 @@ export default function AdminPanel() {
 
       const nuevasUrls = [];
       if (vistaActiva === "comunicaciones" || vistaActiva === "cursos") {
-        for (const file of imagenesCarrusel) {
+        for (let i = 0; i < imagenesCarrusel.length; i++) {
+          const file = imagenesCarrusel[i];
           const esVideo = file.type && file.type.startsWith("video/");
           const subcarpeta = esVideo ? "videos" : "carrusel";
           const refCar = ref(storage, `${carpeta}/${subcarpeta}/${Date.now()}_${file.name}`);
@@ -1267,7 +1322,18 @@ export default function AdminPanel() {
             cacheControl: 'public, max-age=31536000, immutable'
           });
           const url = await getDownloadURL(refCar);
-          nuevasUrls.push(url);
+          if (vistaActiva === "cursos") {
+            const tit = (titulosNuevos[i] !== undefined && titulosNuevos[i].trim() !== "")
+              ? titulosNuevos[i].trim()
+              : file.name.replace(/\.[^/.]+$/, "");
+            nuevasUrls.push({
+              url,
+              titulo: tit,
+              tipo: esVideo ? "video" : "imagen"
+            });
+          } else {
+            nuevasUrls.push(url);
+          }
         }
       }
 
@@ -1346,8 +1412,22 @@ export default function AdminPanel() {
           datos.estadoInscripcion = estadoInscripcion;
           datos.fechaInicio = fechaInicio || null;
           datos.fechaFin = fechaFin || null;
-          datos.imagenesCarruselUrls = [...carruselExistente, ...nuevasUrls];
-          datos.galeriaMedia = [...carruselExistente, ...nuevasUrls];
+          datos.imagenesCarruselUrls = [...carruselExistente, ...nuevasUrls].map(it => (typeof it === "string" ? it : it.url));
+          datos.galeriaMedia = [...carruselExistente, ...nuevasUrls].map(it => {
+            if (typeof it === "string") {
+              const vInfo = obtenerInfoVideo(it);
+              return {
+                url: it,
+                titulo: "",
+                tipo: vInfo.esVideo ? "video" : "imagen"
+              };
+            }
+            return {
+              url: it.url,
+              titulo: (it.titulo || "").trim(),
+              tipo: it.tipo || (obtenerInfoVideo(it.url).esVideo ? "video" : "imagen")
+            };
+          });
 
           if (landingHabilitada) {
             datos.landingPage = {
@@ -2509,6 +2589,15 @@ export default function AdminPanel() {
                                     placeholder="https://www.youtube.com/watch?v=... o https://vimeo.com/..."
                                     className="flex-1 text-xs p-2.5 bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-main-blue"
                                   />
+                                  {vistaActiva === "cursos" && (
+                                    <input
+                                      type="text"
+                                      value={nuevoVideoTitulo}
+                                      onChange={(e) => setNuevoVideoTitulo(e.target.value)}
+                                      placeholder="Título del video (opcional)"
+                                      className="sm:w-64 text-xs p-2.5 bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-main-blue"
+                                    />
+                                  )}
                                   <div className="flex gap-2 shrink-0">
                                     <button
                                       type="button"
@@ -2519,7 +2608,7 @@ export default function AdminPanel() {
                                     </button>
                                     <button
                                       type="button"
-                                      onClick={() => { setMostrarInputVideo(false); setNuevoVideoUrl(""); }}
+                                      onClick={() => { setMostrarInputVideo(false); setNuevoVideoUrl(""); setNuevoVideoTitulo(""); }}
                                       className="text-gray-500 hover:text-gray-700 text-xs px-2"
                                     >
                                       Cancelar
@@ -2531,12 +2620,14 @@ export default function AdminPanel() {
 
                             {/* Grid con elementos multimedia existentes y nuevos */}
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                              {carruselExistente.map((url, i) => {
+                              {carruselExistente.map((elem, i) => {
+                                const url = typeof elem === "string" ? elem : (elem.url || elem.src || "");
+                                const titulo = typeof elem === "string" ? "" : (elem.titulo || "");
                                 const vInfo = obtenerInfoVideo(url);
                                 return (
                                   <div
                                     key={`old-${i}`}
-                                    className="flex flex-col bg-white p-2 rounded-lg border border-gray-100 shadow-sm gap-2"
+                                    className="flex flex-col bg-white p-2.5 rounded-xl border border-gray-200 shadow-xs hover:shadow-md transition-all gap-2"
                                     draggable
                                     onDragStart={(e) => { e.dataTransfer.setData('type', 'old'); e.dataTransfer.setData('index', i); }}
                                     onDragOver={(e) => e.preventDefault()}
@@ -2551,7 +2642,7 @@ export default function AdminPanel() {
                                       setCarruselExistente(nuevas);
                                     }}
                                   >
-                                    <div className="relative group w-full h-24 rounded overflow-hidden cursor-move bg-slate-900 flex items-center justify-center">
+                                    <div className="relative group w-full h-24 rounded-lg overflow-hidden cursor-move bg-slate-900 flex items-center justify-center">
                                       {vInfo.esVideo ? (
                                         vInfo.tipoVideo === "youtube" ? (
                                           <img src={vInfo.miniatura} className="w-full h-full object-cover" alt="Video YouTube" />
@@ -2565,27 +2656,55 @@ export default function AdminPanel() {
                                       )}
 
                                       {/* Badge de tipo de recurso */}
-                                      <span className={`absolute top-1 left-1 text-white text-[8px] font-bold px-1.5 py-0.5 rounded uppercase ${vInfo.esVideo ? "bg-main-red" : "bg-black/60"}`}>
+                                      <span className={`absolute top-1.5 left-1.5 text-white text-[8px] font-bold px-1.5 py-0.5 rounded uppercase shadow-xs ${vInfo.esVideo ? "bg-main-red" : "bg-black/60"}`}>
                                         {vInfo.esVideo ? (vInfo.tipoVideo === "youtube" ? "YouTube" : "Video") : "Foto"}
                                       </span>
 
                                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                        <button type="button" onClick={() => setCarruselExistente(prev => prev.filter((_, idx) => idx !== i))} className="text-white hover:text-main-red"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                                        <button
+                                          type="button"
+                                          onClick={() => setCarruselExistente(prev => prev.filter((_, idx) => idx !== i))}
+                                          className="text-white hover:text-main-red p-1 rounded-full bg-black/50 hover:bg-black/80 transition"
+                                          title="Eliminar de la galería"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
                                       </div>
                                     </div>
-                                    <span className="text-[10px] font-medium text-gray-500 truncate text-center" title={vInfo.esVideo ? url : extraerNombreDesdeUrl(url)}>
-                                      {vInfo.esVideo ? (vInfo.tipoVideo === "youtube" ? "Video YouTube" : "Video MP4") : extraerNombreDesdeUrl(url)}
-                                    </span>
+
+                                    {vistaActiva === "cursos" ? (
+                                      <div className="flex flex-col gap-1">
+                                        <label className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">
+                                          Nombre / Título:
+                                        </label>
+                                        <input
+                                          type="text"
+                                          value={titulo}
+                                          onChange={(e) => handleCambiarTituloGaleria(i, e.target.value)}
+                                          placeholder={vInfo.esVideo ? "Ej: Aula Búnker y Sede Judicial" : "Ej: Fotografía de Palermo"}
+                                          className="w-full text-xs font-medium text-gray-800 bg-gray-50 hover:bg-white focus:bg-white border border-gray-200 focus:border-main-blue rounded-md px-2 py-1 focus:outline-none transition-colors"
+                                          onClick={(e) => e.stopPropagation()}
+                                        />
+                                        <span className="text-[9px] text-gray-400 truncate" title={url}>
+                                          {vInfo.esVideo ? (vInfo.tipoVideo === "youtube" ? "Video YouTube" : "Video MP4") : extraerNombreDesdeUrl(url)}
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <span className="text-[10px] font-medium text-gray-500 truncate text-center" title={vInfo.esVideo ? url : extraerNombreDesdeUrl(url)}>
+                                        {vInfo.esVideo ? (vInfo.tipoVideo === "youtube" ? "Video YouTube" : "Video MP4") : extraerNombreDesdeUrl(url)}
+                                      </span>
+                                    )}
                                   </div>
                                 );
                               })}
 
                               {imagenesCarrusel.map((f, i) => {
                                 const esVid = f.type && f.type.startsWith("video/");
+                                const tituloNuevo = titulosNuevos[i] !== undefined ? titulosNuevos[i] : f.name.replace(/\.[^/.]+$/, "");
                                 return (
                                   <div
                                     key={`new-${i}`}
-                                    className="flex flex-col bg-green-50 p-2 rounded-lg border border-green-200 shadow-sm gap-2"
+                                    className="flex flex-col bg-emerald-50/70 p-2.5 rounded-xl border border-emerald-200 shadow-xs gap-2"
                                     draggable
                                     onDragStart={(e) => { e.dataTransfer.setData('type', 'new'); e.dataTransfer.setData('index', i); }}
                                     onDragOver={(e) => e.preventDefault()}
@@ -2600,20 +2719,54 @@ export default function AdminPanel() {
                                       setImagenesCarrusel(nuevas);
                                     }}
                                   >
-                                    <div className="relative group w-full h-24 rounded overflow-hidden cursor-move bg-slate-900 flex items-center justify-center">
+                                    <div className="relative group w-full h-24 rounded-lg overflow-hidden cursor-move bg-slate-900 flex items-center justify-center">
                                       {esVid ? (
                                         <video src={URL.createObjectURL(f)} className="w-full h-full object-cover pointer-events-none" />
                                       ) : (
                                         <img src={URL.createObjectURL(f)} className="w-full h-full object-cover" alt="Nueva carrusel" />
                                       )}
-                                      <span className="absolute top-1 left-1 bg-green-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded uppercase">
+                                      <span className="absolute top-1.5 left-1.5 bg-emerald-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded uppercase shadow-xs">
                                         {esVid ? "Video Nuevo" : "Nueva"}
                                       </span>
                                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                        <button type="button" onClick={() => setImagenesCarrusel(prev => prev.filter((_, idx) => idx !== i))} className="text-white hover:text-main-red"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setImagenesCarrusel(prev => prev.filter((_, idx) => idx !== i));
+                                            setTitulosNuevos(prev => {
+                                              const copia = { ...prev };
+                                              delete copia[i];
+                                              return copia;
+                                            });
+                                          }}
+                                          className="text-white hover:text-main-red p-1 rounded-full bg-black/50 hover:bg-black/80 transition"
+                                          title="Eliminar elemento nuevo"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
                                       </div>
                                     </div>
-                                    <span className="text-[10px] font-medium text-green-700 truncate text-center" title={f.name}>{f.name}</span>
+
+                                    {vistaActiva === "cursos" ? (
+                                      <div className="flex flex-col gap-1">
+                                        <label className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">
+                                          Nombre / Título:
+                                        </label>
+                                        <input
+                                          type="text"
+                                          value={tituloNuevo}
+                                          onChange={(e) => setTitulosNuevos(prev => ({ ...prev, [i]: e.target.value }))}
+                                          placeholder={esVid ? "Ej: Aula Búnker y Sede Judicial" : "Ej: Fotografía de Palermo"}
+                                          className="w-full text-xs font-medium text-gray-800 bg-white border border-emerald-300 focus:border-emerald-600 rounded-md px-2 py-1 focus:outline-none"
+                                          onClick={(e) => e.stopPropagation()}
+                                        />
+                                        <span className="text-[9px] text-emerald-700 truncate" title={f.name}>
+                                          {f.name}
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <span className="text-[10px] font-medium text-green-700 truncate text-center" title={f.name}>{f.name}</span>
+                                    )}
                                   </div>
                                 );
                               })}
