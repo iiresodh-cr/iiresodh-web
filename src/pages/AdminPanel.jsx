@@ -19,6 +19,7 @@ import { Megaphone } from "lucide-react";
 // prettier-ignore
 import { Button, Checkbox, FormControlLabel, Box, Chip, Select, MenuItem, FormControl, InputLabel, CircularProgress, Switch } from "@mui/material";
 import { DATOS_PALERMO_2027 } from "./CursoLanding";
+import { obtenerInfoVideo } from "../utils/mediaUtils";
 
 const generarSlug = (texto) => {
   if (!texto) return `item-${Math.random().toString(36).substring(2, 6)}`;
@@ -256,6 +257,8 @@ export default function AdminPanel() {
   const [editandoId, setEditandoId] = useState(null);
   const [imagenPrincipalAnterior, setImagenPrincipalAnterior] = useState(null);
   const [carruselExistente, setCarruselExistente] = useState([]);
+  const [nuevoVideoUrl, setNuevoVideoUrl] = useState("");
+  const [mostrarInputVideo, setMostrarInputVideo] = useState(false);
 
   const [archivosAdjuntos, setArchivosAdjuntos] = useState([]);
   const [subiendoArchivo, setSubiendoArchivo] = useState(false);
@@ -920,7 +923,7 @@ export default function AdminPanel() {
         setEstadoInscripcion(item.estadoInscripcion || (item.cursoActivo ? "abierta" : "cerrada"));
         setFechaInicio(item.fechaInicio || "");
         setFechaFin(item.fechaFin || "");
-        setCarruselExistente(item.imagenesCarruselUrls || []);
+        setCarruselExistente(item.galeriaMedia || item.imagenesCarruselUrls || []);
 
         const lp = item.landingPage || {};
         setLandingHabilitada(!!lp.habilitada);
@@ -1104,19 +1107,48 @@ export default function AdminPanel() {
     }
   };
 
+  const handleAgregarVideoUrl = () => {
+    const urlLimpia = (nuevoVideoUrl || "").trim();
+    if (!urlLimpia) return;
+    const esUrlValida = /^(https?:\/\/)/i.test(urlLimpia);
+    if (!esUrlValida) {
+      setMensaje("Por favor ingresa un enlace válido que inicie con https:// o http://");
+      setTimeout(() => setMensaje(""), 4000);
+      return;
+    }
+    setCarruselExistente((prev) => [...prev, urlLimpia]);
+    setNuevoVideoUrl("");
+    setMostrarInputVideo(false);
+    setMensaje("Video agregado correctamente a la galería.");
+    setTimeout(() => setMensaje(""), 3000);
+  };
+
   const handleAgregarImagenes = async (e) => {
     const files = Array.from(e.target.files).sort((a, b) => a.name.localeCompare(b.name));
 
     if (files.length > 0) {
       try {
-        setMensaje("Optimizando imágenes para el carrusel...");
-        const webpFiles = await Promise.all(files.map(file => convertirAWebp(file)));
-        setImagenesCarrusel((prev) => [...prev, ...webpFiles]);
+        setMensaje("Procesando archivos para la galería...");
+        const processedFiles = [];
+        for (const file of files) {
+          if (file.type && file.type.startsWith("video/")) {
+            if (file.size > 100 * 1024 * 1024) {
+              setMensaje(`Aviso: El video ${file.name} es mayor a 100MB. Se recomienda usar enlaces de YouTube o Vimeo para videos extensos.`);
+            }
+            processedFiles.push(file);
+          } else if (file.type && file.type.startsWith("image/")) {
+            const webpFile = await convertirAWebp(file);
+            processedFiles.push(webpFile);
+          } else {
+            processedFiles.push(file);
+          }
+        }
+        setImagenesCarrusel((prev) => [...prev, ...processedFiles]);
         e.target.value = "";
         setMensaje("");
       } catch (error) {
-        console.error("Error al procesar imágenes:", error);
-        setMensaje("Error al optimizar las imágenes.");
+        console.error("Error al procesar archivos de galería:", error);
+        setMensaje("Error al procesar archivos.");
         setTimeout(() => setMensaje(""), 3000);
       }
     }
@@ -1227,8 +1259,11 @@ export default function AdminPanel() {
       const nuevasUrls = [];
       if (vistaActiva === "comunicaciones" || vistaActiva === "cursos") {
         for (const file of imagenesCarrusel) {
-          const refCar = ref(storage, `${carpeta}/carrusel/${Date.now()}_${file.name}`);
+          const esVideo = file.type && file.type.startsWith("video/");
+          const subcarpeta = esVideo ? "videos" : "carrusel";
+          const refCar = ref(storage, `${carpeta}/${subcarpeta}/${Date.now()}_${file.name}`);
           await uploadBytes(refCar, file, {
+            contentType: file.type || (esVideo ? 'video/mp4' : 'image/webp'),
             cacheControl: 'public, max-age=31536000, immutable'
           });
           const url = await getDownloadURL(refCar);
@@ -1312,6 +1347,7 @@ export default function AdminPanel() {
           datos.fechaInicio = fechaInicio || null;
           datos.fechaFin = fechaFin || null;
           datos.imagenesCarruselUrls = [...carruselExistente, ...nuevasUrls];
+          datos.galeriaMedia = [...carruselExistente, ...nuevasUrls];
 
           if (landingHabilitada) {
             datos.landingPage = {
@@ -2423,67 +2459,164 @@ export default function AdminPanel() {
 
                         {(vistaActiva === "comunicaciones" || vistaActiva === "cursos") && (
                           <div>
-                            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Galería / Carrusel</label>
+                            <div className="flex items-center justify-between mb-3">
+                              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                {vistaActiva === "cursos" ? "Galería Multimedia del Curso (Fotos y Videos)" : "Galería / Carrusel"}
+                              </label>
+                              <span className="text-[11px] text-gray-400 font-light">
+                                Total elementos: {carruselExistente.length + imagenesCarrusel.length}
+                              </span>
+                            </div>
+
+                            {/* Inputs ocultos para fotos y videos */}
                             <input type="file" accept="image/*" multiple onChange={handleAgregarImagenes} className="sr-only" id="input-imagenes-carrusel" />
-                            <label htmlFor="input-imagenes-carrusel" className="text-sm bg-white border border-dashed border-gray-300 text-main-blue w-full text-center py-4 rounded-lg font-medium cursor-pointer block hover:bg-blue-50 transition-colors mb-4">+ Cargar múltiples imágenes</label>
+                            <input type="file" accept="video/mp4,video/webm,video/ogg,video/*" multiple onChange={handleAgregarImagenes} className="sr-only" id="input-videos-carrusel" />
 
+                            {/* Botones de acción para agregar media */}
+                            <div className="flex flex-wrap gap-2.5 mb-4">
+                              <label
+                                htmlFor="input-imagenes-carrusel"
+                                className="flex-1 min-w-[130px] text-xs bg-white border border-dashed border-gray-300 text-main-blue text-center py-3 px-3 rounded-lg font-bold cursor-pointer hover:bg-blue-50 transition-colors shadow-xs inline-flex items-center justify-center gap-1.5"
+                              >
+                                <span>📷 Cargar Fotos</span>
+                              </label>
+                              <label
+                                htmlFor="input-videos-carrusel"
+                                className="flex-1 min-w-[140px] text-xs bg-white border border-dashed border-gray-300 text-main-red text-center py-3 px-3 rounded-lg font-bold cursor-pointer hover:bg-red-50 transition-colors shadow-xs inline-flex items-center justify-center gap-1.5"
+                              >
+                                <span>🎥 Cargar Video (MP4)</span>
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => setMostrarInputVideo(!mostrarInputVideo)}
+                                className="flex-1 min-w-[160px] text-xs bg-slate-800 text-white text-center py-3 px-3 rounded-lg font-bold cursor-pointer hover:bg-slate-700 transition-colors shadow-xs inline-flex items-center justify-center gap-1.5"
+                              >
+                                <span>🔗 Enlace YouTube / Vimeo / MP4</span>
+                              </button>
+                            </div>
+
+                            {/* Formulario desplegable para agregar video por enlace */}
+                            {mostrarInputVideo && (
+                              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 mb-4 space-y-2 animate-fade-in">
+                                <span className="text-[11px] font-bold text-gray-700 block">
+                                  Agregar video por enlace (YouTube, Vimeo o URL directa MP4):
+                                </span>
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                  <input
+                                    type="text"
+                                    value={nuevoVideoUrl}
+                                    onChange={(e) => setNuevoVideoUrl(e.target.value)}
+                                    placeholder="https://www.youtube.com/watch?v=... o https://vimeo.com/..."
+                                    className="flex-1 text-xs p-2.5 bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-main-blue"
+                                  />
+                                  <div className="flex gap-2 shrink-0">
+                                    <button
+                                      type="button"
+                                      onClick={handleAgregarVideoUrl}
+                                      className="bg-main-blue hover:bg-light-blue text-white text-xs font-bold px-4 py-2 rounded-lg transition"
+                                    >
+                                      Agregar Video
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => { setMostrarInputVideo(false); setNuevoVideoUrl(""); }}
+                                      className="text-gray-500 hover:text-gray-700 text-xs px-2"
+                                    >
+                                      Cancelar
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Grid con elementos multimedia existentes y nuevos */}
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                              {carruselExistente.map((url, i) => (
-                                <div
-                                  key={`old-${i}`}
-                                  className="flex flex-col bg-white p-2 rounded-lg border border-gray-100 shadow-sm gap-2"
-                                  draggable
-                                  onDragStart={(e) => { e.dataTransfer.setData('type', 'old'); e.dataTransfer.setData('index', i); }}
-                                  onDragOver={(e) => e.preventDefault()}
-                                  onDrop={(e) => {
-                                    e.preventDefault();
-                                    if (e.dataTransfer.getData('type') !== 'old') return;
-                                    const from = parseInt(e.dataTransfer.getData('index'));
-                                    if (from === i || isNaN(from)) return;
-                                    const nuevas = [...carruselExistente];
-                                    const [movida] = nuevas.splice(from, 1);
-                                    nuevas.splice(i, 0, movida);
-                                    setCarruselExistente(nuevas);
-                                  }}
-                                >
-                                  <div className="relative group w-full h-24 rounded overflow-hidden cursor-move">
-                                    <img src={url} className="w-full h-full object-cover" alt="Carrusel" />
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                      <button type="button" onClick={() => setCarruselExistente(prev => prev.filter((_, idx) => idx !== i))} className="text-white hover:text-main-red"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                                    </div>
-                                  </div>
-                                  <span className="text-[10px] font-medium text-gray-500 truncate text-center" title={extraerNombreDesdeUrl(url)}>{extraerNombreDesdeUrl(url)}</span>
-                                </div>
-                              ))}
+                              {carruselExistente.map((url, i) => {
+                                const vInfo = obtenerInfoVideo(url);
+                                return (
+                                  <div
+                                    key={`old-${i}`}
+                                    className="flex flex-col bg-white p-2 rounded-lg border border-gray-100 shadow-sm gap-2"
+                                    draggable
+                                    onDragStart={(e) => { e.dataTransfer.setData('type', 'old'); e.dataTransfer.setData('index', i); }}
+                                    onDragOver={(e) => e.preventDefault()}
+                                    onDrop={(e) => {
+                                      e.preventDefault();
+                                      if (e.dataTransfer.getData('type') !== 'old') return;
+                                      const from = parseInt(e.dataTransfer.getData('index'));
+                                      if (from === i || isNaN(from)) return;
+                                      const nuevas = [...carruselExistente];
+                                      const [movida] = nuevas.splice(from, 1);
+                                      nuevas.splice(i, 0, movida);
+                                      setCarruselExistente(nuevas);
+                                    }}
+                                  >
+                                    <div className="relative group w-full h-24 rounded overflow-hidden cursor-move bg-slate-900 flex items-center justify-center">
+                                      {vInfo.esVideo ? (
+                                        vInfo.tipoVideo === "youtube" ? (
+                                          <img src={vInfo.miniatura} className="w-full h-full object-cover" alt="Video YouTube" />
+                                        ) : vInfo.tipoVideo === "directo" ? (
+                                          <video src={`${url}#t=0.5`} preload="metadata" className="w-full h-full object-cover pointer-events-none" />
+                                        ) : (
+                                          <div className="text-white text-center p-2 text-xs font-bold">Video {vInfo.tipoVideo}</div>
+                                        )
+                                      ) : (
+                                        <img src={url} className="w-full h-full object-cover" alt="Carrusel" />
+                                      )}
 
-                              {imagenesCarrusel.map((f, i) => (
-                                <div
-                                  key={`new-${i}`}
-                                  className="flex flex-col bg-green-50 p-2 rounded-lg border border-green-200 shadow-sm gap-2"
-                                  draggable
-                                  onDragStart={(e) => { e.dataTransfer.setData('type', 'new'); e.dataTransfer.setData('index', i); }}
-                                  onDragOver={(e) => e.preventDefault()}
-                                  onDrop={(e) => {
-                                    e.preventDefault();
-                                    if (e.dataTransfer.getData('type') !== 'new') return;
-                                    const from = parseInt(e.dataTransfer.getData('index'));
-                                    if (from === i || isNaN(from)) return;
-                                    const nuevas = [...imagenesCarrusel];
-                                    const [movida] = nuevas.splice(from, 1);
-                                    nuevas.splice(i, 0, movida);
-                                    setImagenesCarrusel(nuevas);
-                                  }}
-                                >
-                                  <div className="relative group w-full h-24 rounded overflow-hidden cursor-move">
-                                    <img src={URL.createObjectURL(f)} className="w-full h-full object-cover" alt="Nueva carrusel" />
-                                    <span className="absolute top-1 left-1 bg-green-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded uppercase">Nueva</span>
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                      <button type="button" onClick={() => setImagenesCarrusel(prev => prev.filter((_, idx) => idx !== i))} className="text-white hover:text-main-red"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                                      {/* Badge de tipo de recurso */}
+                                      <span className={`absolute top-1 left-1 text-white text-[8px] font-bold px-1.5 py-0.5 rounded uppercase ${vInfo.esVideo ? "bg-main-red" : "bg-black/60"}`}>
+                                        {vInfo.esVideo ? (vInfo.tipoVideo === "youtube" ? "YouTube" : "Video") : "Foto"}
+                                      </span>
+
+                                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                        <button type="button" onClick={() => setCarruselExistente(prev => prev.filter((_, idx) => idx !== i))} className="text-white hover:text-main-red"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                                      </div>
                                     </div>
+                                    <span className="text-[10px] font-medium text-gray-500 truncate text-center" title={vInfo.esVideo ? url : extraerNombreDesdeUrl(url)}>
+                                      {vInfo.esVideo ? (vInfo.tipoVideo === "youtube" ? "Video YouTube" : "Video MP4") : extraerNombreDesdeUrl(url)}
+                                    </span>
                                   </div>
-                                  <span className="text-[10px] font-medium text-green-700 truncate text-center" title={f.name}>{f.name}</span>
-                                </div>
-                              ))}
+                                );
+                              })}
+
+                              {imagenesCarrusel.map((f, i) => {
+                                const esVid = f.type && f.type.startsWith("video/");
+                                return (
+                                  <div
+                                    key={`new-${i}`}
+                                    className="flex flex-col bg-green-50 p-2 rounded-lg border border-green-200 shadow-sm gap-2"
+                                    draggable
+                                    onDragStart={(e) => { e.dataTransfer.setData('type', 'new'); e.dataTransfer.setData('index', i); }}
+                                    onDragOver={(e) => e.preventDefault()}
+                                    onDrop={(e) => {
+                                      e.preventDefault();
+                                      if (e.dataTransfer.getData('type') !== 'new') return;
+                                      const from = parseInt(e.dataTransfer.getData('index'));
+                                      if (from === i || isNaN(from)) return;
+                                      const nuevas = [...imagenesCarrusel];
+                                      const [movida] = nuevas.splice(from, 1);
+                                      nuevas.splice(i, 0, movida);
+                                      setImagenesCarrusel(nuevas);
+                                    }}
+                                  >
+                                    <div className="relative group w-full h-24 rounded overflow-hidden cursor-move bg-slate-900 flex items-center justify-center">
+                                      {esVid ? (
+                                        <video src={URL.createObjectURL(f)} className="w-full h-full object-cover pointer-events-none" />
+                                      ) : (
+                                        <img src={URL.createObjectURL(f)} className="w-full h-full object-cover" alt="Nueva carrusel" />
+                                      )}
+                                      <span className="absolute top-1 left-1 bg-green-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded uppercase">
+                                        {esVid ? "Video Nuevo" : "Nueva"}
+                                      </span>
+                                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                        <button type="button" onClick={() => setImagenesCarrusel(prev => prev.filter((_, idx) => idx !== i))} className="text-white hover:text-main-red"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                                      </div>
+                                    </div>
+                                    <span className="text-[10px] font-medium text-green-700 truncate text-center" title={f.name}>{f.name}</span>
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
                         )}

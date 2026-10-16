@@ -1,5 +1,5 @@
 // src/pages/CursoLanding.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import { collection, query, where, getDocs, doc, getDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import { db, auth } from "../firebase/config";
@@ -15,8 +15,9 @@ import palermoJusticiaBw from "../assets/cursos/palermo_justicia_bw.jpg";
 import palermoAulaBunkerBw from "../assets/cursos/palermo_aula_bunker_bw.jpg";
 import palermoCollageHeroBw from "../assets/cursos/palermo_collage_hero_bw.jpg";
 import logoUnlp from "../assets/cursos/logo_unlp_ddhh.png";
-import brochureP1 from "../assets/cursos/brochure_palermo_p2.jpg";
-import brochureP2 from "../assets/cursos/brochure_palermo_p1.jpg";
+import brochureP1 from "../assets/cursos/brochure_palermo_p1.jpg";
+import brochureP2 from "../assets/cursos/brochure_palermo_p2.jpg";
+import brochurePdf from "../assets/cursos/Curso_Palermo-Brochure.pdf";
 import palermoFoto1 from "../assets/palermo/palermo_1.jpg";
 import palermoFoto2 from "../assets/palermo/palermo_2.jpg";
 import palermoFoto3 from "../assets/palermo/palermo_3.jpg";
@@ -29,6 +30,7 @@ import SelectorModalidadPago from "../components/cursos/SelectorModalidadPago";
 import ModalTerminosClickwrap from "../components/cursos/ModalTerminosClickwrap";
 import { PAISES_LATINOAMERICA } from "../data/paisesLatinoamerica";
 import { Scale, ShieldCheck, Search, GraduationCap, Globe } from "lucide-react";
+import { obtenerInfoVideo } from "../utils/mediaUtils";
 
 export const FOTOS_PALERMO = [
   {
@@ -484,6 +486,7 @@ export default function CursoLanding() {
   const [modalBrochure, setModalBrochure] = useState(null); // null | 1 | 2
   const [modalTerminosOpen, setModalTerminosOpen] = useState(false);
   const [clientIp, setClientIp] = useState("");
+  const [mostrarSeccionPago, setMostrarSeccionPago] = useState(false);
 
   // Obtener IP pública del cliente para constancia y registro del clickwrap
   useEffect(() => {
@@ -528,6 +531,70 @@ export default function CursoLanding() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [modalFotoPalermo]);
+
+  // Galería inferior de fotos y videos
+  const [modalMediaIndex, setModalMediaIndex] = useState(null);
+  const galeriaHorizontalRef = useRef(null);
+
+  const scrollGaleria = (direccion) => {
+    if (galeriaHorizontalRef.current) {
+      galeriaHorizontalRef.current.scrollBy({
+        left: direccion === "left" ? -350 : 350,
+        behavior: "smooth"
+      });
+    }
+  };
+
+  // Ítems de la galería multimedia inferior (Fotos y Videos)
+  const itemsGaleriaRaw = (curso?.galeriaMedia && curso.galeriaMedia.length > 0)
+    ? curso.galeriaMedia
+    : (curso?.imagenesCarruselUrls && curso.imagenesCarruselUrls.length > 0)
+      ? curso.imagenesCarruselUrls
+      : FOTOS_PALERMO;
+
+  const listaGaleria = itemsGaleriaRaw.map((item, idx) => {
+    if (typeof item === "string") {
+      const vInfo = obtenerInfoVideo(item);
+      return {
+        id: `media-${idx}`,
+        tipo: vInfo.esVideo ? "video" : "imagen",
+        videoInfo: vInfo,
+        url: item,
+        src: item,
+        miniaturaUrl: vInfo.miniatura || item,
+        titulo: vInfo.esVideo ? `Video del Programa ${idx + 1}` : `Fotografía de Palermo ${idx + 1}`,
+        lugar: "Palermo, Sicilia"
+      };
+    }
+    const vInfo = obtenerInfoVideo(item.url || item.src);
+    const esVideo = item.tipo === "video" || vInfo.esVideo;
+    return {
+      id: item.id || `media-${idx}`,
+      tipo: esVideo ? "video" : "imagen",
+      videoInfo: vInfo,
+      url: item.url || item.src,
+      src: item.src || item.url,
+      miniaturaUrl: item.miniaturaUrl || item.poster || vInfo.miniatura || item.src || item.url,
+      titulo: item.titulo || (esVideo ? `Video del Programa ${idx + 1}` : `Palermo ${idx + 1}`),
+      lugar: item.lugar || "Palermo, Sicilia"
+    };
+  });
+
+  // Navegación con teclado en el modal de la galería inferior (a nivel superior antes de retornos)
+  useEffect(() => {
+    if (modalMediaIndex === null) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setModalMediaIndex(null);
+      if (e.key === "ArrowLeft") {
+        setModalMediaIndex((prev) => (prev - 1 + listaGaleria.length) % listaGaleria.length);
+      }
+      if (e.key === "ArrowRight") {
+        setModalMediaIndex((prev) => (prev + 1) % listaGaleria.length);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [modalMediaIndex, listaGaleria.length]);
 
   // Escuchar estado de autenticación para administradores
   useEffect(() => {
@@ -593,33 +660,44 @@ export default function CursoLanding() {
     fetchCurso();
   }, [slug]);
 
-  const handleSubmitSolicitud = async (e) => {
-    if (e && e.preventDefault) e.preventDefault();
+  const validarDatosParticipante = () => {
     if (!formData.nombres.trim() || !formData.apellidos.trim() || !formData.documentoIdentidad.trim() || !formData.email.trim() || !formData.telefono.trim()) {
-      setAlerta({ open: true, mensaje: "Por favor completa tus nombres, apellidos, documento de identidad, correo electrónico y teléfono de contacto.", tipo: "warning" });
-      return;
-    }
-
-    if (!formData.motivoParticipacion.trim()) {
-      setAlerta({ open: true, mensaje: "Por favor indícanos brevemente por qué deseas participar en el curso.", tipo: "warning" });
-      return;
-    }
-
-    if (!aceptarPrivacidadTransferencia) {
       setAlerta({
         open: true,
-        mensaje: "Debes aceptar los Términos de Contratación y la Política de Privacidad en el Paso 2 para poder formalizar tu solicitud.",
+        mensaje: "Por favor completa tus nombres, apellidos, documento de identidad, correo electrónico y teléfono de contacto.",
         tipo: "warning"
       });
-      const paso2Elem = document.getElementById("paso-terminos-contratacion");
-      if (paso2Elem) {
-        paso2Elem.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-      return;
+      return false;
     }
+    if (!formData.motivoParticipacion.trim()) {
+      setAlerta({
+        open: true,
+        mensaje: "Por favor indícanos brevemente por qué deseas participar en el curso.",
+        tipo: "warning"
+      });
+      return false;
+    }
+    return true;
+  };
 
-    const esInteres = metodoInscripcion === "interes";
+  const handleBotonPagar = () => {
+    if (!validarDatosParticipante()) return;
+    setMostrarSeccionPago(true);
+    setMetodoInscripcion("tarjeta");
+    setTimeout(() => {
+      const pagoElem = document.getElementById("seccion-pago-admision");
+      if (pagoElem) {
+        pagoElem.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 60);
+  };
+
+  const handleManifestarInteres = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!validarDatosParticipante()) return;
+
     setEnviandoSolicitud(true);
+    setMetodoInscripcion("interes");
     try {
       const temasFinales = formData.experienciaTemas.includes("Otro") && formData.experienciaOtro.trim()
         ? [...formData.experienciaTemas.filter(t => t !== "Otro"), `Otro: ${formData.experienciaOtro.trim()}`]
@@ -648,12 +726,88 @@ export default function CursoLanding() {
         cursosPrevios: cursosPreviosFinal,
         alumnoIiresodh: formData.alumnoIiresodh,
         comentarios: formData.comentarios.trim(),
-        modalidadSolicitud: esInteres ? "registro_interes" : "transferencia_bancaria",
-        metodoPago: esInteres ? "contacto_posterior" : "transferencia_bancaria",
-        tipoRegistro: metodoInscripcion,
+        modalidadSolicitud: "registro_interes",
+        metodoPago: "contacto_posterior",
+        tipoRegistro: "interes",
         montoTotalInversion: 3350,
         moneda: "USD",
-        // TÉRMINOS DE CONTRATACIÓN Y CLICKWRAP
+        terminosContratacionAceptados: false,
+        clickwrapAceptado: false,
+        clientIp: clientIp || "no_disponible",
+        userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
+        aceptaPoliticaPrivacidad: true,
+        fechaSolicitud: serverTimestamp(),
+        estado: "pendiente"
+      });
+
+      setSolicitudExitosa(true);
+      setAlerta({
+        open: true,
+        mensaje: "¡Interés y datos registrados con éxito! Nuestro departamento académico te contactará a la brevedad para coordinar los detalles.",
+        tipo: "success"
+      });
+    } catch (err) {
+      console.error("Error al registrar interés:", err);
+      setAlerta({
+        open: true,
+        mensaje: "Ocurrió un error al enviar tu registro de interés. Por favor intenta de nuevo o escríbenos a formacion@iiresodh.org.",
+        tipo: "error"
+      });
+    } finally {
+      setEnviandoSolicitud(false);
+    }
+  };
+
+  const handleSubmitTransferencia = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!validarDatosParticipante()) return;
+    if (!aceptarPrivacidadTransferencia) {
+      setAlerta({
+        open: true,
+        mensaje: "Debes marcar la casilla de aceptación de los Términos de Contratación y la Política de Privacidad para continuar con la solicitud bancaria.",
+        tipo: "warning"
+      });
+      const termElem = document.getElementById("paso-terminos-contratacion");
+      if (termElem) termElem.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
+    setEnviandoSolicitud(true);
+    setMetodoInscripcion("transferencia");
+    try {
+      const temasFinales = formData.experienciaTemas.includes("Otro") && formData.experienciaOtro.trim()
+        ? [...formData.experienciaTemas.filter(t => t !== "Otro"), `Otro: ${formData.experienciaOtro.trim()}`]
+        : formData.experienciaTemas;
+
+      const cursosPreviosFinal = formData.cursosPrevios === "si"
+        ? (formData.detalleCursosPrevios.trim() ? `Sí (${formData.detalleCursosPrevios.trim()})` : "Sí")
+        : "No";
+
+      const nombreCompleto = `${formData.nombres.trim()} ${formData.apellidos.trim()}`;
+
+      await addDoc(collection(db, "solicitudesCursos"), {
+        cursoId: curso?.id || "palermo-2027",
+        cursoTitulo: curso?.titulo || "Curso Internacional 2027 - Palermo",
+        nombre: nombreCompleto,
+        nombres: formData.nombres.trim(),
+        apellidos: formData.apellidos.trim(),
+        documentoIdentidad: formData.documentoIdentidad.trim(),
+        institucion: formData.institucion.trim(),
+        email: formData.email.trim(),
+        telefono: formData.telefono.trim(),
+        pais: formData.pais,
+        profesion: formData.profesion.trim(),
+        experienciaTemas: temasFinales,
+        motivoParticipacion: formData.motivoParticipacion.trim(),
+        cursosPrevios: cursosPreviosFinal,
+        alumnoIiresodh: formData.alumnoIiresodh,
+        comentarios: formData.comentarios.trim(),
+        modalidadSolicitud: "transferencia_bancaria",
+        metodoPago: "transferencia_bancaria",
+        tipoRegistro: "transferencia",
+        planCuotasSeleccionado: planCuotas,
+        montoTotalInversion: 3350,
+        moneda: "USD",
         terminosContratacionAceptados: true,
         clickwrapAceptado: true,
         versionTerminos: "TerminosContratacion-Palermo-2027-v1",
@@ -674,22 +828,22 @@ export default function CursoLanding() {
       setAceptarPrivacidadTransferencia(false);
       setAlerta({
         open: true,
-        mensaje: esInteres
-          ? "¡Interés y reserva registrados con éxito! Nuestro departamento académico te contactará a la brevedad para coordinar los detalles."
-          : "¡Solicitud recibida con éxito! Nuestro departamento académico te contactará a la brevedad con la información bancaria oficial.",
+        mensaje: "¡Solicitud registrada con éxito! Nuestro departamento académico te contactará a la brevedad con la información bancaria oficial.",
         tipo: "success"
       });
     } catch (err) {
-      console.error("Error al enviar solicitud:", err);
+      console.error("Error al registrar solicitud por transferencia:", err);
       setAlerta({
         open: true,
-        mensaje: "Ocurrió un error al enviar la solicitud. Por favor intenta de nuevo o escríbenos directamente a formacion@iiresodh.org.",
+        mensaje: "Ocurrió un error al enviar la solicitud bancaria. Por favor intenta de nuevo o escríbenos a formacion@iiresodh.org.",
         tipo: "error"
       });
     } finally {
       setEnviandoSolicitud(false);
     }
   };
+
+  const handleSubmitSolicitud = handleManifestarInteres;
 
   const irASeccion = (seccion) => {
     if (seccion === "incluido") {
@@ -803,7 +957,7 @@ export default function CursoLanding() {
     { id: "docentes", label: "Docentes Destacados", icono: "👨‍⚖️" },
     { id: "brochure", label: "Brochure Oficial", icono: "📄" },
     { id: "sede", label: "Sede Palermo", icono: "📍" },
-    { id: "inscripcion", label: "Inscripción & Pago", icono: "💳" }
+    { id: "inscripcion", label: "Admisión & Reserva", icono: "💳" }
   ];
 
   return (
@@ -954,19 +1108,37 @@ export default function CursoLanding() {
               >
                 Inscríbete Ahora
               </button>
-              <a
-                href={contacto?.whatsappUrl || "https://wa.me/50640816188"}
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Solicita más información por WhatsApp"
-                aria-label="Solicita más información por WhatsApp"
-                className="bg-white/10 hover:bg-[#25D366]/20 border border-white/20 hover:border-[#25D366]/50 py-3.5 px-5 rounded-xl transition-all flex items-center justify-center gap-2.5 cursor-pointer shadow-md active:scale-95 text-white hover:text-emerald-300 font-bold text-xs uppercase tracking-wider whitespace-nowrap sm:ml-auto"
-              >
-                <svg className="w-5 h-5 fill-[#25D366] shrink-0" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z" />
-                </svg>
-                <span>Solicita más información</span>
-              </a>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3 sm:ml-auto">
+                <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                  Solicita más información:
+                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <a
+                    href={contacto?.whatsappUrl || "https://wa.me/50640816188"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Solicita más información por WhatsApp"
+                    aria-label="Solicita más información por WhatsApp"
+                    className="bg-white/10 hover:bg-[#25D366]/20 border border-white/20 hover:border-[#25D366]/50 py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-95 text-white hover:text-emerald-300 font-bold text-xs uppercase tracking-wider whitespace-nowrap"
+                  >
+                    <svg className="w-4 h-4 fill-[#25D366] shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z" />
+                    </svg>
+                    <span>WhatsApp</span>
+                  </a>
+                  <a
+                    href="mailto:cursos@iiresodh.org?subject=Consulta%20sobre%20el%20Curso%20Internacional%20Palermo%202027"
+                    title="Solicita más información por email a cursos@iiresodh.org"
+                    aria-label="Solicita más información por email a cursos@iiresodh.org"
+                    className="bg-white/10 hover:bg-sky-500/20 border border-white/20 hover:border-sky-400/50 py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-95 text-white hover:text-sky-300 font-bold text-xs uppercase tracking-wider whitespace-nowrap"
+                  >
+                    <svg className="w-4 h-4 fill-none stroke-current stroke-2 shrink-0 text-sky-400" viewBox="0 0 24 24" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>Email</span>
+                  </a>
+                </div>
+              </div>
             </div>
 
           </div>
@@ -1587,7 +1759,7 @@ export default function CursoLanding() {
              ========================================== */}
             {seccionActiva === "brochure" && (
               <div className="space-y-6 animate-fade-in">
-                <div className="pb-3 border-b border-gray-100">
+                <div className="pb-3 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block">
                       Material Informativo
@@ -1596,10 +1768,29 @@ export default function CursoLanding() {
                       Brochure Oficial del Evento
                     </h2>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={brochurePdf}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold uppercase tracking-wider py-2.5 px-4 rounded-xl transition inline-flex items-center gap-1.5"
+                    >
+                      <span>Abrir PDF</span>
+                      <span>↗</span>
+                    </a>
+                    <a
+                      href={brochurePdf}
+                      download="Curso_Palermo-Brochure.pdf"
+                      className="bg-main-red hover:bg-red-800 text-white text-xs font-bold uppercase tracking-wider py-2.5 px-5 rounded-xl shadow-md transition inline-flex items-center gap-2"
+                    >
+                      <span>Descargar PDF</span>
+                      <span>↓</span>
+                    </a>
+                  </div>
                 </div>
 
                 <p className="text-xs text-gray-600 font-light">
-                  Haz clic en cualquiera de las páginas para ampliarla en alta definición o descárgala para compartirla con tu institución académica o judicial.
+                  Haz clic en cualquiera de las páginas para ampliarla en alta definición o descarga el documento PDF oficial para compartirlo con tu institución académica o judicial.
                 </p>
 
                 {/* GRID CON LAS 2 PÁGINAS DEL BROCHURE */}
@@ -1625,11 +1816,11 @@ export default function CursoLanding() {
                     <div className="mt-3 flex items-center justify-between text-xs">
                       <span className="font-bold text-gray-700">Página 1: Convocatoria & Ejes</span>
                       <a
-                        href={brochureP1}
-                        download="Brochure_Palermo_2027_P1.jpg"
+                        href={brochurePdf}
+                        download="Curso_Palermo-Brochure.pdf"
                         className="text-main-blue hover:underline font-bold text-[11px]"
                       >
-                        Descargar JPG ↓
+                        Descargar PDF ↓
                       </a>
                     </div>
                   </div>
@@ -1654,11 +1845,11 @@ export default function CursoLanding() {
                     <div className="mt-3 flex items-center justify-between text-xs">
                       <span className="font-bold text-gray-700">Página 2: Itinerario 7 Días & Docentes</span>
                       <a
-                        href={brochureP2}
-                        download="Brochure_Palermo_2027_P2.jpg"
+                        href={brochurePdf}
+                        download="Curso_Palermo-Brochure.pdf"
                         className="text-main-blue hover:underline font-bold text-[11px]"
                       >
-                        Descargar JPG ↓
+                        Descargar PDF ↓
                       </a>
                     </div>
                   </div>
@@ -1841,21 +2032,18 @@ export default function CursoLanding() {
             )}
 
             {/* ==========================================
-              PESTAÑA 5: INSCRIPCIÓN Y PAGO (FORMULARIO)
+              PESTAÑA 5: ADMISIÓN Y RESERVA DE MATRÍCULA
              ========================================== */}
             {seccionActiva === "inscripcion" && (
-              <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
+              <div className="space-y-6 animate-fade-in max-w-5xl mx-auto">
                 <div className="text-center max-w-2xl mx-auto mb-2">
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
                     Proceso Oficial de Admisión
                   </span>
                   <h2 className="text-2xl md:text-3xl font-black text-main-blue tracking-tight">
-                    Inscripción y Admisión Académica
+                    Admisión y Reserva de Matrícula
                   </h2>
                   <div className="w-12 h-1 bg-main-red mx-auto my-2 rounded-full" />
-                  <p className="text-xs sm:text-sm text-gray-500 font-light mt-1">
-                    Completa tus datos oficiales a continuación. Una vez registrados, podrás decidir si deseas únicamente manifestar interés o proceder con el pago (en cuotas con tarjeta o mediante transferencia bancaria).
-                  </p>
                 </div>
 
                 {solicitudExitosa ? (
@@ -1869,7 +2057,7 @@ export default function CursoLanding() {
                       </span>
                       <h4 className="text-xl font-black text-green-950">
                         {metodoInscripcion === "interes"
-                          ? "¡Interés y Reserva Registrados con Éxito!"
+                          ? "¡Interés y Datos Registrados con Éxito!"
                           : "¡Solicitud Registrada con Éxito!"}
                       </h4>
                     </div>
@@ -1881,10 +2069,17 @@ export default function CursoLanding() {
                     <div className="pt-2">
                       <button
                         type="button"
-                        onClick={() => setSolicitudExitosa(false)}
-                        className="bg-green-700 hover:bg-green-800 text-white font-bold text-xs uppercase tracking-wider py-3 px-6 rounded-xl transition cursor-pointer shadow-sm active:scale-95"
+                        onClick={() => {
+                          setSolicitudExitosa(false);
+                          setMostrarSeccionPago(false);
+                          irASeccion("legado");
+                        }}
+                        className="bg-green-700 hover:bg-green-800 text-white font-bold text-xs uppercase tracking-wider py-3 px-6 rounded-xl transition cursor-pointer shadow-sm active:scale-95 inline-flex items-center gap-2"
                       >
-                        Completar otra inscripción o solicitud
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        <span>Entendido</span>
                       </button>
                     </div>
                   </div>
@@ -1905,14 +2100,6 @@ export default function CursoLanding() {
                             Conforme a tu documento oficial de identidad o pasaporte
                           </p>
                         </div>
-                      </div>
-
-                      {/* AVISO PASAPORTE */}
-                      <div className="bg-sky-50/70 border border-sky-200/80 rounded-xl px-3.5 py-2.5 text-xs text-sky-900 flex items-center gap-2">
-                        <span className="text-base">🛂</span>
-                        <span className="text-[11px] font-medium leading-tight">
-                          Ingresa tus nombres y apellidos <strong>exactamente conforme aparecen en tu pasaporte</strong> para la emisión de certificaciones oficiales, reservas y acreditación internacional.
-                        </span>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -2180,333 +2367,365 @@ export default function CursoLanding() {
                       </div>
                     </div>
 
-                    {/* PASO 2: TÉRMINOS DE CONTRATACIÓN Y CLICKWRAP */}
-                    <div id="paso-terminos-contratacion" className="space-y-4">
-                      <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
-                        <span className={`w-7 h-7 rounded-full font-bold text-xs flex items-center justify-center shrink-0 shadow-xs transition-colors ${aceptarPrivacidadTransferencia ? "bg-emerald-600 text-white" : "bg-main-blue text-white"
-                          }`}>
-                          {aceptarPrivacidadTransferencia ? "✓" : "2"}
+                    {/* =======================================================
+                        BOTONES DE DECISIÓN DE ACCIÓN TRAS COMPLETAR LA PARTE 1
+                       ======================================================= */}
+                    <div className="pt-6 border-t border-gray-200/80 space-y-4">
+                      <div className="text-center sm:text-left">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
+                          Paso siguiente
                         </span>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-base font-extrabold text-main-blue tracking-tight">
-                              Términos de Contratación y Consentimiento Informado
-                            </h3>
-                            {aceptarPrivacidadTransferencia && (
-                              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
-                                Aceptado
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-gray-500 font-light">
-                            Condiciones contractuales, canales de pago y política de privacidad (Requisito obligatorio para las 3 opciones)
-                          </p>
-                        </div>
+                        <h3 className="text-base sm:text-lg font-extrabold text-main-blue tracking-tight">
+                          ¿Cómo deseas continuar tu proceso de admisión?
+                        </h3>
+                        <p className="text-xs text-gray-500 font-light mt-0.5">
+                          Elige si prefieres manifestar interés para ser contactado por la coordinación académica, o proceder directamente con el pago para asegurar tu plaza oficial.
+                        </p>
                       </div>
 
-                      <div className={`rounded-2xl p-4 sm:p-5 space-y-3 border transition-all ${aceptarPrivacidadTransferencia
-                        ? "bg-emerald-50/50 border-emerald-300 shadow-xs"
-                        : "bg-slate-50 border-slate-200"
-                        }`}>
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200/80">
-                          <span className="text-xs font-bold text-gray-800 flex items-center gap-2">
-                            <span>📜</span> Contrato de Servicios Académicos — Palermo 2027
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setModalTerminosOpen(true)}
-                            className="inline-flex items-center gap-1.5 text-xs font-bold text-main-blue hover:text-main-red underline cursor-pointer self-start sm:self-auto"
-                          >
-                            <span>Ver Términos de Contratación</span>
-                            <span>↗</span>
-                          </button>
-                        </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                        {/* BOTÓN 1: MANIFESTAR INTERÉS */}
+                        <div className="flex flex-col justify-between p-5 sm:p-6 rounded-2xl border-2 border-slate-200 hover:border-main-blue/60 bg-slate-50/70 hover:bg-blue-50/20 transition-all shadow-xs space-y-4">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2.5">
+                              <span className="w-8 h-8 rounded-xl bg-blue-100 text-main-blue flex items-center justify-center text-sm font-black shadow-xs shrink-0">
+                                📋
+                              </span>
+                              <h4 className="font-extrabold text-sm sm:text-base text-main-blue tracking-tight">
+                                Manifestar Interés
+                              </h4>
+                            </div>
+                            <p className="text-xs text-gray-600 font-light leading-relaxed">
+                              Envía tus datos y perfil académico para iniciar tu postulación preliminar sin requerir ningún pago en este momento.
+                            </p>
+                          </div>
 
-                        <label className="flex items-start gap-2.5 text-xs text-gray-700 font-medium cursor-pointer select-none text-left">
-                          <input
-                            type="checkbox"
-                            checked={aceptarPrivacidadTransferencia}
-                            onChange={(e) => setAceptarPrivacidadTransferencia(e.target.checked)}
-                            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-main-blue focus:ring-main-blue cursor-pointer"
-                          />
-                          <span className="leading-relaxed">
-                            He leído y acepto los{" "}
+                          <div className="space-y-2.5 pt-1">
                             <button
                               type="button"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setModalTerminosOpen(true);
-                              }}
-                              className="text-main-blue font-bold underline hover:text-main-red cursor-pointer"
+                              onClick={handleManifestarInteres}
+                              disabled={enviandoSolicitud}
+                              className="w-full bg-main-blue hover:bg-light-blue disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
                             >
-                              Términos de Contratación
-                            </button>{" "}
-                            del Curso Internacional Palermo 2027 y la{" "}
-                            <a
-                              href="/privacidad"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-main-blue font-bold underline hover:text-light-blue"
+                              {enviandoSolicitud && metodoInscripcion === "interes" ? (
+                                <>
+                                  <CircularProgress size={16} sx={{ color: "white" }} />
+                                  <span>Registrando interés...</span>
+                                </>
+                              ) : (
+                                <span>📋 Iniciar Proceso / Manifestar Interés</span>
+                              )}
+                            </button>
+
+                            <p className="text-[11px] text-gray-500 font-light leading-snug text-center sm:text-left flex items-start gap-1.5">
+                              <span className="shrink-0 text-xs">ℹ️</span>
+                              <span>
+                                Te contactaremos posteriormente por correo electrónico o WhatsApp para coordinar tu proceso de admisión y opciones disponibles.
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* BOTÓN 2: PAGAR E INSCRIBIRSE DE UNA VEZ */}
+                        <div className={`flex flex-col justify-between p-5 sm:p-6 rounded-2xl border-2 transition-all shadow-xs space-y-4 ${mostrarSeccionPago
+                          ? "border-main-red bg-red-50/30 ring-2 ring-main-red/20 shadow-md"
+                          : "border-red-200 hover:border-main-red bg-red-50/15 hover:bg-red-50/30"
+                          }`}>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2.5">
+                                <span className="w-8 h-8 rounded-xl bg-red-100 text-main-red flex items-center justify-center text-sm font-black shadow-xs shrink-0">
+                                  💳
+                                </span>
+                                <h4 className="font-extrabold text-sm sm:text-base text-main-red tracking-tight">
+                                  Pagar e Inscribirme Ahora
+                                </h4>
+                              </div>
+                              <span className="bg-emerald-600 text-white text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider shadow-xs shrink-0">
+                                Garantiza Cupo
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-700 font-light leading-relaxed">
+                              Despliega las opciones de financiamiento en cuotas sin interés y formaliza tu matrícula para asegurar tu plaza oficial de forma inmediata.
+                            </p>
+                          </div>
+
+                          <div className="space-y-2.5 pt-1">
+                            <button
+                              type="button"
+                              onClick={handleBotonPagar}
+                              className={`w-full text-white font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation ${mostrarSeccionPago
+                                ? "bg-[#8b1515] ring-2 ring-red-300"
+                                : "bg-main-red hover:bg-[#8b1515]"
+                                }`}
                             >
-                              Política de Privacidad
-                            </a>{" "}
-                            de IIRESODH. Manifiesto mi voluntad libre e informada de contratar y registrarme bajo estas condiciones.
-                          </span>
-                        </label>
-                        <p className="text-[10px] text-gray-400 font-light">
-                          * Tu fecha, hora, dirección IP y datos de registro quedarán archivados electrónicamente como constancia y evidencia formal de tu aceptación contractual.
-                        </p>
+                              <span>💳 Pagar e Inscribirme de una vez</span>
+                              <span className="text-base">{mostrarSeccionPago ? "↓" : "→"}</span>
+                            </button>
+
+                            <p className="text-[11px] text-red-900/80 font-medium leading-snug text-center sm:text-left flex items-start gap-1.5">
+                              <span className="shrink-0 text-xs">⚡</span>
+                              <span>
+                                Al realizar el pago en este momento garantizas tu cupo oficial de forma inmediata y definitiva en el programa.
+                              </span>
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    {/* PASO 3: DECISIÓN DE INSCRIPCIÓN Y MEDIO DE PAGO */}
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
-                        <span className="w-7 h-7 rounded-full bg-main-blue text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
-                          3
-                        </span>
-                        <div>
-                          <h3 className="text-base font-extrabold text-main-blue tracking-tight">
-                            ¿Cómo deseas proceder con tu inscripción?
-                          </h3>
-                          <p className="text-[11px] text-gray-500 font-light">
-                            Selecciona si deseas manifestar interés, solicitar transferencia bancaria o pagar en línea con tarjeta
-                          </p>
-                        </div>
-                      </div>
-
-                      {!aceptarPrivacidadTransferencia && (
-                        <div className="bg-amber-50/90 border border-amber-300/80 rounded-2xl p-3.5 text-xs text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
-                          <div className="flex items-start sm:items-center gap-2.5">
-                            <span className="text-base shrink-0">⚠️</span>
-                            <span className="text-[11px] font-medium leading-snug">
-                              <strong>Requisito contractual obligatorio:</strong> Debes marcar la casilla de aceptación de los Términos de Contratación en el <strong>Paso 2</strong> para habilitar cualquiera de las 3 opciones (Manifestar Interés, Transferencia Bancaria o Pago con Tarjeta).
+                    {/* =======================================================
+                        SECCIÓN DE PAGO, FINANCIAMIENTO Y CLICKWRAP
+                        (Se despliega únicamente tras presionar "Pagar e Inscribirme Ahora")
+                       ======================================================= */}
+                    {mostrarSeccionPago && (
+                      <div id="seccion-pago-admision" className="pt-8 border-t-2 border-slate-200/90 space-y-8 animate-fade-in">
+                        {/* ENCABEZADO DE LA SECCIÓN DE PAGO */}
+                        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-main-blue text-white p-5 sm:p-6 rounded-2xl shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400 block">
+                              Paso 2: Formalización y Pago
+                            </span>
+                            <h3 className="text-lg sm:text-xl font-black tracking-tight text-white">
+                              Financiamiento, Términos y Pasarela de Pago
+                            </h3>
+                            <p className="text-xs text-slate-300 font-light">
+                              Selecciona tu plan de cuotas, acepta los términos de contratación y asegura tu cupo oficial.
+                            </p>
+                          </div>
+                          <div className="shrink-0 flex items-center gap-2">
+                            <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                              Cupo Garantizado al Pagar
                             </span>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const p2 = document.getElementById("paso-terminos-contratacion");
-                              if (p2) p2.scrollIntoView({ behavior: "smooth", block: "center" });
-                            }}
-                            className="shrink-0 inline-flex items-center gap-1 text-[11px] font-bold text-amber-900 hover:text-amber-950 underline cursor-pointer self-start sm:self-auto"
-                          >
-                            <span>Ir al Paso 2</span>
-                            <span>↑</span>
-                          </button>
-                        </div>
-                      )}
-
-                      {/* SELECTOR DE 3 OPCIONES */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        {/* Opción 1: Manifestar Interés */}
-                        <div
-                          onClick={() => setMetodoInscripcion("interes")}
-                          className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${metodoInscripcion === "interes"
-                            ? "border-emerald-600 bg-emerald-50/60 shadow-xs"
-                            : "border-gray-200 hover:border-gray-300 bg-white"
-                            }`}
-                        >
-                          <div className="space-y-1.5">
-                            <div className="flex items-center justify-between">
-                              <span className="text-2xl">📋</span>
-                              <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${metodoInscripcion === "interes" ? "border-emerald-600 bg-emerald-600" : "border-gray-300"
-                                }`}>
-                                {metodoInscripcion === "interes" && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
-                              </span>
-                            </div>
-                            <h4 className="font-extrabold text-sm text-gray-900">
-                              Manifestar Interés
-                            </h4>
-                            <p className="text-[11px] text-gray-500 font-light leading-relaxed">
-                              Reserva provisional sin pago inmediato. Te contactaremos para brindarte asesoría y coordinar tu proceso.
-                            </p>
-                          </div>
                         </div>
 
-                        {/* Opción 2: Transferencia Bancaria */}
-                        <div
-                          onClick={() => setMetodoInscripcion("transferencia")}
-                          className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${metodoInscripcion === "transferencia"
-                            ? "border-amber-600 bg-amber-50/60 shadow-xs"
-                            : "border-gray-200 hover:border-gray-300 bg-white"
-                            }`}
-                        >
-                          <div className="space-y-1.5">
-                            <div className="flex items-center justify-between">
-                              <span className="text-2xl">🏛️</span>
-                              <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${metodoInscripcion === "transferencia" ? "border-amber-600 bg-amber-600" : "border-gray-300"
-                                }`}>
-                                {metodoInscripcion === "transferencia" && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
-                              </span>
-                            </div>
-                            <h4 className="font-extrabold text-sm text-gray-900">
-                              Transferencia Bancaria
-                            </h4>
-                            <p className="text-[11px] text-gray-500 font-light leading-relaxed">
-                              Solicita cuentas bancarias autorizadas. Reserva provisional por 5 días.
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Opción 3: Pagar con Tarjeta */}
-                        <div
-                          onClick={() => setMetodoInscripcion("tarjeta")}
-                          className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${metodoInscripcion === "tarjeta"
-                            ? "border-main-blue bg-blue-50/60 shadow-xs"
-                            : "border-gray-200 hover:border-gray-300 bg-white"
-                            }`}
-                        >
-                          <div className="space-y-1.5">
-                            <div className="flex items-center justify-between">
-                              <span className="text-2xl">💳</span>
-                              <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${metodoInscripcion === "tarjeta" ? "border-main-blue bg-main-blue" : "border-gray-300"
-                                }`}>
-                                {metodoInscripcion === "tarjeta" && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
-                              </span>
-                            </div>
-                            <h4 className="font-extrabold text-sm text-gray-900">
-                              Pagar con Tarjeta
-                            </h4>
-                            <p className="text-[11px] text-gray-500 font-light leading-relaxed">
-                              Asegura tu cupo de inmediato. Habilita opciones de financiamiento en cuotas sin interés y pago seguro Stripe.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* DETALLE DINÁMICO SEGÚN LA DECISIÓN DEL INTERESADO */}
-                      {metodoInscripcion === "interes" && (
-                        <div className="space-y-4 pt-2 animate-fade-in">
-                          <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-4 text-xs text-emerald-900 flex items-start gap-3">
-                            <span className="text-xl shrink-0">🤝</span>
-                            <div className="space-y-1">
-                              <span className="font-bold text-sm block">Reserva Provisional y Asesoría Personalizada</span>
-                              <p className="text-[11px] leading-relaxed">
-                                Al enviar este formulario registras tu interés y apartas temporalmente tu plaza en el Curso Internacional Palermo 2027. No se te solicitará ningún cobro con tarjeta en este momento; nuestro equipo académico te contactará para coordinar tu proceso de admisión y modalidades de pago.
+                        {/* 1. TÉRMINOS DE CONTRATACIÓN Y CONSENTIMIENTO INFORMADO (CLICKWRAP) */}
+                        <div id="paso-terminos-contratacion" className="space-y-3.5">
+                          <div className="flex items-center gap-3 pb-2.5 border-b border-gray-100">
+                            <span className={`w-7 h-7 rounded-full font-bold text-xs flex items-center justify-center shrink-0 shadow-xs transition-colors ${aceptarPrivacidadTransferencia ? "bg-emerald-600 text-white" : "bg-main-blue text-white"
+                              }`}>
+                              {aceptarPrivacidadTransferencia ? "✓" : "A"}
+                            </span>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h4 className="text-base font-extrabold text-main-blue tracking-tight">
+                                  Términos de Contratación y Consentimiento Informado
+                                </h4>
+                                {aceptarPrivacidadTransferencia && (
+                                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                                    Aceptado
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-[11px] text-gray-500 font-light">
+                                Condiciones contractuales, canales de pago y política de privacidad (Requisito legal para formalizar el pago)
                               </p>
                             </div>
                           </div>
 
-                          {aceptarPrivacidadTransferencia ? (
-                            <div className="flex items-center gap-2 text-xs text-emerald-800 font-medium bg-emerald-50 px-3.5 py-2.5 rounded-xl border border-emerald-200 animate-fade-in">
-                              <span>✓</span>
-                              <span>Términos de Contratación y Clickwrap aceptados en el Paso 2.</span>
+                          <div className={`rounded-2xl p-4 sm:p-5 space-y-3 border transition-all ${aceptarPrivacidadTransferencia
+                            ? "bg-emerald-50/50 border-emerald-300 shadow-xs"
+                            : "bg-slate-50 border-slate-200"
+                            }`}>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200/80">
+                              <span className="text-xs font-bold text-gray-800 flex items-center gap-2">
+                                <span>📜</span> Contrato de Servicios Académicos — Palermo 2027
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => setModalTerminosOpen(true)}
+                                className="inline-flex items-center gap-1.5 text-xs font-bold text-main-blue hover:text-main-red underline cursor-pointer self-start sm:self-auto"
+                              >
+                                <span>Ver Términos de Contratación</span>
+                                <span>↗</span>
+                              </button>
                             </div>
-                          ) : (
-                            <div className="flex items-start gap-2.5 text-xs text-amber-900 font-medium bg-amber-50/90 px-3.5 py-2.5 rounded-xl border border-amber-300 animate-fade-in">
-                              <span className="text-base shrink-0">⚠️</span>
-                              <div className="space-y-0.5">
-                                <span className="font-bold block">Aceptación de Términos Requerida</span>
-                                <span className="text-[11px] text-amber-800 leading-tight block">
-                                  Debes marcar la casilla de aceptación de los Términos de Contratación en el <strong>Paso 2</strong> para habilitar y formalizar tu registro de interés.
-                                </span>
-                              </div>
-                            </div>
-                          )}
 
-                          <button
-                            type="button"
-                            onClick={handleSubmitSolicitud}
-                            disabled={enviandoSolicitud || !aceptarPrivacidadTransferencia}
-                            className="w-full bg-emerald-700 hover:bg-emerald-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-widest py-4 px-6 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
-                          >
-                            {enviandoSolicitud ? (
-                              <>
-                                <CircularProgress size={16} sx={{ color: "white" }} />
-                                <span>Registrando interés...</span>
-                              </>
-                            ) : (
-                              <span>📋 Confirmar Registro de Interés y Apartar Cupo</span>
-                            )}
-                          </button>
-                        </div>
-                      )}
-
-                      {metodoInscripcion === "transferencia" && (
-                        <div className="space-y-4 pt-2 animate-fade-in">
-                          <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-4 text-xs text-amber-900 flex items-start gap-3">
-                            <span className="text-xl shrink-0">🏛️</span>
-                            <div className="space-y-1">
-                              <span className="font-bold text-sm block">Orden de Transferencia Bancaria Oficial</span>
-                              <p className="text-[11px] leading-relaxed">
-                                Al formalizar esta solicitud, recibirás por correo electrónico las instrucciones con las cuentas bancarias oficiales. Tu cupo se reservará provisionalmente por 5 días naturales para la acreditación de los fondos.
-                              </p>
-                            </div>
+                            <label className="flex items-start gap-2.5 text-xs text-gray-700 font-medium cursor-pointer select-none text-left">
+                              <input
+                                type="checkbox"
+                                checked={aceptarPrivacidadTransferencia}
+                                onChange={(e) => setAceptarPrivacidadTransferencia(e.target.checked)}
+                                className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-main-blue focus:ring-main-blue cursor-pointer"
+                              />
+                              <span className="leading-relaxed">
+                                He leído y acepto los{" "}
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setModalTerminosOpen(true);
+                                  }}
+                                  className="text-main-blue font-bold underline hover:text-main-red cursor-pointer"
+                                >
+                                  Términos de Contratación
+                                </button>{" "}
+                                del Curso Internacional Palermo 2027 y la{" "}
+                                <a
+                                  href="/privacidad"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-main-blue font-bold underline hover:text-light-blue"
+                                >
+                                  Política de Privacidad
+                                </a>{" "}
+                                de IIRESODH. Manifiesto mi voluntad libre e informada de contratar y registrarme bajo estas condiciones.
+                              </span>
+                            </label>
+                            <p className="text-[10px] text-gray-400 font-light">
+                              * Tu fecha, hora, dirección IP y datos de registro quedarán archivados electrónicamente como constancia y evidencia formal de tu aceptación contractual.
+                            </p>
                           </div>
-
-                          {aceptarPrivacidadTransferencia ? (
-                            <div className="flex items-center gap-2 text-xs text-emerald-800 font-medium bg-emerald-50 px-3.5 py-2.5 rounded-xl border border-emerald-200 animate-fade-in">
-                              <span>✓</span>
-                              <span>Términos de Contratación y Clickwrap aceptados en el Paso 2.</span>
-                            </div>
-                          ) : (
-                            <div className="flex items-start gap-2.5 text-xs text-amber-900 font-medium bg-amber-50/90 px-3.5 py-2.5 rounded-xl border border-amber-300 animate-fade-in">
-                              <span className="text-base shrink-0">⚠️</span>
-                              <div className="space-y-0.5">
-                                <span className="font-bold block">Aceptación de Términos Requerida</span>
-                                <span className="text-[11px] text-amber-800 leading-tight block">
-                                  Debes marcar la casilla de aceptación de los Términos de Contratación en el <strong>Paso 2</strong> para habilitar y solicitar las cuentas bancarias autorizadas.
-                                </span>
-                              </div>
-                            </div>
-                          )}
-
-                          <button
-                            type="button"
-                            onClick={handleSubmitSolicitud}
-                            disabled={enviandoSolicitud || !aceptarPrivacidadTransferencia}
-                            className="w-full bg-amber-700 hover:bg-amber-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-widest py-4 px-6 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
-                          >
-                            {enviandoSolicitud ? (
-                              <>
-                                <CircularProgress size={16} sx={{ color: "white" }} />
-                                <span>Enviando solicitud bancaria...</span>
-                              </>
-                            ) : (
-                              <span>🏛️ Confirmar Inscripción y Solicitar Cuentas Bancarias</span>
-                            )}
-                          </button>
                         </div>
-                      )}
 
-                      {metodoInscripcion === "tarjeta" && (
-                        <div className="space-y-6 pt-2 animate-fade-in">
-                          {/* OPCIONES DE FINANCIAMIENTO */}
-                          <div className="space-y-3 pt-2">
-                            <div className="flex items-center justify-between flex-wrap gap-2">
-                              <h4 className="text-xs font-black text-main-blue uppercase tracking-wider">
-                                Opciones de Financiamiento en Cuotas Sin Intereses
-                              </h4>
+                        {/* 2. OPCIONES DE FINANCIAMIENTO EN CUOTAS */}
+                        <div className="space-y-3.5">
+                          <div className="flex items-center gap-3 pb-2.5 border-b border-gray-100">
+                            <span className="w-7 h-7 rounded-full bg-main-blue text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+                              B
+                            </span>
+                            <div className="flex items-center justify-between flex-wrap gap-2 w-full">
+                              <div>
+                                <h4 className="text-base font-extrabold text-main-blue tracking-tight">
+                                  Modalidad de Inversión y Cuotas de Financiamiento
+                                </h4>
+                                <p className="text-[11px] text-gray-500 font-light">
+                                  Elige abonar el importe total en un solo pago o financiar en cuotas mensuales sin intereses
+                                </p>
+                              </div>
                               <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                                 0% Interés • Pagos Mensuales
                               </span>
                             </div>
-                            <SelectorModalidadPago
-                              curso={curso}
-                              landing={landing}
-                              planCuotas={planCuotas}
-                              setPlanCuotas={setPlanCuotas}
-                            />
                           </div>
 
-                          {/* FORMULARIO DE PAGO STRIPE */}
-                          <div className="pt-2">
-                            <FormularioPagoCurso
-                              curso={curso}
-                              landing={landing}
-                              planCuotas={planCuotas}
-                              setPlanCuotas={setPlanCuotas}
-                              formData={formData}
-                              setFormData={setFormData}
-                              soloPasarelaPago={true}
-                              terminosAceptadosExternos={aceptarPrivacidadTransferencia}
-                            />
-                          </div>
+                          <SelectorModalidadPago
+                            curso={curso}
+                            landing={landing}
+                            planCuotas={planCuotas}
+                            setPlanCuotas={setPlanCuotas}
+                          />
                         </div>
-                      )}
 
-                    </div>
+                        {/* 3. CANAL DE PAGO: TARJETA DE CRÉDITO/DÉBITO O TRANSFERENCIA BANCARIA */}
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3 pb-2.5 border-b border-gray-100">
+                            <span className="w-7 h-7 rounded-full bg-main-blue text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+                              C
+                            </span>
+                            <div>
+                              <h4 className="text-base font-extrabold text-main-blue tracking-tight">
+                                Canal de Pago
+                              </h4>
+                              <p className="text-[11px] text-gray-500 font-light">
+                                Elige pagar en línea con tarjeta o solicitar datos para transferencia bancaria oficial
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {/* Pagar con Tarjeta */}
+                            <div
+                              onClick={() => setMetodoInscripcion("tarjeta")}
+                              className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${metodoInscripcion === "tarjeta"
+                                ? "border-main-blue bg-blue-50/60 shadow-xs"
+                                : "border-gray-200 hover:border-gray-300 bg-white"
+                                }`}
+                            >
+                              <div className="space-y-1.5">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-2xl">💳</span>
+                                  <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${metodoInscripcion === "tarjeta" ? "border-main-blue bg-main-blue" : "border-gray-300"
+                                    }`}>
+                                    {metodoInscripcion === "tarjeta" && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                  </span>
+                                </div>
+                                <h5 className="font-extrabold text-sm text-gray-900">
+                                  Pagar con Tarjeta (En línea)
+                                </h5>
+                                <p className="text-[11px] text-gray-500 font-light leading-relaxed">
+                                  Procesamiento seguro inmediato vía Stripe. Acepta Visa, Mastercard y American Express.
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Transferencia Bancaria */}
+                            <div
+                              onClick={() => setMetodoInscripcion("transferencia")}
+                              className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${metodoInscripcion === "transferencia"
+                                ? "border-amber-600 bg-amber-50/60 shadow-xs"
+                                : "border-gray-200 hover:border-gray-300 bg-white"
+                                }`}
+                            >
+                              <div className="space-y-1.5">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-2xl">🏛️</span>
+                                  <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${metodoInscripcion === "transferencia" ? "border-amber-600 bg-amber-600" : "border-gray-300"
+                                    }`}>
+                                    {metodoInscripcion === "transferencia" && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                  </span>
+                                </div>
+                                <h5 className="font-extrabold text-sm text-gray-900">
+                                  Transferencia Bancaria
+                                </h5>
+                                <p className="text-[11px] text-gray-500 font-light leading-relaxed">
+                                  Solicita cuentas bancarias autorizadas (SWIFT / IBAN). Reserva provisional por 5 días.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* PAGO CON TARJETA (STRIPE) */}
+                          {metodoInscripcion === "tarjeta" && (
+                            <div className="pt-2 animate-fade-in">
+                              <FormularioPagoCurso
+                                curso={curso}
+                                landing={landing}
+                                planCuotas={planCuotas}
+                                setPlanCuotas={setPlanCuotas}
+                                formData={formData}
+                                setFormData={setFormData}
+                                soloPasarelaPago={true}
+                                terminosAceptadosExternos={aceptarPrivacidadTransferencia}
+                              />
+                            </div>
+                          )}
+
+                          {/* TRANSFERENCIA BANCARIA */}
+                          {metodoInscripcion === "transferencia" && (
+                            <div className="space-y-4 pt-2 animate-fade-in">
+                              <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-4 text-xs text-amber-900 flex items-start gap-3">
+                                <span className="text-xl shrink-0">🏛️</span>
+                                <div className="space-y-1">
+                                  <span className="font-bold text-sm block">Orden de Transferencia Bancaria Oficial</span>
+                                  <p className="text-[11px] leading-relaxed">
+                                    Al confirmar esta solicitud, recibirás por correo electrónico las instrucciones con las cuentas bancarias oficiales de IIRESODH PAYMENTS, LLC (EE. UU.) o IIRESODH Costa Rica. Tu cupo se reservará provisionalmente por 5 días naturales para la acreditación de los fondos.
+                                  </p>
+                                </div>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={handleSubmitTransferencia}
+                                disabled={enviandoSolicitud || !aceptarPrivacidadTransferencia}
+                                className="w-full bg-amber-700 hover:bg-amber-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-widest py-4 px-6 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
+                              >
+                                {enviandoSolicitud ? (
+                                  <>
+                                    <CircularProgress size={16} sx={{ color: "white" }} />
+                                    <span>Enviando solicitud bancaria...</span>
+                                  </>
+                                ) : (
+                                  <span>🏛️ Confirmar Inscripción y Solicitar Cuentas Bancarias</span>
+                                )}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                   </div>
                 )}
@@ -2514,6 +2733,162 @@ export default function CursoLanding() {
             )}
 
           </div>
+
+          {/* ========================================================
+              GALERÍA MULTIMEDIA HORIZONTAL INFERIOR (FOTOS Y VIDEOS)
+              Ubicada al pie de la landing, justo antes del footer
+             ======================================================== */}
+          {listaGaleria && listaGaleria.length > 0 && (
+            <div className="mt-16 pt-10 border-t border-slate-200">
+              {/* Encabezado de la galería con controles de navegación */}
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="w-2 h-2 rounded-full bg-main-red"></span>
+                    <span className="text-xs font-black uppercase tracking-[0.2em] text-main-red">
+                      Galería Multimedia
+                    </span>
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-black text-main-blue tracking-tight">
+                    Fotografías y Videos del Programa
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-500 font-light mt-0.5">
+                    Explora fotografías y videos de las sedes históricas, el Aula Búnker y actividades del curso.
+                  </p>
+                </div>
+
+                {/* Botones de navegación horizontal */}
+                <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => scrollGaleria("left")}
+                    className="w-10 h-10 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 flex items-center justify-center transition shadow-xs hover:border-main-blue active:scale-95 cursor-pointer"
+                    aria-label="Desplazar galería a la izquierda"
+                    title="Anterior"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => scrollGaleria("right")}
+                    className="w-10 h-10 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 flex items-center justify-center transition shadow-xs hover:border-main-blue active:scale-95 cursor-pointer"
+                    aria-label="Desplazar galería a la derecha"
+                    title="Siguiente"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* Tira horizontal de miniaturas con scroll suave */}
+              <div
+                ref={galeriaHorizontalRef}
+                className="flex items-stretch gap-4 overflow-x-auto pb-4 pt-1 scroll-smooth snap-x snap-mandatory"
+                style={{ scrollbarWidth: "thin" }}
+              >
+                {listaGaleria.map((item, idx) => {
+                  const esVideo = item.tipo === "video";
+                  return (
+                    <div
+                      key={item.id || idx}
+                      onClick={() => setModalMediaIndex(idx)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setModalMediaIndex(idx);
+                        }
+                      }}
+                      className="group relative w-64 sm:w-72 shrink-0 snap-start bg-slate-900 rounded-2xl overflow-hidden shadow-md hover:shadow-2xl border border-slate-200 hover:border-main-blue transition-all duration-300 cursor-pointer flex flex-col focus:outline-none focus:ring-2 focus:ring-main-blue focus:ring-offset-2"
+                      title={`Ver ${esVideo ? "video" : "fotografía"}: ${item.titulo}`}
+                    >
+                      {/* Contenedor visual del elemento */}
+                      <div className="relative aspect-video w-full overflow-hidden bg-slate-950">
+                        {esVideo && !item.miniaturaUrl ? (
+                          <video
+                            src={item.url}
+                            className="w-full h-full object-cover pointer-events-none opacity-85 group-hover:scale-105 transition-transform duration-500"
+                            muted
+                            preload="metadata"
+                          />
+                        ) : (
+                          <img
+                            src={item.miniaturaUrl || item.src}
+                            alt={item.titulo}
+                            loading="lazy"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        )}
+
+                        {/* Overlay con degradado para legibilidad */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+
+                        {/* Badge indicador: Video o Foto */}
+                        <div className="absolute top-2.5 left-2.5 z-10">
+                          {esVideo ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-600/90 text-white shadow-md backdrop-blur-xs">
+                              <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z" />
+                              </svg>
+                              Video
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-black/60 text-white shadow-md backdrop-blur-xs border border-white/20">
+                              <svg className="w-3 h-3 fill-none stroke-current" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                              </svg>
+                              Foto
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Botón de reproducción centrado si es video */}
+                        {esVideo && (
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div className="w-12 h-12 rounded-full bg-red-600/90 group-hover:bg-red-600 group-hover:scale-110 text-white flex items-center justify-center shadow-xl transition-all duration-300">
+                              <svg className="w-5 h-5 fill-current ml-0.5" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z" />
+                              </svg>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Lupa sutil si es foto */}
+                        {!esVideo && (
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                            <div className="w-10 h-10 rounded-full bg-black/60 text-white flex items-center justify-center shadow-lg border border-white/30 backdrop-blur-xs">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                              </svg>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Pie de la miniatura */}
+                      <div className="p-3 bg-white border-t border-slate-100 flex flex-col justify-between grow text-left">
+                        <h4 className="text-xs font-bold text-gray-900 group-hover:text-main-blue transition-colors line-clamp-1 leading-snug">
+                          {item.titulo}
+                        </h4>
+                        <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1 font-light">
+                          <span className="truncate">{item.lugar}</span>
+                          <span className="text-main-blue font-semibold text-[10px] uppercase tracking-wider shrink-0 ml-2">
+                            Ampliar ↗
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
         </section>
 
@@ -2550,11 +2925,19 @@ export default function CursoLanding() {
                   {modalBrochure === 1 ? "Ver Página 2 →" : "← Ver Página 1"}
                 </button>
                 <a
-                  href={modalBrochure === 1 ? brochureP1 : brochureP2}
-                  download={`Brochure_Palermo_2027_P${modalBrochure}.jpg`}
+                  href={brochurePdf}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-neutral-700 transition hidden sm:inline-flex items-center gap-1"
+                >
+                  Abrir PDF ↗
+                </a>
+                <a
+                  href={brochurePdf}
+                  download="Curso_Palermo-Brochure.pdf"
                   className="bg-main-blue hover:bg-light-blue text-white text-xs font-bold px-3 py-1.5 rounded-lg transition hidden sm:inline-block"
                 >
-                  Descargar ↓
+                  Descargar PDF ↓
                 </a>
                 <button
                   onClick={() => setModalBrochure(null)}
@@ -2669,6 +3052,114 @@ export default function CursoLanding() {
           </div>
         </div>
       )}
+
+      {/* MODAL VISOR LIGHTBOX PARA GALERÍA MULTIMEDIA (FOTOS Y VIDEOS) */}
+      {modalMediaIndex !== null && listaGaleria[modalMediaIndex] && (() => {
+        const itemActivo = listaGaleria[modalMediaIndex];
+        const esVideo = itemActivo.tipo === "video";
+        const vInfo = itemActivo.videoInfo || obtenerInfoVideo(itemActivo.url || itemActivo.src);
+
+        return (
+          <div
+            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fade-in"
+            onClick={() => setModalMediaIndex(null)}
+          >
+            {/* Botón cerrar */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setModalMediaIndex(null);
+              }}
+              className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50 w-11 h-11 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition-all cursor-pointer border border-white/20 shadow-2xl hover:scale-105"
+              title="Cerrar visor (Esc)"
+              aria-label="Cerrar visor"
+            >
+              ✕
+            </button>
+
+            {/* Botón anterior */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setModalMediaIndex((prev) => (prev - 1 + listaGaleria.length) % listaGaleria.length);
+              }}
+              className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-black/60 hover:bg-black/90 text-white text-2xl flex items-center justify-center transition-all cursor-pointer border border-white/20 shadow-2xl active:scale-95 hover:scale-105"
+              title="Elemento anterior (←)"
+              aria-label="Elemento anterior"
+            >
+              ❮
+            </button>
+
+            {/* Botón siguiente */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setModalMediaIndex((prev) => (prev + 1) % listaGaleria.length);
+              }}
+              className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-black/60 hover:bg-black/90 text-white text-2xl flex items-center justify-center transition-all cursor-pointer border border-white/20 shadow-2xl active:scale-95 hover:scale-105"
+              title="Elemento siguiente (→)"
+              aria-label="Elemento siguiente"
+            >
+              ❯
+            </button>
+
+            {/* Contenedor central del contenido multimedia */}
+            <div
+              className="relative max-w-5xl w-full max-h-[92vh] flex flex-col items-center justify-center px-2 sm:px-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="relative w-full flex items-center justify-center overflow-hidden rounded-2xl bg-black/40 shadow-2xl border border-white/15">
+                {esVideo ? (
+                  vInfo.embedUrl ? (
+                    <div className="w-full aspect-video max-h-[78vh]">
+                      <iframe
+                        src={vInfo.embedUrl}
+                        title={itemActivo.titulo}
+                        className="w-full h-full border-0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                      />
+                    </div>
+                  ) : (
+                    <video
+                      src={itemActivo.url || itemActivo.src}
+                      controls
+                      autoPlay
+                      className="max-w-full max-h-[78vh] w-auto h-auto rounded-2xl shadow-2xl"
+                    />
+                  )
+                ) : (
+                  <img
+                    src={itemActivo.src || itemActivo.url}
+                    alt={itemActivo.titulo}
+                    className="max-w-full max-h-[78vh] w-auto h-auto object-contain rounded-2xl shadow-2xl"
+                  />
+                )}
+              </div>
+
+              {/* Pie de foto / video con título, lugar y contador */}
+              <div className="mt-3.5 text-center px-4 max-w-2xl">
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${esVideo ? "bg-red-600 text-white" : "bg-neutral-800 text-neutral-300 border border-neutral-700"}`}>
+                    {esVideo ? "▶ Video" : "📷 Fotografía"}
+                  </span>
+                  <span className="text-slate-400 text-xs font-light">
+                    • {modalMediaIndex + 1} de {listaGaleria.length}
+                  </span>
+                </div>
+                <h4 className="text-white text-base sm:text-lg font-bold tracking-tight">
+                  {itemActivo.titulo}
+                </h4>
+                {itemActivo.lugar && (
+                  <p className="text-slate-300 text-xs sm:text-sm font-light mt-0.5">
+                    {itemActivo.lugar}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* MODAL DE TÉRMINOS DE CONTRATACIÓN Y CLICKWRAP */}
       <ModalTerminosClickwrap
