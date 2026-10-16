@@ -264,9 +264,10 @@ export const DATOS_PALERMO_2027 = {
     ],
 
     // ¿Qué aprenderás?
+    queAprenderasSubtitulo: "Aprendiendo directamente de Operadores de Justicia y profesores Italianos con amplia experiencia en la lucha a las mafias y el crimen organizado",
     queAprenderas: [
       "Aplicar los principios del debido proceso y las garantías procesales en la investigación de delitos complejos y criminalidad organizada.",
-      "Interpretar el marco normativo de la Convención de Palermo y su Protocolo para su correcta aplicación jurisdiccional. Aprendiendo directamente de Operadores de Justicia y profesores Italianos con amplia experiencia en la lucha a las mafias y el crimen organizado.",
+      "Interpretar el marco normativo de la Convención de Palermo y su Protocolo para su correcta aplicación jurisdiccional.",
       "Integrar los estándares internacionales del control de convencionalidad en la argumentación y resolución de casos penales.",
       "Evaluar modelos comparados de protección de testigos y mecanismos estratégicos de recuperación de activos en la lucha contra la delincuencia transnacional."
     ],
@@ -924,6 +925,7 @@ export default function CursoLanding() {
   const queEstaIncluido = (esPalermo2027 && DATOS_PALERMO_2027.landingPage.queEstaIncluido) || landing.queEstaIncluido || DATOS_PALERMO_2027.landingPage.queEstaIncluido;
   const queNoEstaIncluido = (esPalermo2027 && DATOS_PALERMO_2027.landingPage.queNoEstaIncluido) || landing.queNoEstaIncluido || DATOS_PALERMO_2027.landingPage.queNoEstaIncluido;
   const queAprenderas = landing.queAprenderas || DATOS_PALERMO_2027.landingPage.queAprenderas;
+  const queAprenderasSubtitulo = (esPalermo2027 && DATOS_PALERMO_2027.landingPage.queAprenderasSubtitulo) || landing.queAprenderasSubtitulo || DATOS_PALERMO_2027.landingPage.queAprenderasSubtitulo;
   const contacto = landing.contacto || DATOS_PALERMO_2027.landingPage.contacto;
 
   // Compartir información del curso
@@ -1320,7 +1322,7 @@ export default function CursoLanding() {
                         Organización Conjunta
                       </span>
                       <h3 className="text-sm sm:text-base font-bold text-main-blue">
-                        IIRESODH, el Departamento de Ciencias Políticas de Università di Palermo, Italia, el Instituto de Derechos Humanos de la Universidad Nacional de la Plata y Sisma (Società scientifica Italiana degli Studi su Mafie e Antimafia)
+                        IIRESODH, el Departamento de Ciencias Políticas de Università di Palermo, Italia, el Instituto de Derechos Humanos de la Universidad Nacional de la Plata, Argentina y Sisma (Società scientifica Italiana degli Studi su Mafie e Antimafia).
                       </h3>
                     </div>
                   </div>
@@ -1384,9 +1386,14 @@ export default function CursoLanding() {
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400 block mb-1">
                       Resultados de Formación
                     </span>
-                    <h3 className="text-xl md:text-2xl font-black text-white tracking-tight mb-4">
+                    <h3 className="text-xl md:text-2xl font-black text-white tracking-tight mb-2">
                       ¿Qué aprenderás en este curso internacional?
                     </h3>
+                    {queAprenderasSubtitulo && (
+                      <p className="text-xs sm:text-sm text-neutral-300 font-light leading-relaxed mb-5 max-w-3xl">
+                        {queAprenderasSubtitulo}
+                      </p>
+                    )}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {queAprenderas.map((resultado, idx) => (
                         <div
