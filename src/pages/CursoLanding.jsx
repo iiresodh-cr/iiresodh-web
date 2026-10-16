@@ -2929,11 +2929,8 @@ export default function CursoLanding() {
             <div className="bg-neutral-950 px-4 py-3 border-b border-neutral-800 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
-                  Brochure Oficial Palermo 2027 • Página {modalBrochure} de 2
+                  Brochure Oficial • Página {modalBrochure} de 2
                 </span>
-                <div className="hidden sm:inline-flex items-center gap-1.5 bg-neutral-800 px-2 py-0.5 rounded text-[11px] text-neutral-300 font-medium">
-                  <span>IIRESODH & Instituto DDHH UNLP</span>
-                </div>
               </div>
 
               <div className="flex items-center gap-2">
