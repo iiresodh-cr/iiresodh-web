@@ -1063,7 +1063,7 @@ export default function CursoLanding() {
                   Inversión:
                 </span>
                 <div>
-                  <span className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight font-sans">
+                  <span className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-sans">
                     {normalizarPrecio(landing.precioInversion)}
                   </span>
                 </div>
