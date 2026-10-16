@@ -264,7 +264,7 @@ export const DATOS_PALERMO_2027 = {
     ],
 
     // ¿Qué aprenderás?
-    queAprenderasSubtitulo: "Aprendiendo directamente de Operadores de Justicia y profesores Italianos con amplia experiencia en la lucha a las mafias y el crimen organizado",
+    queAprenderasSubtitulo: "Directamente de Operadores de Justicia y profesores Italianos con amplia experiencia en la lucha a las mafias y el crimen organizado",
     queAprenderas: [
       "Aplicar los principios del debido proceso y las garantías procesales en la investigación de delitos complejos y criminalidad organizada.",
       "Interpretar el marco normativo de la Convención de Palermo y su Protocolo para su correcta aplicación jurisdiccional.",
