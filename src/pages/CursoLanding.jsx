@@ -2383,29 +2383,36 @@ export default function CursoLanding() {
                         </p>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-                        {/* BOTÓN 1: MANIFESTAR INTERÉS */}
-                        <div className="flex flex-col justify-between p-5 sm:p-6 rounded-2xl border-2 border-slate-200 hover:border-main-blue/60 bg-slate-50/70 hover:bg-blue-50/20 transition-all shadow-xs space-y-4">
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2.5">
-                              <span className="w-8 h-8 rounded-xl bg-blue-100 text-main-blue flex items-center justify-center text-sm font-black shadow-xs shrink-0">
-                                📋
-                              </span>
-                              <h4 className="font-extrabold text-sm sm:text-base text-main-blue tracking-tight">
-                                Manifestar Interés
-                              </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1">
+                        {/* TARJETA 1: MANIFESTAR INTERÉS (VERDE ELEGANTE / INSTITUCIONAL) */}
+                        <div className="flex flex-col justify-between p-6 sm:p-7 rounded-2xl border border-emerald-200/90 hover:border-emerald-400/80 bg-white hover:bg-emerald-50/20 transition-all duration-200 shadow-xs hover:shadow-md space-y-5">
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200/70 flex items-center justify-center shrink-0 shadow-xs">
+                                <svg className="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                              </div>
+                              <div>
+                                <h4 className="font-extrabold text-base text-main-blue tracking-tight">
+                                  Manifestar Interés
+                                </h4>
+                                <span className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider block">
+                                  Postulación sin pago inmediato
+                                </span>
+                              </div>
                             </div>
                             <p className="text-xs text-gray-600 font-light leading-relaxed">
-                              Envía tus datos y perfil académico para iniciar tu postulación preliminar sin requerir ningún pago en este momento.
+                              Envía tus datos y perfil académico para iniciar tu postulación preliminar sin requerir ningún desembolso en este momento.
                             </p>
                           </div>
 
-                          <div className="space-y-2.5 pt-1">
+                          <div className="space-y-3 pt-1">
                             <button
                               type="button"
                               onClick={handleManifestarInteres}
                               disabled={enviandoSolicitud}
-                              className="w-full bg-main-blue hover:bg-light-blue disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
+                              className="w-full bg-[#065f46] hover:bg-[#047857] active:bg-[#064e3b] disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
                             >
                               {enviandoSolicitud && metodoInscripcion === "interes" ? (
                                 <>
@@ -2413,58 +2420,76 @@ export default function CursoLanding() {
                                   <span>Registrando interés...</span>
                                 </>
                               ) : (
-                                <span>📋 Iniciar Proceso / Manifestar Interés</span>
+                                <>
+                                  <span>Iniciar Proceso / Manifestar Interés</span>
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                  </svg>
+                                </>
                               )}
                             </button>
 
-                            <p className="text-[11px] text-gray-500 font-light leading-snug text-center sm:text-left flex items-start gap-1.5">
-                              <span className="shrink-0 text-xs">ℹ️</span>
+                            <p className="text-[11px] text-gray-500 font-light leading-snug flex items-start gap-2">
+                              <svg className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
                               <span>
-                                Te contactaremos posteriormente por correo electrónico o WhatsApp para coordinar tu proceso de admisión y opciones disponibles.
+                                Te contactaremos posteriormente por correo electrónico o WhatsApp para orientarte y resolver consultas académicas.
                               </span>
                             </p>
                           </div>
                         </div>
 
-                        {/* BOTÓN 2: PAGAR E INSCRIBIRSE DE UNA VEZ */}
-                        <div className={`flex flex-col justify-between p-5 sm:p-6 rounded-2xl border-2 transition-all shadow-xs space-y-4 ${mostrarSeccionPago
-                          ? "border-main-red bg-red-50/30 ring-2 ring-main-red/20 shadow-md"
-                          : "border-red-200 hover:border-main-red bg-red-50/15 hover:bg-red-50/30"
+                        {/* TARJETA 2: PAGAR E INSCRIBIRSE DE UNA VEZ (CELESTE PROFESIONAL) */}
+                        <div className={`flex flex-col justify-between p-6 sm:p-7 rounded-2xl border transition-all duration-200 shadow-xs space-y-5 ${mostrarSeccionPago
+                          ? "border-sky-400 bg-sky-50/30 ring-3 ring-sky-100 shadow-md"
+                          : "border-sky-200/90 hover:border-sky-400/80 bg-white hover:bg-sky-50/20 hover:shadow-md"
                           }`}>
-                          <div className="space-y-2">
+                          <div className="space-y-3">
                             <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2.5">
-                                <span className="w-8 h-8 rounded-xl bg-red-100 text-main-red flex items-center justify-center text-sm font-black shadow-xs shrink-0">
-                                  💳
-                                </span>
-                                <h4 className="font-extrabold text-sm sm:text-base text-main-red tracking-tight">
-                                  Pagar e Inscribirme Ahora
-                                </h4>
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-700 border border-sky-200/70 flex items-center justify-center shrink-0 shadow-xs">
+                                  <svg className="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                  </svg>
+                                </div>
+                                <div>
+                                  <h4 className="font-extrabold text-base text-main-blue tracking-tight">
+                                    Pagar e Inscribirme Ahora
+                                  </h4>
+                                  <span className="text-[11px] font-semibold text-sky-700 uppercase tracking-wider block">
+                                    Matrícula directa garantizada
+                                  </span>
+                                </div>
                               </div>
-                              <span className="bg-emerald-600 text-white text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider shadow-xs shrink-0">
+                              <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider shadow-2xs shrink-0">
                                 Garantiza Cupo
                               </span>
                             </div>
-                            <p className="text-xs text-gray-700 font-light leading-relaxed">
+                            <p className="text-xs text-gray-600 font-light leading-relaxed">
                               Despliega las opciones de financiamiento en cuotas sin interés y formaliza tu matrícula para asegurar tu plaza oficial de forma inmediata.
                             </p>
                           </div>
 
-                          <div className="space-y-2.5 pt-1">
+                          <div className="space-y-3 pt-1">
                             <button
                               type="button"
                               onClick={handleBotonPagar}
-                              className={`w-full text-white font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation ${mostrarSeccionPago
-                                ? "bg-[#8b1515] ring-2 ring-red-300"
-                                : "bg-main-red hover:bg-[#8b1515]"
+                              className={`w-full text-white font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer touch-manipulation ${mostrarSeccionPago
+                                ? "bg-[#0369a1] ring-2 ring-sky-300"
+                                : "bg-[#0284c7] hover:bg-[#0369a1]"
                                 }`}
                             >
-                              <span>💳 Pagar e Inscribirme de una vez</span>
-                              <span className="text-base">{mostrarSeccionPago ? "↓" : "→"}</span>
+                              <span>Pagar e Inscribirme de una vez</span>
+                              <svg className={`w-4 h-4 transition-transform duration-200 ${mostrarSeccionPago ? "rotate-90" : ""}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                              </svg>
                             </button>
 
-                            <p className="text-[11px] text-red-900/80 font-medium leading-snug text-center sm:text-left flex items-start gap-1.5">
-                              <span className="shrink-0 text-xs">⚡</span>
+                            <p className="text-[11px] text-gray-500 font-light leading-snug flex items-start gap-2">
+                              <svg className="w-4 h-4 text-sky-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                              </svg>
                               <span>
                                 Al realizar el pago en este momento garantizas tu cupo oficial de forma inmediata y definitiva en el programa.
                               </span>
