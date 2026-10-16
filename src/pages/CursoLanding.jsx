@@ -1320,7 +1320,7 @@ export default function CursoLanding() {
                         Organización Conjunta
                       </span>
                       <h3 className="text-sm sm:text-base font-bold text-main-blue">
-                        IIRESODH & Instituto de Derechos Humanos de la Universidad Nacional de la Plata (UNLP - Argentina)
+                        IIRESODH, el Departamento de Ciencias Políticas de Università di Palermo, Italia, el Instituto de Derechos Humanos de la Universidad Nacional de la Plata y Sisma (Società scientifica Italiana degli Studi su Mafie e Antimafia)
                       </h3>
                     </div>
                   </div>
