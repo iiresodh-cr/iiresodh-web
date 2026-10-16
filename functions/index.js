@@ -2783,6 +2783,7 @@ exports.generarEnlacePagoCurso = onCall({
         }
       ],
       mode: 'payment',
+      allow_promotion_codes: true,
       success_url: `https://iiresodh-web.web.app/cursos/${cursoId}?pago_exitoso=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `https://iiresodh-web.web.app/cursos/${cursoId}?pago_cancelado=true`,
       metadata: {
@@ -2927,9 +2928,10 @@ exports.generarEnlacePagoCurso = onCall({
 });
 
 // ============================================================================
-// 17. VALIDAR Y APLICAR CÓDIGO DE DESCUENTO O BECA
+// 17. VALIDAR Y APLICAR CÓDIGO DE DESCUENTO O BECA (FIRESTORE + STRIPE)
 // ============================================================================
 exports.validarCuponDescuento = onCall({
+  secrets: [STRIPE_CURSOS_SECRET_KEY],
   region: "us-central1",
   cors: true
 }, async (request) => {
@@ -2939,24 +2941,69 @@ exports.validarCuponDescuento = onCall({
     throw new HttpsError("invalid-argument", "El código de descuento es requerido.");
   }
 
-  const codigoNormalizado = codigo.trim().toUpperCase();
+  const codigoNormalizado = codigo.trim().toUpperCase().replace(/\s+/g, "");
   const db = admin.firestore();
 
   try {
+    let cupon = null;
+    let cuponDocId = null;
+
+    // 1. Buscar en la colección oficial de cupones de cursos en Firestore
     const cuponQuery = await db.collection("cuponesDescuento")
       .where("codigo", "==", codigoNormalizado)
       .limit(1)
       .get();
 
-    if (cuponQuery.empty) {
+    if (!cuponQuery.empty) {
+      const cuponDoc = cuponQuery.docs[0];
+      cuponDocId = cuponDoc.id;
+      cupon = cuponDoc.data();
+    } else {
+      // 2. Fallback: Buscar en Stripe Cursos si fue creado directo en Stripe Dashboard
+      try {
+        const stripeKey = getStripeCursosKey();
+        if (stripeKey) {
+          const stripe = new Stripe(stripeKey);
+          const promoCodes = await stripe.promotionCodes.list({
+            code: codigoNormalizado,
+            active: true,
+            limit: 1,
+            expand: ['data.coupon']
+          });
+
+          if (promoCodes.data && promoCodes.data.length > 0) {
+            const promo = promoCodes.data[0];
+            let sc = promo.coupon;
+            if (typeof sc === 'string') {
+              sc = await stripe.coupons.retrieve(sc);
+            }
+            if (sc && sc.valid !== false) {
+              cupon = {
+                codigo: codigoNormalizado,
+                tipo: sc.percent_off ? "porcentaje" : "monto_fijo",
+                valor: sc.percent_off ? sc.percent_off : (sc.amount_off ? sc.amount_off / 100 : 0),
+                activo: promo.active,
+                fechaExpiracion: promo.expires_at ? new Date(promo.expires_at * 1000).toISOString().split('T')[0] : null,
+                limiteUsos: promo.max_redemptions || sc.max_redemptions || null,
+                usosActuales: promo.times_redeemed || 0,
+                descripcion: sc.name || `Descuento oficial Stripe ${codigoNormalizado}`,
+                stripePromotionCodeId: promo.id,
+                stripeCouponId: sc.id
+              };
+            }
+          }
+        }
+      } catch (errStripe) {
+        console.warn("Advertencia consultando cupón en Stripe:", errStripe.message);
+      }
+    }
+
+    if (!cupon) {
       return {
         valido: false,
         mensaje: "El código de descuento ingresado no existe."
       };
     }
-
-    const cuponDoc = cuponQuery.docs[0];
-    const cupon = cuponDoc.data();
 
     if (cupon.activo === false) {
       return {
@@ -3008,7 +3055,7 @@ exports.validarCuponDescuento = onCall({
 
     return {
       valido: true,
-      id: cuponDoc.id,
+      id: cuponDocId,
       codigo: codigoNormalizado,
       tipo: cupon.tipo || "monto_fijo",
       valor: valor,
@@ -3020,6 +3067,244 @@ exports.validarCuponDescuento = onCall({
     console.error("Error al validar cupón de descuento:", error);
     throw new HttpsError("internal", "No se pudo verificar el cupón en este momento.");
   }
+});
+
+// ============================================================================
+// GESTIÓN INTEGRAL DE CUPONES DE DESCUENTO EN STRIPE Y FIRESTORE (ADMIN)
+// ============================================================================
+exports.crearCuponCursoStripe = onCall({
+  secrets: [STRIPE_CURSOS_SECRET_KEY],
+  region: "us-central1",
+  cors: true
+}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Debes estar autenticado para crear cupones.");
+  }
+
+  const {
+    codigo,
+    tipo = "monto_fijo",
+    valor,
+    fechaExpiracion,
+    limiteUsos,
+    descripcion = "",
+    activo = true,
+    cursos = ["todos"]
+  } = request.data || {};
+
+  if (!codigo || typeof codigo !== "string" || !codigo.trim()) {
+    throw new HttpsError("invalid-argument", "El código del cupón es obligatorio.");
+  }
+
+  const valorNum = Number(valor);
+  if (isNaN(valorNum) || valorNum <= 0) {
+    throw new HttpsError("invalid-argument", "El valor del descuento debe ser mayor a 0.");
+  }
+
+  if (tipo === "porcentaje" && valorNum > 100) {
+    throw new HttpsError("invalid-argument", "El porcentaje de descuento no puede superar el 100%.");
+  }
+
+  const codigoNormalizado = codigo.trim().toUpperCase().replace(/\s+/g, "");
+  const db = admin.firestore();
+
+  // Verificar si ya existe en Firestore
+  const existente = await db.collection("cuponesDescuento")
+    .where("codigo", "==", codigoNormalizado)
+    .limit(1)
+    .get();
+
+  if (!existente.empty) {
+    throw new HttpsError("already-exists", `Ya existe un cupón registrado con el código ${codigoNormalizado}.`);
+  }
+
+  let stripeCouponId = null;
+  let stripePromotionCodeId = null;
+  let sincronizadoStripe = false;
+  let stripeMensaje = null;
+
+  try {
+    const stripeKey = getStripeCursosKey();
+    if (stripeKey) {
+      const stripe = new Stripe(stripeKey);
+
+      // 1. Crear el cupón en Stripe
+      const couponPayload = {
+        name: `Curso - ${codigoNormalizado}${descripcion ? ' (' + descripcion.trim().slice(0, 30) + ')' : ''}`,
+        duration: "forever"
+      };
+
+      if (tipo === "porcentaje") {
+        couponPayload.percent_off = valorNum;
+      } else {
+        couponPayload.amount_off = Math.round(valorNum * 100);
+        couponPayload.currency = "usd";
+      }
+
+      if (limiteUsos && Number(limiteUsos) > 0) {
+        couponPayload.max_redemptions = Number(limiteUsos);
+      }
+
+      if (fechaExpiracion) {
+        const expTime = Math.floor(new Date(fechaExpiracion + "T23:59:59Z").getTime() / 1000);
+        if (!isNaN(expTime) && expTime > Math.floor(Date.now() / 1000)) {
+          couponPayload.redeem_by = expTime;
+        }
+      }
+
+      const stripeCoupon = await stripe.coupons.create(couponPayload);
+      stripeCouponId = stripeCoupon.id;
+
+      // 2. Crear el código de promoción canjeable en Stripe Checkout
+      const promoPayload = {
+        coupon: stripeCoupon.id,
+        code: codigoNormalizado,
+        active: Boolean(activo)
+      };
+
+      if (limiteUsos && Number(limiteUsos) > 0) {
+        promoPayload.max_redemptions = Number(limiteUsos);
+      }
+
+      if (fechaExpiracion) {
+        const expTime = Math.floor(new Date(fechaExpiracion + "T23:59:59Z").getTime() / 1000);
+        if (!isNaN(expTime) && expTime > Math.floor(Date.now() / 1000)) {
+          promoPayload.expires_at = expTime;
+        }
+      }
+
+      const stripePromo = await stripe.promotionCodes.create(promoPayload);
+      stripePromotionCodeId = stripePromo.id;
+      sincronizadoStripe = true;
+      stripeMensaje = "Sincronizado con Stripe exitosamente";
+    }
+  } catch (errStripe) {
+    console.error("Error al crear código en Stripe:", errStripe);
+    stripeMensaje = `Aviso Stripe: ${errStripe.message || "Error al sincronizar con Stripe"}`;
+  }
+
+  // 3. Guardar en Firestore
+  const nuevoDoc = {
+    codigo: codigoNormalizado,
+    tipo: tipo === "porcentaje" ? "porcentaje" : "monto_fijo",
+    valor: valorNum,
+    fechaExpiracion: fechaExpiracion || null,
+    limiteUsos: limiteUsos ? Number(limiteUsos) : null,
+    usosActuales: 0,
+    descripcion: (descripcion || "").trim(),
+    activo: Boolean(activo),
+    cursos: Array.isArray(cursos) ? cursos : ["todos"],
+    sincronizadoStripe,
+    stripeCouponId,
+    stripePromotionCodeId,
+    stripeMensaje,
+    creadoEn: admin.firestore.FieldValue.serverTimestamp(),
+    creadoPor: request.auth.token.email || "Administrador"
+  };
+
+  const docRef = await db.collection("cuponesDescuento").add(nuevoDoc);
+
+  return {
+    success: true,
+    id: docRef.id,
+    codigo: codigoNormalizado,
+    sincronizadoStripe,
+    stripeMensaje
+  };
+});
+
+exports.toggleEstadoCuponCursoStripe = onCall({
+  secrets: [STRIPE_CURSOS_SECRET_KEY],
+  region: "us-central1",
+  cors: true
+}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Debes estar autenticado para realizar esta acción.");
+  }
+
+  const { cuponId, activo } = request.data || {};
+  if (!cuponId) {
+    throw new HttpsError("invalid-argument", "El ID del cupón es requerido.");
+  }
+
+  const db = admin.firestore();
+  const cuponRef = db.collection("cuponesDescuento").doc(cuponId);
+  const snap = await cuponRef.get();
+
+  if (!snap.exists) {
+    throw new HttpsError("not-found", "El cupón no fue encontrado.");
+  }
+
+  const cupon = snap.data();
+  const nuevoEstado = !cupon.activo;
+
+  // Actualizar en Stripe si tiene promotion code
+  if (cupon.stripePromotionCodeId) {
+    try {
+      const stripeKey = getStripeCursosKey();
+      if (stripeKey) {
+        const stripe = new Stripe(stripeKey);
+        await stripe.promotionCodes.update(cupon.stripePromotionCodeId, {
+          active: nuevoEstado
+        });
+      }
+    } catch (errStripe) {
+      console.warn("Advertencia al cambiar estado en Stripe:", errStripe.message);
+    }
+  }
+
+  await cuponRef.update({
+    activo: nuevoEstado,
+    actualizadoEn: admin.firestore.FieldValue.serverTimestamp()
+  });
+
+  return { success: true, activo: nuevoEstado };
+});
+
+exports.eliminarCuponCursoStripe = onCall({
+  secrets: [STRIPE_CURSOS_SECRET_KEY],
+  region: "us-central1",
+  cors: true
+}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Debes estar autenticado para eliminar cupones.");
+  }
+
+  const { cuponId } = request.data || {};
+  if (!cuponId) {
+    throw new HttpsError("invalid-argument", "El ID del cupón es requerido.");
+  }
+
+  const db = admin.firestore();
+  const cuponRef = db.collection("cuponesDescuento").doc(cuponId);
+  const snap = await cuponRef.get();
+
+  if (!snap.exists) {
+    throw new HttpsError("not-found", "El cupón no fue encontrado.");
+  }
+
+  const cupon = snap.data();
+
+  // Desactivar en Stripe antes de borrar
+  if (cupon.stripePromotionCodeId) {
+    try {
+      const stripeKey = getStripeCursosKey();
+      if (stripeKey) {
+        const stripe = new Stripe(stripeKey);
+        await stripe.promotionCodes.update(cupon.stripePromotionCodeId, { active: false });
+        if (cupon.stripeCouponId) {
+          try {
+            await stripe.coupons.del(cupon.stripeCouponId);
+          } catch (_) { }
+        }
+      }
+    } catch (errStripe) {
+      console.warn("Advertencia al eliminar cupón de Stripe:", errStripe.message);
+    }
+  }
+
+  await cuponRef.delete();
+  return { success: true };
 });
 
 // ============================================================================

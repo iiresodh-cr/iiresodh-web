@@ -749,21 +749,25 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
     setGuardandoCupon(true);
     try {
       const codigoLimpieza = formNuevoCupon.codigo.trim().toUpperCase().replace(/\s+/g, "");
-      const nuevoDoc = {
+      
+      const crearCuponFn = httpsCallable(functions, "crearCuponCursoStripe");
+      const resp = await crearCuponFn({
         codigo: codigoLimpieza,
-        tipo: formNuevoCupon.tipo, // "monto_fijo" o "porcentaje"
+        tipo: formNuevoCupon.tipo,
         valor: Number(formNuevoCupon.valor),
         fechaExpiracion: formNuevoCupon.fechaExpiracion || null,
         limiteUsos: formNuevoCupon.limiteUsos ? Number(formNuevoCupon.limiteUsos) : null,
-        usosActuales: 0,
         descripcion: formNuevoCupon.descripcion.trim(),
-        activo: Boolean(formNuevoCupon.activo),
-        creadoEn: serverTimestamp(),
-        creadoPor: auth.currentUser?.email || "Administrador"
-      };
+        activo: Boolean(formNuevoCupon.activo)
+      });
 
-      await addDoc(collection(db, "cuponesDescuento"), nuevoDoc);
-      mostrarToast(`Cupón ${codigoLimpieza} creado exitosamente.`);
+      const resData = resp.data || {};
+      if (resData.sincronizadoStripe) {
+        mostrarToast(`Cupón ${codigoLimpieza} creado y registrado en Stripe exitosamente.`);
+      } else {
+        mostrarToast(`Cupón ${codigoLimpieza} creado en sistema. ${resData.stripeMensaje || ""}`);
+      }
+
       setFormNuevoCupon({
         codigo: "",
         tipo: "monto_fijo",
@@ -777,13 +781,13 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
 
       if (logActividad) {
         await logActividad(
-          `Creó cupón de descuento "${codigoLimpieza}": ${nuevoDoc.tipo === 'porcentaje' ? nuevoDoc.valor + '%' : '$' + nuevoDoc.valor + ' USD'}`,
-          { codigo: codigoLimpieza, ...nuevoDoc }
+          `Creó cupón de descuento "${codigoLimpieza}": ${formNuevoCupon.tipo === 'porcentaje' ? formNuevoCupon.valor + '%' : '$' + formNuevoCupon.valor + ' USD'} (Stripe: ${resData.sincronizadoStripe ? 'Sincronizado' : 'Local'})`,
+          { codigo: codigoLimpieza, tipo: formNuevoCupon.tipo, valor: formNuevoCupon.valor }
         );
       }
     } catch (error) {
       console.error("Error al crear cupón:", error);
-      mostrarToast("Error al crear el cupón.", true);
+      mostrarToast(error.message || "Error al crear el cupón.", true);
     } finally {
       setGuardandoCupon(false);
     }
@@ -791,21 +795,21 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
 
   const handleToggleCuponActivo = async (cupon) => {
     try {
-      await updateDoc(doc(db, "cuponesDescuento", cupon.id), {
-        activo: !cupon.activo
-      });
-      setCupones(prev => prev.map(c => c.id === cupon.id ? { ...c, activo: !cupon.activo } : c));
+      const toggleFn = httpsCallable(functions, "toggleEstadoCuponCursoStripe");
+      await toggleFn({ cuponId: cupon.id, activo: cupon.activo });
+      setCupones(prev => prev.map(c => c.id === cupon.id ? { ...c, activo: !c.activo } : c));
       mostrarToast(`Cupón ${cupon.codigo} ${!cupon.activo ? 'activado' : 'desactivado'}.`);
     } catch (error) {
       console.error("Error al actualizar cupón:", error);
-      mostrarToast("Error al cambiar estado del cupón.", true);
+      mostrarToast(error.message || "Error al cambiar estado del cupón.", true);
     }
   };
 
   const handleEliminarCupon = async (cupon) => {
-    if (!window.confirm(`¿Estás seguro de eliminar permanentemente el cupón ${cupon.codigo}?`)) return;
+    if (!window.confirm(`¿Estás seguro de eliminar permanentemente el cupón ${cupon.codigo}? Esta acción también lo desactivará en Stripe si estaba sincronizado.`)) return;
     try {
-      await deleteDoc(doc(db, "cuponesDescuento", cupon.id));
+      const eliminarFn = httpsCallable(functions, "eliminarCuponCursoStripe");
+      await eliminarFn({ cuponId: cupon.id });
       setCupones(prev => prev.filter(c => c.id !== cupon.id));
       mostrarToast(`Cupón ${cupon.codigo} eliminado.`);
       if (logActividad) {
@@ -813,7 +817,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       }
     } catch (error) {
       console.error("Error al eliminar cupón:", error);
-      mostrarToast("Error al eliminar el cupón.", true);
+      mostrarToast(error.message || "Error al eliminar el cupón.", true);
     }
   };
 
@@ -3842,10 +3846,15 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
         <DialogContent sx={{ py: 3 }} className="space-y-6">
           {/* FORMULARIO PARA CREAR NUEVO CUPÓN */}
           <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-3">
-            <h4 className="text-xs font-black uppercase tracking-wider text-main-blue flex items-center gap-1.5">
-              <span>➕</span>
-              <span>Crear Nuevo Código de Descuento o Beca</span>
-            </h4>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+              <h4 className="text-xs font-black uppercase tracking-wider text-main-blue flex items-center gap-1.5">
+                <span>➕</span>
+                <span>Crear Nuevo Código de Descuento o Beca</span>
+              </h4>
+              <span className="text-[10px] text-gray-500 font-medium">
+                Sincronización directa con Stripe Cursos
+              </span>
+            </div>
 
             <form onSubmit={handleCrearCupon} className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
@@ -4011,7 +4020,14 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                     {cupones.map((c) => (
                       <tr key={c.id} className="hover:bg-slate-50 transition-colors">
                         <td className="px-3.5 py-2.5 font-black text-gray-900 font-mono">
-                          {c.codigo}
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span>{c.codigo}</span>
+                            {(c.sincronizadoStripe || c.stripePromotionCodeId) && (
+                              <span className="text-[9px] font-bold text-sky-700 bg-sky-50 border border-sky-200 px-1.5 py-0.5 rounded tracking-tight" title="Sincronizado con Stripe Cursos">
+                                Stripe ✓
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-3.5 py-2.5 font-extrabold text-emerald-700 whitespace-nowrap">
                           {c.tipo === "porcentaje" ? `${c.valor}%` : `$${Number(c.valor).toLocaleString()} USD`}

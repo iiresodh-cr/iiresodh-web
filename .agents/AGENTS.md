@@ -14,9 +14,9 @@
 - Si el usuario solicita un ajuste sobre un elemento específico (por ejemplo, una imagen de fondo), NO modificar los textos, colores ni las tarjetas circundantes a menos que el usuario lo pida explícitamente.
 
 ## 3. REPOSITORIO Y DIRECTORIO ÚNICO DE TRABAJO (CRÍTICO)
-- **UN SOLO REPOSITORIO LOCAL:** El único directorio de trabajo oficial del proyecto es:
-  `c:\Users\durquilla\Documentos\PROYECTOS DESARROLLO\WEB_IIRESODH\iiresodh-web\iiresodh-web`
-- **PROHIBICIÓN TOTAL DE COPIAS ESPEJO:** El asistente tiene ESTRICTAMENTE PROHIBIDO intentar copiar, sincronizar, espejear o interactuar con cualquier otra carpeta externa o copia (como `IIRESODH-WEB`). Todas las lecturas, ediciones, comandos y verificaciones deben realizarse única y exclusivamente dentro del repositorio activo.
+- **UN SOLO REPOSITORIO LOCAL:** El único directorio de trabajo oficial del proyecto es el original completo:
+  `C:\Users\durquilla\Documentos\PROYECTOS DESARROLLO\IIRESODH-WEB\iiresodh-web`
+- Todas las lecturas, ediciones, comandos, despliegues y verificaciones deben realizarse única y exclusivamente dentro del repositorio oficial original.
 
 ## 4. ESTÁNDARES DE DISEÑO UI/UX Y ESTÉTICA INSTITUCIONAL
 - **DISEÑO EJECUTIVO Y ACADÉMICO:** Tratar todos los componentes con nivel de diseño UI/UX senior acorde al prestigio de una institución académica jurídica internacional (IIRESODH / UNLP).

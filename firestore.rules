@@ -80,6 +80,11 @@ service cloud.firestore {
       allow read, update, delete: if esAdmin();
     }
 
+    // Cupones de descuento y becas académicas para cursos (Stripe y web)
+    match /cuponesDescuento/{docId=**} {
+      allow read, write: if esAdmin();
+    }
+
     match /incidencia/{docId=**} {
       allow read: if true;
       allow write: if esAdmin();
