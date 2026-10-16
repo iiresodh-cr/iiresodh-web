@@ -266,7 +266,7 @@ export const DATOS_PALERMO_2027 = {
     // ¿Qué aprenderás?
     queAprenderas: [
       "Aplicar los principios del debido proceso y las garantías procesales en la investigación de delitos complejos y criminalidad organizada.",
-      "Interpretar el marco normativo de la Convención de Palermo y su Protocolo para su correcta aplicación jurisdiccional.",
+      "Interpretar el marco normativo de la Convención de Palermo y su Protocolo para su correcta aplicación jurisdiccional. Aprendiendo directamente de Operadores de Justicia y profesores Italianos con amplia experiencia en la lucha a las mafias y el crimen organizado.",
       "Integrar los estándares internacionales del control de convencionalidad en la argumentación y resolución de casos penales.",
       "Evaluar modelos comparados de protección de testigos y mecanismos estratégicos de recuperación de activos en la lucha contra la delincuencia transnacional."
     ],
