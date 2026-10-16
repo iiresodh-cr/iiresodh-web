@@ -15,6 +15,8 @@ import palermoJusticiaBw from "../assets/cursos/palermo_justicia_bw.jpg";
 import palermoAulaBunkerBw from "../assets/cursos/palermo_aula_bunker_bw.jpg";
 import palermoCollageHeroBw from "../assets/cursos/palermo_collage_hero_bw.jpg";
 import logoUnlp from "../assets/cursos/logo_unlp_ddhh.png";
+import logoUnipa from "../assets/cursos/logo_unipa.png";
+import logoSisma from "../assets/cursos/logo_sisma.jpg";
 import brochureP1 from "../assets/cursos/brochure_palermo_p1.jpg";
 import brochureP2 from "../assets/cursos/brochure_palermo_p2.jpg";
 import brochurePdf from "../assets/cursos/Curso_Palermo-Brochure.pdf";
@@ -130,10 +132,22 @@ export const DATOS_PALERMO_2027 = {
         logo: logoIiresodh
       },
       {
+        nombre: "Università degli Studi di Palermo",
+        detalle: "Dipartimento di Scienze Politiche e delle relazioni internazionali",
+        pais: "Italia",
+        logo: logoUnipa
+      },
+      {
         nombre: "Instituto de Derechos Humanos - UNLP",
         detalle: "Facultad de Ciencias Jurídicas y Sociales • Universidad Nacional de La Plata",
         pais: "Argentina",
         logo: logoUnlp
+      },
+      {
+        nombre: "SISMA",
+        detalle: "Società scientifica Italiana degli Studi su Mafie e Antimafia",
+        pais: "Italia",
+        logo: logoSisma
       }
     ],
 
@@ -1310,12 +1324,16 @@ export default function CursoLanding() {
               <div className="space-y-10 animate-fade-in">
 
                 {/* BLOQUE INSTITUCIONAL CO-ORGANIZADORES */}
-                <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl flex flex-col lg:flex-row items-center justify-between gap-6 shadow-xs">
-                  <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
-                    <div className="flex items-center gap-4 sm:gap-5 bg-white px-5 sm:px-6 py-3 rounded-2xl border border-slate-200 shadow-xs shrink-0">
+                <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl flex flex-col xl:flex-row items-center justify-between gap-6 shadow-xs">
+                  <div className="flex flex-col xl:flex-row items-center gap-6 text-center xl:text-left w-full">
+                    <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-5 bg-white px-5 sm:px-6 py-3.5 rounded-2xl border border-slate-200 shadow-xs shrink-0">
                       <img src={logoIiresodhColor} alt="IIRESODH" className="h-8 sm:h-9 w-auto object-contain" />
-                      <div className="h-8 w-px bg-slate-200" />
-                      <img src={logoUnlp} alt="Instituto de Derechos Humanos UNLP" className="h-12 sm:h-14 w-auto object-contain" />
+                      <div className="h-8 w-px bg-slate-200 hidden sm:block" />
+                      <img src={logoUnipa} alt="Università degli Studi di Palermo" className="h-8 sm:h-9 w-auto object-contain" />
+                      <div className="h-8 w-px bg-slate-200 hidden sm:block" />
+                      <img src={logoUnlp} alt="Instituto de Derechos Humanos UNLP" className="h-10 sm:h-12 w-auto object-contain" />
+                      <div className="h-8 w-px bg-slate-200 hidden sm:block" />
+                      <img src={logoSisma} alt="SISMA (Società scientifica Italiana degli Studi su Mafie e Antimafia)" className="h-9 sm:h-10 w-auto object-contain rounded shadow-2xs" />
                     </div>
                     <div>
                       <span className="text-[10px] font-black uppercase tracking-widest text-main-red block">
