@@ -1493,15 +1493,7 @@ export default function CursoLanding() {
                   </div>
                 </div>
 
-                <div className="pt-4 flex justify-between items-center flex-wrap gap-3">
-                  <a
-                    href={contacto?.whatsappUrl || "https://wa.me/50640816188"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-emerald-700 hover:text-emerald-800 text-xs font-bold flex items-center gap-1.5"
-                  >
-                    <span>💬 Contactar Coordinación por WhatsApp</span>
-                  </a>
+                <div className="pt-4 flex justify-end items-center">
                   <button
                     onClick={() => irASeccion("programa")}
                     className="bg-main-blue hover:bg-light-blue text-white text-xs font-bold uppercase tracking-wider py-2.5 px-5 rounded-xl transition flex items-center gap-2 cursor-pointer shadow-sm"
