@@ -2385,17 +2385,17 @@ export default function CursoLanding() {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
                         {/* BOTÓN 1: MANIFESTAR INTERÉS */}
-                        <div className="flex flex-col justify-between p-5 sm:p-6 rounded-2xl border-2 border-slate-200 hover:border-main-blue/60 bg-slate-50/70 hover:bg-blue-50/20 transition-all shadow-xs space-y-4">
+                        <div className="flex flex-col justify-between p-5 sm:p-6 rounded-2xl border-2 border-emerald-200 hover:border-emerald-500 bg-emerald-50/25 hover:bg-emerald-50/40 transition-all shadow-xs space-y-4">
                           <div className="space-y-2">
                             <div className="flex items-center gap-2.5">
-                              <span className="w-8 h-8 rounded-xl bg-blue-100 text-main-blue flex items-center justify-center text-sm font-black shadow-xs shrink-0">
+                              <span className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-sm font-black shadow-xs shrink-0">
                                 📋
                               </span>
-                              <h4 className="font-extrabold text-sm sm:text-base text-main-blue tracking-tight">
+                              <h4 className="font-extrabold text-sm sm:text-base text-emerald-950 tracking-tight">
                                 Manifestar Interés
                               </h4>
                             </div>
-                            <p className="text-xs text-gray-600 font-light leading-relaxed">
+                            <p className="text-xs text-gray-700 font-light leading-relaxed">
                               Envía tus datos y perfil académico para iniciar tu postulación preliminar sin requerir ningún pago en este momento.
                             </p>
                           </div>
@@ -2405,7 +2405,7 @@ export default function CursoLanding() {
                               type="button"
                               onClick={handleManifestarInteres}
                               disabled={enviandoSolicitud}
-                              className="w-full bg-main-blue hover:bg-light-blue disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
+                              className="w-full bg-emerald-700 hover:bg-emerald-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
                             >
                               {enviandoSolicitud && metodoInscripcion === "interes" ? (
                                 <>
@@ -2417,7 +2417,7 @@ export default function CursoLanding() {
                               )}
                             </button>
 
-                            <p className="text-[11px] text-gray-500 font-light leading-snug text-center sm:text-left flex items-start gap-1.5">
+                            <p className="text-[11px] text-emerald-900/80 font-medium leading-snug text-center sm:text-left flex items-start gap-1.5">
                               <span className="shrink-0 text-xs">ℹ️</span>
                               <span>
                                 Te contactaremos posteriormente por correo electrónico o WhatsApp para coordinar tu proceso de admisión y opciones disponibles.
@@ -2428,16 +2428,16 @@ export default function CursoLanding() {
 
                         {/* BOTÓN 2: PAGAR E INSCRIBIRSE DE UNA VEZ */}
                         <div className={`flex flex-col justify-between p-5 sm:p-6 rounded-2xl border-2 transition-all shadow-xs space-y-4 ${mostrarSeccionPago
-                          ? "border-main-red bg-red-50/30 ring-2 ring-main-red/20 shadow-md"
-                          : "border-red-200 hover:border-main-red bg-red-50/15 hover:bg-red-50/30"
+                          ? "border-sky-500 bg-sky-50/40 ring-2 ring-sky-300 shadow-md"
+                          : "border-sky-200 hover:border-sky-400 bg-sky-50/20 hover:bg-sky-50/35"
                           }`}>
                           <div className="space-y-2">
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2.5">
-                                <span className="w-8 h-8 rounded-xl bg-red-100 text-main-red flex items-center justify-center text-sm font-black shadow-xs shrink-0">
+                                <span className="w-8 h-8 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center text-sm font-black shadow-xs shrink-0">
                                   💳
                                 </span>
-                                <h4 className="font-extrabold text-sm sm:text-base text-main-red tracking-tight">
+                                <h4 className="font-extrabold text-sm sm:text-base text-sky-950 tracking-tight">
                                   Pagar e Inscribirme Ahora
                                 </h4>
                               </div>
@@ -2455,15 +2455,15 @@ export default function CursoLanding() {
                               type="button"
                               onClick={handleBotonPagar}
                               className={`w-full text-white font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer touch-manipulation ${mostrarSeccionPago
-                                ? "bg-[#8b1515] ring-2 ring-red-300"
-                                : "bg-main-red hover:bg-[#8b1515]"
+                                ? "bg-sky-700 ring-2 ring-sky-300"
+                                : "bg-sky-500 hover:bg-sky-600"
                                 }`}
                             >
                               <span>💳 Pagar e Inscribirme de una vez</span>
                               <span className="text-base">{mostrarSeccionPago ? "↓" : "→"}</span>
                             </button>
 
-                            <p className="text-[11px] text-red-900/80 font-medium leading-snug text-center sm:text-left flex items-start gap-1.5">
+                            <p className="text-[11px] text-sky-900/80 font-medium leading-snug text-center sm:text-left flex items-start gap-1.5">
                               <span className="shrink-0 text-xs">⚡</span>
                               <span>
                                 Al realizar el pago en este momento garantizas tu cupo oficial de forma inmediata y definitiva en el programa.
