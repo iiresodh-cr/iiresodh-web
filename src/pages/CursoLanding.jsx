@@ -1143,8 +1143,6 @@ export default function CursoLanding() {
                   </a>
                   <a
                     href="mailto:cursos@iiresodh.org?subject=Consulta%20sobre%20el%20Curso%20Internacional%20Palermo%202027"
-                    target="_blank"
-                    rel="noopener noreferrer"
                     title="Solicita más información por email a cursos@iiresodh.org"
                     aria-label="Solicita más información por email a cursos@iiresodh.org"
                     className="bg-white/10 hover:bg-sky-500/20 border border-white/20 hover:border-sky-400/50 py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-95 text-white hover:text-sky-300 font-bold text-xs uppercase tracking-wider whitespace-nowrap"
