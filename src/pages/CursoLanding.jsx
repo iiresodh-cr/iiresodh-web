@@ -30,7 +30,6 @@ import logoIiresodhColor from "../assets/logo-color.png";
 import FormularioPagoCurso from "../components/cursos/FormularioPagoCurso";
 import SelectorModalidadPago from "../components/cursos/SelectorModalidadPago";
 import ModalTerminosClickwrap from "../components/cursos/ModalTerminosClickwrap";
-import ModalContactoEmail from "../components/cursos/ModalContactoEmail";
 import { PAISES_LATINOAMERICA } from "../data/paisesLatinoamerica";
 import { Scale, ShieldCheck, Search, GraduationCap, Globe } from "lucide-react";
 import { obtenerInfoVideo } from "../utils/mediaUtils";
@@ -501,7 +500,6 @@ export default function CursoLanding() {
   const [planCuotas, setPlanCuotas] = useState(1); // 1 = Pago único, 2 = 2 pagos, 3 = 3 pagos, 4 = 4 pagos
   const [modalBrochure, setModalBrochure] = useState(null); // null | 1 | 2
   const [modalTerminosOpen, setModalTerminosOpen] = useState(false);
-  const [modalEmailOpen, setModalEmailOpen] = useState(false);
   const [clientIp, setClientIp] = useState("");
   const [mostrarSeccionPago, setMostrarSeccionPago] = useState(false);
 
@@ -1143,9 +1141,10 @@ export default function CursoLanding() {
                     </svg>
                     <span>WhatsApp</span>
                   </a>
-                  <button
-                    type="button"
-                    onClick={() => setModalEmailOpen(true)}
+                  <a
+                    href="mailto:cursos@iiresodh.org?subject=Consulta%20sobre%20el%20Curso%20Internacional%20Palermo%202027"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     title="Solicita más información por email a cursos@iiresodh.org"
                     aria-label="Solicita más información por email a cursos@iiresodh.org"
                     className="bg-white/10 hover:bg-sky-500/20 border border-white/20 hover:border-sky-400/50 py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-95 text-white hover:text-sky-300 font-bold text-xs uppercase tracking-wider whitespace-nowrap"
@@ -1154,7 +1153,7 @@ export default function CursoLanding() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                     <span>Email</span>
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
@@ -1915,14 +1914,7 @@ export default function CursoLanding() {
                       ¿Tienes dudas o necesitas orden de facturación institucional?
                     </h4>
                     <p className="text-xs text-neutral-300 font-light mt-0.5">
-                      Escríbenos a{" "}
-                      <button
-                        type="button"
-                        onClick={() => setModalEmailOpen(true)}
-                        className="underline text-amber-300 hover:text-amber-200 cursor-pointer font-medium"
-                      >
-                        cursos@iiresodh.org
-                      </button>
+                      Escríbenos a <a href="mailto:cursos@iiresodh.org" className="underline text-amber-300">cursos@iiresodh.org</a>
                     </p>
                   </div>
                   <button
@@ -3245,14 +3237,6 @@ export default function CursoLanding() {
         open={modalTerminosOpen}
         onClose={() => setModalTerminosOpen(false)}
         onAceptar={() => setAceptarPrivacidadTransferencia(true)}
-      />
-
-      {/* MODAL DE CONTACTO DIRECTO POR EMAIL */}
-      <ModalContactoEmail
-        open={modalEmailOpen}
-        onClose={() => setModalEmailOpen(false)}
-        email={contacto?.email || "cursos@iiresodh.org"}
-        subject="Consulta sobre el Curso Internacional Palermo 2027"
       />
 
       {/* SNACKBAR DE NOTIFICACIONES */}
