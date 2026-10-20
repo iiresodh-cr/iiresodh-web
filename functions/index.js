@@ -267,17 +267,33 @@ exports.enviarFormularioContacto = onCall({
   region: "us-central1"
 }, async (request) => {
 
-  const { nombre, correo, mensaje, destinatario, asunto, telefono, cursoTitulo } = request.data;
+  const { nombre, correo, mensaje, destinatario, asunto, telefono, cursoTitulo, origen } = request.data;
 
   if (!nombre || !correo || !mensaje) {
     throw new HttpsError("invalid-argument", "Faltan campos obligatorios.");
   }
 
-  const toEmail = (destinatario && (destinatario.includes('cursos@iiresodh.org') || destinatario === 'cursos@iiresodh.org'))
-    ? 'cursos@iiresodh.org'
-    : 'contacto@iiresodh.org';
+  // Separación estricta entre consultas de Cursos y mensajes de Contacto Web General:
+  const esConsultaCurso = origen === 'curso_landing' ||
+    Boolean(cursoTitulo && cursoTitulo.trim()) ||
+    (destinatario && destinatario.toLowerCase().includes('cursos@iiresodh.org'));
 
-  const mailSubject = asunto || (cursoTitulo ? `Consulta sobre ${cursoTitulo}: ${nombre}` : `Nuevo mensaje web de: ${nombre}`);
+  // 1. Destinatario estricto:
+  // - Las consultas de cursos llegan ÚNICAMENTE a cursos@iiresodh.org
+  // - Los contactos de la web principal llegan a contacto@iiresodh.org
+  const toEmail = esConsultaCurso ? 'cursos@iiresodh.org' : 'contacto@iiresodh.org';
+
+  // 2. Nombre del remitente visible diferenciado:
+  // - Cursos: "Cursos IIRESODH"
+  // - Web general: "Web IIRESODH"
+  const fromSender = esConsultaCurso
+    ? '"Cursos IIRESODH" <contacto@iiresodh.org>'
+    : '"Web IIRESODH" <contacto@iiresodh.org>';
+
+  // 3. Asunto claro y descriptivo:
+  const mailSubject = asunto || (esConsultaCurso
+    ? `Consulta sobre curso ${cursoTitulo || 'IIRESODH'}: ${nombre}`
+    : `Nuevo mensaje de contacto web: ${nombre}`);
 
   try {
     const transporter = nodemailer.createTransport({
@@ -292,21 +308,72 @@ exports.enviarFormularioContacto = onCall({
     });
 
     const mailOptions = {
-      from: `"Web IIRESODH" <contacto@iiresodh.org>`,
+      from: fromSender,
       to: toEmail,
       replyTo: correo,
       subject: mailSubject,
-      text: `Nombre: ${nombre}\nCorreo: ${correo}\n${telefono ? `Teléfono: ${telefono}\n` : ''}${cursoTitulo ? `Curso: ${cursoTitulo}\n` : ''}\nMensaje:\n${mensaje}`,
+      text: esConsultaCurso
+        ? `CONSULTA DE CURSO - IIRESODH\n\nCurso: ${cursoTitulo || 'No especificado'}\nNombre: ${nombre}\nCorreo: ${correo}\n${telefono ? `Teléfono / WhatsApp: ${telefono}\n` : ''}\nConsulta:\n${mensaje}`
+        : `CONTACTO GENERAL WEB - IIRESODH\n\nNombre: ${nombre}\nCorreo: ${correo}\n${telefono ? `Teléfono: ${telefono}\n` : ''}\nMensaje:\n${mensaje}`,
       html: `
-        <h2 style="color: #1D3557;">${mailSubject}</h2>
-        <p><strong>Nombre:</strong> ${nombre}</p>
-        <p><strong>Correo del remitente:</strong> <a href="mailto:${correo}">${correo}</a></p>
-        ${telefono ? `<p><strong>Teléfono / WhatsApp:</strong> ${telefono}</p>` : ''}
-        ${cursoTitulo ? `<p><strong>Curso de interés:</strong> ${cursoTitulo}</p>` : ''}
-        <p><strong>Mensaje / Consulta:</strong></p>
-        <blockquote style="border-left: 4px solid #B92F32; padding-left: 10px; color: #555;">
-          ${mensaje.replace(/\n/g, '<br>')}
-        </blockquote>
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 620px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+          
+          <!-- Encabezado diferenciado según el tipo de correo -->
+          <div style="background-color: ${esConsultaCurso ? '#1D3557' : '#0f172a'}; padding: 22px 28px; color: #ffffff;">
+            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; color: ${esConsultaCurso ? '#f87171' : '#94a3b8'}; margin-bottom: 4px;">
+              ${esConsultaCurso ? 'COORDINACIÓN DE CURSOS IIRESODH' : 'PORTAL INSTITUCIONAL IIRESODH'}
+            </div>
+            <h2 style="margin: 0; font-size: 20px; font-weight: 700; color: #ffffff; line-height: 1.3;">
+              ${esConsultaCurso ? 'Nueva Consulta de Curso Recibida' : 'Nuevo Mensaje de Contacto Web'}
+            </h2>
+          </div>
+
+          <!-- Contenido -->
+          <div style="padding: 26px 28px; color: #334155; font-size: 14px; line-height: 1.6;">
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+              <tr>
+                <td style="padding: 6px 0; color: #64748b; width: 140px; vertical-align: top;"><strong>Remitente:</strong></td>
+                <td style="padding: 6px 0; color: #0f172a; font-weight: 600;">${nombre}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b; vertical-align: top;"><strong>Correo:</strong></td>
+                <td style="padding: 6px 0;"><a href="mailto:${correo}" style="color: #1D3557; font-weight: 600; text-decoration: underline;">${correo}</a></td>
+              </tr>
+              ${telefono ? `
+              <tr>
+                <td style="padding: 6px 0; color: #64748b; vertical-align: top;"><strong>Teléfono / WhatsApp:</strong></td>
+                <td style="padding: 6px 0; color: #0f172a; font-weight: 600;">${telefono}</td>
+              </tr>
+              ` : ''}
+              ${esConsultaCurso && cursoTitulo ? `
+              <tr>
+                <td style="padding: 6px 0; color: #64748b; vertical-align: top;"><strong>Curso de interés:</strong></td>
+                <td style="padding: 6px 0; color: #b91c1c; font-weight: 700;">${cursoTitulo}</td>
+              </tr>
+              ` : ''}
+            </table>
+
+            <div style="margin-top: 14px;">
+              <span style="display: block; font-weight: 700; color: #0f172a; margin-bottom: 8px;">
+                ${esConsultaCurso ? 'Mensaje / Consulta del Interesado:' : 'Mensaje recibido:'}
+              </span>
+              <div style="background-color: #f8fafc; border-left: 4px solid ${esConsultaCurso ? '#b91c1c' : '#1D3557'}; padding: 14px 18px; border-radius: 6px; color: #1e293b; font-size: 14px; line-height: 1.6;">
+                ${mensaje.replace(/\n/g, '<br>')}
+              </div>
+            </div>
+
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px dashed #cbd5e1; font-size: 12px; color: #64748b;">
+              💡 <em>Puedes responder directamente a este correo haciendo clic en <strong>Responder</strong> para escribirle a <strong>${correo}</strong>.</em>
+            </div>
+          </div>
+
+          <!-- Pie de página -->
+          <div style="background-color: #f8fafc; padding: 12px 28px; font-size: 11px; color: #64748b; text-align: center; border-top: 1px solid #e2e8f0;">
+            ${esConsultaCurso 
+              ? 'Mensaje enrutado exclusivamente a Cursos IIRESODH (<a href="mailto:cursos@iiresodh.org" style="color:#64748b;">cursos@iiresodh.org</a>).' 
+              : 'Mensaje enrutado al área general de Contacto IIRESODH (<a href="mailto:contacto@iiresodh.org" style="color:#64748b;">contacto@iiresodh.org</a>).'}
+          </div>
+        </div>
       `
     };
 
