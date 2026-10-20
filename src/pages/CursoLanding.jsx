@@ -1070,19 +1070,11 @@ export default function CursoLanding() {
             {/* FILA SUPERIOR: PRECIO, DETALLE Y BENEFICIOS INCLUIDOS DISTRIBUIDOS */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-4 items-center">
 
-              {/* COLUMNA IZQUIERDA: PRECIO Y ESPECIFICACIÓN GENERAL (lg:col-span-5) */}
+              {/* COLUMNA IZQUIERDA: DISPONIBILIDAD Y FACILIDADES (lg:col-span-5) */}
               <div className="lg:col-span-5 space-y-2.5 text-left pl-2 sm:pl-6 lg:pl-8 pr-0 sm:pr-2">
                 <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-black italic uppercase tracking-[0.15em] text-red-500 block [text-shadow:_0_2px_4px_rgba(0,0,0,0.9),_0_1px_2px_rgba(0,0,0,1)]">
                   ¡Cupos Limitados!
                 </span>
-                <span className="text-white font-light text-sm sm:text-base block">
-                  Inversión:
-                </span>
-                <div>
-                  <span className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-sans">
-                    {normalizarPrecio(landing.precioInversion)}
-                  </span>
-                </div>
 
                 <div className="pt-0.5">
                   <span className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-white">
@@ -1425,6 +1417,22 @@ export default function CursoLanding() {
                         </div>
                       ))}
                     </div>
+                  </div>
+                </div>
+
+                {/* BLOQUE INVERSIÓN ACADÉMICA */}
+                <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-l-4 border-l-main-red shadow-xs">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
+                      Inversión
+                    </span>
+                    <h3 className="text-2xl sm:text-3xl font-extrabold text-main-blue tracking-tight font-sans">
+                      {normalizarPrecio(landing.precioInversion)}
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-700 bg-white px-4 py-2.5 rounded-xl border border-slate-200 shadow-xs self-start sm:self-auto">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                    Facilidades de pago en cuotas disponible
                   </div>
                 </div>
 
