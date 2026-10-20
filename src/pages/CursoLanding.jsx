@@ -30,6 +30,7 @@ import logoIiresodhColor from "../assets/logo-color.png";
 import FormularioPagoCurso from "../components/cursos/FormularioPagoCurso";
 import SelectorModalidadPago from "../components/cursos/SelectorModalidadPago";
 import ModalTerminosClickwrap from "../components/cursos/ModalTerminosClickwrap";
+import ModalConsultaEmailCurso from "../components/cursos/ModalConsultaEmailCurso";
 import { PAISES_LATINOAMERICA } from "../data/paisesLatinoamerica";
 import { Scale, ShieldCheck, Search, GraduationCap, Globe } from "lucide-react";
 import { obtenerInfoVideo } from "../utils/mediaUtils";
@@ -288,7 +289,7 @@ export const DATOS_PALERMO_2027 = {
 
     // Sección Legado y Visión
     legadoTitulo: "Legado y Visión",
-    legadoTexto: "El legado histórico de los magistrados Giovanni Falcone y Paolo Borsellino sentó las bases de la lucha contemporánea contra el crimen organizado y la macrocriminalidad financiera. En el año 2000, Palermo fue la sede donde la comunidad internacional aprobó la histórica Convención de las Naciones Unidas contra la Delincuencia Organizada Transnacional. Este curso internacional conecta ese precedente histórico con los desafíos judiciales de vanguardia, el decomiso de activos ilícitos y la cooperación penal transfronteriza, organizado en conjunto por IIRESODH, el Departamento de Ciencias Políticas de Università di Palermo, Italia, el Instituto de Derechos Humanos de la Universidad Nacional de la Plata, Argentina y Sisma (Società scientifica Italiana degli Studi su Mafie e Antimafia).",
+    legadoTexto: "El legado histórico de los magistrados Giovanni Falcone y Paolo Borsellino sentó las bases de la lucha contemporánea contra el crimen organizado y la macrocriminalidad financiera. En el año 2000, Palermo fue la sede donde la comunidad internacional aprobó la histórica Convención de las Naciones Unidas contra la Delincuencia Organizada Transnacional. Este curso internacional conecta ese precedente histórico con los desafíos judiciales de vanguardia, el decomiso de activos ilícitos y la cooperación penal transfronteriza, organizado el IIRESODH en colaboración con la Facultad de Ciencias Políticas y Relaciones Internacionales de la Universidad de Estudios de Palermo, Italia, la Sociedad Científica Italiana de los Estudios sobre Mafias Y Antimafia (SISMA) y el Institudo de Derechos Humanos de la Universidad Nacional de La Plata, Argentina.",
     pilares: [
       {
         titulo: "Marco Jurídico Internacional y DDHH",
@@ -523,6 +524,9 @@ export default function CursoLanding() {
   // Estado para copiar enlace del curso
   const [enlaceCopiado, setEnlaceCopiado] = useState(false);
 
+  // Estado para el modal de consulta por email a cursos@iiresodh.org
+  const [modalEmailOpen, setModalEmailOpen] = useState(false);
+
   // Auto-play del carrousel de fotos de Palermo
   useEffect(() => {
     const timer = setInterval(() => {
@@ -654,6 +658,14 @@ export default function CursoLanding() {
 
         if (!cursoEncontrado) {
           cursoEncontrado = DATOS_PALERMO_2027;
+        }
+
+        // Sanitizar ortografía: "Crimen" siempre sin tilde conforme a las reglas del español
+        if (cursoEncontrado?.titulo) {
+          cursoEncontrado.titulo = cursoEncontrado.titulo.replace(/crímen/gi, "Crimen").replace(/Crímen/g, "Crimen");
+        }
+        if (cursoEncontrado?.landingPage?.lema) {
+          cursoEncontrado.landingPage.lema = cursoEncontrado.landingPage.lema.replace(/crímen/gi, "Crimen").replace(/Crímen/g, "Crimen").replace(/CRÍMEN/g, "CRIMEN");
         }
 
         if (!cursoEncontrado.landingPage) {
@@ -968,6 +980,7 @@ export default function CursoLanding() {
       });
   };
 
+
   const PESTANAS = [
     { id: "legado", label: "Sobre el Curso", icono: "🏛️" },
     { id: "programa", label: `Programa (${programa.length} Días)`, icono: "📅" },
@@ -1070,25 +1083,23 @@ export default function CursoLanding() {
             {/* FILA SUPERIOR: PRECIO, DETALLE Y BENEFICIOS INCLUIDOS DISTRIBUIDOS */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-4 items-center">
 
-              {/* COLUMNA IZQUIERDA: PRECIO Y ESPECIFICACIÓN GENERAL (lg:col-span-5) */}
-              <div className="lg:col-span-5 space-y-2.5 text-left pl-2 sm:pl-6 lg:pl-8 pr-0 sm:pr-2">
+              {/* COLUMNA IZQUIERDA: ADMISIÓN Y FACILIDADES (lg:col-span-5) */}
+              <div className="lg:col-span-5 space-y-3.5 text-left pl-2 sm:pl-6 lg:pl-8 pr-0 sm:pr-2">
                 <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-black italic uppercase tracking-[0.15em] text-red-500 block [text-shadow:_0_2px_4px_rgba(0,0,0,0.9),_0_1px_2px_rgba(0,0,0,1)]">
                   ¡Cupos Limitados!
                 </span>
-                <span className="text-white font-light text-sm sm:text-base block">
-                  Inversión:
-                </span>
-                <div>
-                  <span className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-sans">
-                    {normalizarPrecio(landing.precioInversion)}
-                  </span>
-                </div>
 
-                <div className="pt-0.5">
-                  <span className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-white">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
-                    Facilidades de pago en cuotas disponible
-                  </span>
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[11px] sm:text-xs font-bold uppercase tracking-wider">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    Facilidades de Pago
+                  </div>
+                  <h3 className="text-lg sm:text-xl md:text-2xl font-extrabold text-white tracking-tight leading-snug drop-shadow-md">
+                    Planes de pago en cuotas disponibles
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-300 font-light leading-relaxed">
+                    Reserva tu plaza con anticipación y accede a modalidades de pago fraccionado para el programa internacional en Palermo.
+                  </p>
                 </div>
               </div>
 
@@ -1143,8 +1154,9 @@ export default function CursoLanding() {
                     </svg>
                     <span>WhatsApp</span>
                   </a>
-                  <a
-                    href="mailto:cursos@iiresodh.org?subject=Consulta%20sobre%20el%20Curso%20Internacional%20Palermo%202027"
+                  <button
+                    type="button"
+                    onClick={() => setModalEmailOpen(true)}
                     title="Solicita más información por email a cursos@iiresodh.org"
                     aria-label="Solicita más información por email a cursos@iiresodh.org"
                     className="bg-white/10 hover:bg-sky-500/20 border border-white/20 hover:border-sky-400/50 py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-95 text-white hover:text-sky-300 font-bold text-xs uppercase tracking-wider whitespace-nowrap"
@@ -1153,7 +1165,7 @@ export default function CursoLanding() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                     <span>Email</span>
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>
@@ -1326,37 +1338,19 @@ export default function CursoLanding() {
                 {/* BLOQUE INSTITUCIONAL CO-ORGANIZADORES */}
                 <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl flex flex-col lg:flex-row items-center justify-between gap-6 shadow-xs">
                   <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left w-full">
-                    <div className="bg-white px-5 sm:px-7 py-4 sm:py-5 rounded-2xl border border-slate-200 shadow-xs shrink-0 mx-auto sm:mx-0">
-                      <div className="grid grid-cols-2 items-center divide-x divide-slate-200 gap-x-6 sm:gap-x-7">
-                        {/* Columna Izquierda: IIRESODH (arriba) y DDHH UNLP (abajo) */}
-                        <div className="flex flex-col items-center justify-center gap-3.5 pr-5 sm:pr-6">
-                          <div className="h-12 sm:h-14 flex items-center justify-center">
-                            <img src={logoIiresodhColor} alt="IIRESODH" className="h-8 sm:h-9 w-auto object-contain" />
-                          </div>
-                          <div className="w-full h-px bg-slate-100" />
-                          <div className="h-12 sm:h-14 flex items-center justify-center">
-                            <img src={logoUnlp} alt="Instituto de Derechos Humanos UNLP" className="h-12 sm:h-14 w-auto object-contain" />
-                          </div>
-                        </div>
-
-                        {/* Columna Derecha: Università di Palermo (arriba) y SISMA (abajo) */}
-                        <div className="flex flex-col items-center justify-center gap-3.5 pl-5 sm:pl-6">
-                          <div className="h-12 sm:h-14 flex items-center justify-center">
-                            <img src={logoUnipa} alt="Università degli Studi di Palermo" className="h-12 sm:h-14 w-auto object-contain" />
-                          </div>
-                          <div className="w-full h-px bg-slate-100" />
-                          <div className="h-12 sm:h-14 flex items-center justify-center">
-                            <img src={logoSisma} alt="SISMA (Società scientifica Italiana degli Studi su Mafie e Antimafia)" className="h-12 sm:h-14 w-auto object-contain rounded-md shadow-2xs" />
-                          </div>
-                        </div>
-                      </div>
+                    <div className="bg-white px-6 sm:px-8 py-5 sm:py-6 rounded-2xl border border-slate-200 shadow-xs shrink-0 mx-auto sm:mx-0 flex items-center justify-center">
+                      <img
+                        src={logoIiresodhColor}
+                        alt="IIRESODH"
+                        className="h-12 sm:h-14 md:h-16 w-auto max-w-full object-contain"
+                      />
                     </div>
                     <div>
                       <span className="text-[10px] font-black uppercase tracking-widest text-main-red block">
                         Organización Conjunta
                       </span>
                       <h3 className="text-sm sm:text-base font-bold text-main-blue">
-                        IIRESODH, el Departamento de Ciencias Políticas de Università di Palermo, Italia, el Instituto de Derechos Humanos de la Universidad Nacional de la Plata, Argentina y Sisma (Società scientifica Italiana degli Studi su Mafie e Antimafia).
+                        IIRESODH en colaboración con la Facultad de Ciencias Políticas y Relaciones Internacionales de la Universidad de Estudios de Palermo, Italia, la Sociedad Científica Italiana de los Estudios sobre Mafias Y Antimafia (SISMA) y el Institudo de Derechos Humanos de la Universidad Nacional de La Plata, Argentina.
                       </h3>
                     </div>
                   </div>
@@ -1447,13 +1441,45 @@ export default function CursoLanding() {
                 </div>
 
                 {/* ¿QUÉ ESTÁ INCLUIDO Y QUÉ NO? (DEL BROCHURE) */}
-                <div id="seccion-que-esta-incluido" className="pt-2 scroll-mt-24">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
-                    Logística y Servicios Integrales
-                  </span>
-                  <h3 className="text-xl md:text-2xl font-black text-main-blue tracking-tight mb-4">
-                    ¿Qué está incluido en la matrícula?
-                  </h3>
+                <div id="seccion-que-esta-incluido" className="pt-2 scroll-mt-24 space-y-6">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
+                      Inversión y Servicios Integrales
+                    </span>
+                    <h3 className="text-xl md:text-2xl font-black text-main-blue tracking-tight">
+                      Inversión Académica y Qué Incluye tu Matrícula
+                    </h3>
+                  </div>
+
+                  {/* TARJETA HERO DE INVERSIÓN (ELEGANTE, RADIO CERO EN BORDE ROJO) */}
+                  <div className="bg-slate-50 border border-slate-200/90 rounded-r-2xl rounded-l-none p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-5 border-l-4 border-l-main-red shadow-xs">
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 block">
+                        Matrícula Oficial del Curso
+                      </span>
+                      <div className="flex items-baseline gap-3">
+                        <span className="text-3xl sm:text-4xl font-extrabold text-main-blue tracking-tight font-sans">
+                          {normalizarPrecio(landing.precioInversion)}
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-gray-600 font-light max-w-xl">
+                        Cubre acreditación académica internacional conjunta, estancia en hotel 4★ en Palermo, traslados oficiales internos y espacios diarios de networking.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+                      <span className="inline-flex items-center justify-center gap-2 text-xs font-bold text-slate-700 bg-white px-3.5 py-2.5 rounded-xl border border-slate-200 shadow-2xs">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                        Pago en cuotas disponible
+                      </span>
+                      <button
+                        onClick={() => irASeccion("inscripcion")}
+                        className="bg-main-red hover:bg-[#8b1515] text-white font-bold text-xs uppercase tracking-wider py-2.5 px-5 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer whitespace-nowrap text-center"
+                      >
+                        Inscríbete Ahora
+                      </button>
+                    </div>
+                  </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
                     {/* COLUMNA 1: LO QUE INCLUYE (8 cols on lg) */}
@@ -1900,7 +1926,14 @@ export default function CursoLanding() {
                       ¿Tienes dudas o necesitas orden de facturación institucional?
                     </h4>
                     <p className="text-xs text-neutral-300 font-light mt-0.5">
-                      Escríbenos a <a href="mailto:cursos@iiresodh.org" className="underline text-amber-300">cursos@iiresodh.org</a>
+                      Escríbenos a{" "}
+                      <button
+                        type="button"
+                        onClick={() => setModalEmailOpen(true)}
+                        className="underline text-amber-300 hover:text-amber-200 font-medium cursor-pointer"
+                      >
+                        cursos@iiresodh.org
+                      </button>
                     </p>
                   </div>
                   <button
@@ -3223,6 +3256,14 @@ export default function CursoLanding() {
         open={modalTerminosOpen}
         onClose={() => setModalTerminosOpen(false)}
         onAceptar={() => setAceptarPrivacidadTransferencia(true)}
+      />
+
+      {/* MODAL DE FORMULARIO DE CONSULTA DIRECTA A CURSOS@IIRESODH.ORG */}
+      <ModalConsultaEmailCurso
+        isOpen={modalEmailOpen}
+        onClose={() => setModalEmailOpen(false)}
+        cursoTitulo={curso?.titulo || "Curso Internacional Palermo 2027"}
+        cursoId={curso?.id || "palermo-2027"}
       />
 
       {/* SNACKBAR DE NOTIFICACIONES */}

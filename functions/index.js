@@ -267,11 +267,17 @@ exports.enviarFormularioContacto = onCall({
   region: "us-central1"
 }, async (request) => {
 
-  const { nombre, correo, mensaje } = request.data;
+  const { nombre, correo, mensaje, destinatario, asunto, telefono, cursoTitulo } = request.data;
 
   if (!nombre || !correo || !mensaje) {
     throw new HttpsError("invalid-argument", "Faltan campos obligatorios.");
   }
+
+  const toEmail = (destinatario && (destinatario.includes('cursos@iiresodh.org') || destinatario === 'cursos@iiresodh.org'))
+    ? 'cursos@iiresodh.org'
+    : 'contacto@iiresodh.org';
+
+  const mailSubject = asunto || (cursoTitulo ? `Consulta sobre ${cursoTitulo}: ${nombre}` : `Nuevo mensaje web de: ${nombre}`);
 
   try {
     const transporter = nodemailer.createTransport({
@@ -287,15 +293,17 @@ exports.enviarFormularioContacto = onCall({
 
     const mailOptions = {
       from: `"Web IIRESODH" <contacto@iiresodh.org>`,
-      to: 'contacto@iiresodh.org',
+      to: toEmail,
       replyTo: correo,
-      subject: `Nuevo mensaje web de: ${nombre}`,
-      text: `Nombre: ${nombre}\nCorreo: ${correo}\n\nMensaje:\n${mensaje}`,
+      subject: mailSubject,
+      text: `Nombre: ${nombre}\nCorreo: ${correo}\n${telefono ? `Teléfono: ${telefono}\n` : ''}${cursoTitulo ? `Curso: ${cursoTitulo}\n` : ''}\nMensaje:\n${mensaje}`,
       html: `
-        <h2 style="color: #1D3557;">Nuevo contacto desde la web</h2>
+        <h2 style="color: #1D3557;">${mailSubject}</h2>
         <p><strong>Nombre:</strong> ${nombre}</p>
-        <p><strong>Correo:</strong> ${correo}</p>
-        <p><strong>Mensaje:</strong></p>
+        <p><strong>Correo del remitente:</strong> <a href="mailto:${correo}">${correo}</a></p>
+        ${telefono ? `<p><strong>Teléfono / WhatsApp:</strong> ${telefono}</p>` : ''}
+        ${cursoTitulo ? `<p><strong>Curso de interés:</strong> ${cursoTitulo}</p>` : ''}
+        <p><strong>Mensaje / Consulta:</strong></p>
         <blockquote style="border-left: 4px solid #B92F32; padding-left: 10px; color: #555;">
           ${mensaje.replace(/\n/g, '<br>')}
         </blockquote>
