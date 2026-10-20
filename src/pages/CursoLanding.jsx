@@ -1070,19 +1070,23 @@ export default function CursoLanding() {
             {/* FILA SUPERIOR: PRECIO, DETALLE Y BENEFICIOS INCLUIDOS DISTRIBUIDOS */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-4 items-center">
 
-              {/* COLUMNA IZQUIERDA: DISPONIBILIDAD Y FACILIDADES (lg:col-span-5) */}
+              {/* COLUMNA IZQUIERDA: ADMISIÓN Y FACILIDADES (lg:col-span-5) */}
               <div className="lg:col-span-5 space-y-3.5 text-left pl-2 sm:pl-6 lg:pl-8 pr-0 sm:pr-2">
                 <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-black italic uppercase tracking-[0.15em] text-red-500 block [text-shadow:_0_2px_4px_rgba(0,0,0,0.9),_0_1px_2px_rgba(0,0,0,1)]">
                   ¡Cupos Limitados!
                 </span>
 
-                <div className="pt-1">
-                  <div className="flex items-start gap-3">
-                    <span className="w-3.5 h-3.5 rounded-full bg-emerald-400 shrink-0 mt-1.5 shadow-[0_0_12px_rgba(52,211,153,0.9)] animate-pulse" />
-                    <h3 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white tracking-tight leading-snug drop-shadow-md">
-                      Facilidades de pago en cuotas disponible
-                    </h3>
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[11px] sm:text-xs font-bold uppercase tracking-wider">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    Facilidades de Pago
                   </div>
+                  <h3 className="text-lg sm:text-xl md:text-2xl font-extrabold text-white tracking-tight leading-snug drop-shadow-md">
+                    Planes de pago en cuotas disponibles
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-300 font-light leading-relaxed">
+                    Reserva tu plaza con anticipación y accede a modalidades de pago fraccionado para el programa internacional en Palermo.
+                  </p>
                 </div>
               </div>
 
@@ -1422,30 +1426,46 @@ export default function CursoLanding() {
                   </div>
                 </div>
 
-                {/* BLOQUE INVERSIÓN ACADÉMICA */}
-                <div className="bg-slate-50 border border-slate-200/90 rounded-r-2xl rounded-l-none p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-l-4 border-l-main-red shadow-xs">
+                {/* ¿QUÉ ESTÁ INCLUIDO Y QUÉ NO? (DEL BROCHURE) */}
+                <div id="seccion-que-esta-incluido" className="pt-2 scroll-mt-24 space-y-6">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
-                      Inversión
+                      Inversión y Servicios Integrales
                     </span>
-                    <h3 className="text-2xl sm:text-3xl font-extrabold text-main-blue tracking-tight font-sans">
-                      {normalizarPrecio(landing.precioInversion)}
+                    <h3 className="text-xl md:text-2xl font-black text-main-blue tracking-tight">
+                      Inversión Académica y Qué Incluye tu Matrícula
                     </h3>
                   </div>
-                  <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-700 bg-white px-4 py-2.5 rounded-xl border border-slate-200 shadow-xs self-start sm:self-auto">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
-                    Facilidades de pago en cuotas disponible
-                  </div>
-                </div>
 
-                {/* ¿QUÉ ESTÁ INCLUIDO Y QUÉ NO? (DEL BROCHURE) */}
-                <div id="seccion-que-esta-incluido" className="pt-2 scroll-mt-24">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
-                    Logística y Servicios Integrales
-                  </span>
-                  <h3 className="text-xl md:text-2xl font-black text-main-blue tracking-tight mb-4">
-                    ¿Qué está incluido en la matrícula?
-                  </h3>
+                  {/* TARJETA HERO DE INVERSIÓN (ELEGANTE, RADIO CERO EN BORDE ROJO) */}
+                  <div className="bg-slate-50 border border-slate-200/90 rounded-r-2xl rounded-l-none p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-5 border-l-4 border-l-main-red shadow-xs">
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 block">
+                        Matrícula Oficial del Curso
+                      </span>
+                      <div className="flex items-baseline gap-3">
+                        <span className="text-3xl sm:text-4xl font-extrabold text-main-blue tracking-tight font-sans">
+                          {normalizarPrecio(landing.precioInversion)}
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-gray-600 font-light max-w-xl">
+                        Cubre acreditación académica internacional conjunta, estancia en hotel 4★ en Palermo, traslados oficiales internos y espacios diarios de networking.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+                      <span className="inline-flex items-center justify-center gap-2 text-xs font-bold text-slate-700 bg-white px-3.5 py-2.5 rounded-xl border border-slate-200 shadow-2xs">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                        Pago en cuotas disponible
+                      </span>
+                      <button
+                        onClick={() => irASeccion("inscripcion")}
+                        className="bg-main-red hover:bg-[#8b1515] text-white font-bold text-xs uppercase tracking-wider py-2.5 px-5 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer whitespace-nowrap text-center"
+                      >
+                        Inscríbete Ahora
+                      </button>
+                    </div>
+                  </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
                     {/* COLUMNA 1: LO QUE INCLUYE (8 cols on lg) */}
