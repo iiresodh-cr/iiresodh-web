@@ -1326,30 +1326,12 @@ export default function CursoLanding() {
                 {/* BLOQUE INSTITUCIONAL CO-ORGANIZADORES */}
                 <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl flex flex-col lg:flex-row items-center justify-between gap-6 shadow-xs">
                   <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left w-full">
-                    <div className="bg-white px-5 sm:px-7 py-4 sm:py-5 rounded-2xl border border-slate-200 shadow-xs shrink-0 mx-auto sm:mx-0">
-                      <div className="grid grid-cols-2 items-center divide-x divide-slate-200 gap-x-6 sm:gap-x-7">
-                        {/* Columna Izquierda: IIRESODH (arriba) y DDHH UNLP (abajo) */}
-                        <div className="flex flex-col items-center justify-center gap-3.5 pr-5 sm:pr-6">
-                          <div className="h-12 sm:h-14 flex items-center justify-center">
-                            <img src={logoIiresodhColor} alt="IIRESODH" className="h-8 sm:h-9 w-auto object-contain" />
-                          </div>
-                          <div className="w-full h-px bg-slate-100" />
-                          <div className="h-12 sm:h-14 flex items-center justify-center">
-                            <img src={logoUnlp} alt="Instituto de Derechos Humanos UNLP" className="h-12 sm:h-14 w-auto object-contain" />
-                          </div>
-                        </div>
-
-                        {/* Columna Derecha: Università di Palermo (arriba) y SISMA (abajo) */}
-                        <div className="flex flex-col items-center justify-center gap-3.5 pl-5 sm:pl-6">
-                          <div className="h-12 sm:h-14 flex items-center justify-center">
-                            <img src={logoUnipa} alt="Università degli Studi di Palermo" className="h-12 sm:h-14 w-auto object-contain" />
-                          </div>
-                          <div className="w-full h-px bg-slate-100" />
-                          <div className="h-12 sm:h-14 flex items-center justify-center">
-                            <img src={logoSisma} alt="SISMA (Società scientifica Italiana degli Studi su Mafie e Antimafia)" className="h-12 sm:h-14 w-auto object-contain rounded-md shadow-2xs" />
-                          </div>
-                        </div>
-                      </div>
+                    <div className="bg-white px-6 sm:px-8 py-5 sm:py-6 rounded-2xl border border-slate-200 shadow-xs shrink-0 mx-auto sm:mx-0 flex items-center justify-center">
+                      <img
+                        src={logoIiresodhColor}
+                        alt="IIRESODH"
+                        className="h-12 sm:h-14 md:h-16 w-auto max-w-full object-contain"
+                      />
                     </div>
                     <div>
                       <span className="text-[10px] font-black uppercase tracking-widest text-main-red block">
