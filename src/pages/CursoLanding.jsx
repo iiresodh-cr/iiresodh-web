@@ -1071,16 +1071,18 @@ export default function CursoLanding() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-4 items-center">
 
               {/* COLUMNA IZQUIERDA: DISPONIBILIDAD Y FACILIDADES (lg:col-span-5) */}
-              <div className="lg:col-span-5 space-y-2.5 text-left pl-2 sm:pl-6 lg:pl-8 pr-0 sm:pr-2">
+              <div className="lg:col-span-5 space-y-3.5 text-left pl-2 sm:pl-6 lg:pl-8 pr-0 sm:pr-2">
                 <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-black italic uppercase tracking-[0.15em] text-red-500 block [text-shadow:_0_2px_4px_rgba(0,0,0,0.9),_0_1px_2px_rgba(0,0,0,1)]">
                   ¡Cupos Limitados!
                 </span>
 
-                <div className="pt-0.5">
-                  <span className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-white">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
-                    Facilidades de pago en cuotas disponible
-                  </span>
+                <div className="pt-1">
+                  <div className="flex items-start gap-3">
+                    <span className="w-3.5 h-3.5 rounded-full bg-emerald-400 shrink-0 mt-1.5 shadow-[0_0_12px_rgba(52,211,153,0.9)] animate-pulse" />
+                    <h3 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white tracking-tight leading-snug drop-shadow-md">
+                      Facilidades de pago en cuotas disponible
+                    </h3>
+                  </div>
                 </div>
               </div>
 
@@ -1421,7 +1423,7 @@ export default function CursoLanding() {
                 </div>
 
                 {/* BLOQUE INVERSIÓN ACADÉMICA */}
-                <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-l-4 border-l-main-red shadow-xs">
+                <div className="bg-slate-50 border border-slate-200/90 rounded-r-2xl rounded-l-none p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-l-4 border-l-main-red shadow-xs">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-main-red block mb-1">
                       Inversión
