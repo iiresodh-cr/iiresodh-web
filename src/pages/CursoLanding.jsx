@@ -1356,7 +1356,7 @@ export default function CursoLanding() {
                         Organización Conjunta
                       </span>
                       <h3 className="text-sm sm:text-base font-bold text-main-blue">
-                        IIRESODH, el Departamento de Ciencias Políticas de Università di Palermo, Italia, el Instituto de Derechos Humanos de la Universidad Nacional de la Plata, Argentina y Sisma (Società scientifica Italiana degli Studi su Mafie e Antimafia).
+                        IIRESODH en colaboración con la Facultad de Ciencias Políticas y Relaciones Internacionales de la Universidad de Estudios de Palermo, Italia, la Sociedad Científica Italiana de los Estudios sobre Mafias Y Antimafia (SISMA) y el Institudo de Derechos Humanos de la Universidad Nacional de La Plata, Argentina.
                       </h3>
                     </div>
                   </div>
