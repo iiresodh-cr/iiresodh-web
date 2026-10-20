@@ -660,6 +660,14 @@ export default function CursoLanding() {
           cursoEncontrado = DATOS_PALERMO_2027;
         }
 
+        // Sanitizar ortografía: "Crimen" siempre sin tilde conforme a las reglas del español
+        if (cursoEncontrado?.titulo) {
+          cursoEncontrado.titulo = cursoEncontrado.titulo.replace(/crímen/gi, "Crimen").replace(/Crímen/g, "Crimen");
+        }
+        if (cursoEncontrado?.landingPage?.lema) {
+          cursoEncontrado.landingPage.lema = cursoEncontrado.landingPage.lema.replace(/crímen/gi, "Crimen").replace(/Crímen/g, "Crimen").replace(/CRÍMEN/g, "CRIMEN");
+        }
+
         if (!cursoEncontrado.landingPage) {
           cursoEncontrado.landingPage = {
             ...DATOS_PALERMO_2027.landingPage,

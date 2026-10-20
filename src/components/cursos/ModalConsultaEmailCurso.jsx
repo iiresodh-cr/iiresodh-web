@@ -4,16 +4,36 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db, functions } from "../../firebase/config";
 import { httpsCallable } from "firebase/functions";
 
+const normalizarTitulo = (titulo) => {
+  if (!titulo) return "Curso Internacional Palermo 2027";
+  return String(titulo)
+    .replace(/crímen/gi, "Crimen")
+    .replace(/Crímen/g, "Crimen")
+    .replace(/CRÍMEN/g, "CRIMEN")
+    .trim();
+};
+
+const construirAsunto = (titulo) => {
+  const tit = normalizarTitulo(titulo);
+  // Si ya comienza explícitamente con "Curso" o "El curso"
+  if (/^curso\b/i.test(tit)) {
+    return `Consulta sobre el ${tit}`;
+  }
+  // Para títulos como "Aplicación de las Convenciones..."
+  return `Consulta sobre el curso ${tit}`;
+};
+
 export default function ModalConsultaEmailCurso({
   isOpen,
   onClose,
   cursoTitulo = "Curso Internacional Palermo 2027",
   cursoId = "palermo-2027"
 }) {
+  const tituloLimpio = normalizarTitulo(cursoTitulo);
   const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
   const [telefono, setTelefono] = useState("");
-  const [asunto, setAsunto] = useState(`Consulta sobre el ${cursoTitulo}`);
+  const [asunto, setAsunto] = useState(() => construirAsunto(cursoTitulo));
   const [mensaje, setMensaje] = useState("");
   const [aceptaPrivacidad, setAceptaPrivacidad] = useState(true);
 
@@ -36,7 +56,7 @@ export default function ModalConsultaEmailCurso({
     if (isOpen) {
       setEnviadoExito(false);
       setErrorMsg("");
-      setAsunto(`Consulta sobre el ${cursoTitulo}`);
+      setAsunto(construirAsunto(cursoTitulo));
     }
   }, [isOpen, cursoTitulo]);
 
@@ -69,12 +89,12 @@ export default function ModalConsultaEmailCurso({
       // 1. Guardar constancia de la consulta en Firestore
       await addDoc(collection(db, "solicitudesCursos"), {
         cursoId: cursoId || "palermo-2027",
-        cursoTitulo: cursoTitulo || "Curso Internacional Palermo 2027",
+        cursoTitulo: tituloLimpio,
         nombre: nombre.trim(),
         nombres: nombre.trim(),
         email: correo.trim(),
         telefono: telefono.trim(),
-        asunto: asunto.trim() || `Consulta sobre el ${cursoTitulo}`,
+        asunto: asunto.trim() || construirAsunto(cursoTitulo),
         comentarios: mensaje.trim(),
         tipoRegistro: "consulta_email",
         modalidadSolicitud: "consulta_directa",
@@ -93,9 +113,9 @@ export default function ModalConsultaEmailCurso({
           correo: correo.trim(),
           telefono: telefono.trim(),
           mensaje: mensaje.trim(),
-          asunto: asunto.trim() || `Consulta sobre el ${cursoTitulo}`,
+          asunto: asunto.trim() || construirAsunto(cursoTitulo),
           destinatario: "cursos@iiresodh.org",
-          cursoTitulo: cursoTitulo
+          cursoTitulo: tituloLimpio
         });
       } catch (fnErr) {
         console.warn("Aviso en llamada de Cloud Function (el registro quedó asegurado en base de datos):", fnErr);
