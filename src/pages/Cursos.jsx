@@ -209,6 +209,13 @@ export default function Cursos() {
                 const resumenTraducido = obtenerTextoTraducido(curso, 'resumen', i18n.language);
                 const rangoFechas = obtenerRangoFechasCurso(curso, i18n.language, t);
 
+                const esPalermo = curso.id === 'palermo-2027' || 
+                                  curso.slug?.includes('palermo') || 
+                                  curso.titulo?.toLowerCase().includes('palermo');
+                const tieneLanding = !!curso.landingPage?.habilitada || esPalermo;
+                const esLandingPublica = curso.landingPage?.publicada === true;
+                const rutaLandingCurso = `/cursos/${curso.slug || (esPalermo ? 'curso-internacional-palermo-2027' : curso.id)}`;
+
                 const estado = curso.estadoInscripcion || (curso.cursoActivo ? 'abierta' : 'cerrada');
                 
                 let badgeColor = 'bg-gray-500';
@@ -218,7 +225,9 @@ export default function Cursos() {
                 if (estado === 'abierta') {
                   badgeColor = 'bg-main-blue';
                   badgeText = t('cursos.badge_abierto', 'Inscripciones Abiertas');
-                  btnText = curso.enlaceInscripcion ? t('cursos.btn_inscribirse', 'Inscribirse Ahora') : t('cursos.btn_sin_enlace', 'Enlace no disponible');
+                  btnText = (curso.enlaceInscripcion || tieneLanding) 
+                    ? t('cursos.btn_inscribirse', 'Inscribirse Ahora') 
+                    : t('cursos.btn_sin_enlace', 'Enlace no disponible');
                 } else if (estado === 'proximamente') {
                   badgeColor = 'bg-orange-500';
                   badgeText = t('cursos.badge_proximamente', 'Próximamente');
@@ -262,7 +271,36 @@ export default function Cursos() {
                       </p>
                       
                       <div className="mt-auto pt-5 border-t border-gray-100 flex items-center justify-between">
-                        {estado === 'abierta' && curso.enlaceInscripcion ? (
+                        {tieneLanding ? (
+                          (esLandingPublica || esAdmin) ? (
+                            <Link
+                              to={rutaLandingCurso + (!esLandingPublica && esAdmin ? '?preview=admin' : '')}
+                              className={`w-full text-center py-3.5 px-6 rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 text-white ${
+                                estado === 'abierta'
+                                  ? 'bg-main-red hover:bg-red-800 shadow-main-red/20'
+                                  : estado === 'proximamente'
+                                  ? 'bg-orange-600 hover:bg-orange-700 shadow-orange-600/20'
+                                  : 'bg-main-blue hover:bg-light-blue shadow-main-blue/20'
+                              }`}
+                            >
+                              <span>
+                                {estado === 'abierta'
+                                  ? t('cursos.btn_inscribirse', 'Inscribirse Ahora')
+                                  : t('cursos.btn_ver_programa', 'Ver Programa y Detalles')}
+                              </span>
+                              {!esLandingPublica && esAdmin && (
+                                <span className="text-[9px] bg-black/30 px-1.5 py-0.5 rounded font-bold">
+                                  (Borrador)
+                                </span>
+                              )}
+                              <span>→</span>
+                            </Link>
+                          ) : (
+                            <div className={`text-[10px] font-black uppercase tracking-[0.15em] py-3.5 px-6 rounded-xl w-full text-center border flex flex-col items-center justify-center gap-1.5 ${estado === 'proximamente' ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-gray-100 text-gray-400 border-gray-200'}`}>
+                              <span>{btnText}</span>
+                            </div>
+                          )
+                        ) : estado === 'abierta' && curso.enlaceInscripcion ? (
                           <a 
                             href={curso.enlaceInscripcion} 
                             target="_blank" 
@@ -278,25 +316,9 @@ export default function Cursos() {
                           >
                             {t('cursos.btn_galeria', 'Ver Galería de Fotos')}
                           </button>
-                        ) : estado === 'proximamente' && curso.landingPage?.habilitada && curso.landingPage?.publicada ? (
-                          <Link
-                            to={`/cursos/${curso.slug || (curso.titulo?.toLowerCase().includes('palermo') ? 'curso-internacional-palermo-2027' : curso.id)}`}
-                            className="bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold uppercase tracking-widest py-3.5 px-6 rounded-xl w-full text-center transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
-                          >
-                            <span>{t('cursos.btn_ver_programa', 'Ver Programa y Detalles')}</span>
-                            <span>→</span>
-                          </Link>
                         ) : (
                           <div className={`text-[10px] font-black uppercase tracking-[0.15em] py-3.5 px-6 rounded-xl w-full text-center border flex flex-col items-center justify-center gap-1.5 ${estado === 'proximamente' ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-gray-100 text-gray-400 border-gray-200'}`}>
                             <span>{btnText}</span>
-                            {estado === 'proximamente' && esAdmin && (
-                              <Link
-                                to={`/cursos/${curso.slug || 'curso-internacional-palermo-2027'}?preview=admin`}
-                                className="text-[9px] text-main-blue hover:text-main-red font-bold underline transition-colors"
-                              >
-                                [Ver Vista Previa / Borrador (Solo Admin)]
-                              </Link>
-                            )}
                           </div>
                         )}
                       </div>

@@ -633,31 +633,72 @@ export default function CursoLanding() {
       try {
         let cursoEncontrado = null;
 
-        if (slug === "palermo-2027" || slug === "curso-internacional-palermo-2027") {
-          const q = query(collection(db, "cursos"), where("slug", "==", slug));
-          const snap = await getDocs(q);
-          if (!snap.empty) {
-            cursoEncontrado = { id: snap.docs[0].id, ...snap.docs[0].data() };
-          } else {
-            cursoEncontrado = DATOS_PALERMO_2027;
-          }
-        } else {
-          let q = query(collection(db, "cursos"), where("slug", "==", slug));
-          let snap = await getDocs(q);
+        // 1. Búsqueda directa por slug exacto
+        let q = query(collection(db, "cursos"), where("slug", "==", slug));
+        let snap = await getDocs(q);
 
-          if (snap.empty) {
-            const docRef = doc(db, "cursos", slug);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-              cursoEncontrado = { id: docSnap.id, ...docSnap.data() };
-            }
+        if (!snap.empty) {
+          cursoEncontrado = { id: snap.docs[0].id, ...snap.docs[0].data() };
+        } else {
+          // 2. Búsqueda directa por ID de documento
+          const docRef = doc(db, "cursos", slug);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            cursoEncontrado = { id: docSnap.id, ...docSnap.data() };
           } else {
-            cursoEncontrado = { id: snap.docs[0].id, ...snap.docs[0].data() };
+            // 3. Si el slug hace referencia a Palermo, buscar cualquier curso de Palermo en Firestore
+            const esRutaPalermo = slug === "palermo-2027" || 
+                                  slug === "curso-internacional-palermo-2027" || 
+                                  slug.includes("palermo");
+            if (esRutaPalermo) {
+              const allSnap = await getDocs(collection(db, "cursos"));
+              const docPalermo = allSnap.docs.find(d => {
+                const data = d.data();
+                return d.id === 'palermo-2027' || 
+                       data.slug?.includes('palermo') || 
+                       data.titulo?.toLowerCase().includes('palermo');
+              });
+              if (docPalermo) {
+                cursoEncontrado = { id: docPalermo.id, ...docPalermo.data() };
+              }
+            }
           }
+        }
+
+        const esPalermo = !cursoEncontrado || 
+                          cursoEncontrado.id === 'palermo-2027' || 
+                          cursoEncontrado.slug?.includes('palermo') || 
+                          cursoEncontrado.titulo?.toLowerCase().includes('palermo');
+
+        if (!cursoEncontrado && esPalermo) {
+          cursoEncontrado = DATOS_PALERMO_2027;
+        }
+
+        // Si es el curso de Palermo, fusionar con la plantilla completa de Palermo
+        // para asegurar que syllabus, docentes y detalles institucionales estén siempre disponibles
+        if (esPalermo && cursoEncontrado) {
+          const lpFirestore = cursoEncontrado.landingPage || {};
+          cursoEncontrado = {
+            ...DATOS_PALERMO_2027,
+            ...cursoEncontrado,
+            landingPage: {
+              ...DATOS_PALERMO_2027.landingPage,
+              ...lpFirestore,
+              habilitada: true,
+              publicada: true
+            }
+          };
         }
 
         if (!cursoEncontrado) {
           cursoEncontrado = DATOS_PALERMO_2027;
+        }
+
+        // Título de la pestaña del navegador
+        if (cursoEncontrado?.titulo) {
+          document.title = `${cursoEncontrado.titulo} | IIRESODH`;
+        } else {
+          document.title = "Curso Internacional Palermo 2027 | IIRESODH";
         }
 
         // Sanitizar ortografía: "Crimen" siempre sin tilde conforme a las reglas del español
@@ -672,7 +713,7 @@ export default function CursoLanding() {
           cursoEncontrado.landingPage = {
             ...DATOS_PALERMO_2027.landingPage,
             habilitada: true,
-            publicada: false
+            publicada: true
           };
         }
 
@@ -903,8 +944,14 @@ export default function CursoLanding() {
     );
   }
 
+  const esPalermo = (curso?.id === 'palermo-2027') ||
+                    (curso?.slug?.toLowerCase().includes('palermo')) ||
+                    (curso?.titulo?.toLowerCase().includes('palermo')) ||
+                    (String(slug).toLowerCase().includes('palermo'));
+
   const landing = curso?.landingPage || DATOS_PALERMO_2027.landingPage;
-  const esPublica = landing.publicada === true;
+  // La página es pública si está marcada como publicada, si las inscripciones están abiertas, o si es el curso de Palermo
+  const esPublica = landing.publicada === true || curso?.estadoInscripcion === "abierta" || esPalermo;
   // Acceso permitido únicamente si la página está publicada, si es admin o si se especifica ?preview=true
   const tieneAcceso = esPublica || esAdmin || isPreviewParam;
 
@@ -947,7 +994,7 @@ export default function CursoLanding() {
   const destacados = landing.destacados && landing.destacados.length > 0 ? landing.destacados : DATOS_PALERMO_2027.landingPage.destacados;
   const docentes = landing.docentesDestacados || DATOS_PALERMO_2027.landingPage.docentesDestacados;
   const aQuienDirigido = landing.aQuienDirigido || DATOS_PALERMO_2027.landingPage.aQuienDirigido;
-  const esPalermo2027 = slug === "palermo-2027" || curso?.slug === "palermo-2027" || curso?.id === "palermo-2027";
+  const esPalermo2027 = esPalermo;
   const queEstaIncluido = (esPalermo2027 && DATOS_PALERMO_2027.landingPage.queEstaIncluido) || landing.queEstaIncluido || DATOS_PALERMO_2027.landingPage.queEstaIncluido;
   const queNoEstaIncluido = (esPalermo2027 && DATOS_PALERMO_2027.landingPage.queNoEstaIncluido) || landing.queNoEstaIncluido || DATOS_PALERMO_2027.landingPage.queNoEstaIncluido;
   const queAprenderas = landing.queAprenderas || DATOS_PALERMO_2027.landingPage.queAprenderas;
