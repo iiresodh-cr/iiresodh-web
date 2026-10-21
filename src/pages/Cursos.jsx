@@ -222,7 +222,11 @@ export default function Cursos() {
                 let badgeText = t('cursos.badge_cerrado', 'Finalizado / Cerrado');
                 let btnText = t('cursos.btn_cerrado', 'Periodo de inscripción cerrado');
 
-                if (estado === 'abierta') {
+                if (tieneLanding && !esLandingPublica && !esAdmin) {
+                  badgeColor = 'bg-amber-600';
+                  badgeText = t('cursos.badge_preparacion', 'En Preparación');
+                  btnText = t('cursos.btn_proximamente', 'Disponible Próximamente');
+                } else if (estado === 'abierta') {
                   badgeColor = 'bg-main-blue';
                   badgeText = t('cursos.badge_abierto', 'Inscripciones Abiertas');
                   btnText = (curso.enlaceInscripcion || tieneLanding) 
