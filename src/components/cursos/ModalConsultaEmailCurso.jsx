@@ -115,7 +115,8 @@ export default function ModalConsultaEmailCurso({
           mensaje: mensaje.trim(),
           asunto: asunto.trim() || construirAsunto(cursoTitulo),
           destinatario: "cursos@iiresodh.org",
-          cursoTitulo: tituloLimpio
+          cursoTitulo: tituloLimpio,
+          origen: "curso_landing"
         });
       } catch (fnErr) {
         console.warn("Aviso en llamada de Cloud Function (el registro quedó asegurado en base de datos):", fnErr);

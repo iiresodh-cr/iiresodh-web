@@ -244,6 +244,8 @@ export default function Home2() {
       const enviarCorreo = httpsCallable(functions, 'enviarFormularioContacto');
       await enviarCorreo({
         ...contacto,
+        origen: "web_home",
+        destinatario: "contacto@iiresodh.org",
         consentimientoPrivacidad: true,
         fechaConsentimiento: new Date().toISOString(),
         marcoLegal: "Ley N° 8968 - Costa Rica"
