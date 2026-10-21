@@ -685,7 +685,7 @@ export default function CursoLanding() {
               ...DATOS_PALERMO_2027.landingPage,
               ...lpFirestore,
               habilitada: true,
-              publicada: true
+              publicada: lpFirestore.publicada === true
             }
           };
         }
@@ -713,7 +713,7 @@ export default function CursoLanding() {
           cursoEncontrado.landingPage = {
             ...DATOS_PALERMO_2027.landingPage,
             habilitada: true,
-            publicada: true
+            publicada: false
           };
         }
 
@@ -950,9 +950,9 @@ export default function CursoLanding() {
                     (String(slug).toLowerCase().includes('palermo'));
 
   const landing = curso?.landingPage || DATOS_PALERMO_2027.landingPage;
-  // La página es pública si está marcada como publicada, si las inscripciones están abiertas, o si es el curso de Palermo
-  const esPublica = landing.publicada === true || curso?.estadoInscripcion === "abierta" || esPalermo;
-  // Acceso permitido únicamente si la página está publicada, si es admin o si se especifica ?preview=true
+  // La página es pública ÚNICAMENTE si está explícitamente marcada como publicada en Firestore
+  const esPublica = landing.publicada === true;
+  // Acceso permitido únicamente si la página está publicada, si es admin o si se especifica ?preview=admin / ?preview=true
   const tieneAcceso = esPublica || esAdmin || isPreviewParam;
 
   if (!tieneAcceso) {

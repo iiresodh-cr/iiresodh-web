@@ -949,7 +949,7 @@ export default function AdminPanel() {
                           item.slug?.includes('palermo') || 
                           item.titulo?.toLowerCase().includes('palermo');
         setLandingHabilitada(lp.habilitada !== undefined ? !!lp.habilitada : esPalermo);
-        setLandingPublicada(!!lp.publicada || (esPalermo && (item.estadoInscripcion === 'abierta' || item.cursoActivo)));
+        setLandingPublicada(lp.publicada === true);
         setLandingLema(lp.lema || "");
         setLandingUbicacionFechas(lp.ubicacionFechas || "");
         setLandingPrecioInversion(lp.precioInversion || "");
@@ -1440,7 +1440,7 @@ export default function AdminPanel() {
           if (debeHabilitarLanding) {
             datos.landingPage = {
               habilitada: true,
-              publicada: landingPublicada || (estadoInscripcion === "abierta"),
+              publicada: Boolean(landingPublicada),
               lema: landingLema || (DATOS_PALERMO_2027.landingPage.lema),
               ubicacionFechas: landingUbicacionFechas || (DATOS_PALERMO_2027.landingPage.ubicacionFechas),
               precioInversion: landingPrecioInversion || (DATOS_PALERMO_2027.landingPage.precioInversion),
@@ -2050,7 +2050,6 @@ export default function AdminPanel() {
                                   setCursoActivo(val === "abierta");
                                   if (val === "abierta") {
                                     setLandingHabilitada(true);
-                                    setLandingPublicada(true);
                                   }
                                 }}
                               >
