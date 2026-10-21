@@ -945,8 +945,11 @@ export default function AdminPanel() {
         setTitulosNuevos({});
 
         const lp = item.landingPage || {};
-        setLandingHabilitada(!!lp.habilitada);
-        setLandingPublicada(!!lp.publicada);
+        const esPalermo = item.id === 'palermo-2027' || 
+                          item.slug?.includes('palermo') || 
+                          item.titulo?.toLowerCase().includes('palermo');
+        setLandingHabilitada(lp.habilitada !== undefined ? !!lp.habilitada : esPalermo);
+        setLandingPublicada(!!lp.publicada || (esPalermo && (item.estadoInscripcion === 'abierta' || item.cursoActivo)));
         setLandingLema(lp.lema || "");
         setLandingUbicacionFechas(lp.ubicacionFechas || "");
         setLandingPrecioInversion(lp.precioInversion || "");
@@ -1429,23 +1432,28 @@ export default function AdminPanel() {
             };
           });
 
-          if (landingHabilitada) {
+          const esPalermo = (editandoId === 'palermo-2027') || 
+                            (slugOriginal?.includes('palermo')) || 
+                            (titulo?.toLowerCase().includes('palermo'));
+          const debeHabilitarLanding = landingHabilitada || esPalermo;
+
+          if (debeHabilitarLanding) {
             datos.landingPage = {
               habilitada: true,
-              publicada: landingPublicada,
-              lema: landingLema || "",
-              ubicacionFechas: landingUbicacionFechas || "",
-              precioInversion: landingPrecioInversion || "",
-              inversionDetalle: landingInversionDetalle || "",
+              publicada: landingPublicada || (estadoInscripcion === "abierta"),
+              lema: landingLema || (DATOS_PALERMO_2027.landingPage.lema),
+              ubicacionFechas: landingUbicacionFechas || (DATOS_PALERMO_2027.landingPage.ubicacionFechas),
+              precioInversion: landingPrecioInversion || (DATOS_PALERMO_2027.landingPage.precioInversion),
+              inversionDetalle: landingInversionDetalle || (DATOS_PALERMO_2027.landingPage.inversionDetalle),
               cuposTexto: landingCuposTexto || (DATOS_PALERMO_2027.landingPage.cuposTexto || "Cupos Estrictamente Limitados"),
               fechaLimitePago: landingFechaLimitePago || (DATOS_PALERMO_2027.landingPage.fechaLimitePago || "2027-04-30"),
               enlaceStripe: landingEnlaceStripe || "",
-              heroCita: landingHeroCita || "",
-              heroCitaAutor: landingHeroCitaAutor || "",
-              legadoTitulo: landingLegadoTitulo || "",
-              legadoTexto: landingLegadoTexto || "",
-              sedeNombre: landingSedeNombre || "",
-              sedeTexto: landingSedeTexto || "",
+              heroCita: landingHeroCita || (DATOS_PALERMO_2027.landingPage.heroCita),
+              heroCitaAutor: landingHeroCitaAutor || (DATOS_PALERMO_2027.landingPage.heroCitaAutor),
+              legadoTitulo: landingLegadoTitulo || (DATOS_PALERMO_2027.landingPage.legadoTitulo || ""),
+              legadoTexto: landingLegadoTexto || (DATOS_PALERMO_2027.landingPage.legadoTexto || ""),
+              sedeNombre: landingSedeNombre || (DATOS_PALERMO_2027.landingPage.sedeNombre || ""),
+              sedeTexto: landingSedeTexto || (DATOS_PALERMO_2027.landingPage.sedeTexto || ""),
               programa: landingPrograma.length > 0 ? landingPrograma : (DATOS_PALERMO_2027.landingPage.programa || []),
               destacados: DATOS_PALERMO_2027.landingPage.destacados,
               pilares: DATOS_PALERMO_2027.landingPage.pilares,
@@ -2029,7 +2037,7 @@ export default function AdminPanel() {
                             onChange={(e) => setEnlaceInscripcion(e.target.value)}
                             placeholder="https://forms.gle/..."
                           />
-                          <div className="flex items-center gap-2 bg-white p-4 rounded-xl shadow-sm border border-orange-100">
+                          <div className="flex flex-col gap-2 bg-white p-4 rounded-xl shadow-sm border border-orange-100">
                             <FormControl size="small" fullWidth>
                               <InputLabel id="estado-inscripcion-label">Estado de Inscripción</InputLabel>
                               <Select
@@ -2037,8 +2045,13 @@ export default function AdminPanel() {
                                 value={estadoInscripcion}
                                 label="Estado de Inscripción"
                                 onChange={(e) => {
-                                  setEstadoInscripcion(e.target.value);
-                                  setCursoActivo(e.target.value === "abierta");
+                                  const val = e.target.value;
+                                  setEstadoInscripcion(val);
+                                  setCursoActivo(val === "abierta");
+                                  if (val === "abierta") {
+                                    setLandingHabilitada(true);
+                                    setLandingPublicada(true);
+                                  }
                                 }}
                               >
                                 <MenuItem value="abierta">Inscripciones Abiertas</MenuItem>
@@ -2046,6 +2059,41 @@ export default function AdminPanel() {
                                 <MenuItem value="proximamente">Próximamente</MenuItem>
                               </Select>
                             </FormControl>
+
+                            {(landingHabilitada || titulo?.toLowerCase().includes('palermo')) && (
+                              <div className={`mt-1 p-2 rounded-lg border flex items-center justify-between gap-2 text-xs ${
+                                landingPublicada ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-amber-50 border-amber-200 text-amber-900'
+                              }`}>
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <span>{landingPublicada ? "🌐" : "🔒"}</span>
+                                  <span className="font-bold text-[11px] truncate">
+                                    {landingPublicada ? "Landing: Pública en la Web" : "Landing: Borrador (Oculta)"}
+                                  </span>
+                                </div>
+                                <Button
+                                  size="small"
+                                  variant="contained"
+                                  onClick={() => {
+                                    setLandingHabilitada(true);
+                                    setLandingPublicada(!landingPublicada);
+                                  }}
+                                  sx={{
+                                    bgcolor: landingPublicada ? '#059669' : '#d97706',
+                                    '&:hover': { bgcolor: landingPublicada ? '#047857' : '#b45309' },
+                                    textTransform: 'none',
+                                    fontSize: '10px',
+                                    fontWeight: 'bold',
+                                    borderRadius: '6px',
+                                    py: 0.3,
+                                    px: 1.2,
+                                    minWidth: 'auto',
+                                    whiteSpace: 'nowrap'
+                                  }}
+                                >
+                                  {landingPublicada ? "Ocultar" : "Hacer Pública"}
+                                </Button>
+                              </div>
+                            )}
                           </div>
 
                           <AdminTextField
@@ -2968,6 +3016,25 @@ export default function AdminPanel() {
                                         ? `Fechas: ${[n.fechaInicio, n.fechaFin].filter(Boolean).join(' a ')} | /${obtenerColeccionActiva()}/${n.slug || n.id}`
                                         : `/${obtenerColeccionActiva()}/${n.slug || n.id}`}
                                   </p>
+                                  {vistaActiva === 'cursos' && (
+                                    <div className="flex flex-wrap gap-1 mt-1">
+                                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                                        (n.estadoInscripcion === 'abierta' || n.cursoActivo) ? 'bg-emerald-100 text-emerald-800' :
+                                        n.estadoInscripcion === 'proximamente' ? 'bg-orange-100 text-orange-800' :
+                                        'bg-gray-100 text-gray-600'
+                                      }`}>
+                                        {(n.estadoInscripcion === 'abierta' || n.cursoActivo) ? 'Inscripciones Abiertas' :
+                                         n.estadoInscripcion === 'proximamente' ? 'Próximamente' : 'Cerrado'}
+                                      </span>
+                                      {(n.landingPage?.habilitada || n.id === 'palermo-2027' || n.slug?.includes('palermo') || n.titulo?.toLowerCase().includes('palermo')) && (
+                                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                                          n.landingPage?.publicada ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'
+                                        }`}>
+                                          {n.landingPage?.publicada ? 'Landing Pública' : 'Landing Borrador'}
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </div>
