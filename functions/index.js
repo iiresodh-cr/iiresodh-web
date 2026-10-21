@@ -357,7 +357,7 @@ exports.enviarFormularioContacto = onCall({
               <span style="display: block; font-weight: 700; color: #0f172a; margin-bottom: 8px;">
                 ${esConsultaCurso ? 'Mensaje / Consulta del Interesado:' : 'Mensaje recibido:'}
               </span>
-              <div style="background-color: #f8fafc; border-left: 4px solid ${esConsultaCurso ? '#b91c1c' : '#1D3557'}; padding: 14px 18px; border-radius: 6px; color: #1e293b; font-size: 14px; line-height: 1.6;">
+              <div style="background-color: #f8fafc; border-left: 4px solid ${esConsultaCurso ? '#B92F32' : '#1D3557'}; padding: 14px 18px; border-radius: 0 6px 6px 0; color: #1e293b; font-size: 14px; line-height: 1.6;">
                 ${mensaje.replace(/\n/g, '<br>')}
               </div>
             </div>
