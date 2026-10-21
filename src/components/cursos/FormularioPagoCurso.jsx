@@ -50,8 +50,8 @@ export function calcularFechaLimitePago(curso, landing) {
   return new Date(2027, 3, 30, 23, 59, 59);
 }
 
-// Carga la clave pública de Stripe para cursos (por defecto usa la key de prueba provista)
-const STRIPE_CURSOS_KEY = import.meta.env.VITE_STRIPE_CURSOS_PUBLIC_KEY || "pk_test_51R0ovD2c2u6cty9mPu0lrl7lQrjpLsrfH5buxYVayH58IZjHjVfXqKLhdPObJN1rY2vD92jSlPHU9DNZr1NYbiT500sNDUpxbR";
+// Carga la clave pública de Stripe para cursos (modo producción)
+const STRIPE_CURSOS_KEY = import.meta.env.VITE_STRIPE_CURSOS_PUBLIC_KEY || "pk_live_51R0ovD2c2u6cty9midgG073P0KFq3LAMrLj4awP2UZEuaFPw9PPVNOS7z9IL6i4X3iUhdeINE7aUHuF9FdhMR53Z00YQESkTdW";
 const stripeCursosPromise = loadStripe(STRIPE_CURSOS_KEY);
 
 const cardElementOptions = {
