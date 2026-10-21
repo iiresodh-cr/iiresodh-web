@@ -289,7 +289,7 @@ export const DATOS_PALERMO_2027 = {
 
     // Sección Legado y Visión
     legadoTitulo: "Legado y Visión",
-    legadoTexto: "El legado histórico de los magistrados Giovanni Falcone y Paolo Borsellino sentó las bases de la lucha contemporánea contra el crimen organizado y la macrocriminalidad financiera. En el año 2000, Palermo fue la sede donde la comunidad internacional aprobó la histórica Convención de las Naciones Unidas contra la Delincuencia Organizada Transnacional. Este curso internacional conecta ese precedente histórico con los desafíos judiciales de vanguardia, el decomiso de activos ilícitos y la cooperación penal transfronteriza, organizado el IIRESODH en colaboración con la Facultad de Ciencias Políticas y Relaciones Internacionales de la Universidad de Estudios de Palermo, Italia, la Sociedad Científica Italiana de los Estudios sobre Mafias Y Antimafia (SISMA) y el Institudo de Derechos Humanos de la Universidad Nacional de La Plata, Argentina.",
+    legadoTexto: "El legado histórico de los magistrados Giovanni Falcone y Paolo Borsellino sentó las bases de la lucha contemporánea contra el crimen organizado y la macrocriminalidad financiera. En el año 2000, Palermo fue la sede donde la comunidad internacional aprobó la histórica Convención de las Naciones Unidas contra la Delincuencia Organizada Transnacional. Este curso internacional conecta ese precedente histórico con los desafíos judiciales de vanguardia, el decomiso de activos ilícitos y la cooperación penal transfronteriza, organizado el IIRESODH en colaboración con la Facultad de Ciencias Políticas y Relaciones Internacionales de la Universidad de Estudios de Palermo, Italia y con el apoyo de la Sociedad Científica Italiana de los Estudios sobre Mafias Y Antimafia (SISMA) y el Institudo de Derechos Humanos de la Universidad Nacional de La Plata, Argentina.",
     pilares: [
       {
         titulo: "Marco Jurídico Internacional y DDHH",
@@ -1350,7 +1350,7 @@ export default function CursoLanding() {
                         Organización Conjunta
                       </span>
                       <h3 className="text-sm sm:text-base font-bold text-main-blue">
-                        IIRESODH en colaboración con la Facultad de Ciencias Políticas y Relaciones Internacionales de la Universidad de Estudios de Palermo, Italia, la Sociedad Científica Italiana de los Estudios sobre Mafias Y Antimafia (SISMA) y el Institudo de Derechos Humanos de la Universidad Nacional de La Plata, Argentina.
+                        IIRESODH en colaboración con la Facultad de Ciencias Políticas y Relaciones Internacionales de la Universidad de Estudios de Palermo, Italia y con el apoyo de la Sociedad Científica Italiana de los Estudios sobre Mafias Y Antimafia (SISMA) y el Institudo de Derechos Humanos de la Universidad Nacional de La Plata, Argentina.
                       </h3>
                     </div>
                   </div>
