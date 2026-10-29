@@ -389,6 +389,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
   }, 0);
   const totalNetoBanco = Math.max(0, Number((totalRecaudado - totalComisionStripe).toFixed(2)));
   const totalPorCobrar = solicitudesDelCurso.reduce((acc, s) => {
+    if (s.tipoRegistro === "consulta_email") return acc;
     const inv = Number(s.montoTotalInversion) || 3350;
     const pag = Number(s.montoPagado) || 0;
     return acc + Math.max(0, inv - pag);
@@ -401,7 +402,7 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
       const cumpleEstado = filtroEstado === "todos" || estadoActual === filtroEstado;
 
       const esMetodoInteres = s.modalidadSolicitud === "registro_interes" || s.tipoRegistro === "interes" || s.metodoPago === "contacto_posterior";
-      const esMetodoTransferencia = s.metodoPago === "transferencia" || s.metodoPago === "transferencia_bancaria" || s.tipoRegistro === "transferencia";
+      const esMetodoTransferencia = (s.metodoPago === "transferencia" || s.metodoPago === "transferencia_bancaria" || s.tipoRegistro === "transferencia") && s.tipoRegistro !== "consulta_email";
       const cumpleMetodo = filtroMetodo === "todos" ||
         (filtroMetodo === "interes" && esMetodoInteres) ||
         (filtroMetodo === "transferencia" && esMetodoTransferencia) ||
@@ -1928,7 +1929,11 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                       </span>
 
                       {/* Badge Liquidado / Pendiente de Pago */}
-                      {saldoPendiente <= 0 ? (
+                      {solicitud.tipoRegistro === "consulta_email" ? (
+                        <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1">
+                          💬 Consulta Informativa
+                        </span>
+                      ) : saldoPendiente <= 0 ? (
                         <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 flex items-center gap-1">
                           ✓ Totalmente Liquidado
                         </span>
@@ -1943,7 +1948,11 @@ export default function AdminSolicitudesCursos({ onVolver, logActividad, cursoIn
                       )}
 
                       {/* Badge Método de Pago / Registro */}
-                      {solicitud.modalidadSolicitud === "registro_interes" || solicitud.tipoRegistro === "interes" || solicitud.metodoPago === "contacto_posterior" ? (
+                      {solicitud.tipoRegistro === "consulta_email" ? (
+                        <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-900 border border-sky-300 flex items-center gap-1">
+                          ✉️ Consulta por Email
+                        </span>
+                      ) : solicitud.modalidadSolicitud === "registro_interes" || solicitud.tipoRegistro === "interes" || solicitud.metodoPago === "contacto_posterior" ? (
                         <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 flex items-center gap-1">
                           📋 Manifiesta Interés
                         </span>

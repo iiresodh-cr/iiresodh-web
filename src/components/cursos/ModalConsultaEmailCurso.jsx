@@ -3,6 +3,12 @@ import React, { useState, useEffect } from "react";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db, functions } from "../../firebase/config";
 import { httpsCallable } from "firebase/functions";
+import {
+  CODIGOS_PAISES_TELEFONO,
+  GRUPOS_REGIONES,
+  buscarPaisPorId,
+  detectarPaisPorPrefijo
+} from "../../data/codigosPaisesTelefono";
 
 const normalizarTitulo = (titulo) => {
   if (!titulo) return "Curso Internacional Palermo 2027";
@@ -33,6 +39,8 @@ export default function ModalConsultaEmailCurso({
   const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
   const [telefono, setTelefono] = useState("");
+  const [paisTelefonoId, setPaisTelefonoId] = useState("");
+  const [errorTelefono, setErrorTelefono] = useState("");
   const [asunto, setAsunto] = useState(() => construirAsunto(cursoTitulo));
   const [mensaje, setMensaje] = useState("");
   const [aceptaPrivacidad, setAceptaPrivacidad] = useState(true);
@@ -40,6 +48,9 @@ export default function ModalConsultaEmailCurso({
   const [enviando, setEnviando] = useState(false);
   const [enviadoExito, setEnviadoExito] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  const paisActual = buscarPaisPorId(paisTelefonoId);
+  const placeholderEjemplo = paisActual?.ejemplo ? `Ej. ${paisActual.ejemplo}` : "Ej. 8888 8888";
 
   // Manejar tecla ESC para cerrar
   useEffect(() => {
@@ -56,15 +67,49 @@ export default function ModalConsultaEmailCurso({
     if (isOpen) {
       setEnviadoExito(false);
       setErrorMsg("");
+      setErrorTelefono("");
       setAsunto(construirAsunto(cursoTitulo));
     }
   }, [isOpen, cursoTitulo]);
 
   if (!isOpen) return null;
 
+  const handlePaisChange = (e) => {
+    const nuevoId = e.target.value;
+    setPaisTelefonoId(nuevoId);
+    setErrorTelefono("");
+    if (errorMsg) setErrorMsg("");
+  };
+
+  const handleTelefonoChange = (e) => {
+    const val = e.target.value;
+    setErrorTelefono("");
+    if (errorMsg) setErrorMsg("");
+
+    // Detección automática inteligente si el usuario pega un número con prefijo internacional (+)
+    if (val.trim().startsWith("+")) {
+      const detectado = detectarPaisPorPrefijo(val);
+      if (detectado) {
+        setPaisTelefonoId(detectado.pais.id);
+        setTelefono(detectado.numeroRestante);
+        return;
+      }
+    }
+
+    setTelefono(val);
+  };
+
+  const handleLimpiarTelefono = () => {
+    setTelefono("");
+    setPaisTelefonoId("");
+    setErrorTelefono("");
+    if (errorMsg && errorTelefono) setErrorMsg("");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
+    setErrorTelefono("");
 
     if (!nombre.trim()) {
       setErrorMsg("Por favor, ingresa tu nombre completo.");
@@ -74,6 +119,32 @@ export default function ModalConsultaEmailCurso({
       setErrorMsg("Por favor, ingresa una dirección de correo electrónico válida.");
       return;
     }
+
+    // Validación condicional del teléfono:
+    // El teléfono sigue siendo completamente opcional, pero si decide proporcionarlo
+    // debe seleccionar el país o código de marcación y especificar el número.
+    const telTrim = telefono.trim();
+    if (telTrim && !paisTelefonoId) {
+      setErrorTelefono("Selecciona el país o código");
+      setErrorMsg("Has ingresado un número telefónico. Por favor, selecciona el país o código de marcación correspondiente.");
+      return;
+    }
+    if (paisTelefonoId && !telTrim) {
+      const pObj = buscarPaisPorId(paisTelefonoId);
+      setErrorTelefono("Ingresa el número telefónico");
+      setErrorMsg(`Has seleccionado el código de ${pObj?.pais || "país"} (${pObj?.codigo || ""}). Por favor, ingresa tu número de teléfono o borra la selección si no deseas incluirlo.`);
+      return;
+    }
+
+    if (telTrim) {
+      const soloDigitos = telTrim.replace(/\D/g, "");
+      if (soloDigitos.length < 5) {
+        setErrorTelefono("Número incompleto");
+        setErrorMsg("Por favor, ingresa un número de teléfono válido con al menos 5 dígitos.");
+        return;
+      }
+    }
+
     if (!mensaje.trim()) {
       setErrorMsg("Por favor, escribe el contenido de tu consulta o mensaje.");
       return;
@@ -83,17 +154,47 @@ export default function ModalConsultaEmailCurso({
       return;
     }
 
+    // Estructurar el teléfono completo y datos de marcación
+    let telefonoFinal = "";
+    let paisNombreFinal = "";
+    let codigoPaisFinal = "";
+    let numeroLocalFinal = "";
+
+    if (telTrim && paisTelefonoId) {
+      const pObj = buscarPaisPorId(paisTelefonoId);
+      if (pObj) {
+        paisNombreFinal = pObj.pais;
+        codigoPaisFinal = pObj.codigo;
+        if (paisTelefonoId === "OTRO") {
+          telefonoFinal = telTrim.startsWith("+") ? telTrim : `+${telTrim.replace(/^\+/, "")}`;
+          numeroLocalFinal = telefonoFinal;
+        } else {
+          const codigoSinMas = pObj.codigo.replace("+", "");
+          const limpio = telTrim
+            .replace(/^\+/, "")
+            .replace(new RegExp(`^${codigoSinMas}\\s*`), "")
+            .trim();
+          numeroLocalFinal = limpio;
+          telefonoFinal = `${pObj.codigo} ${limpio}`.trim();
+        }
+      }
+    }
+
     setEnviando(true);
 
     try {
-      // 1. Guardar constancia de la consulta en Firestore
+      // 1. Guardar constancia de la consulta en Firestore con desglose de país y marcación
       await addDoc(collection(db, "solicitudesCursos"), {
         cursoId: cursoId || "palermo-2027",
         cursoTitulo: tituloLimpio,
         nombre: nombre.trim(),
         nombres: nombre.trim(),
         email: correo.trim(),
-        telefono: telefono.trim(),
+        telefono: telefonoFinal,
+        pais: paisNombreFinal || "",
+        paisTelefono: paisNombreFinal || "",
+        codigoPaisTelefono: codigoPaisFinal || "",
+        telefonoNumero: numeroLocalFinal || "",
         asunto: asunto.trim() || construirAsunto(cursoTitulo),
         comentarios: mensaje.trim(),
         tipoRegistro: "consulta_email",
@@ -108,10 +209,14 @@ export default function ModalConsultaEmailCurso({
       // 2. Disparar envío formal del correo a cursos@iiresodh.org mediante Cloud Functions
       try {
         const enviarCorreoFn = httpsCallable(functions, "enviarFormularioContacto");
+        const telTextoCorreo = telefonoFinal
+          ? `${telefonoFinal}${paisNombreFinal && paisNombreFinal !== "Otro país" ? ` (${paisNombreFinal})` : ""}`
+          : "";
+
         await enviarCorreoFn({
           nombre: nombre.trim(),
           correo: correo.trim(),
-          telefono: telefono.trim(),
+          telefono: telTextoCorreo,
           mensaje: mensaje.trim(),
           asunto: asunto.trim() || construirAsunto(cursoTitulo),
           destinatario: "cursos@iiresodh.org",
@@ -126,6 +231,8 @@ export default function ModalConsultaEmailCurso({
       setNombre("");
       setCorreo("");
       setTelefono("");
+      setPaisTelefonoId("");
+      setErrorTelefono("");
       setMensaje("");
     } catch (err) {
       console.error("Error al enviar la consulta:", err);
@@ -239,16 +346,101 @@ export default function ModalConsultaEmailCurso({
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                    Teléfono / WhatsApp <span className="text-gray-400 font-normal">(opcional)</span>
-                  </label>
-                  <input
-                    type="tel"
-                    value={telefono}
-                    onChange={(e) => setTelefono(e.target.value)}
-                    placeholder="+506 8888 8888"
-                    className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-main-blue bg-white"
-                  />
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider">
+                      Teléfono / WhatsApp <span className="text-gray-400 font-normal lowercase">(opcional)</span>
+                    </label>
+                  </div>
+
+                  <div className={`relative flex rounded-xl border ${errorTelefono ? "border-red-400 ring-2 ring-red-100" : "border-gray-300 focus-within:border-main-blue focus-within:ring-2 focus-within:ring-main-blue/20"} bg-white overflow-hidden transition-all shadow-xs`}>
+                    {/* Selector de país con overlay nativo accesible */}
+                    <div className="relative shrink-0 border-r border-gray-200 bg-slate-50 hover:bg-slate-100/90 transition-colors">
+                      <div className="flex items-center gap-1.5 px-2.5 py-2.5 text-xs font-bold text-gray-700 pointer-events-none select-none">
+                        {paisActual ? (
+                          <>
+                            <span className="text-base leading-none" role="img" aria-label={paisActual.pais}>
+                              {paisActual.bandera}
+                            </span>
+                            <span className="font-mono text-gray-900">{paisActual.codigo}</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-sm">🌐</span>
+                            <span className="text-gray-500 font-medium">Cód.</span>
+                          </>
+                        )}
+                        <svg className="w-3 h-3 text-gray-400 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+
+                      <select
+                        value={paisTelefonoId}
+                        onChange={handlePaisChange}
+                        title="Selecciona el país o código de marcación"
+                        aria-label="País o código de marcación"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      >
+                        <option value="">-- Seleccionar país o código --</option>
+                        {GRUPOS_REGIONES.map((grupo) => {
+                          const paisesGrupo = CODIGOS_PAISES_TELEFONO.filter((p) => p.region === grupo.key);
+                          if (paisesGrupo.length === 0) return null;
+                          return (
+                            <optgroup key={grupo.key} label={grupo.titulo}>
+                              {paisesGrupo.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                  {p.bandera} {p.codigo} - {p.pais}
+                                </option>
+                              ))}
+                            </optgroup>
+                          );
+                        })}
+                      </select>
+                    </div>
+
+                    {/* Input para el número telefónico */}
+                    <input
+                      type="tel"
+                      value={telefono}
+                      onChange={handleTelefonoChange}
+                      placeholder={placeholderEjemplo}
+                      className="w-full text-sm px-3 py-2.5 focus:outline-none bg-white min-w-0 text-gray-800 placeholder:text-gray-400"
+                    />
+
+                    {/* Botón para limpiar ambos campos si se ha ingresado algo */}
+                    {(telefono || paisTelefonoId) && (
+                      <button
+                        type="button"
+                        onClick={handleLimpiarTelefono}
+                        title="Borrar teléfono y código"
+                        aria-label="Borrar teléfono y código"
+                        className="px-2.5 text-gray-400 hover:text-gray-700 focus:outline-none text-xs cursor-pointer font-bold"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Estado / Ayuda contextual inferior */}
+                  <div className="mt-1 min-h-[16px]">
+                    {errorTelefono ? (
+                      <p className="text-[11px] text-red-600 font-semibold flex items-center gap-1 animate-fade-in">
+                        <span>⚠️</span>
+                        <span>{errorTelefono}</span>
+                      </p>
+                    ) : paisActual ? (
+                      <p className="text-[11px] text-slate-600 flex items-center gap-1 truncate animate-fade-in">
+                        <span className="text-emerald-600 font-bold">✓</span>
+                        <span className="font-medium text-gray-700">{paisActual.bandera} {paisActual.pais}</span>
+                        <span className="text-slate-400 font-mono">({paisActual.codigo})</span>
+                      </p>
+                    ) : telefono.trim() ? (
+                      <p className="text-[11px] text-amber-700 font-semibold flex items-center gap-1 animate-fade-in">
+                        <span>⚠️</span>
+                        <span>Selecciona el país o código</span>
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
               </div>
 
